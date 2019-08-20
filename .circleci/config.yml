@@ -1,0 +1,50 @@
+version: 2
+
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.12
+
+    steps:
+      - setup_remote_docker
+
+      - checkout
+
+      - run:
+          name: Test the provider
+          command: |
+            set -e
+            go test -coverprofile=coverage.txt -race -coverpkg=./... ./...
+            bash <(curl -s https://codecov.io/bash)
+
+      - run:
+          name: Build the image
+          command: docker build .
+
+  push:
+    context: DockerHub credentials (marcinw)
+
+    docker:
+      - image: circleci/golang:1.12
+
+    steps:
+      - setup_remote_docker
+
+      - checkout
+
+      - run:
+          name: Push the image
+          command: |
+            set -e
+            echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
+            docker build -t spacelift/runner .
+            docker push spacelift/runner
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+      - push:
+          requires: ["test"]
+          filters: { branches: { only: "master" } }
