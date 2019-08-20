@@ -1,7 +1,7 @@
 version: 2
 
 jobs:
-  test_provider:
+  test:
     docker:
       - image: circleci/golang:1.12
 
@@ -10,10 +10,34 @@ jobs:
 
       - run:
           name: Test the provider
-          command: go test -coverprofile=coverage.txt -race -coverpkg=./... ./... && bash <(curl -s https://codecov.io/bash)
+          command: |
+            set -e
+            go test -coverprofile=coverage.txt -race -coverpkg=./... ./...
+            bash <(curl -s https://codecov.io/bash)
+
+      - run:
+          name: Build the image
+          command: docker build .
+
+  push:
+    docker:
+      - image: circleci/golang:1.12
+
+    steps:
+      - checkout
+
+      - run:
+          name: Push the image
+          command: |
+            set -e
+            docker build -t spacelift/runner .
+            docker push spacelift/runner
 
 workflows:
   version: 2
   test:
     jobs:
-      - test_provider
+      - test
+      - push:
+          requires: ["test"]
+          filters: { branches: { only: "master" } }
