@@ -6,6 +6,8 @@ jobs:
       - image: circleci/golang:1.12
 
     steps:
+      - setup_remote_docker
+
       - checkout
 
       - run:
@@ -20,16 +22,21 @@ jobs:
           command: docker build .
 
   push:
+    context: DockerHub credentials (marcinw)
+
     docker:
       - image: circleci/golang:1.12
 
     steps:
+      - setup_remote_docker
+
       - checkout
 
       - run:
           name: Push the image
           command: |
             set -e
+            echo ${DOCKERHUB_PASS} | docker login --username ${DOCKERHUB_USER} --password-stdin
             docker build -t spacelift/runner .
             docker push spacelift/runner
 
