@@ -1,0 +1,19 @@
+version: 2
+
+jobs:
+  test_provider:
+    docker:
+      - image: circleci/golang:1.12
+
+    steps:
+      - checkout
+
+      - run:
+          name: Test the provider
+          command: go test -coverprofile=coverage.txt -race -coverpkg=./... ./... && bash <(curl -s https://codecov.io/bash)
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test_provider

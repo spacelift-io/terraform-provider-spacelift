@@ -294,6 +294,8 @@ See the [mounted file resource](#spacelift_mounted_file-resource) for details on
 
 #### Example usage
 
+For a context:
+
 ```python
 resource "spacelift_mounted_file" "ireland-kubeconfig" {
   context_id    = "production-cluster-ireland"
