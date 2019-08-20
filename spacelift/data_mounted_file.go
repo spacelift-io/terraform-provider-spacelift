@@ -33,7 +33,7 @@ func dataMountedFile() *schema.Resource {
 			},
 			"relative_path": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Name of the mounted file",
+				Description: "Relative path to the mounted file",
 				Required:    true,
 			},
 			"stack_id": &schema.Schema{

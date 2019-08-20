@@ -22,7 +22,7 @@ func resourceStack() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": &schema.Schema{
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this stack can administer others",
+				Description: "Indicates whether this stack can manage others",
 				Optional:    true,
 				Default:     false,
 			},

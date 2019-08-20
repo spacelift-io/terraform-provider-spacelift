@@ -44,7 +44,7 @@ func resourceMountedFile() *schema.Resource {
 			},
 			"relative_path": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Relative path to the mounted file, without the /spacelift/project prefix",
+				Description: "Relative path to the mounted file, without the /spacelift/project/ prefix",
 				Required:    true,
 				ForceNew:    true,
 			},
@@ -57,7 +57,7 @@ func resourceMountedFile() *schema.Resource {
 			},
 			"write_only": &schema.Schema{
 				Type:        schema.TypeBool,
-				Description: "Indicates whether the value can be read back outside a Run",
+				Description: "Indicates whether the content can be read back outside a Run",
 				Optional:    true,
 				Default:     true,
 				ForceNew:    true,
