@@ -107,7 +107,7 @@ func resourceContextUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceContextDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
-		DeleteContext *structs.Stack `graphql:"contextDelete(id: $id)"`
+		DeleteContext *structs.Context `graphql:"contextDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toString(d.Id())}

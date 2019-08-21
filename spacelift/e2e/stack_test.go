@@ -16,19 +16,19 @@ func (e *StackTest) TestLifecycle_OK() {
 	defer gock.Off()
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!){stackCreate(input: $input){id,administrative,awsAssumedRoleARN,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"input":{"administrative":true,"branch":"master","description":"My description","name":"Baby's first stack","readersSlug":"engineering","repo":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"}}}`,
+		`{"query":"mutation($input:StackInput!){stackCreate(input: $input){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"input":{"administrative":true,"branch":"master","description":"My description","name":"Baby's first stack","readersSlug":"engineering","repo":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"}}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,awsAssumedRoleARN,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"branch":"master","description":"My description","name":"Baby's first stack","readersSlug":"engineering","repo":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"awsAssumeRolePolicyStatement":"bacon","branch":"master","description":"My description","name":"Baby's first stack","readersSlug":"engineering","repo":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:String!){stackDelete(id: $id){id,administrative,awsAssumedRoleARN,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"mutation($id:String!){stackDelete(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)
@@ -55,6 +55,7 @@ data "spacelift_stack" "stack" {
 				// Test resource.
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "administrative", "true"),
+				resource.TestCheckResourceAttr("spacelift_stack.stack", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "branch", "master"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "description", "My description"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "readers_team", "engineering"),
@@ -65,6 +66,7 @@ data "spacelift_stack" "stack" {
 				// Test data.
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "administrative", "true"),
+				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "branch", "master"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "description", "My description"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "readers_team", "engineering"),
