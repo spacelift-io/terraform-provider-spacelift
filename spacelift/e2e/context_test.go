@@ -28,7 +28,7 @@ func (e *ContextTest) TestLifecycle_OK() {
 	)
 
 	e.posts( // Mocking out the context deletion.
-		`{"query":"mutation($id:String!){contextDelete(id: $id){id,administrative,awsAssumedRoleARN,branch,description,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-context"}}`,
+		`{"query":"mutation($id:String!){contextDelete(id: $id){id,description,name}}","variables":{"id":"babys-first-context"}}`,
 		`{"data":{"contextDelete":{"id":"babys-first-context"}}}`,
 		1,
 	)

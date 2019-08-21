@@ -58,8 +58,8 @@ The Spacelift Terraform provider provides the following building blocks:
 #### Example usage
 
 ```python
-data "spacelift_context" "production-cluster-ireland" {
-  context_id = "production-cluster-ireland"
+data "spacelift_context" "prod-k8s-ie" {
+  context_id = "prod-k8s-ie"
 }
 ```
 
@@ -82,7 +82,7 @@ See the [context resource](#spacelift_context-resource) for details on the retur
 #### Example usage
 
 ```python
-resource "spacelift_context" "production-cluster-ireland" {
+resource "spacelift_context" "prod-k8s-ie" {
   description = "Configuration details for the compute cluster in 🇮🇪"
   name        = "Production cluster (Ireland)"
 }
@@ -111,7 +111,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ```python
 data "spacelift_context_attachment" "attachment" {
-  attachment_id = "production-cluster-ireland/01DJN6A8MHD9ZKYJ3NHC5QAPTV"
+  attachment_id = "prod-k8s-ie/01DJN6A8MHD9ZKYJ3NHC5QAPTV"
 }
 ```
 
@@ -135,8 +135,8 @@ See the [context attachment resource](#spacelift_context_attachment-resource) fo
 
 ```python
 resource "spacelift_context_attachment" "attachment" {
-  context_id = "production-cluster-ireland"
-  stack_id   = "kubernetes-core-services"
+  context_id = "prod-k8s-ie"
+  stack_id   = "k8s-core"
   priority   = 0
 }
 ```
@@ -167,7 +167,7 @@ For a context:
 
 ```python
 data "spacelift_environment_variable" "ireland-kubeconfig" {
-  context_id = "production-cluster-ireland"
+  context_id = "prod-k8s-ie"
   name       = "KUBECONFIG"
 }
 ```
@@ -176,7 +176,7 @@ For a stack:
 
 ```python
 data "spacelift_environment_variable" "core-kubeconfig" {
-  stack_id = "kubernetes-core-services"
+  stack_id = "k8s-core"
   name     = "KUBECONFIG"
 }
 ```
@@ -207,7 +207,7 @@ For a context:
 
 ```python
 resource "spacelift_environment_variable" "ireland-kubeconfig" {
-  context_id = "production-cluster-ireland"
+  context_id = "prod-k8s-ie"
   name       = "KUBECONFIG"
   value      = "/project/spacelift/kubeconfig"
   write_only = false
@@ -218,7 +218,7 @@ For a stack:
 
 ```python
 resource "spacelift_environment_variable" "core-kubeconfig" {
-  stack_id   = "kubernetes-core-services"
+  stack_id   = "k8s-core"
   name       = "KUBECONFIG"
   value      = "/project/spacelift/kubeconfig"
   write_only = false
@@ -258,7 +258,7 @@ For a context:
 
 ```python
 data "spacelift_mounted_file" "ireland-kubeconfig" {
-  context_id    = "production-cluster-ireland"
+  context_id    = "prod-k8s-ie"
   relative_path = "kubeconfig"
 }
 ```
@@ -267,7 +267,7 @@ For a stack:
 
 ```python
 data "spacelift_mounted_file" "core-kubeconfig" {
-  stack_id      = "kubernetes-core-services"
+  stack_id      = "k8s-core"
   relative_path = "kubeconfig"
 }
 ```
@@ -298,7 +298,7 @@ For a context:
 
 ```python
 resource "spacelift_mounted_file" "ireland-kubeconfig" {
-  context_id    = "production-cluster-ireland"
+  context_id    = "prod-k8s-ie"
   relative_path = "kubeconfig"
   value         = filebase64("${path.module}/kubeconfig.json")
 }
@@ -308,7 +308,7 @@ For a stack:
 
 ```python
 resource "spacelift_mounted_file" "core-kubeconfig" {
-  stack_id      = "kubernetes-core-services"
+  stack_id      = "k8s-core"
   relative_path = "kubeconfig"
   value         = filebase64("${path.module}/kubeconfig.json")
 }
@@ -344,8 +344,8 @@ In addition to all arguments above, the following attributes are exported:
 #### Example usage
 
 ```python
-data "spacelift_stack" "kubernetes-core-services" {
-  stack_id = "kubernetes-core-services"
+data "spacelift_stack" "k8s-core" {
+  stack_id = "k8s-core"
 }
 ```
 
@@ -368,7 +368,7 @@ See the [stack resource](#spacelift_stack-resource) for details on the returned 
 #### Example usage
 
 ```python
-resource "spacelift_stack" "kubernetes-core-services" {
+resource "spacelift_stack" "k8s-core" {
   administrative    = true
   branch            = "master"
   description       = "Shared cluster services (Datadog, Istio etc.)"
@@ -377,6 +377,35 @@ resource "spacelift_stack" "kubernetes-core-services" {
   repository        = "core-infra"
   terraform_version = "0.12.6"
   writers_team      = "devops"
+}
+```
+
+With IAM role delegation (only required fields):
+
+```python
+resource "spacelift_stack" "k8s-core" {
+  branch            = "master"
+  name              = "Kubernetes core services"
+  repository        = "core-infra"
+}
+
+resource "aws_iam_role" "spacelift" {
+  name = "spacelift"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [jsondecode(spacelift_stack.k8s-core.aws_assume_role_policy_statement)]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "batch_service_role" {
+  role       = aws_iam_role.spacelift.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
+resource "spacelift_stack_aws_role" "k8s-core" {
+  stack_id = spacelift_stack.k8s-core.id
+  role_arn = aws_iam_role.spacelift.arn
 }
 ```
 
@@ -398,6 +427,7 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the stack;
+- `aws_assume_role_policy_statement` - JSON-encoded AWS IAM policy for the AWS IAM role trust relationship;
 
 [^ Back to all resources](#resources)
 
@@ -410,8 +440,8 @@ Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [
 #### Example usage
 
 ```python
-data "spacelift_stack_aws_role" "kubernetes-core-services" {
-  stack_id = "kubernetes-core-services"
+data "spacelift_stack_aws_role" "k8s-core" {
+  stack_id = "k8s-core"
 }
 ```
 
@@ -436,8 +466,8 @@ Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [
 #### Example usage
 
 ```python
-resource "spacelift_stack_aws_role" "kubernetes-core-services" {
-  stack_id = "kubernetes-core-services"
+resource "spacelift_stack_aws_role" "k8s-core" {
+  stack_id = "k8s-core"
   role_arn = "arn:aws:iam::012345678910:role/terraform"
 }
 ```
