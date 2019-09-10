@@ -418,6 +418,8 @@ The following arguments are supported:
 - `repository` - (Required) - Name of the GitHub repository, without the owner part;
 - `administrative` - (Optional) - Indicates whether this stack can manage others;
 - `description` - (Optional) - Free-form stack description for GUI users;
+- `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
+- `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
 - `readers_team` - (Optional) - Slug of the GitHub team whose members get read-only access;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `writers_team` - (Optional) - Slug of the GitHub team whose members get read-write access;

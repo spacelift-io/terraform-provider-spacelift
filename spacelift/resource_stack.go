@@ -1,6 +1,10 @@
 package spacelift
 
 import (
+	"net/http"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -41,6 +45,21 @@ func resourceStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Optional:    true,
 			},
+			"import_state": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "State file to upload when creating a new stack",
+				Optional:    true,
+				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
+					return d.Id() != ""
+				},
+			},
+			"manage_state": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "Determines if Spacelift should manage state for this stack",
+				Optional:    true,
+				Default:     true,
+				ForceNew:    true,
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the stack - should be unique in one account",
@@ -73,10 +92,27 @@ func resourceStack() *schema.Resource {
 
 func resourceStackCreate(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
-		CreateStack structs.Stack `graphql:"stackCreate(input: $input)"`
+		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID)"`
 	}
 
-	variables := map[string]interface{}{"input": stackInput(d)}
+	manageState := d.Get("manage_state").(bool)
+
+	variables := map[string]interface{}{
+		"input":         stackInput(d),
+		"manageState":   aws.Bool(manageState),
+		"stackObjectID": (*graphql.String)(nil),
+	}
+
+	content, ok := d.GetOk("import_state")
+	if ok && !manageState {
+		return errors.New(`"import_state" requires "manage_state" to be true`)
+	} else if ok {
+		objectID, err := uploadStateFile(content.(string), meta)
+		if err != nil {
+			return err
+		}
+		variables["stackObjectID"] = toOptionalString(objectID)
+	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not create stack")
@@ -107,6 +143,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("administrative", stack.Administrative)
 	d.Set("aws_assume_role_policy_statement", stack.AWSAssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
+	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("repository", stack.Repo)
 
@@ -191,4 +228,28 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	return ret
+}
+
+func uploadStateFile(content string, meta interface{}) (string, error) {
+	var mutation struct {
+		StateUploadURL struct {
+			ObjectID string `graphql:"objectId"`
+			URL      string `graphql:"url"`
+		} `graphql:"stateUploadUrl"`
+	}
+
+	if err := meta.(*Client).Mutate(&mutation, nil); err != nil {
+		return "", errors.Wrap(err, "could not generate state upload URL")
+	}
+
+	response, err := http.Post(mutation.StateUploadURL.URL, "application/json", strings.NewReader(content))
+	if err != nil {
+		return "", errors.Wrap(err, "could not upload the state to remote URL")
+	}
+
+	if (response.StatusCode / 100) != 2 {
+		return "", errors.Errorf("unexpected HTTP status code when uploading the state: %d", response.StatusCode)
+	}
+
+	return mutation.StateUploadURL.ObjectID, nil
 }
