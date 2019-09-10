@@ -8,6 +8,7 @@ type Stack struct {
 	AWSAssumeRolePolicyStatement string  `graphql:"awsAssumeRolePolicyStatement"`
 	Branch                       string  `graphql:"branch"`
 	Description                  *string `graphql:"description"`
+	ManagesStateFile             bool    `graphql:"managesStateFile"`
 	Name                         string  `graphql:"name"`
 	ReadersSlug                  *string `graphql:"readersSlug"`
 	Repo                         string  `graphql:"repo"`

@@ -32,6 +32,11 @@ func dataStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Computed:    true,
 			},
+			"manage_state": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "Determines if Spacelift should manage state for this stack",
+				Computed:    true,
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the stack - should be unique in one account",
@@ -86,6 +91,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("administrative", stack.Administrative)
 	d.Set("aws_assume_role_policy_statement", stack.AWSAssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
+	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("repository", stack.Repo)
 
