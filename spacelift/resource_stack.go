@@ -145,7 +145,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
-	d.Set("repository", stack.Repo)
+	d.Set("repository", stack.Repository)
 
 	if description := stack.Description; description != nil {
 		d.Set("description", *description)
@@ -204,7 +204,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Administrative: graphql.Boolean(d.Get("administrative").(bool)),
 		Branch:         toString(d.Get("branch")),
 		Name:           toString(d.Get("name")),
-		Repo:           toString(d.Get("repository")),
+		Repository:     toString(d.Get("repository")),
 	}
 
 	description, ok := d.GetOk("description")

@@ -9,7 +9,7 @@ type StackInput struct {
 	Description      *graphql.String `json:"description"`
 	Name             graphql.String  `json:"name"`
 	ReadersSlug      *graphql.String `json:"readersSlug"`
-	Repo             graphql.String  `json:"repo"`
+	Repository       graphql.String  `json:"repository"`
 	TerraformVersion *graphql.String `json:"terraformVersion"`
 	WritersSlug      *graphql.String `json:"writersSlug"`
 }

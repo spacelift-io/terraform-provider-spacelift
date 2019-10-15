@@ -93,7 +93,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
-	d.Set("repository", stack.Repo)
+	d.Set("repository", stack.Repository)
 
 	if stack.Description != nil {
 		d.Set("description", *stack.Description)

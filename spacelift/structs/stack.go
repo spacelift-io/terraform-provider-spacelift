@@ -11,7 +11,7 @@ type Stack struct {
 	ManagesStateFile             bool    `graphql:"managesStateFile"`
 	Name                         string  `graphql:"name"`
 	ReadersSlug                  *string `graphql:"readersSlug"`
-	Repo                         string  `graphql:"repo"`
+	Repository                   string  `graphql:"repository"`
 	TerraformVersion             *string `graphql:"terraformVersion"`
 	WritersSlug                  *string `graphql:"writersSlug"`
 }

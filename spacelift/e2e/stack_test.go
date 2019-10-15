@@ -30,19 +30,19 @@ func (e *StackTest) TestLifecycle_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!$manageState:bool$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"input":{"administrative":true,"branch":"master","description":"My description","name":"Baby's first stack","readersSlug":"engineering","repo":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"},"manageState":true,"stackObjectID":"objectID"}}`,
+		`{"query":"mutation($input:StackInput!$manageState:bool$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readersSlug,repository,terraformVersion,writersSlug}}","variables":{"input":{"administrative":true,"branch":"master","description":"My description","name":"Baby's first stack","readersSlug":"engineering","repository":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"},"manageState":true,"stackObjectID":"objectID"}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"awsAssumeRolePolicyStatement":"bacon","branch":"master","description":"My description","managesStateFile":true,"name":"Baby's first stack","readersSlug":"engineering","repo":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readersSlug,repository,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"awsAssumeRolePolicyStatement":"bacon","branch":"master","description":"My description","managesStateFile":true,"name":"Baby's first stack","readersSlug":"engineering","repository":"core-infra","terraformVersion":"0.12.6","writersSlug":"devops"}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:String!){stackDelete(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readersSlug,repo,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"mutation($id:String!){stackDelete(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readersSlug,repository,terraformVersion,writersSlug}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)
