@@ -10,3 +10,5 @@ require (
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 	gopkg.in/h2non/gock.v1 v1.0.15
 )
+
+go 1.13
