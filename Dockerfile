@@ -1,9 +1,12 @@
 FROM golang:1.13-alpine as builder
 
-COPY . /project
-WORKDIR /project
-RUN apk add --no-cache git \
-  && go build -o /terraform-provider-spacelift
+RUN apk add --no-cache git
+ARG DIR=/project
+COPY go.* $DIR/
+WORKDIR $DIR
+RUN go mod download
+COPY . $DIR/
+RUN go build -o /terraform-provider-spacelift
 
 FROM alpine:3.10
 

@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -99,7 +98,7 @@ func resourceStackCreate(d *schema.ResourceData, meta interface{}) error {
 
 	variables := map[string]interface{}{
 		"input":         stackInput(d),
-		"manageState":   aws.Bool(manageState),
+		"manageState":   graphql.Boolean(manageState),
 		"stackObjectID": (*graphql.String)(nil),
 	}
 
@@ -151,16 +150,16 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", *description)
 	}
 
-	if readersSlug := stack.ReadersSlug; readersSlug != nil {
-		d.Set("readers_team", *readersSlug)
+	if readers := stack.Readers; readers != nil {
+		d.Set("readers_team", readers.Slug)
 	}
 
 	if terraformVersion := stack.TerraformVersion; terraformVersion != nil {
 		d.Set("terraform_version", *terraformVersion)
 	}
 
-	if writersSlug := stack.WritersSlug; writersSlug != nil {
-		d.Set("writers_team", *writersSlug)
+	if writers := stack.Writers; writers != nil {
+		d.Set("writers_team", writers.Slug)
 	}
 
 	return nil
