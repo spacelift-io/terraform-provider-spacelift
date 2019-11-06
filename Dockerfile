@@ -8,7 +8,7 @@ RUN apk add --no-cache git \
 FROM alpine:3.10
 
 RUN apk add --no-cache ca-certificates curl git openssh
-COPY --from=builder /terraform-provider-spacelift /usr/bin/terraform-provider-spacelift
+COPY --from=builder /terraform-provider-spacelift /bin/terraform-provider-spacelift
 
 RUN echo "hosts: files dns" > /etc/nsswitch.conf
 
