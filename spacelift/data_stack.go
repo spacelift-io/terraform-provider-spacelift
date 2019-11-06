@@ -101,8 +101,8 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", nil)
 	}
 
-	if stack.ReadersSlug != nil {
-		d.Set("readers_team", *stack.ReadersSlug)
+	if stack.Readers != nil {
+		d.Set("readers_team", stack.Readers.Slug)
 	} else {
 		d.Set("readers_team", nil)
 	}
@@ -113,8 +113,8 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("terraform_version", nil)
 	}
 
-	if stack.WritersSlug != nil {
-		d.Set("writers_team", *stack.WritersSlug)
+	if stack.Writers != nil {
+		d.Set("writers_team", stack.Writers.Slug)
 	} else {
 		d.Set("writers_team", nil)
 	}
