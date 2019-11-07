@@ -16,7 +16,7 @@ func (e *ContextAttachmentTest) TestLifecycle_OK() {
 	defer gock.Off()
 
 	e.posts( // Mocking out the context attachment mutation.
-		`{"query":"mutation($id:ID!$priority:Int!$stack:ID!){contextAttach(id: $id, stack: $id, priority: $id){id,stackId,priority}}","variables":{"id":"babys-first-context","priority":8,"stack":"babys-first-stack"}}`,
+		`{"query":"mutation($id:ID!$priority:Int!$stack:ID!){contextAttach(id: $id, stack: $stack, priority: $priority){id,stackId,priority}}","variables":{"id":"babys-first-context","priority":8,"stack":"babys-first-stack"}}`,
 		`{"data":{"contextAttach":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}}`,
 		1,
 	)

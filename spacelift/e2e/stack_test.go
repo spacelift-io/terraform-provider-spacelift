@@ -42,7 +42,7 @@ func (e *StackTest) TestLifecycle_OK() {
 	)
 
 	e.posts(
-		`{"query":"mutation($id:String!){stackDelete(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readers{slug},repository,terraformVersion,writers{slug}}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readers{slug},repository,terraformVersion,writers{slug}}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)

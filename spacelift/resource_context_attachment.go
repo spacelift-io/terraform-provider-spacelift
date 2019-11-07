@@ -47,7 +47,7 @@ func resourceContextAttachment() *schema.Resource {
 
 func resourceContextAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
-		AttachContext structs.ContextAttachment `graphql:"contextAttach(id: $id, stack: $id, priority: $id)"`
+		AttachContext structs.ContextAttachment `graphql:"contextAttach(id: $id, stack: $stack, priority: $priority)"`
 	}
 
 	contextID := d.Get("context_id").(string)
