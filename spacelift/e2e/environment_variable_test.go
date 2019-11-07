@@ -22,7 +22,7 @@ func (e *EnvironmentVariableTest) TestLifecycle_Context() {
 	)
 
 	e.posts(
-		`{"query":"mutation($config:ConfigInput!$context:ID!){contextConfigAdd(context: $id, config: $input){id,checksum,type,value,writeOnly}}","variables":{"config":{"id":"SECRET_KEY","type":"ENVIRONMENT_VARIABLE","value":"dont-tell-anyone","writeOnly":true},"context":"babys-first-context"}}`,
+		`{"query":"mutation($config:ConfigInput!$context:ID!){contextConfigAdd(context: $context, config: $config){id,checksum,type,value,writeOnly}}","variables":{"config":{"id":"SECRET_KEY","type":"ENVIRONMENT_VARIABLE","value":"dont-tell-anyone","writeOnly":true},"context":"babys-first-context"}}`,
 		`{"data":{"contextConfigAdd":{"id":"context/babys-first-context/SECRET_KEY"}}}`,
 		1,
 	)
@@ -80,7 +80,7 @@ func (e *EnvironmentVariableTest) TestLifecycle_Stack() {
 	)
 
 	e.posts(
-		`{"query":"mutation($config:ConfigInput!$stack:ID!){stackConfigAdd(stack: $id, config: $input){id,checksum,type,value,writeOnly}}","variables":{"config":{"id":"SECRET_KEY","type":"ENVIRONMENT_VARIABLE","value":"dont-tell-anyone","writeOnly":true},"stack":"babys-first-stack"}}`,
+		`{"query":"mutation($config:ConfigInput!$stack:ID!){stackConfigAdd(stack: $stack, config: $config){id,checksum,type,value,writeOnly}}","variables":{"config":{"id":"SECRET_KEY","type":"ENVIRONMENT_VARIABLE","value":"dont-tell-anyone","writeOnly":true},"stack":"babys-first-stack"}}`,
 		`{"data":{"stackConfigAdd":{"id":"stack/babys-first-stack/SECRET_KEY"}}}`,
 		1,
 	)

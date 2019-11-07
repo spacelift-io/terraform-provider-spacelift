@@ -187,7 +187,7 @@ func resourceStackDelete(d *schema.ResourceData, meta interface{}) error {
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toString(d.Id())}
+	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete stack")

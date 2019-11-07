@@ -102,7 +102,7 @@ func resourceEnvironmentVariableCreate(d *schema.ResourceData, meta interface{})
 
 func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
 	var mutation struct {
-		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $id, config: $input)"`
+		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
@@ -119,7 +119,7 @@ func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *Cl
 
 func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
 	var mutation struct {
-		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $id, config: $input)"`
+		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
