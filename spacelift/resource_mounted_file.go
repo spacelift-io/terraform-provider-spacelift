@@ -99,7 +99,7 @@ func resourceMountedFileCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceMountedFileCreateContext(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
 	var mutation struct {
-		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $id, config: $input)"`
+		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
@@ -116,7 +116,7 @@ func resourceMountedFileCreateContext(d *schema.ResourceData, client *Client, va
 
 func resourceMountedFileCreateStack(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
 	var mutation struct {
-		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $id, config: $input)"`
+		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
