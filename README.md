@@ -398,7 +398,7 @@ resource "aws_iam_role" "spacelift" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "batch_service_role" {
+resource "aws_iam_role_policy_attachment" "spacelift" {
   role       = aws_iam_role.spacelift.name
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
@@ -468,9 +468,23 @@ Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [
 #### Example usage
 
 ```python
+resource "aws_iam_role" "spacelift" {
+  name = "spacelift"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [jsondecode(spacelift_stack.k8s-core.aws_assume_role_policy_statement)]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "spacelift" {
+  role       = aws_iam_role.spacelift.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
 resource "spacelift_stack_aws_role" "k8s-core" {
   stack_id = "k8s-core"
-  role_arn = "arn:aws:iam::012345678910:role/terraform"
+  role_arn = aws_iam_role.spacelift.arn
 }
 ```
 

@@ -16,7 +16,7 @@ func (e *StackAWSRoleTest) TestLifecycle_OK() {
 	defer gock.Off()
 
 	e.posts(
-		`{"query":"mutation($id:ID!$role_arn:String){stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readers{slug},repository,terraformVersion,writers{slug}}}","variables":{"id":"babys-first-stack","role_arn":"arn:aws:iam::075108987694:role/terraform"}}`,
+		`{"query":"mutation($id:ID!$roleArn:String){stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readers{slug},repository,terraformVersion,writers{slug}}}","variables":{"id":"babys-first-stack","roleArn":"arn:aws:iam::075108987694:role/terraform"}}`,
 		`{"data":{"stackSetAwsRoleDelegation":{}}}`,
 		1,
 	)
@@ -28,7 +28,7 @@ func (e *StackAWSRoleTest) TestLifecycle_OK() {
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!$role_arn:String){stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readers{slug},repository,terraformVersion,writers{slug}}}","variables":{"id":"babys-first-stack","role_arn":null}}`,
+		`{"query":"mutation($id:ID!$roleArn:String){stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,readers{slug},repository,terraformVersion,writers{slug}}}","variables":{"id":"babys-first-stack","roleArn":null}}`,
 		`{"data":{"stackSetAwsRoleDelegation":{}}}`,
 		1,
 	)
