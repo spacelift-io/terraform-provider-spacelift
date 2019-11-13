@@ -97,12 +97,12 @@ func resourceStackAWSRoleSet(client *Client, stackID string, roleARN *string) er
 	}
 
 	variables := map[string]interface{}{
-		"id":       toID(stackID),
-		"role_arn": (*graphql.String)(nil),
+		"id":      toID(stackID),
+		"roleArn": (*graphql.String)(nil),
 	}
 
 	if roleARN != nil {
-		variables["role_arn"] = toOptionalString(*roleARN)
+		variables["roleArn"] = toOptionalString(*roleARN)
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
