@@ -15,6 +15,6 @@ COPY --from=builder /terraform-provider-spacelift /bin/terraform-provider-spacel
 
 RUN echo "hosts: files dns" > /etc/nsswitch.conf
 
-RUN adduser --disabled-password --no-create-home --uid=123 spacelift
+RUN adduser --disabled-password --no-create-home --uid=1983 spacelift
 
 USER spacelift
