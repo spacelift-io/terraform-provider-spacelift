@@ -1,6 +1,9 @@
 package spacelift
 
 import (
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
@@ -38,9 +41,21 @@ func resourceStackAWSRole() *schema.Resource {
 
 func resourceStackAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	stackID := d.Get("stack_id").(string)
-	roleARN := d.Get("role_arn").(string)
+	roleARN := aws.String(d.Get("role_arn").(string))
 
-	if err := resourceStackAWSRoleSet(meta.(*Client), stackID, aws.String(roleARN)); err != nil {
+	var err error
+
+	for i := 0; i < 5; i++ {
+		err = resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN)
+		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
+			break
+		}
+
+		// Yay for eventual consistency.
+		time.Sleep(10 * time.Second)
+	}
+
+	if err != nil {
 		return errors.Wrap(err, "could not create AWS role delegation")
 	}
 
