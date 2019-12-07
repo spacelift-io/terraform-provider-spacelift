@@ -1,13 +1,13 @@
-version: 2
+version: 2.1
+
+x-with-docker: &with-docker
+  docker: [{ image: "circleci/golang:1.13" }]
 
 jobs:
   test:
-    docker:
-      - image: circleci/golang:1.13
-
+    <<: *with-docker
     steps:
-      - setup_remote_docker
-
+      - setup_remote_docker: { docker_layer_caching: true }
       - checkout
 
       - run:
@@ -22,12 +22,9 @@ jobs:
           command: docker build .
 
   push:
-    docker:
-      - image: circleci/golang:1.12
-
+    <<: *with-docker
     steps:
-      - setup_remote_docker
-
+      - setup_remote_docker: { docker_layer_caching: true }
       - checkout
 
       - run:
