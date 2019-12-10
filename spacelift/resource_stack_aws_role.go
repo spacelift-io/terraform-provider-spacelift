@@ -75,6 +75,11 @@ func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.Wrap(err, "could not query for stack")
 	}
 
+	if query.Stack == nil {
+		d.SetId("")
+		return nil
+	}
+
 	if roleARN := query.Stack.AWSAssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", roleARN)
 	} else {
