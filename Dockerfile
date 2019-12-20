@@ -8,9 +8,11 @@ RUN go mod download
 COPY . $DIR/
 RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /terraform-provider-spacelift
 
-FROM alpine:3.10
+FROM ruby:alpine
 
-RUN apk add --no-cache ca-certificates curl git openssh
+RUN apk add --no-cache ca-certificates curl git openssh \
+  && gem install spacelift-policy
+
 COPY --from=builder /terraform-provider-spacelift /bin/terraform-provider-spacelift
 
 RUN echo "hosts: files dns" > /etc/nsswitch.conf
