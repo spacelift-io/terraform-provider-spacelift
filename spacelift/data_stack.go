@@ -42,11 +42,6 @@ func dataStack() *schema.Resource {
 				Description: "Name of the stack - should be unique in one account",
 				Computed:    true,
 			},
-			"readers_team": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Slug of the GitHub team whose members get read-only access",
-				Computed:    true,
-			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the GitHub repository, without the owner part",
@@ -60,11 +55,6 @@ func dataStack() *schema.Resource {
 			"terraform_version": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
-				Computed:    true,
-			},
-			"writers_team": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Slug of the GitHub team whose members get read-write access",
 				Computed:    true,
 			},
 		},
@@ -101,22 +91,10 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", nil)
 	}
 
-	if stack.Readers != nil {
-		d.Set("readers_team", stack.Readers.Slug)
-	} else {
-		d.Set("readers_team", nil)
-	}
-
 	if stack.TerraformVersion != nil {
 		d.Set("terraform_version", *stack.TerraformVersion)
 	} else {
 		d.Set("terraform_version", nil)
-	}
-
-	if stack.Writers != nil {
-		d.Set("writers_team", stack.Writers.Slug)
-	} else {
-		d.Set("writers_team", nil)
 	}
 
 	return nil
