@@ -65,11 +65,6 @@ func resourceStack() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"readers_team": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Slug of the GitHub team whose members get read-only access",
-				Optional:    true,
-			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the GitHub repository, without the owner part",
@@ -78,11 +73,6 @@ func resourceStack() *schema.Resource {
 			"terraform_version": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
-				Optional:    true,
-			},
-			"writers_team": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Slug of the GitHub team whose members get read-write access",
 				Optional:    true,
 			},
 		},
@@ -150,16 +140,8 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", *description)
 	}
 
-	if readers := stack.Readers; readers != nil {
-		d.Set("readers_team", readers.Slug)
-	}
-
 	if terraformVersion := stack.TerraformVersion; terraformVersion != nil {
 		d.Set("terraform_version", *terraformVersion)
-	}
-
-	if writers := stack.Writers; writers != nil {
-		d.Set("writers_team", writers.Slug)
 	}
 
 	return nil
@@ -211,19 +193,9 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Description = toOptionalString(description)
 	}
 
-	readersSlug, ok := d.GetOk("readers_team")
-	if ok {
-		ret.ReadersSlug = toOptionalString(readersSlug)
-	}
-
 	terraformVersion, ok := d.GetOk("terraform_version")
 	if ok {
 		ret.TerraformVersion = toOptionalString(terraformVersion)
-	}
-
-	writersSlug, ok := d.GetOk("writers_team")
-	if ok {
-		ret.WritersSlug = toOptionalString(writersSlug)
 	}
 
 	return ret

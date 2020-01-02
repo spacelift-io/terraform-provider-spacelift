@@ -15,10 +15,8 @@ resource "spacelift_stack" "core-infra-production" {
   administrative    = true
   branch            = "master"
   description       = "Shared production infrastructure (networking, k8s)"
-  readers_team      = "engineering"
   repository        = "core-infra"
   terraform_version = "0.12.6"
-  writers_team      = "devops"
 }
 ```
 
@@ -373,10 +371,8 @@ resource "spacelift_stack" "k8s-core" {
   branch            = "master"
   description       = "Shared cluster services (Datadog, Istio etc.)"
   name              = "Kubernetes core services"
-  readers_team      = "engineering"
   repository        = "core-infra"
   terraform_version = "0.12.6"
-  writers_team      = "devops"
 }
 ```
 
@@ -420,9 +416,7 @@ The following arguments are supported:
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
-- `readers_team` - (Optional) - Slug of the GitHub team whose members get read-only access;
 - `terraform_version` - (Optional) - Terraform version to use;
-- `writers_team` - (Optional) - Slug of the GitHub team whose members get read-write access;
 
 #### Attributes reference
 

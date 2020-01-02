@@ -8,10 +8,9 @@ RUN go mod download
 COPY . $DIR/
 RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /terraform-provider-spacelift
 
-FROM ruby:alpine
+FROM alpine:3.10
 
-RUN apk add --no-cache ca-certificates curl git openssh \
-  && gem install spacelift-policy
+RUN apk add --no-cache ca-certificates curl git openssh
 
 COPY --from=builder /terraform-provider-spacelift /bin/terraform-provider-spacelift
 
