@@ -395,7 +395,7 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 The following arguments are supported:
 
 - `name` - (Required) The name of the the policy - should be unique within one account;
-- `body` - (Required) The body of the policy - may be prvided inline or read from a file;
+- `body` - (Required) The body of the policy - may be provided inline or read from a file;
 - `type` - (Required) One of the supported types of policies. Currently the following options are available:
   - `LOGIN` - controls who can log in and in what capacity;
   - `STACK_ACCESS` - controls who gets what level of access to a Stack;
