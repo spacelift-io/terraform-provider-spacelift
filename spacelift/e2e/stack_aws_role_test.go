@@ -16,20 +16,20 @@ func (e *StackAWSRoleTest) TestLifecycle_OK() {
 	defer gock.Off()
 
 	e.posts(
-		`{"query":"mutation($id:ID!$roleArn:String){stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack","roleArn":"arn:aws:iam::075108987694:role/terraform"}}`,
-		`{"data":{"stackSetAwsRoleDelegation":{}}}`,
+		`{"query":"mutation($id:ID!$roleArn:String!){stackIntegrationAwsCreate(id: $id, roleArn: $roleArn){activated}}","variables":{"id":"babys-first-stack","roleArn":"arn:aws:iam::075108987694:role/terraform"}}`,
+		`{"data":{"stackIntegrationAwsCreate":{"activated":true}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"awsAssumedRoleARN":"arn:aws:iam::075108987694:role/terraform"}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"integrations":{"aws":{"assumedRoleArn":"arn:aws:iam::075108987694:role/terraform"}}}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!$roleArn:String){stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn){id,administrative,awsAssumedRoleARN,awsAssumeRolePolicyStatement,branch,description,managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack","roleArn":null}}`,
-		`{"data":{"stackSetAwsRoleDelegation":{}}}`,
+		`{"query":"mutation($id:ID!){stackIntegrationAwsDelete(id: $id){activated}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stackIntegrationAwsDelete":{"activated":false}}}`,
 		1,
 	)
 

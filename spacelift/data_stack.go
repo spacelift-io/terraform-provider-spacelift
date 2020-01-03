@@ -79,7 +79,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(stackID.(string))
 	d.Set("administrative", stack.Administrative)
-	d.Set("aws_assume_role_policy_statement", stack.AWSAssumeRolePolicyStatement)
+	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)

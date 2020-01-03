@@ -45,7 +45,7 @@ func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(stackID.(string))
 
-	if roleARN := stack.AWSAssumedRoleARN; roleARN != nil {
+	if roleARN := stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
 		d.Set("role_arn", "")

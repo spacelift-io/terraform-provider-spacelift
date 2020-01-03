@@ -4,7 +4,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -41,7 +40,7 @@ func resourceStackAWSRole() *schema.Resource {
 
 func resourceStackAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	stackID := d.Get("stack_id").(string)
-	roleARN := aws.String(d.Get("role_arn").(string))
+	roleARN := d.Get("role_arn").(string)
 
 	var err error
 
@@ -80,7 +79,7 @@ func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	if roleARN := query.Stack.AWSAssumedRoleARN; roleARN != nil {
+	if roleARN := query.Stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", roleARN)
 	} else {
 		d.Set("role_arn", nil)
@@ -93,7 +92,7 @@ func resourceStackAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error 
 	stackID := d.Get("stack_id").(string)
 	roleARN := d.Get("role_arn").(string)
 
-	if err := resourceStackAWSRoleSet(meta.(*Client), stackID, aws.String(roleARN)); err != nil {
+	if err := resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN); err != nil {
 		return errors.Wrap(err, "could not update AWS role delegation")
 	}
 
@@ -101,32 +100,46 @@ func resourceStackAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error 
 }
 
 func resourceStackAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
-	stackID := d.Get("stack_id").(string)
+	var mutation struct {
+		AttachAWSRole struct {
+			Activated bool `graphql:"activated"`
+		} `graphql:"stackIntegrationAwsDelete(id: $id)"`
+	}
 
-	if err := resourceStackAWSRoleSet(meta.(*Client), stackID, nil); err != nil {
+	variables := map[string]interface{}{
+		"id": d.Get("stack_id").(string),
+	}
+
+	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete AWS role delegation")
+	}
+
+	if mutation.AttachAWSRole.Activated {
+		return errors.New("did not disable AWS integration, still reporting as activated")
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceStackAWSRoleSet(client *Client, stackID string, roleARN *string) error {
+func resourceStackAWSRoleSet(client *Client, stackID, roleARN string) error {
 	var mutation struct {
-		AttachAWSRole *structs.Stack `graphql:"stackSetAwsRoleDelegation(id: $id, roleArn: $roleArn)"`
+		AttachAWSRole struct {
+			Activated bool `graphql:"activated"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn)"`
 	}
 
 	variables := map[string]interface{}{
 		"id":      toID(stackID),
-		"roleArn": (*graphql.String)(nil),
-	}
-
-	if roleARN != nil {
-		variables["roleArn"] = toOptionalString(*roleARN)
+		"roleArn": graphql.String(roleARN),
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not set AWS role delegation on the stack")
+	}
+
+	if !mutation.AttachAWSRole.Activated {
+		return errors.New("AWS integration not activated")
 	}
 
 	return nil
