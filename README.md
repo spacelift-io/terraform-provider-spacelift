@@ -46,6 +46,8 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_context_attachment` - [data source](#spacelift_context_attachment_data-source) and [resource](#spacelift_context_attachment_resource);
 - `spacelift_environment_variable` - [data source](#spacelift_environment_variable-data-source) and [resource](#spacelift_environment_variable-resource);
 - `spacelift_mounted_file` - [data source](#spacelift_mounted_file-data-source) and [resource](#spacelift_mounted_file-resource);
+- `spacelift_policy` - [data source](#spacelift_policy-data-source) and [resource](#spacelift_policy-resource);
+- `spacelift_policy_attachment` - [resource](#spacelift_policy_attachment-resource);
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
 - `spacelift_stack_aws_role` - [data source](#spacelift_stack_aws_role-data-source) and [resource](#spacelift_stack_aws_role-resource);
 
@@ -332,6 +334,120 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - ID of the mounted file;
 - `checksum` - SHA-256 checksum of the (base-64 encoded) content;
+
+[^ Back to all resources](#resources)
+
+### `spacelift_policy` data source
+
+`spacelift_policy` represents a Spacelift **policy** - a collection of customer-defined rules that are applied by Spacelift at one of the decision points within the application.
+
+#### Example usage
+
+```python
+data "spacelift_policy" "policy" {
+  policy_id = spacelift_policy.policy.id
+}
+
+output "policy_body" {
+  value = data.spacelift_policy.policy.body
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `policy_id` - (Required) The immutable identifier (slug) of the policy;
+
+#### Attributes reference
+
+See the [policy resource](#spacelift_policy-resource) for details on the returned attributes - they are identical.
+
+[^ Back to all resources](#resources)
+
+### `spacelift_policy` resource
+
+`spacelift_policy` represents a Spacelift **policy** - a collection of customer-defined rules that are applied by Spacelift at one of the decision points within the application. Please see tye `type` argument to learn about different supported policy types.
+
+#### Example usage
+
+```python
+resource "spacelift_policy" "no-weekend-deploys" {
+  name = "Let's not deploy any changes over the weekeend"
+  body = file("policies/no-weekend-deploys.rego")
+  type = "TERRAFORM_PLAN"
+}
+
+resource "spacelift_stack" "core-infra-production" {
+  name       = "Core Infrastructure (production)"
+  branch     = "master"
+  repository = "core-infra"
+}
+
+resource "spacelift_policy_attachment" "no-weekend-deploys" {
+  policy_id = spacelift_policy.no-weekend-deploys.id
+  stack_id  = spacelift_stack.core-infra-production.id
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `name` - (Required) The name of the the policy - should be unique within one account;
+- `body` - (Required) The body of the policy - may be prvided inline or read from a file;
+- `type` - (Required) One of the supported types of policies. Currently the following options are available:
+  - `LOGIN` - controls who can log in and in what capacity;
+  - `STACK_ACCESS` - controls who gets what level of access to a Stack;
+  - `INITIALIZATION` - controls whether Spacelift runs can be started;
+  - `TERRAFORM_PLAN` - validates the outcome of Terraform plans;
+  - `TASK_RUN` - controls whether Spacelift tasks can be started;
+
+#### Attributes reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The immutable ID of the policy;
+
+[^ Back to all resources](#resources)
+
+### `spacelift_policy_attachment` resource
+
+`spacelift_policy_attachment` represents a relationship between a Policy and a Stack. Each policy can only be attached to a stack once. `LOGIN` policies are the exception because they apply globally and not to individual stacks. An attempt to attach one will fail.
+
+#### Example usage
+
+```python
+resource "spacelift_policy" "no-weekend-deploys" {
+  name = "Let's not deploy any changes over the weekeend"
+  body = file("policies/no-weekend-deploys.rego")
+  type = "TERRAFORM_PLAN"
+}
+
+resource "spacelift_stack" "core-infra-production" {
+  name       = "Core Infrastructure (production)"
+  branch     = "master"
+  repository = "core-infra"
+}
+
+resource "spacelift_policy_attachment" "no-weekend-deploys" {
+  policy_id = spacelift_policy.no-weekend-deploys.id
+  stack_id  = spacelift_stack.core-infra-production.id
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `policy_id` - (Required) - ID of the policy to attach;
+- `stack_id` - (Required) - ID of the stack to attach the policy to;
+
+#### Attributes reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The ID of the attachment;
 
 [^ Back to all resources](#resources)
 
