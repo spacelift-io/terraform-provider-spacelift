@@ -136,6 +136,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("administrative", stack.Administrative)
+	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
