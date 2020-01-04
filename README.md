@@ -13,6 +13,7 @@ resource "spacelift_stack" "core-infra-production" {
   name = "Core Infrastructure (production)"
 
   administrative    = true
+  autodeploy        = true
   branch            = "master"
   description       = "Shared production infrastructure (networking, k8s)"
   repository        = "core-infra"
@@ -484,6 +485,7 @@ See the [stack resource](#spacelift_stack-resource) for details on the returned 
 ```python
 resource "spacelift_stack" "k8s-core" {
   administrative    = true
+  autodeploy        = true
   branch            = "master"
   description       = "Shared cluster services (Datadog, Istio etc.)"
   name              = "Kubernetes core services"
@@ -528,7 +530,8 @@ The following arguments are supported:
 - `branch` - (Required) - GitHub branch to apply changes to;
 - `name` - (Required) - Name of the stack - should be unique within one account;
 - `repository` - (Required) - Name of the GitHub repository, without the owner part;
-- `administrative` - (Optional) - Indicates whether this stack can manage others;
+- `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
+- `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;

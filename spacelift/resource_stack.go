@@ -29,6 +29,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"autodeploy": &schema.Schema{
+				Type:        schema.TypeBool,
+				Description: "Indicates whether changes to this stack can be automatically deployed",
+				Optional:    true,
+				Default:     false,
+			},
 			"aws_assume_role_policy_statement": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
@@ -183,6 +189,7 @@ func resourceStackDelete(d *schema.ResourceData, meta interface{}) error {
 func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret := structs.StackInput{
 		Administrative: graphql.Boolean(d.Get("administrative").(bool)),
+		Autodeploy:     graphql.Boolean(d.Get("autodeploy").(bool)),
 		Branch:         toString(d.Get("branch")),
 		Name:           toString(d.Get("name")),
 		Repository:     toString(d.Get("repository")),
