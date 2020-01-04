@@ -4,6 +4,7 @@ package structs
 type Stack struct {
 	ID             string  `graphql:"id"`
 	Administrative bool    `graphql:"administrative"`
+	Autodeploy     bool    `graphql:"autodeploy"`
 	Branch         string  `graphql:"branch"`
 	Description    *string `graphql:"description"`
 	Integrations   struct {

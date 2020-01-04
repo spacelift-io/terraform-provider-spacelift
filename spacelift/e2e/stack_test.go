@@ -30,19 +30,19 @@ func (e *StackTest) TestLifecycle_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"input":{"administrative":true,"branch":"master","description":"My description","name":"Baby's first stack","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
+		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","name":"Baby's first stack","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"}},"managesStateFile":true,"name":"Baby's first stack","repository":"core-infra","terraformVersion":"0.12.6"}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"autodeploy":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"}},"managesStateFile":true,"name":"Baby's first stack","repository":"core-infra","terraformVersion":"0.12.6"}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)
@@ -52,6 +52,7 @@ func (e *StackTest) TestLifecycle_OK() {
 			Config: `
 resource "spacelift_stack" "stack" {
 	administrative    = true
+	autodeploy        = true
 	branch            = "master"
 	description       = "My description"
 	import_state      = "bacon"
@@ -68,6 +69,7 @@ data "spacelift_stack" "stack" {
 				// Test resource.
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "administrative", "true"),
+				resource.TestCheckResourceAttr("spacelift_stack.stack", "autodeploy", "true"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "branch", "master"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "description", "My description"),
@@ -78,6 +80,7 @@ data "spacelift_stack" "stack" {
 				// Test data.
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "administrative", "true"),
+				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "autodeploy", "true"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "branch", "master"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "description", "My description"),

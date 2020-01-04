@@ -22,7 +22,7 @@ func (e *StackAWSRoleTest) TestLifecycle_OK() {
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement}},managesStateFile,name,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stack":{"integrations":{"aws":{"assumedRoleArn":"arn:aws:iam::075108987694:role/terraform"}}}}}`,
 		7,
 	)
