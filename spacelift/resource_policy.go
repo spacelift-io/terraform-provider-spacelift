@@ -118,7 +118,7 @@ func resourcePolicyDelete(d *schema.ResourceData, meta interface{}) error {
 		DeletePolicy *structs.Policy `graphql:"policyDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toString(d.Id())}
+	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete policy")

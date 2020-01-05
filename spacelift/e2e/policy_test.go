@@ -28,7 +28,7 @@ func (e *PolicyTest) TestLifecycle_OK() {
 	)
 
 	e.posts( // Mocking out the policy deletion.
-		`{"query":"mutation($id:String!){policyDelete(id: $id){id,name,body,type}}","variables":{"id":"babys-first-policy"}}`,
+		`{"query":"mutation($id:ID!){policyDelete(id: $id){id,name,body,type}}","variables":{"id":"babys-first-policy"}}`,
 		`{"data":{"policyDelete":{"id":"babys-first-policy"}}}`,
 		1,
 	)
