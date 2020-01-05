@@ -74,7 +74,7 @@ func resourceContextRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	d.Set("name", d.Get("name"))
+	d.Set("name", context.Name)
 
 	if description := context.Description; description != nil {
 		d.Set("description", *description)
@@ -89,7 +89,7 @@ func resourceContextUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	variables := map[string]interface{}{
-		"id":          toString(d.Id()),
+		"id":          toID(d.Id()),
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
 	}

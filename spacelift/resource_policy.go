@@ -88,9 +88,9 @@ func resourcePolicyRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	d.Set("name", d.Get("name"))
-	d.Set("body", d.Get("body"))
-	d.Set("type", d.Get("type"))
+	d.Set("name", policy.Name)
+	d.Set("body", policy.Body)
+	d.Set("type", policy.Type)
 
 	return nil
 }
@@ -101,7 +101,7 @@ func resourcePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	variables := map[string]interface{}{
-		"id":   toString(d.Id()),
+		"id":   toID(d.Id()),
 		"name": toString(d.Get("name")),
 		"body": toString(d.Get("body")),
 	}
