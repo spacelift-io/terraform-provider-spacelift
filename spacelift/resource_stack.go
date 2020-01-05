@@ -160,7 +160,7 @@ func resourceStackUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	variables := map[string]interface{}{
-		"id":    toString(d.Id()),
+		"id":    toID(d.Id()),
 		"input": stackInput(d),
 	}
 
