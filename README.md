@@ -51,6 +51,7 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_policy_attachment` - [resource](#spacelift_policy_attachment-resource);
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
 - `spacelift_stack_aws_role` - [data source](#spacelift_stack_aws_role-data-source) and [resource](#spacelift_stack_aws_role-resource);
+- `spacelift_stack_gcp_service_account` - [data source](#spacelift_stack_gcp_service_account-data-source) and [resource](#spacelift_stack_gcp_service_account-resource);
 
 ### `spacelift_context` data source
 
@@ -613,5 +614,81 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the role;
+
+[^ Back to all resources](#resources)
+
+### `spacelift_stack_gcp_service_account` data source
+
+`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+
+#### Example usage
+
+```python
+data "spacelift_stack_gcp_service_account" "k8s-core" {
+  stack_id = "k8s-core"
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+
+#### Attributes reference
+
+See the [resource](#spacelift_stack_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
+
+[^ Back to all resources](#resources)
+
+### `spacelift_stack_gcp_service_account` resource
+
+`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+
+#### Example usage
+
+```python
+resource "spacelift_stack" "k8s-core" {
+  branch            = "master"
+  name              = "Kubernetes core services"
+  repository        = "core-infra"
+}
+
+resource "spacelift_stack_gcp_service_account" "k8s-core" {
+  stack_id = spacelift_stack.k8s-core.id
+
+  token_scopes = [
+    "https://www.googleapis.com/auth/compute",
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/devstorage.full_control",
+  ]
+}
+
+resource "google_project" "k8s-core" {
+  name       = "Kubernetes code"
+  project_id = "unicorn-k8s-core"
+  org_id     = var.gcp_organization_id
+}
+
+resource "google_project_iam_member" "k8s-core" {
+  project = google_project.k8s-core.id
+  role    = "roles/owner"
+  member  = spacelift_stack_gcp_service_account.k8s-core.service_account_email
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `token_scopes` - (Required) - List of scopes to request when generating the temporary OAuth token. At least one scope is required;
+
+#### Attributes reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The immutable ID (slug) of the service account attachment;
+- `service_account_email` - The email address associated with the generated GCP service account;
 
 [^ Back to all resources](#resources)

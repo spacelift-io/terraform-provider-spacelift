@@ -12,6 +12,10 @@ type Stack struct {
 			AssumedRoleARN            *string `graphql:"assumedRoleArn"`
 			AssumeRolePolicyStatement string  `graphql:"assumeRolePolicyStatement"`
 		} `graphql:"aws"`
+		GCP struct {
+			ServiceAccountEmail *string  `graphql:"serviceAccountEmail"`
+			TokenScopes         []string `graphql:"tokenScopes"`
+		} `graphql:"gcp"`
 	} `graphql:"integrations"`
 	ManagesStateFile bool    `graphql:"managesStateFile"`
 	Name             string  `graphql:"name"`

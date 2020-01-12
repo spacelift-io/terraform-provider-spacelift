@@ -106,9 +106,7 @@ func resourceStackAWSRoleDelete(d *schema.ResourceData, meta interface{}) error 
 		} `graphql:"stackIntegrationAwsDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
-		"id": d.Get("stack_id").(string),
-	}
+	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string))}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete AWS role delegation")
