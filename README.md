@@ -637,7 +637,7 @@ The following arguments are supported:
 
 #### Attributes reference
 
-See the [presource](#spacelift_stack_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
+See the [resource](#spacelift_stack_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
 
 [^ Back to all resources](#resources)
 
