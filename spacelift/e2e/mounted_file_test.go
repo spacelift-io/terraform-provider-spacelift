@@ -91,8 +91,6 @@ func (e *MountedFileTest) TestLifecycle_Stack() {
 		1,
 	)
 
-	e.peekBody()
-
 	e.testsResource([]resource.TestStep{
 		{
 			Config: `

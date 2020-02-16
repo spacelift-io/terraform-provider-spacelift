@@ -17,8 +17,9 @@ type Stack struct {
 			TokenScopes         []string `graphql:"tokenScopes"`
 		} `graphql:"gcp"`
 	} `graphql:"integrations"`
-	ManagesStateFile bool    `graphql:"managesStateFile"`
-	Name             string  `graphql:"name"`
-	Repository       string  `graphql:"repository"`
-	TerraformVersion *string `graphql:"terraformVersion"`
+	Labels           []string `graphql:"labels"`
+	ManagesStateFile bool     `graphql:"managesStateFile"`
+	Name             string   `graphql:"name"`
+	Repository       string   `graphql:"repository"`
+	TerraformVersion *string  `graphql:"terraformVersion"`
 }

@@ -37,6 +37,11 @@ func dataStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Computed:    true,
 			},
+			"labels": &schema.Schema{
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
+			},
 			"manage_state": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -87,6 +92,13 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range stack.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("repository", stack.Repository)
