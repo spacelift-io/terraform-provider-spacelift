@@ -58,6 +58,11 @@ func resourceStack() *schema.Resource {
 					return d.Id() != ""
 				},
 			},
+			"labels": &schema.Schema{
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+			},
 			"manage_state": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -199,6 +204,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	description, ok := d.GetOk("description")
 	if ok {
 		ret.Description = toOptionalString(description)
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+		ret.Labels = &labels
 	}
 
 	terraformVersion, ok := d.GetOk("terraform_version")
