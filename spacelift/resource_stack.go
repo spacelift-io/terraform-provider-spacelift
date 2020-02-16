@@ -152,6 +152,12 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", *description)
 	}
 
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range stack.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
 	if terraformVersion := stack.TerraformVersion; terraformVersion != nil {
 		d.Set("terraform_version", *terraformVersion)
 	}
