@@ -76,9 +76,21 @@ func resourceStack() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"namespace": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Namespace of the repository",
+				Required:    true,
+				ForceNew:    true,
+			},
+			"provider": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Provider of the repository (Github/Gitlab/...)",
+				Required:    true,
+				ForceNew:    true,
+			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Name of the GitHub repository, without the owner part",
+				Description: "Name of the repository, without the owner part",
 				Required:    true,
 			},
 			"terraform_version": &schema.Schema{
@@ -146,6 +158,8 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
+	d.Set("namespace", stack.Namespace)
+	d.Set("provider", stack.Provider)
 	d.Set("repository", stack.Repository)
 
 	if description := stack.Description; description != nil {
@@ -204,6 +218,8 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Autodeploy:     graphql.Boolean(d.Get("autodeploy").(bool)),
 		Branch:         toString(d.Get("branch")),
 		Name:           toString(d.Get("name")),
+		Namespace:      toString(d.Get("namespace")),
+		Provider:       toString(d.Get("provider")),
 		Repository:     toString(d.Get("repository")),
 	}
 

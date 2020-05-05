@@ -20,6 +20,8 @@ type Stack struct {
 	Labels           []string `graphql:"labels"`
 	ManagesStateFile bool     `graphql:"managesStateFile"`
 	Name             string   `graphql:"name"`
+	Namespace        string   `graphql:"namespace"`
+	Provider         string   `graphql:"provider"`
 	Repository       string   `graphql:"repository"`
 	TerraformVersion *string  `graphql:"terraformVersion"`
 }

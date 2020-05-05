@@ -52,9 +52,19 @@ func dataStack() *schema.Resource {
 				Description: "Name of the stack - should be unique in one account",
 				Computed:    true,
 			},
+			"namespace": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Namespace of the repository",
+				Computed:    true,
+			},
+			"provider": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Provider of the repository (Github/Gitlab/...)",
+				Computed:    true,
+			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Name of the GitHub repository, without the owner part",
+				Description: "Name of the repository, without the owner part",
 				Computed:    true,
 			},
 			"stack_id": &schema.Schema{
@@ -101,6 +111,8 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
+	d.Set("namespace", stack.Namespace)
+	d.Set("provider", stack.Provider)
 	d.Set("repository", stack.Repository)
 
 	if stack.Description != nil {
