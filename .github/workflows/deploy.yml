@@ -22,5 +22,5 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Push the image to Docker Hub
-        if: ${{ github.ref == 'ref/heads/master' }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         run: docker push spacelift/runner
