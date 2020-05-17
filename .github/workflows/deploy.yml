@@ -11,15 +11,14 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@master
 
+      - name: Log in to Docker Hub
+        run: echo ${DOCKERHUB_PASSWORD} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+
       - name: Build the image
         run: docker build --tag spacelift/runner .
-
-      - name: Log in to Docker Hub
-        uses: azure/docker-login@v1
-        with:
-          login-server: index.docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Push the image to Docker Hub
         if: ${{ github.ref == 'refs/heads/master' }}
