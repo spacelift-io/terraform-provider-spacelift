@@ -1,0 +1,26 @@
+name: Deploy
+
+on: [push]
+
+jobs:
+  deployment:
+    name: Build and deploy the image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@master
+
+      - name: Build the image
+        run: docker build --tag spacelift/runner .
+
+      - name: Log in to Docker Hub
+        uses: azure/docker-login@v1
+        with:
+          login-server: index.docker.io
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Push the image to Docker Hub
+        if: ${{ github.ref == 'ref/heads/master' }}
+        run: docker push spacelift/runner

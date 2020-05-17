@@ -1,0 +1,23 @@
+name: Test
+
+on: [push]
+
+jobs:
+  deployment:
+    name: Test the code
+    runs-on: ubuntu-latest
+    container: golang:1.13
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@master
+
+      - name: Test with coverage
+        run: go test -coverprofile=coverage.txt -race -coverpkg=./... ./...
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          fail_ci_if_error: true
