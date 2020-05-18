@@ -57,11 +57,6 @@ func dataStack() *schema.Resource {
 				Description: "Namespace of the repository",
 				Computed:    true,
 			},
-			"provider": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Provider of the repository (Github/Gitlab/...)",
-				Computed:    true,
-			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -112,7 +107,6 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("namespace", stack.Namespace)
-	d.Set("provider", stack.Provider)
 	d.Set("repository", stack.Repository)
 
 	if stack.Description != nil {
