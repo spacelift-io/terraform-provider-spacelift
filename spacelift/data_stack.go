@@ -72,6 +72,11 @@ func dataStack() *schema.Resource {
 				Description: "Terraform version to use",
 				Computed:    true,
 			},
+			"vcs_provider": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "VCS provider of the repository",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -108,6 +113,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("name", stack.Name)
 	d.Set("namespace", stack.Namespace)
 	d.Set("repository", stack.Repository)
+	d.Set("vcs_provider", stack.Provider)
 
 	if stack.Description != nil {
 		d.Set("description", *stack.Description)

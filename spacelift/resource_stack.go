@@ -91,6 +91,11 @@ func resourceStack() *schema.Resource {
 				Description: "Terraform version to use",
 				Optional:    true,
 			},
+			"vcs_provider": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "VCS provider of the repository",
+				Required:    true,
+			},
 		},
 	}
 }
@@ -153,6 +158,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("name", stack.Name)
 	d.Set("namespace", stack.Namespace)
 	d.Set("repository", stack.Repository)
+	d.Set("vcs_provider", stack.Provider)
 
 	if description := stack.Description; description != nil {
 		d.Set("description", *description)
@@ -211,6 +217,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Branch:         toString(d.Get("branch")),
 		Name:           toString(d.Get("name")),
 		Namespace:      toString(d.Get("namespace")),
+		Provider:       toString(d.Get("vcs_provider")),
 		Repository:     toString(d.Get("repository")),
 	}
 
