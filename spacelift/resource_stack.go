@@ -94,7 +94,8 @@ func resourceStack() *schema.Resource {
 			"vcs_provider": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "VCS provider of the repository",
-				Required:    true,
+				Optional:    true,
+				Default:     "GITHUB",
 			},
 		},
 	}
