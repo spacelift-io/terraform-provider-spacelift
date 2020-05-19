@@ -37,6 +37,19 @@ func dataStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Computed:    true,
 			},
+			"gitlab": &schema.Schema{
+				Type:        schema.TypeList,
+				Description: "Gitlab-related attributes",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"labels": &schema.Schema{
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -50,11 +63,6 @@ func dataStack() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the stack - should be unique in one account",
-				Computed:    true,
-			},
-			"namespace": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Namespace of the repository",
 				Computed:    true,
 			},
 			"repository": &schema.Schema{
@@ -103,6 +111,16 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 
+	if stack.Provider == "GITLAB" {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+		err := d.Set("gitlab", []map[string]interface{}{m})
+		if err != nil {
+			errors.Wrap(err, "error setting gitlab (data)")
+		}
+	}
+
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range stack.Labels {
 		labels.Add(label)
@@ -111,7 +129,6 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
-	d.Set("namespace", stack.Namespace)
 	d.Set("repository", stack.Repository)
 	d.Set("vcs_provider", stack.Provider)
 

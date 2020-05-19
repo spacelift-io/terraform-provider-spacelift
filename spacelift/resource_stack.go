@@ -50,6 +50,19 @@ func resourceStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Optional:    true,
 			},
+			"gitlab": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"import_state": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "State file to upload when creating a new stack",
@@ -75,11 +88,6 @@ func resourceStack() *schema.Resource {
 				Description: "Name of the stack - should be unique in one account",
 				Required:    true,
 				ForceNew:    true,
-			},
-			"namespace": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "Namespace of the repository",
-				Required:    true,
 			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
@@ -157,12 +165,21 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
-	d.Set("namespace", stack.Namespace)
 	d.Set("repository", stack.Repository)
 	d.Set("vcs_provider", stack.Provider)
 
 	if description := stack.Description; description != nil {
 		d.Set("description", *description)
+	}
+
+	if stack.Provider == "GITLAB" {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+		err := d.Set("gitlab", []map[string]interface{}{m})
+		if err != nil {
+			errors.Wrap(err, "error setting gitlab (resource)")
+		}
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
@@ -217,7 +234,6 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Autodeploy:     graphql.Boolean(d.Get("autodeploy").(bool)),
 		Branch:         toString(d.Get("branch")),
 		Name:           toString(d.Get("name")),
-		Namespace:      toString(d.Get("namespace")),
 		Provider:       toString(d.Get("vcs_provider")),
 		Repository:     toString(d.Get("repository")),
 	}
