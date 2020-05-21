@@ -243,6 +243,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Description = toOptionalString(description)
 	}
 
+	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
+		if len(gitlab) > 0 {
+			ret.Namespace = toString(gitlab[0].(map[string]interface{})["namespace"])
+		}
+	}
+
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
 		var labels []graphql.String
 		for _, label := range labelSet.List() {

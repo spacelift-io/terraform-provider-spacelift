@@ -30,7 +30,7 @@ func (e *StackTest) TestLifecycle_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes}},labels,managesStateFile,name,namespace,provider,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","provider":"GITHUB","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
+		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes}},labels,managesStateFile,name,namespace,provider,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","namespace":"","provider":"GITHUB","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
@@ -77,6 +77,7 @@ data "spacelift_stack" "stack" {
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "branch", "master"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "description", "My description"),
+				resource.TestCheckResourceAttr("spacelift_stack.stack", "gitlab.#", "0"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "labels.#", "1"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "labels.3453406131", "label"),
 				resource.TestCheckResourceAttr("spacelift_stack.stack", "manage_state", "true"),
@@ -91,6 +92,7 @@ data "spacelift_stack" "stack" {
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "branch", "master"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "description", "My description"),
+				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "gitlab.#", "0"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "labels.#", "1"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "labels.3453406131", "label"),
 				resource.TestCheckResourceAttr("data.spacelift_stack.stack", "manage_state", "true"),
@@ -119,7 +121,7 @@ func (e *StackTest) TestLifecycleGitlab_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes}},labels,managesStateFile,name,namespace,provider,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","provider":"GITLAB","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
+		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes}},labels,managesStateFile,name,namespace,provider,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","namespace":"spacelift","provider":"GITLAB","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
