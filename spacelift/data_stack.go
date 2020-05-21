@@ -80,11 +80,6 @@ func dataStack() *schema.Resource {
 				Description: "Terraform version to use",
 				Computed:    true,
 			},
-			"vcs_provider": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "VCS provider of the repository",
-				Computed:    true,
-			},
 		},
 	}
 }
@@ -111,12 +106,11 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 
-	if stack.Provider == "GITLAB" {
+	if stack.Namespace != "" {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
-		err := d.Set("gitlab", []map[string]interface{}{m})
-		if err != nil {
+		if err := d.Set("gitlab", []map[string]interface{}{m}); err != nil {
 			errors.Wrap(err, "error setting gitlab (data)")
 		}
 	}
@@ -130,7 +124,6 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("repository", stack.Repository)
-	d.Set("vcs_provider", stack.Provider)
 
 	if stack.Description != nil {
 		d.Set("description", *stack.Description)
