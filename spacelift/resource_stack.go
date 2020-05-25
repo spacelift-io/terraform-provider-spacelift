@@ -11,6 +11,8 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
+const vcsProviderGitlab = "GITLAB"
+
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceStackCreate,
@@ -50,6 +52,19 @@ func resourceStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Optional:    true,
 			},
+			"gitlab": &schema.Schema{
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"import_state": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "State file to upload when creating a new stack",
@@ -78,7 +93,7 @@ func resourceStack() *schema.Resource {
 			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "Name of the GitHub repository, without the owner part",
+				Description: "Name of the repository, without the owner part",
 				Required:    true,
 			},
 			"terraform_version": &schema.Schema{
@@ -152,6 +167,16 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", *description)
 	}
 
+	if stack.Namespace != "" {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("gitlab", []map[string]interface{}{m}); err != nil {
+			errors.Wrap(err, "error setting gitlab (resource)")
+		}
+	}
+
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range stack.Labels {
 		labels.Add(label)
@@ -210,6 +235,13 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	description, ok := d.GetOk("description")
 	if ok {
 		ret.Description = toOptionalString(description)
+	}
+
+	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
+		if len(gitlab) > 0 {
+			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
+			ret.Provider = toOptionalString(vcsProviderGitlab)
+		}
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {

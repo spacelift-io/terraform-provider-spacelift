@@ -495,6 +495,24 @@ resource "spacelift_stack" "k8s-core" {
 }
 ```
 
+For Gitlab-hosted repositories:
+
+```python
+resource "spacelift_stack" "k8s-core-gitlab" {
+  gitlab {
+    namespace = "spacelift"
+  }
+
+  administrative    = true
+  autodeploy        = true
+  branch            = "master"
+  description       = "Shared cluster services (Datadog, Istio etc.)"
+  name              = "Kubernetes core services"
+  repository        = "core-infra"
+  terraform_version = "0.12.6"
+}
+```
+
 With IAM role delegation (only required fields):
 
 ```python
