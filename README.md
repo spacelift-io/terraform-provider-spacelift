@@ -490,10 +490,26 @@ resource "spacelift_stack" "k8s-core" {
   branch            = "master"
   description       = "Shared cluster services (Datadog, Istio etc.)"
   name              = "Kubernetes core services"
-  namespace         = "spacelift"
   repository        = "core-infra"
   terraform_version = "0.12.6"
-  vcs_provider      = "GITHUB"
+}
+```
+
+For Gitlab-hosted repositories:
+
+```python
+resource "spacelift_stack" "k8s-core-gitlab" {
+  gitlab {
+    namespace = "spacelift"
+  }
+
+  administrative    = true
+  autodeploy        = true
+  branch            = "master"
+  description       = "Shared cluster services (Datadog, Istio etc.)"
+  name              = "Kubernetes core services"
+  repository        = "core-infra"
+  terraform_version = "0.12.6"
 }
 ```
 
