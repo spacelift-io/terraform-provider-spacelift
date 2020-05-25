@@ -11,6 +11,8 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
+const vcsProviderGitlab = "GITLAB"
+
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceStackCreate,
@@ -237,7 +239,8 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
 		if len(gitlab) > 0 {
-			ret.Namespace = toString(gitlab[0].(map[string]interface{})["namespace"])
+			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
+			ret.Provider = toOptionalString(vcsProviderGitlab)
 		}
 	}
 
