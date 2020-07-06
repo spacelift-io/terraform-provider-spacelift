@@ -1,7 +1,7 @@
 module github.com/spacelift-io/terraform-provider-spacelift
 
 require (
-	github.com/aws/aws-sdk-go v1.23.4
+	github.com/aws/aws-sdk-go v1.23.4 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/hashicorp/terraform v0.12.6
 	github.com/pkg/errors v0.8.1
