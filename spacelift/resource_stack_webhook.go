@@ -138,6 +138,8 @@ func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error 
 
 	var mutation struct {
 		WebhooksIntegration struct {
+			Id      string `graphql:"id"`
+			Enabled bool   `graphql:"enabled"`
 		} `graphql:"webhooksIntegrationUpdate(stack: $stack, id: $webhook, input: $input)"`
 	}
 
@@ -161,6 +163,7 @@ func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error 
 func resourceStackWebhookDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
 		WebhooksIntegration struct {
+			Id string `graphql:"id"`
 		} `graphql:"webhooksIntegrationDelete(stack: $stack, id: $webhook)"`
 	}
 
