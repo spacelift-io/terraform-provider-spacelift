@@ -16,6 +16,13 @@ type Stack struct {
 			ServiceAccountEmail *string  `graphql:"serviceAccountEmail"`
 			TokenScopes         []string `graphql:"tokenScopes"`
 		} `graphql:"gcp"`
+		Webhooks []struct {
+			ID       string `graphql:"id"`
+			Deleted  bool   `graphql:"deleted"`
+			Enabled  bool   `graphql:"enabled"`
+			Endpoint string `graphql:"endpoint"`
+			Secret   string `graphql:"secret"`
+		} `graphql:"webhooks"`
 	} `graphql:"integrations"`
 	Labels           []string `graphql:"labels"`
 	ManagesStateFile bool     `graphql:"managesStateFile"`

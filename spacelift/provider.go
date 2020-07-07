@@ -27,6 +27,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_policy":                    dataPolicy(),
 			"spacelift_stack_aws_role":            dataStackAWSRole(),
 			"spacelift_stack_gcp_service_account": dataStackGCPServiceAccount(),
+			"spacelift_stack_webhook":             dataStackWebhook(),
 			"spacelift_stack":                     dataStack(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -38,6 +39,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_policy":                    resourcePolicy(),
 			"spacelift_stack_aws_role":            resourceStackAWSRole(),
 			"spacelift_stack_gcp_service_account": resourceStackGCPServiceAccount(),
+			"spacelift_stack_webhook":             resourceStackWebhook(),
 			"spacelift_stack":                     resourceStack(),
 		},
 		ConfigureFunc: configureProvider,
