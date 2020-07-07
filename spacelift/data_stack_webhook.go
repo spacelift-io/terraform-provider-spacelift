@@ -19,23 +19,26 @@ func dataStackWebhook() *schema.Resource {
 			"enabled": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "enables or disables sending webhooks",
-				Optional:    true,
-				Default:     true,
+				Computed:    true,
 			},
 			"endpoint": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "endpoint to send the POST request to",
-				Required:    true,
+				Computed:    true,
 			},
 			"secret": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
-				Optional:    true,
-				Default:     "",
+				Computed:    true,
 			},
 			"stack_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
+				Required:    true,
+			},
+			"webhook_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "ID of the webhook",
 				Required:    true,
 			},
 		},
@@ -47,8 +50,8 @@ func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	stackID := d.Get("stack_id")
-	webhookID := d.Id()
+	stackID := d.Get("stack_id").(string)
+	webhookID := d.Get("webhook_id").(string)
 	variables := map[string]interface{}{"id": toID(stackID)}
 
 	if err := meta.(*Client).Query(&query, variables); err != nil {
