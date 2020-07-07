@@ -57,6 +57,7 @@ data "spacelift_stack_webhook" "webhook" {
 				resource.TestCheckResourceAttr("spacelift_stack_webhook.webhook", "endpoint", "localtest.me/amazin"),
 				resource.TestCheckResourceAttr("spacelift_stack_webhook.webhook", "secret", "test_secret2"),
 
+				// Test data.
 				resource.TestCheckResourceAttr("data.spacelift_stack_webhook.webhook", "stack_id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("data.spacelift_stack_webhook.webhook", "id", "babys-first-webhook"),
 				resource.TestCheckResourceAttr("data.spacelift_stack_webhook.webhook", "deleted", "false"),
