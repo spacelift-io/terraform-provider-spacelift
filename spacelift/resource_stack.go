@@ -167,13 +167,13 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", *description)
 	}
 
-	if stack.Namespace != "" {
+	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
 
-		if err := d.Set("gitlab", []map[string]interface{}{m}); err != nil {
-			errors.Wrap(err, "error setting gitlab (resource)")
+		if err := d.Set("gitlab", []interface{}{m}); err != nil {
+			return errors.Wrap(err, "error setting gitlab (resource)")
 		}
 	}
 
@@ -237,11 +237,16 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Description = toOptionalString(description)
 	}
 
+	foundGitlab := false
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
 		if len(gitlab) > 0 {
+			foundGitlab = true
 			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
-			ret.Provider = toOptionalString(vcsProviderGitlab)
+			ret.Provider = graphql.NewString(vcsProviderGitlab)
 		}
+	}
+	if !foundGitlab {
+		ret.Provider = graphql.NewString("GITHUB")
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {

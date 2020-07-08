@@ -22,7 +22,7 @@ func (e *StackWebhookTest) TestLifecycle_OK() {
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,provider,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stack":{"integrations":{"webhooks":[{"id":"babys-first-webhook","deleted":false,"enabled":true,"endpoint":"localtest.me/amazin","secret":"test_secret2"}]}}}}`,
 		7,
 	)

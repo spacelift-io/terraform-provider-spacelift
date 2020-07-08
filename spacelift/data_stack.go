@@ -106,12 +106,13 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 
-	if stack.Namespace != "" {
+	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
-		if err := d.Set("gitlab", []map[string]interface{}{m}); err != nil {
-			errors.Wrap(err, "error setting gitlab (data)")
+
+		if err := d.Set("gitlab", []interface{}{m}); err != nil {
+			return errors.Wrap(err, "error setting gitlab (resource)")
 		}
 	}
 
