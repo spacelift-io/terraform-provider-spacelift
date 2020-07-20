@@ -71,8 +71,7 @@ func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if webhookIndex == -1 {
-		d.SetId("")
-		return nil
+		return errors.New("webhook not found")
 	}
 
 	d.SetId(webhookID)

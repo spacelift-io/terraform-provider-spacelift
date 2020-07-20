@@ -103,7 +103,8 @@ func resourceStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 
 	stack := query.Stack
 	if stack == nil {
-		return errors.New("stack not found")
+		d.SetId("")
+		return nil
 	}
 
 	webhookID := d.Id()
