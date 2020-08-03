@@ -14,7 +14,7 @@ type WorkerPoolTest struct {
 
 func (e *WorkerPoolTest) TestLifecycle_OK() {
 	defer gock.Off()
-	gock.Observe(gock.DumpRequest)
+
 	e.posts(
 		`{"query":"mutation($description:String!$name:String!){workerPoolCreate(name: $name, description: $description){config,workerPool{id,name,description}}}","variables":{"description":"bar","name":"foo"}}`,
 		`{"data":{"workerPoolCreate":{"config":"secret","workerPool":{"id":"babys-first-worker-pool","name":"foo","description":"bar"}}}}`,

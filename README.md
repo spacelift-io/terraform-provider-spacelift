@@ -760,11 +760,13 @@ The following arguments are supported:
 - `name` - (Required) - The name of the worker pool;
 - `description` - (Optional) - The description of the worker pool;
 
+
 #### Attributes reference
 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the worker pool;
-- `config` - The credentials necessary to connect WorkerPool's workers to the control plane (this config is visible only once after resource creation);
+- `config` - The credentials necessary to connect WorkerPool's workers to the control plane;
 
 [^ Back to all resources](#resources)
+

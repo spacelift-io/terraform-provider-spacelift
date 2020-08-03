@@ -49,7 +49,12 @@ func dataWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(workerPoolID)
 	d.Set("name", workerPool.Name)
-	d.Set("description", workerPool.Description)
+
+	if workerPool.Description != nil {
+		d.Set("description", *workerPool.Description)
+	} else {
+		d.Set("description", nil)
+	}
 
 	return nil
 }

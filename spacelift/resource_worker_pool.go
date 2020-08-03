@@ -35,7 +35,6 @@ func resourceWorkerPool() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "description of the worker pool",
 				Optional:    true,
-				Default:     "",
 			},
 		},
 	}
@@ -43,7 +42,6 @@ func resourceWorkerPool() *schema.Resource {
 
 func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
-	description := d.Get("description").(string)
 
 	var mutation struct {
 		WorkerPoolConfig struct {
@@ -54,7 +52,11 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 	variables := map[string]interface{}{
 		"name":        graphql.String(name),
-		"description": graphql.String(description),
+		"description": (*graphql.String)(nil),
+	}
+
+	if desc, ok := d.GetOk("description"); ok {
+		variables["description"] = graphql.String(desc.(string))
 	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
@@ -64,7 +66,10 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(mutation.WorkerPoolConfig.WorkerPool.ID)
 	d.Set("config", mutation.WorkerPoolConfig.Config)
 	d.Set("name", mutation.WorkerPoolConfig.WorkerPool.Name)
-	d.Set("description", mutation.WorkerPoolConfig.WorkerPool.Description)
+
+	if description := mutation.WorkerPoolConfig.WorkerPool.Description; description != nil {
+		d.Set("description", *description)
+	}
 
 	return nil
 }
@@ -86,14 +91,15 @@ func resourceWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("name", workerPool.Name)
-	d.Set("description", workerPool.Description)
+	if description := workerPool.Description; description != nil {
+		d.Set("description", *description)
+	}
 
 	return nil
 }
 
 func resourceWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
-	description := d.Get("description").(string)
 
 	var mutation struct {
 		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description)"`
@@ -102,7 +108,11 @@ func resourceWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 	variables := map[string]interface{}{
 		"id":          toID(d.Id()),
 		"name":        graphql.String(name),
-		"description": graphql.String(description),
+		"description": (*graphql.String)(nil),
+	}
+
+	if desc, ok := d.GetOk("description"); ok {
+		variables["description"] = graphql.String(desc.(string))
 	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
