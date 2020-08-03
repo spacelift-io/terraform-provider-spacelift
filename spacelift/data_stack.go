@@ -65,6 +65,11 @@ func dataStack() *schema.Resource {
 				Description: "Name of the stack - should be unique in one account",
 				Computed:    true,
 			},
+			"project_root": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
+				Computed:    true,
+			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -130,6 +135,12 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("description", *stack.Description)
 	} else {
 		d.Set("description", nil)
+	}
+
+	if stack.ProjectRoot != nil {
+		d.Set("project_root", *stack.ProjectRoot)
+	} else {
+		d.Set("project_root", nil)
 	}
 
 	if stack.TerraformVersion != nil {
