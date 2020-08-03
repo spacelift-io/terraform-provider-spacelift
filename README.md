@@ -491,6 +491,7 @@ resource "spacelift_stack" "k8s-core" {
   branch            = "master"
   description       = "Shared cluster services (Datadog, Istio etc.)"
   name              = "Kubernetes core services"
+  project_root      = "/project"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
@@ -509,6 +510,7 @@ resource "spacelift_stack" "k8s-core-gitlab" {
   branch            = "master"
   description       = "Shared cluster services (Datadog, Istio etc.)"
   name              = "Kubernetes core services"
+  project_root      = "/project"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
@@ -555,6 +557,7 @@ The following arguments are supported:
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
+- `project_root` - (Optional) - Directory that is relative to the workspace root containing the entrypoint to the Stack.;
 - `terraform_version` - (Optional) - Terraform version to use;
 
 #### Attributes reference
@@ -709,6 +712,8 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the service account attachment;
 - `service_account_email` - The email address associated with the generated GCP service account;
+
+[^ Back to all resources](#resources)
 
 ### `spacelift_worker_pool` data source
 
