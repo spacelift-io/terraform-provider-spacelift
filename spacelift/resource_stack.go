@@ -91,6 +91,11 @@ func resourceStack() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"project_root": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
+				Optional:    true,
+			},
 			"repository": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -183,6 +188,10 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
+	if projectRoot := stack.ProjectRoot; projectRoot != nil {
+		d.Set("project_root", *projectRoot)
+	}
+
 	if terraformVersion := stack.TerraformVersion; terraformVersion != nil {
 		d.Set("terraform_version", *terraformVersion)
 	}
@@ -255,6 +264,11 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			labels = append(labels, graphql.String(label.(string)))
 		}
 		ret.Labels = &labels
+	}
+
+	projectRoot, ok := d.GetOk("project_root")
+	if ok {
+		ret.ProjectRoot = toOptionalString(projectRoot)
 	}
 
 	terraformVersion, ok := d.GetOk("terraform_version")

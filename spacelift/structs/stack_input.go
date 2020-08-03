@@ -11,6 +11,7 @@ type StackInput struct {
 	Labels           *[]graphql.String `json:"labels"`
 	Name             graphql.String    `json:"name"`
 	Namespace        *graphql.String   `json:"namespace"`
+	ProjectRoot      *graphql.String   `json:"projectRoot"`
 	Provider         *graphql.String   `json:"provider"`
 	Repository       graphql.String    `json:"repository"`
 	TerraformVersion *graphql.String   `json:"terraformVersion"`
