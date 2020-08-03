@@ -9,7 +9,7 @@ import (
 
 func dataWorkerPool() *schema.Resource {
 	return &schema.Resource{
-		Read: dataStackWebhookRead,
+		Read: dataWorkerPoolRead,
 		Schema: map[string]*schema.Schema{
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
