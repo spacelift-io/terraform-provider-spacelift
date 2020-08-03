@@ -14,13 +14,17 @@ func dataWorkerPool() *schema.Resource {
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "name of the worker pool",
-				Required:    true,
+				Computed:    true,
 			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "description of the worker pool",
-				Optional:    true,
-				Default:     "",
+				Computed:    true,
+			},
+			"worker_pool_id": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "ID of the worker pool",
+				Required:    true,
 			},
 		},
 	}
