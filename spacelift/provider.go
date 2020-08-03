@@ -29,6 +29,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_stack_gcp_service_account": dataStackGCPServiceAccount(),
 			"spacelift_stack_webhook":             dataStackWebhook(),
 			"spacelift_stack":                     dataStack(),
+			"spacelift_worker_pool":               dataWorkerPool(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"spacelift_context_attachment":        resourceContextAttachment(),
@@ -41,6 +42,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_stack_gcp_service_account": resourceStackGCPServiceAccount(),
 			"spacelift_stack_webhook":             resourceStackWebhook(),
 			"spacelift_stack":                     resourceStack(),
+			"spacelift_worker_pool":               resourceWorkerPool(),
 		},
 		ConfigureFunc: configureProvider,
 	}
