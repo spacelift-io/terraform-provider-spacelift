@@ -722,6 +722,7 @@ data "spacelift_worker_pool" "k8s-core" {
 }
 ```
 
+
 #### Argument reference
 
 The following arguments are supported:
@@ -738,6 +739,7 @@ The following attributes are exported:
 
 [^ Back to all resources](#resources)
 
+
 ### `spacelift_worker_pool` resource
 
 `spacelift_worker_pool` represents a worker pool assigned to the Spacelift account.
@@ -747,7 +749,7 @@ The following attributes are exported:
 ```python
 resource "spacelift_worker_pool" "k8s-core" {
   name        = "Main worker"
-  description = "Used for all type jobs" 
+  description = "Used for all type jobs"
 }
 ```
 
@@ -763,6 +765,6 @@ The following arguments are supported:
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the worker pool;
-- `config` - The credentials necessary to connect WorkerPool's workers to the control plane;
+- `config` - The credentials necessary to connect WorkerPool's workers to the control plane (this config is visible only once after resource creation);
 
 [^ Back to all resources](#resources)

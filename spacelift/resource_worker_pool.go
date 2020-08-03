@@ -22,7 +22,7 @@ func resourceWorkerPool() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"config": &schema.Schema{
 				Type:        schema.TypeString,
-				Description: "config?",
+				Description: "credentials necessary to connect WorkerPool's workers to the control plane",
 				Computed:    true,
 				Sensitive:   true,
 			},
