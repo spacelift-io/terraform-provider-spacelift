@@ -70,6 +70,8 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
+	d.Set("config", "")
+
 	var query struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPool(id: $id)"`
 	}
