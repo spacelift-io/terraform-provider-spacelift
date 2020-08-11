@@ -13,9 +13,10 @@ FROM alpine:3.10
 RUN apk add --no-cache ca-certificates curl git openssh
 
 COPY --from=builder /terraform-provider-spacelift /bin/terraform-provider-spacelift
+COPY --from=builder /terraform-provider-spacelift /plugins/registry.spacelift.io/spacelift-io/spacelift/1.0/linux_amd64/terraform-provider-spacelift
 
-RUN echo "hosts: files dns" > /etc/nsswitch.conf
-
-RUN adduser --disabled-password --no-create-home --uid=1983 spacelift
+RUN echo "hosts: files dns" > /etc/nsswitch.conf \
+  && adduser --disabled-password --uid=1983 spacelift \
+  && chown -R spacelift /plugins
 
 USER spacelift
