@@ -16,6 +16,11 @@ COPY --from=builder /terraform-provider-spacelift /bin/terraform-provider-spacel
 
 RUN echo "hosts: files dns" > /etc/nsswitch.conf
 
-RUN adduser --disabled-password --no-create-home --uid=1983 spacelift
+
+RUN adduser --disabled-password --uid=1983 spacelift
+
+ARG TF013_PROVIDER_PATH=/home/spacelift/.terraform.d/plugins/registry.spacelift.io/spacelift-io/spacelift/1.0/linux_amd64
+RUN mkdir -p $TF013_PROVIDER_PATH
+RUN ln -s /bin/terraform-provider-spacelift $TF013_PROVIDER_PATH/terraform-provider-spacelift
 
 USER spacelift
