@@ -52,7 +52,6 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
 - `spacelift_stack_aws_role` - [data source](#spacelift_stack_aws_role-data-source) and [resource](#spacelift_stack_aws_role-resource);
 - `spacelift_stack_gcp_service_account` - [data source](#spacelift_stack_gcp_service_account-data-source) and [resource](#spacelift_stack_gcp_service_account-resource);
-- `spacelift_worker_pool` - [data source](#spacelift_worker_pool-data-source) and [resource](#spacelift_worker_pool-resource);
 
 ### `spacelift_context` data source
 
@@ -712,66 +711,6 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the service account attachment;
 - `service_account_email` - The email address associated with the generated GCP service account;
-
-[^ Back to all resources](#resources)
-
-### `spacelift_worker_pool` data source
-
-`spacelift_worker_pool` represents a worker pool assigned to the Spacelift account.
-
-#### Example usage
-
-```python
-data "spacelift_worker_pool" "k8s-core" {
-  worker_pool_id        = "k8s-core"
-}
-```
-
-
-#### Argument reference
-
-The following arguments are supported:
-
-- `worker_pool_id` - (Required) - The immutable ID (slug) of the worker pool;
-
-#### Attributes reference
-
-The following attributes are exported:
-
-- `id` - The immutable ID (slug) of the worker pool;
-- `name` - The name of the worker pool;
-- `description` - The description of the worker pool;
-
-[^ Back to all resources](#resources)
-
-
-### `spacelift_worker_pool` resource
-
-`spacelift_worker_pool` represents a worker pool assigned to the Spacelift account.
-
-#### Example usage
-
-```python
-resource "spacelift_worker_pool" "k8s-core" {
-  name        = "Main worker"
-  description = "Used for all type jobs"
-}
-```
-
-#### Argument reference
-
-The following arguments are supported:
-
-- `name` - (Required) - The name of the worker pool;
-- `description` - (Optional) - The description of the worker pool;
-
-
-#### Attributes reference
-
-In addition to all arguments above, the following attributes are exported:
-
-- `id` - The immutable ID (slug) of the worker pool;
-- `config` - The credentials necessary to connect WorkerPool's workers to the control plane;
 
 [^ Back to all resources](#resources)
 
