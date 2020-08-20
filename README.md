@@ -23,7 +23,7 @@ resource "spacelift_stack" "core-infra-production" {
 ## Terraform 0.13.x
 
 With Terraform 0.13.x you also have to add the following:
-```
+```python
 terraform {
   required_providers {
     spacelift = {
