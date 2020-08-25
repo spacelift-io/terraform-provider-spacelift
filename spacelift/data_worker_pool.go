@@ -11,6 +11,12 @@ func dataWorkerPool() *schema.Resource {
 	return &schema.Resource{
 		Read: dataWorkerPoolRead,
 		Schema: map[string]*schema.Schema{
+			"config": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "credentials necessary to connect WorkerPool's workers to the control plane",
+				Computed:    true,
+				Sensitive:   true,
+			},
 			"name": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "name of the worker pool",
@@ -49,6 +55,7 @@ func dataWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(workerPoolID)
 	d.Set("name", workerPool.Name)
+	d.Set("config", workerPool.Config)
 
 	if workerPool.Description != nil {
 		d.Set("description", *workerPool.Description)
