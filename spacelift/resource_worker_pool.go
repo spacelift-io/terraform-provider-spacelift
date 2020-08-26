@@ -1,6 +1,14 @@
 package spacelift
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
+	"encoding/base64"
+	"encoding/pem"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -31,10 +39,23 @@ func resourceWorkerPool() *schema.Resource {
 				Description: "name of the worker pool",
 				Required:    true,
 			},
+			"csr": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "certificate signing request in base64",
+				Optional:    true,
+				Computed:    true,
+				Sensitive:   true,
+			},
 			"description": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "description of the worker pool",
 				Optional:    true,
+			},
+			"private_key": &schema.Schema{
+				Type:        schema.TypeString,
+				Description: "private key in base64",
+				Computed:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -44,10 +65,7 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	name := d.Get("name").(string)
 
 	var mutation struct {
-		WorkerPoolConfig struct {
-			Config     string             `graphql:"config"`
-			WorkerPool structs.WorkerPool `graphql:"workerPool"`
-		} `graphql:"workerPoolCreate(name: $name, description: $description)"`
+		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description)"`
 	}
 
 	variables := map[string]interface{}{
@@ -59,15 +77,58 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 		variables["description"] = graphql.String(desc.(string))
 	}
 
+	if desc, ok := d.GetOk("csr"); ok {
+		variables["csr"] = graphql.String(desc.(string))
+	} else {
+		privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
+		if err != nil {
+			return errors.Wrap(err, "couldn't generate private key")
+		}
+
+		subj := pkix.Name{
+			CommonName: "workers.spacelift.io",
+		}
+
+		asn1Subj, err := asn1.Marshal(subj.ToRDNSequence())
+		if err != nil {
+			return errors.Wrap(err, "couldn't marshal certificate subject")
+		}
+		template := x509.CertificateRequest{
+			RawSubject:         asn1Subj,
+			SignatureAlgorithm: x509.SHA256WithRSA,
+		}
+
+		csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, privateKey)
+		if err != nil {
+			return errors.Wrap(err, "couldn't create certificate request")
+		}
+
+		cert := base64.StdEncoding.EncodeToString(
+			pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes}),
+		)
+
+		privASN1, err := x509.MarshalPKCS8PrivateKey(privateKey)
+		if err != nil {
+			return errors.Wrap(err, "could not pkcs8 marshal private key")
+		}
+
+		d.Set("csr", cert)
+		d.Set("private_key", base64.StdEncoding.EncodeToString(
+			pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privASN1}),
+		))
+
+		variables["csr"] = graphql.String(cert)
+	}
+
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not create worker pool")
 	}
 
-	d.SetId(mutation.WorkerPoolConfig.WorkerPool.ID)
-	d.Set("config", mutation.WorkerPoolConfig.Config)
-	d.Set("name", mutation.WorkerPoolConfig.WorkerPool.Name)
+	d.SetId(mutation.WorkerPool.ID)
+	d.Set("config", mutation.WorkerPool.Config)
+	d.Set("name", mutation.WorkerPool.Name)
 
-	if description := mutation.WorkerPoolConfig.WorkerPool.Description; description != nil {
+	if description := mutation.WorkerPool.Description; description != nil {
 		d.Set("description", *description)
 	}
 
