@@ -15,4 +15,5 @@ type StackInput struct {
 	Provider         *graphql.String   `json:"provider"`
 	Repository       graphql.String    `json:"repository"`
 	TerraformVersion *graphql.String   `json:"terraformVersion"`
+	WorkerPool       *graphql.ID       `json:"workerPool"`
 }

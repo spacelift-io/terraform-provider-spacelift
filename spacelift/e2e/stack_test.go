@@ -30,19 +30,19 @@ func (e *StackTest) TestLifecycle_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","namespace":null,"projectRoot":"/project","provider":"GITHUB","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
+		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","namespace":null,"projectRoot":"/project","provider":"GITHUB","repository":"core-infra","terraformVersion":"0.12.6","workerPool":null},"manageState":true,"stackObjectID":"objectID"}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"autodeploy":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"},"gcp":{"serviceAccountEmail":null,"tokenScopes":[]},"webhooks":[]},"labels":["label"],"managesStateFile":true,"name":"Baby's first stack","namespace":"","projectRoot":"/project","provider":"GITHUB","repository":"core-infra","terraformVersion":"0.12.6"}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"autodeploy":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"},"gcp":{"serviceAccountEmail":null,"tokenScopes":[]},"webhooks":[]},"labels":["label"],"managesStateFile":true,"name":"Baby's first stack","namespace":"","projectRoot":"/project","provider":"GITHUB","repository":"core-infra","terraformVersion":"0.12.6","workerPool":null}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)
@@ -119,19 +119,19 @@ func (e *StackTest) TestLifecycleGitlab_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","namespace":"spacelift","projectRoot":"/project","provider":"GITLAB","repository":"core-infra","terraformVersion":"0.12.6"},"manageState":true,"stackObjectID":"objectID"}}`,
+		`{"query":"mutation($input:StackInput!$manageState:Boolean!$stackObjectID:String){stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"input":{"administrative":true,"autodeploy":true,"branch":"master","description":"My description","labels":["label"],"name":"Baby's first stack","namespace":"spacelift","projectRoot":"/project","provider":"GITLAB","repository":"core-infra","terraformVersion":"0.12.6","workerPool":"worker-pool"},"manageState":true,"stackObjectID":"objectID"}}`,
 		`{"data":{"stackCreate":{"id":"babys-first-stack"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"autodeploy":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"},"gcp":{"serviceAccountEmail":null,"tokenScopes":[]},"webhooks":[]},"labels":["label"],"managesStateFile":true,"name":"Baby's first stack","namespace":"spacelift","projectRoot":"/project","provider":"GITLAB","repository":"core-infra","terraformVersion":"0.12.6"}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"id":"babys-first-stack","administrative":true,"autodeploy":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"},"gcp":{"serviceAccountEmail":null,"tokenScopes":[]},"webhooks":[]},"labels":["label"],"managesStateFile":true,"name":"Baby's first stack","namespace":"spacelift","projectRoot":"/project","provider":"GITLAB","repository":"core-infra","terraformVersion":"0.12.6","workerPool":{"id":"worker-pool"}}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)
@@ -156,6 +156,7 @@ resource "spacelift_stack" "stack" {
 	project_root      = "/project"
 	repository        = "core-infra"
 	terraform_version = "0.12.6"
+	worker_pool_id    = "worker-pool"
 }
 
 data "spacelift_stack" "stack" {

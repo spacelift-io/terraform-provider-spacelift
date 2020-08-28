@@ -32,4 +32,7 @@ type Stack struct {
 	Provider         string   `graphql:"provider"`
 	Repository       string   `graphql:"repository"`
 	TerraformVersion *string  `graphql:"terraformVersion"`
+	WorkerPool       *struct {
+		ID string `graphql:"id"`
+	} `graphql:"workerPool"`
 }

@@ -12,32 +12,32 @@ func dataStack() *schema.Resource {
 		Read: dataStackRead,
 
 		Schema: map[string]*schema.Schema{
-			"administrative": &schema.Schema{
+			"administrative": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether this stack can administer others",
 				Computed:    true,
 			},
-			"autodeploy": &schema.Schema{
+			"autodeploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether changes to this stack can be automatically deployed",
 				Computed:    true,
 			},
-			"aws_assume_role_policy_statement": &schema.Schema{
+			"aws_assume_role_policy_statement": {
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
-			"branch": &schema.Schema{
+			"branch": {
 				Type:        schema.TypeString,
 				Description: "GitHub branch to apply changes to",
 				Computed:    true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form stack description for users",
 				Computed:    true,
 			},
-			"gitlab": &schema.Schema{
+			"gitlab": {
 				Type:        schema.TypeList,
 				Description: "Gitlab-related attributes",
 				Computed:    true,
@@ -50,39 +50,44 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
-			"labels": &schema.Schema{
+			"labels": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
-			"manage_state": &schema.Schema{
+			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
 				Computed:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the stack - should be unique in one account",
 				Computed:    true,
 			},
-			"project_root": &schema.Schema{
+			"project_root": {
 				Type:        schema.TypeString,
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Computed:    true,
 			},
-			"repository": &schema.Schema{
+			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
 				Computed:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID (slug) of the stack",
 				Required:    true,
 			},
-			"terraform_version": &schema.Schema{
+			"terraform_version": {
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
+				Computed:    true,
+			},
+			"worker_pool_id": {
+				Type:        schema.TypeString,
+				Description: "ID of the worker pool to use",
 				Computed:    true,
 			},
 		},
@@ -147,6 +152,12 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("terraform_version", *stack.TerraformVersion)
 	} else {
 		d.Set("terraform_version", nil)
+	}
+
+	if workerPool := stack.WorkerPool; workerPool != nil {
+		d.Set("worker_pool_id", workerPool.ID)
+	} else {
+		d.Set("worker_pool_id", nil)
 	}
 
 	return nil

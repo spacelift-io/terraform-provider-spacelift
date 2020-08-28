@@ -571,6 +571,7 @@ The following arguments are supported:
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
 - `project_root` - (Optional) - Directory that is relative to the workspace root containing the entrypoint to the Stack.;
 - `terraform_version` - (Optional) - Terraform version to use;
+- `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
 #### Attributes reference
 
