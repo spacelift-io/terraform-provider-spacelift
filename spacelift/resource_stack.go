@@ -25,34 +25,34 @@ func resourceStack() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"administrative": &schema.Schema{
+			"administrative": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether this stack can manage others",
 				Optional:    true,
 				Default:     false,
 			},
-			"autodeploy": &schema.Schema{
+			"autodeploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether changes to this stack can be automatically deployed",
 				Optional:    true,
 				Default:     false,
 			},
-			"aws_assume_role_policy_statement": &schema.Schema{
+			"aws_assume_role_policy_statement": {
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
-			"branch": &schema.Schema{
+			"branch": {
 				Type:        schema.TypeString,
 				Description: "GitHub branch to apply changes to",
 				Required:    true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form stack description for users",
 				Optional:    true,
 			},
-			"gitlab": &schema.Schema{
+			"gitlab": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
@@ -65,7 +65,7 @@ func resourceStack() *schema.Resource {
 					},
 				},
 			},
-			"import_state": &schema.Schema{
+			"import_state": {
 				Type:        schema.TypeString,
 				Description: "State file to upload when creating a new stack",
 				Optional:    true,
@@ -73,37 +73,42 @@ func resourceStack() *schema.Resource {
 					return d.Id() != ""
 				},
 			},
-			"labels": &schema.Schema{
+			"labels": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
-			"manage_state": &schema.Schema{
+			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
 				Optional:    true,
 				Default:     true,
 				ForceNew:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the stack - should be unique in one account",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"project_root": &schema.Schema{
+			"project_root": {
 				Type:        schema.TypeString,
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Optional:    true,
 			},
-			"repository": &schema.Schema{
+			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
 				Required:    true,
 			},
-			"terraform_version": &schema.Schema{
+			"terraform_version": {
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
+				Optional:    true,
+			},
+			"worker_pool_id": {
+				Type:        schema.TypeString,
+				Description: "ID of the worker pool to use",
 				Optional:    true,
 			},
 		},
@@ -196,6 +201,12 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("terraform_version", *terraformVersion)
 	}
 
+	if workerPool := stack.WorkerPool; workerPool != nil {
+		d.Set("worker_pool_id", workerPool.ID)
+	} else {
+		d.Set("worker_pool_id", nil)
+	}
+
 	return nil
 }
 
@@ -266,14 +277,16 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Labels = &labels
 	}
 
-	projectRoot, ok := d.GetOk("project_root")
-	if ok {
+	if projectRoot, ok := d.GetOk("project_root"); ok {
 		ret.ProjectRoot = toOptionalString(projectRoot)
 	}
 
-	terraformVersion, ok := d.GetOk("terraform_version")
-	if ok {
+	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
 		ret.TerraformVersion = toOptionalString(terraformVersion)
+	}
+
+	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
+		ret.WorkerPool = graphql.NewID(workerPoolID)
 	}
 
 	return ret
