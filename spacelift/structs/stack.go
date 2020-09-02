@@ -7,7 +7,7 @@ type Stack struct {
 	Autodeploy     bool    `graphql:"autodeploy"`
 	Branch         string  `graphql:"branch"`
 	Description    *string `graphql:"description"`
-	Integrations   struct {
+	Integrations   *struct {
 		AWS struct {
 			AssumedRoleARN            *string `graphql:"assumedRoleArn"`
 			AssumeRolePolicyStatement string  `graphql:"assumeRolePolicyStatement"`
