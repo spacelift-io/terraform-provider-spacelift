@@ -4,5 +4,6 @@ package structs
 type ContextAttachment struct {
 	ID       string `graphql:"id"`
 	StackID  string `graphql:"stackId"`
+	IsModule bool   `graphql:"isModule"`
 	Priority int    `graphql:"priority"`
 }

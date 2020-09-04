@@ -42,6 +42,12 @@ func dataMountedFile() *schema.Resource {
 				Optional:      true,
 				ConflictsWith: []string{"context_id"},
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module where the mounted file is stored",
+				Optional:      true,
+				ConflictsWith: []string{"context_id", "module_id"},
+			},
 			"write_only": &schema.Schema{
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the value can be read back outside a Run",
@@ -53,14 +59,19 @@ func dataMountedFile() *schema.Resource {
 
 func dataMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 	_, contextOK := d.GetOk("context_id")
+	_, moduleOK := d.GetOk("module_id")
 	_, stackOK := d.GetOk("stack_id")
 
-	if contextOK == stackOK {
-		return errors.New("either context_id or stack_id must be provided")
+	if !(contextOK || moduleOK || stackOK) {
+		return errors.New("either context_id or stack_id/module_id must be provided")
 	}
 
 	if contextOK {
 		return dataMountedFileReadContext(d, meta)
+	}
+
+	if moduleOK {
+		return dataMountedFileReadModule(d, meta)
 	}
 
 	return dataMountedFileReadStack(d, meta)
@@ -101,6 +112,40 @@ func dataMountedFileReadContext(d *schema.ResourceData, meta interface{}) error 
 	d.SetId(fmt.Sprintf("context/%s/%s", contextID, variableName))
 
 	populateMountedFile(d, query.Context.ConfigElement)
+
+	return nil
+}
+
+func dataMountedFileReadModule(d *schema.ResourceData, meta interface{}) error {
+	var query struct {
+		Module *struct {
+			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
+		} `graphql:"module(id: $module)"`
+	}
+
+	moduleID := d.Get("module_id")
+	variableName := d.Get("relative_path")
+
+	variables := map[string]interface{}{
+		"module": toID(moduleID),
+		"id":     toID(variableName),
+	}
+
+	if err := meta.(*Client).Query(&query, variables); err != nil {
+		return errors.Wrap(err, "could not query for module mounted file")
+	}
+
+	if query.Module == nil {
+		return errors.New("module not found")
+	}
+
+	if query.Module.ConfigElement == nil {
+		return errors.New("mounted file not found")
+	}
+
+	d.SetId(fmt.Sprintf("module/%s/%s", moduleID, variableName))
+
+	populateMountedFile(d, query.Module.ConfigElement)
 
 	return nil
 }

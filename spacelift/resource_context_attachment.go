@@ -36,10 +36,18 @@ func resourceContextAttachment() *schema.Resource {
 				ForceNew:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "ID of the stack to attach the context to",
-				Required:    true,
-				ForceNew:    true,
+				Type:          schema.TypeString,
+				Description:   "ID of the stack to attach the context to",
+				ConflictsWith: []string{"module_id"},
+				Optional:      true,
+				ForceNew:      true,
+			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module to attach the context to",
+				ConflictsWith: []string{"stack_id"},
+				Optional:      true,
+				ForceNew:      true,
 			},
 		},
 	}
@@ -54,8 +62,15 @@ func resourceContextAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 
 	variables := map[string]interface{}{
 		"id":       toID(contextID),
-		"stack":    toID(d.Get("stack_id")),
 		"priority": graphql.Int(d.Get("priority").(int)),
+	}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["stack"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["stack"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
@@ -95,7 +110,12 @@ func resourceContextAttachmentRead(d *schema.ResourceData, meta interface{}) err
 	attachment := query.Context.Attachment
 	d.Set("context_id", idParts[0])
 	d.Set("priority", attachment.Priority)
-	d.Set("stack_id", attachment.StackID)
+
+	if attachment.IsModule {
+		d.Set("module_id", attachment.StackID)
+	} else {
+		d.Set("stack_id", attachment.StackID)
+	}
 
 	return nil
 }

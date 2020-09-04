@@ -30,9 +30,16 @@ func dataContextAttachment() *schema.Resource {
 				Computed:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "ID of the attached stack",
-				Computed:    true,
+				Type:          schema.TypeString,
+				Description:   "ID of the attached stack",
+				ConflictsWith: []string{"module_id"},
+				Computed:      true,
+			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the attached module",
+				ConflictsWith: []string{"stack_id"},
+				Computed:      true,
 			},
 		},
 	}
@@ -74,7 +81,12 @@ func dataContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	attachment := query.Context.Attachment
 	d.SetId(attachmentID.(string))
 	d.Set("priority", attachment.Priority)
-	d.Set("stack_id", attachment.StackID)
+
+	if attachment.IsModule {
+		d.Set("module_id", attachment.StackID)
+	} else {
+		d.Set("stack_id", attachment.StackID)
+	}
 
 	return nil
 }

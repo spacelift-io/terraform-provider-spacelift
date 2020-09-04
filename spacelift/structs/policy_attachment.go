@@ -4,4 +4,5 @@ package structs
 type PolicyAttachment struct {
 	ID       string `graphql:"id"`
 	StackID  string `graphql:"stackId"`
+	IsModule bool   `graphql:"isModule"`
 }
