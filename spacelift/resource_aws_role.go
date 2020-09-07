@@ -11,12 +11,12 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
-func resourceStackAWSRole() *schema.Resource {
+func resourceAWSRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceStackAWSRoleCreate,
-		Read:   resourceStackAWSRoleRead,
-		Update: resourceStackAWSRoleUpdate,
-		Delete: resourceStackAWSRoleDelete,
+		Create: resourceAWSRoleCreate,
+		Read:   resourceAWSRoleRead,
+		Update: resourceAWSRoleUpdate,
+		Delete: resourceAWSRoleDelete,
 
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -29,23 +29,40 @@ func resourceStackAWSRole() *schema.Resource {
 				Required:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "ID of the stack which assumes the AWS IAM role",
-				Required:    true,
-				ForceNew:    true,
+				Type:          schema.TypeString,
+				Description:   "ID of the stack which assumes the AWS IAM role",
+				ConflictsWith: []string{"module_id"},
+				Optional:      true,
+				ForceNew:      true,
+			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module which assumes the AWS IAM role",
+				ConflictsWith: []string{"stack_id"},
+				Optional:      true,
+				ForceNew:      true,
 			},
 		},
 	}
 }
 
-func resourceStackAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
-	stackID := d.Get("stack_id").(string)
+func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
+	var stackID string
+
 	roleARN := d.Get("role_arn").(string)
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		stackID = stackID.(string)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		stackID = moduleID.(string)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
+	}
 
 	var err error
 
 	for i := 0; i < 5; i++ {
-		err = resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN)
+		err = resourceAWSRoleSet(meta.(*Client), stackID, roleARN)
 		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
 			break
 		}
@@ -63,7 +80,7 @@ func resourceStackAWSRoleCreate(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
@@ -88,18 +105,18 @@ func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceStackAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 	stackID := d.Get("stack_id").(string)
 	roleARN := d.Get("role_arn").(string)
 
-	if err := resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN); err != nil {
+	if err := resourceAWSRoleSet(meta.(*Client), stackID, roleARN); err != nil {
 		return errors.Wrap(err, "could not update AWS role delegation")
 	}
 
 	return nil
 }
 
-func resourceStackAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
@@ -120,7 +137,7 @@ func resourceStackAWSRoleDelete(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceStackAWSRoleSet(client *Client, stackID, roleARN string) error {
+func resourceAWSRoleSet(client *Client, stackID, roleARN string) error {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`

@@ -26,6 +26,11 @@ func resourceModule() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"aws_assume_role_policy_statement": {
+				Type:        schema.TypeString,
+				Description: "AWS IAM assume role policy statement setting up trust relationship",
+				Computed:    true,
+			},
 			"branch": {
 				Type:        schema.TypeString,
 				Description: "GitHub branch to apply changes to",

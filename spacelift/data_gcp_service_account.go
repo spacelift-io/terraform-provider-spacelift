@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func dataStackGCPServiceAccount() *schema.Resource {
+func dataGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
 		Read: dataStackGCPServiceAccountRead,
 

@@ -8,12 +8,12 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
-func resourceStackGCPServiceAccount() *schema.Resource {
+func resourceGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceStackGCPServiceAccountCreate,
-		Read:   resourceStackGCPServiceAccountRead,
-		Update: resourceStackGCPServiceAccountCreate,
-		Delete: resourceStackGCPServiceAccountDelete,
+		Create: resourceGCPServiceAccountCreate,
+		Read:   resourceGCPServiceAccountRead,
+		Update: resourceGCPServiceAccountCreate,
+		Delete: resourceGCPServiceAccountDelete,
 
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -25,11 +25,19 @@ func resourceStackGCPServiceAccount() *schema.Resource {
 				Description: "Email address of the GCP service account dedicated for this stack",
 				Computed:    true,
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the stack which uses GCP service account credentials",
+				Optional:      true,
+				ConflictsWith: []string{"stack_id"},
+				ForceNew:      true,
+			},
 			"stack_id": &schema.Schema{
-				Type:        schema.TypeString,
-				Description: "ID of the stack which uses GCP service account credentials",
-				Required:    true,
-				ForceNew:    true,
+				Type:          schema.TypeString,
+				Description:   "ID of the module which uses GCP service account credentials",
+				Optional:      true,
+				ConflictsWith: []string{"module_id"},
+				ForceNew:      true,
 			},
 			"token_scopes": &schema.Schema{
 				Type:        schema.TypeSet,
@@ -43,7 +51,7 @@ func resourceStackGCPServiceAccount() *schema.Resource {
 	}
 }
 
-func resourceStackGCPServiceAccountCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceGCPServiceAccountCreate(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
 		CreateGCPIntegration struct {
 			Activated bool `graphql:"activated"`
@@ -55,10 +63,17 @@ func resourceStackGCPServiceAccountCreate(d *schema.ResourceData, meta interface
 		tokenScopes = append(tokenScopes, graphql.String(scope.(string)))
 	}
 
-	stackID := d.Get("stack_id").(string)
+	var id string
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		id = stackID.(string)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		id = moduleID.(string)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
+	}
 
 	variables := map[string]interface{}{
-		"id":          toID(stackID),
+		"id":          toID(id),
 		"tokenScopes": tokenScopes,
 	}
 
@@ -71,20 +86,27 @@ func resourceStackGCPServiceAccountCreate(d *schema.ResourceData, meta interface
 	}
 
 	if d.Id() == "" {
-		d.SetId(stackID)
+		d.SetId(id)
 	}
 
-	return resourceStackGCPServiceAccountRead(d, meta)
+	return resourceGCPServiceAccountRead(d, meta)
 }
 
-func resourceStackGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
+func resourceGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
+	if _, ok := d.GetOk("module_id"); ok {
+		return resourceModuleGCPServiceAccountReadWithHooks(d, meta, func(_ string) error {
+			d.SetId("")
+			return nil
+		})
+	}
+
 	return resourceStackGCPServiceAccountReadWithHooks(d, meta, func(_ string) error {
 		d.SetId("")
 		return nil
 	})
 }
 
-func resourceStackGCPServiceAccountDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceGCPServiceAccountDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
 		DeleteGCPIntegration struct {
 			Activated bool `graphql:"activated"`
@@ -102,6 +124,39 @@ func resourceStackGCPServiceAccountDelete(d *schema.ResourceData, meta interface
 	}
 
 	d.SetId("")
+
+	return nil
+}
+
+func resourceModuleGCPServiceAccountReadWithHooks(d *schema.ResourceData, meta interface{}, onNil func(message string) error) error {
+	var query struct {
+		Module *structs.Module `graphql:"module(id: $id)"`
+	}
+
+	variables := map[string]interface{}{"id": toID(d.Id())}
+
+	if err := meta.(*Client).Query(&query, variables); err != nil {
+		return errors.Wrap(err, "could not query for module")
+	}
+
+	if query.Module == nil {
+		return onNil("module not found")
+	}
+
+	integration := query.Module.Integrations.GCP
+	serviceAccountEmail := integration.ServiceAccountEmail
+
+	if serviceAccountEmail == nil {
+		return onNil("GCP integration not activated")
+	}
+
+	d.Set("service_account_email", *serviceAccountEmail)
+
+	tokenScopes := schema.NewSet(schema.HashString, []interface{}{})
+	for _, scope := range integration.TokenScopes {
+		tokenScopes.Add(scope)
+	}
+	d.Set("token_scopes", tokenScopes)
 
 	return nil
 }
