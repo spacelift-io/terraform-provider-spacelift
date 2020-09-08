@@ -24,6 +24,12 @@ func dataContextAttachment() *schema.Resource {
 				Description: "ID of the attached context",
 				Computed:    true,
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the attached module",
+				ConflictsWith: []string{"stack_id"},
+				Computed:      true,
+			},
 			"priority": &schema.Schema{
 				Type:        schema.TypeInt,
 				Description: "Priority of the context attachment, used in case of conflicts",
@@ -33,12 +39,6 @@ func dataContextAttachment() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "ID of the attached stack",
 				ConflictsWith: []string{"module_id"},
-				Computed:      true,
-			},
-			"module_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the attached module",
-				ConflictsWith: []string{"stack_id"},
 				Computed:      true,
 			},
 		},

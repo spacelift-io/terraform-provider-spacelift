@@ -148,10 +148,22 @@ See the [context attachment resource](#spacelift_context_attachment-resource) fo
 
 #### Example usage
 
+For a stack:
+
 ```python
 resource "spacelift_context_attachment" "attachment" {
   context_id = "prod-k8s-ie"
   stack_id   = "k8s-core"
+  priority   = 0
+}
+```
+
+For a module:
+
+```python
+resource "spacelift_context_attachment" "attachment" {
+  context_id = "prod-k8s-ie"
+  module_id  = "k8s-module"
   priority   = 0
 }
 ```
@@ -161,8 +173,11 @@ resource "spacelift_context_attachment" "attachment" {
 The following arguments are supported:
 
 - `context_id` - (Required) - ID of the context to attach;
-- `stack_id` - (Required) - ID of the stack to attach the context to;
+- `module_id` - (Optional) - ID of the module to attach the context to;
+- `stack_id` - (Optional) - ID of the stack to attach the context to;
 - `priority` - (Optional) - Priority of the context attachment, used in cases where multiple contexts define the same value: the one with the lowest `priority` value will take precedence;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
