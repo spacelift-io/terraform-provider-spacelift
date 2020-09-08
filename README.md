@@ -513,8 +513,11 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 
 The following arguments are supported:
 
+- `module_id` - (Optional) - ID of the module to attach the policy to;
 - `policy_id` - (Required) - ID of the policy to attach;
-- `stack_id` - (Required) - ID of the stack to attach the policy to;
+- `stack_id` - (Optional) - ID of the stack to attach the policy to;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 

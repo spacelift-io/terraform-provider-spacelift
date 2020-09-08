@@ -35,11 +35,10 @@ func resourcePolicyAttachment() *schema.Resource {
 				ForceNew:      true,
 			},
 			"stack_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the stack to attach the policy to",
-				ConflictsWith: []string{"module_id"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the stack to attach the policy to",
+				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
