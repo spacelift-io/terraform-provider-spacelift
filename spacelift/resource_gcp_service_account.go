@@ -27,17 +27,16 @@ func resourceGCPServiceAccount() *schema.Resource {
 			},
 			"module_id": &schema.Schema{
 				Type:          schema.TypeString,
-				Description:   "ID of the stack which uses GCP service account credentials",
+				Description:   "ID of the module which uses GCP service account credentials",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
 			"stack_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the module which uses GCP service account credentials",
-				Optional:      true,
-				ConflictsWith: []string{"module_id"},
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the stack which uses GCP service account credentials",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"token_scopes": &schema.Schema{
 				Type:        schema.TypeSet,

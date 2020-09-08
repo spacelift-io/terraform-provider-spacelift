@@ -7,7 +7,7 @@ import (
 
 func dataGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataStackGCPServiceAccountRead,
+		Read: dataGCPServiceAccountRead,
 
 		Schema: map[string]*schema.Schema{
 			"service_account_email": &schema.Schema{
@@ -15,10 +15,16 @@ func dataGCPServiceAccount() *schema.Resource {
 				Description: "Email address of the GCP service account dedicated for this stack",
 				Computed:    true,
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the stack which uses GCP service account credentials",
+				ConflictsWith: []string{"stack_id"},
+				Optional:      true,
+			},
 			"stack_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "ID of the stack which uses GCP service account credentials",
-				Required:    true,
+				Optional:    true,
 			},
 			"token_scopes": &schema.Schema{
 				Type:     schema.TypeSet,
@@ -29,12 +35,23 @@ func dataGCPServiceAccount() *schema.Resource {
 	}
 }
 
-func dataStackGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
+func dataGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
+	var err error
 	d.SetId(d.Get("stack_id").(string))
 
-	err := resourceStackGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
-		return errors.New(message)
-	})
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		d.SetId(stackID.(string))
+		err = resourceStackGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
+			return errors.New(message)
+		})
+	}
+
+	if moduleID, ok := d.GetOk("module_id"); ok {
+		d.SetId(moduleID.(string))
+		err = resourceModuleGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
+			return errors.New(message)
+		})
+	}
 
 	if err != nil {
 		d.SetId("")
