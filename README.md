@@ -202,6 +202,15 @@ data "spacelift_environment_variable" "ireland-kubeconfig" {
 }
 ```
 
+For a module:
+
+```python
+data "spacelift_environment_variable" "core-kubeconfig" {
+  module_id = "k8s-module"
+  name     = "KUBECONFIG"
+}
+```
+
 For a stack:
 
 ```python
@@ -217,9 +226,10 @@ The following arguments are supported:
 
 - `name` - (Required) - Name of the environment variable;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
+- `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id`, `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -238,6 +248,17 @@ For a context:
 ```python
 resource "spacelift_environment_variable" "ireland-kubeconfig" {
   context_id = "prod-k8s-ie"
+  name       = "KUBECONFIG"
+  value      = "/project/spacelift/kubeconfig"
+  write_only = false
+}
+```
+
+For a module:
+
+```python
+resource "spacelift_environment_variable" "core-kubeconfig" {
+  module_id   = "k8s-module"
   name       = "KUBECONFIG"
   value      = "/project/spacelift/kubeconfig"
   write_only = false
@@ -263,9 +284,10 @@ The following arguments are supported:
 - `value` - (Required) - Value of the environment variable;
 - `write_only` - (Optional) - Indicates whether the value can be read back outside a Run - for safety, this defaults to **true**;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
+- `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id`, `module_id`, `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 Also note that if `write_only` is set to `true`, the `value` is not stored in the state, and will not be reported back by either the data source or the resource. Instead, its SHA-256 checksum will be used to compare the new value to the one passed to Spacelift.
 

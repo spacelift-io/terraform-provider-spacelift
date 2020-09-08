@@ -23,6 +23,12 @@ func dataEnvironmentVariable() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "ID of the context on which the environment variable is defined",
 				Optional:      true,
+				ConflictsWith: []string{"stack_id", "module_id"},
+			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module on which the environment variable is defined",
+				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 			},
 			"name": &schema.Schema{
@@ -31,16 +37,9 @@ func dataEnvironmentVariable() *schema.Resource {
 				Required:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the stack on which the environment variable is defined",
-				Optional:      true,
-				ConflictsWith: []string{"context_id", "module_id"},
-			},
-			"module_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the module on which the environment variable is defined",
-				Optional:      true,
-				ConflictsWith: []string{"context_id", "stack_id"},
+				Type:        schema.TypeString,
+				Description: "ID of the stack on which the environment variable is defined",
+				Optional:    true,
 			},
 			"value": &schema.Schema{
 				Type:        schema.TypeString,

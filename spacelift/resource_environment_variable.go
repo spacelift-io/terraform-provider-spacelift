@@ -39,9 +39,9 @@ func resourceEnvironmentVariable() *schema.Resource {
 			},
 			"module_id": &schema.Schema{
 				Type:          schema.TypeString,
-				Description:   "ID of the stack on which the environment variable is defined",
+				Description:   "ID of the module on which the environment variable is defined",
 				Optional:      true,
-				ConflictsWith: []string{"context_id", "stack_id"},
+				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
 			"name": &schema.Schema{
@@ -51,11 +51,10 @@ func resourceEnvironmentVariable() *schema.Resource {
 				ForceNew:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the stack on which the environment variable is defined",
-				Optional:      true,
-				ConflictsWith: []string{"context_id", "module_id"},
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the stack on which the environment variable is defined",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"value": &schema.Schema{
 				Type:             schema.TypeString,
