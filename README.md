@@ -258,7 +258,7 @@ For a module:
 
 ```python
 resource "spacelift_environment_variable" "core-kubeconfig" {
-  module_id   = "k8s-module"
+  module_id  = "k8s-module"
   name       = "KUBECONFIG"
   value      = "/project/spacelift/kubeconfig"
   write_only = false
@@ -315,6 +315,15 @@ data "spacelift_mounted_file" "ireland-kubeconfig" {
 }
 ```
 
+For a module:
+
+```python
+data "spacelift_mounted_file" "core-kubeconfig" {
+  module_id     = "k8s-core"
+  relative_path = "kubeconfig"
+}
+```
+
 For a stack:
 
 ```python
@@ -330,9 +339,10 @@ The following arguments are supported:
 
 - `relative_path` - (Required) - Relative path to the mounted file. The full (absolute) path to the file will be prefixed with `/spacelift/project/`;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
+- `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id` `module_id`,`stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -356,6 +366,16 @@ resource "spacelift_mounted_file" "ireland-kubeconfig" {
 }
 ```
 
+For a module:
+
+```python
+resource "spacelift_mounted_file" "core-kubeconfig" {
+  module_id     = "k8s-core"
+  relative_path = "kubeconfig"
+  value         = filebase64("${path.module}/kubeconfig.json")
+}
+```
+
 For a stack:
 
 ```python
@@ -373,10 +393,11 @@ The following arguments are supported:
 - `content` - (Required) - Content of the mounted file encoded using Base-64;
 - `relative_path` - (Required) - Relative path to the mounted file, without the `/spacelift/project/` prefix;
 - `context_id` - (Optional) - ID of the context on which the mounted file is defined;
+- `module_id` - (Optional) - ID of the module on which the mounted file is defined;
 - `stack_id` - (Optional) - ID of the stack on which the mounted file is defined;
 - `write_only` - (Optional) - Indicates whether the content can be read back outside a Run;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id`, `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 Also note that if `write_only` is set to `true`, the `content` is not stored in the state, and will not be reported back by either the data source or the resource. Instead, its SHA-256 checksum will be used to compare the new value to the one passed to Spacelift.
 

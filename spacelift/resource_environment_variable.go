@@ -100,7 +100,7 @@ func resourceEnvironmentVariableCreate(d *schema.ResourceData, meta interface{})
 		variables["stack"] = toID(moduleID)
 	}
 
-	if contextOK == (stackOK || moduleOK) {
+	if !(contextOK || stackOK || moduleOK) {
 		return errors.New("either context_id or stack_id/module_id must be provided")
 	}
 
@@ -129,24 +129,38 @@ func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *Cl
 	return resourceEnvironmentVariableRead(d, client)
 }
 
-func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceEnvironmentVariableCreateModule(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
 	var mutation struct {
-		AddConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
+		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create stack/module environment variable")
+		return errors.Wrap(err, "could not create module environment variable")
 	}
 
 	if d.Get("write_only").(bool) {
 		d.Set("value", "")
 	}
 
-	if module, ok := d.GetOk("module_id"); ok {
-		d.SetId(fmt.Sprintf("module/%s/%s", module, d.Get("name")))
-	} else {
-		d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("name")))
+	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("name")))
+
+	return resourceEnvironmentVariableRead(d, client)
+}
+
+func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+	var mutation struct {
+		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
+
+	if err := client.Mutate(&mutation, variables); err != nil {
+		return errors.Wrap(err, "could not create stack environment variable")
+	}
+
+	if d.Get("write_only").(bool) {
+		d.Set("value", "")
+	}
+
+	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("name")))
 
 	return resourceEnvironmentVariableRead(d, client)
 }

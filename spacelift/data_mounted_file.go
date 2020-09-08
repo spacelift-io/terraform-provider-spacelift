@@ -29,6 +29,12 @@ func dataMountedFile() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "ID of the context where the mounted file is stored",
 				Optional:      true,
+				ConflictsWith: []string{"stack_id", "module_id"},
+			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module where the mounted file is stored",
+				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 			},
 			"relative_path": &schema.Schema{
@@ -37,16 +43,9 @@ func dataMountedFile() *schema.Resource {
 				Required:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the stack where the mounted file is stored",
-				Optional:      true,
-				ConflictsWith: []string{"context_id"},
-			},
-			"module_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the module where the mounted file is stored",
-				Optional:      true,
-				ConflictsWith: []string{"context_id", "module_id"},
+				Type:        schema.TypeString,
+				Description: "ID of the stack where the mounted file is stored",
+				Optional:    true,
 			},
 			"write_only": &schema.Schema{
 				Type:        schema.TypeBool,
