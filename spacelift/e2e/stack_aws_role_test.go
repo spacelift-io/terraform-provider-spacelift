@@ -15,7 +15,6 @@ type AWSRoleTest struct {
 func (e *AWSRoleTest) TestLifecycle_Module() {
 	defer gock.Off()
 
-	gock.Observe(gock.DumpRequest)
 	e.posts(
 		`{"query":"mutation($id:ID!$roleArn:String!){stackIntegrationAwsCreate(id: $id, roleArn: $roleArn){activated}}","variables":{"id":"babys-first-module","roleArn":"arn:aws:iam::075108987694:role/terraform"}}`,
 		`{"data":{"stackIntegrationAwsCreate":{"activated":true}}}`,

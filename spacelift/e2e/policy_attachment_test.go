@@ -15,7 +15,6 @@ type PolicyAttachmentTest struct {
 func (e *PolicyAttachmentTest) TestLifecycle_Module() {
 	defer gock.Off()
 
-	gock.Observe(gock.DumpRequest)
 	e.posts( // Mocking out the policy attachment mutation.
 		`{"query":"mutation($id:ID!$stack:ID!){policyAttach(id: $id, stack: $stack){id,stackId,isModule}}","variables":{"id":"babys-first-policy","stack":"babys-first-module"}}`,
 		`{"data":{"policyAttach":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}}`,
@@ -54,8 +53,6 @@ resource "spacelift_policy_attachment" "attachment" {
 
 func (e *PolicyAttachmentTest) TestLifecycle_Stack() {
 	defer gock.Off()
-
-	gock.Observe(gock.DumpRequest)
 
 	e.posts( // Mocking out the policy attachment mutation.
 		`{"query":"mutation($id:ID!$stack:ID!){policyAttach(id: $id, stack: $stack){id,stackId,isModule}}","variables":{"id":"babys-first-policy","stack":"babys-first-stack"}}`,

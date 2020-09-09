@@ -1,6 +1,6 @@
 package structs
 
-// Module represents the Stack data relevant to the provider.
+// Module represents the Module data relevant to the provider.
 type Module struct {
 	ID             string  `graphql:"id"`
 	Administrative bool    `graphql:"administrative"`
