@@ -72,7 +72,6 @@ data "spacelift_environment_variable" "context_variable" {
 
 func (e *EnvironmentVariableTest) TestLifecycle_Module() {
 	defer gock.Off()
-
 	e.posts(
 		`{"query":"query($id:ID!$module:ID!){module(id: $module){configElement(id: $id){id,checksum,type,value,writeOnly}}}","variables":{"id":"SECRET_KEY","module":"babys-first-module"}}`,
 		`{"data":{"module":{"configElement":{"id":"module/babys-first-module/SECRET_KEY","checksum":"f64b79a7d2493ddbb9aacaa69d6cca134ef190c8ed45a217cf640d93032af1c1","type":"ENVIRONMENT_VARIABLE","value":null,"writeOnly":true}}}}`,

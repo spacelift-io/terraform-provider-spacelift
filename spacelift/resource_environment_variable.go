@@ -108,6 +108,10 @@ func resourceEnvironmentVariableCreate(d *schema.ResourceData, meta interface{})
 		return resourceEnvironmentVariableCreateContext(d, meta.(*Client), variables)
 	}
 
+	if moduleOK {
+		return resourceEnvironmentVariableCreateModule(d, meta.(*Client), variables)
+	}
+
 	return resourceEnvironmentVariableCreateStack(d, meta.(*Client), variables)
 }
 
