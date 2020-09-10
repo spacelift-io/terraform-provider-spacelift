@@ -84,7 +84,11 @@ func resourceAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return resourceModuleRead(d, meta)
 	}
 
-	return resourceStackRead(d, meta)
+	if _, ok := d.GetOk("stack_id"); ok {
+		return resourceStackRead(d, meta)
+	}
+
+	return errors.New("either module_id or stack_id must be provided")
 }
 
 func resourceModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {

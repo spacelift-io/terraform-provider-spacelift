@@ -57,7 +57,6 @@ resource "spacelift_module" "module" {
 	branch            = "master"
 	description       = "My description"
 	labels            = ["label"]
-	namespace         = "terraform-super-module"
 	repository        = "core-infra"
 }
 
@@ -150,7 +149,7 @@ data "spacelift_module" "module" {
 				// Test resource.
 				resource.TestCheckResourceAttr("spacelift_module.module", "id", "babys-first-module"),
 				resource.TestCheckResourceAttr("spacelift_module.module", "administrative", "true"),
-				// resource.TestCheckResourceAttr("spacelift_module.module", "aws_assume_role_policy_statement", "bacon"),
+				resource.TestCheckResourceAttr("spacelift_module.module", "aws_assume_role_policy_statement", "bacon"),
 				resource.TestCheckResourceAttr("spacelift_module.module", "branch", "master"),
 				resource.TestCheckResourceAttr("spacelift_module.module", "description", "My description"),
 				resource.TestCheckResourceAttr("spacelift_module.module", "gitlab.#", "1"),

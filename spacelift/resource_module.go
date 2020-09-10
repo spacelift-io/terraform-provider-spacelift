@@ -59,11 +59,6 @@ func resourceModule() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
-			"namespace": {
-				Type:        schema.TypeString,
-				Description: "Name of the module - should be unique in one account",
-				Optional:    true,
-			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -104,7 +99,7 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
 	if err := meta.(*Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+		return errors.Wrap(err, "could not query for module")
 	}
 
 	module := query.Module
@@ -116,7 +111,6 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("administrative", module.Administrative)
 	d.Set("branch", module.Branch)
-	d.Set("namespace", module.Namespace)
 	d.Set("repository", module.Repository)
 
 	if description := module.Description; description != nil {
@@ -197,10 +191,6 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 	}
 	if !foundGitlab {
 		ret.Provider = graphql.NewString("GITHUB")
-	}
-
-	if namepsace, ok := d.GetOk("namespace"); !foundGitlab && ok {
-		ret.Provider = toString(d.Get("namespace"))
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {

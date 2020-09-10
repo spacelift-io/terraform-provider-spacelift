@@ -50,11 +50,6 @@ func dataModule() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
-			"namespace": {
-				Type:        schema.TypeString,
-				Description: "Name of the repository, without the owner part",
-				Computed:    true,
-			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
