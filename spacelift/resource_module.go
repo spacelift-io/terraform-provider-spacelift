@@ -22,7 +22,7 @@ func resourceModule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this stack can manage others",
+				Description: "Indicates whether this module can manage others",
 				Optional:    true,
 				Default:     false,
 			},
@@ -38,7 +38,7 @@ func resourceModule() *schema.Resource {
 			},
 			"description": {
 				Type:        schema.TypeString,
-				Description: "Free-form stack description for users",
+				Description: "Free-form module description for users",
 				Optional:    true,
 			},
 			"gitlab": {
@@ -61,7 +61,7 @@ func resourceModule() *schema.Resource {
 			},
 			"namespace": {
 				Type:        schema.TypeString,
-				Description: "Name of the stack - should be unique in one account",
+				Description: "Name of the module - should be unique in one account",
 				Optional:    true,
 			},
 			"repository": {
@@ -107,23 +107,25 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.Wrap(err, "could not query for stack")
 	}
 
-	stack := query.Module
-	if stack == nil {
+	module := query.Module
+	if module == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("administrative", stack.Administrative)
-	d.Set("branch", stack.Branch)
-	d.Set("repository", stack.Repository)
+	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("administrative", module.Administrative)
+	d.Set("branch", module.Branch)
+	d.Set("namespace", module.Namespace)
+	d.Set("repository", module.Repository)
 
-	if description := stack.Description; description != nil {
+	if description := module.Description; description != nil {
 		d.Set("description", *description)
 	}
 
-	if stack.Provider == "GITLAB" {
+	if module.Provider == "GITLAB" {
 		m := map[string]interface{}{
-			"namespace": stack.Namespace,
+			"namespace": module.Namespace,
 		}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
@@ -132,12 +134,12 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
-	for _, label := range stack.Labels {
+	for _, label := range module.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
-	if workerPool := stack.WorkerPool; workerPool != nil {
+	if workerPool := module.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)
 	} else {
 		d.Set("worker_pool_id", nil)
@@ -171,7 +173,7 @@ func resourceModuleDelete(d *schema.ResourceData, meta interface{}) error {
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete stack")
+		return errors.Wrap(err, "could not delete module")
 	}
 
 	d.SetId("")
@@ -181,16 +183,8 @@ func resourceModuleDelete(d *schema.ResourceData, meta interface{}) error {
 
 func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 	ret := structs.ModuleCreateInput{
-		UpdateInput: structs.ModuleUpdateInput{
-			Administrative: graphql.Boolean(d.Get("administrative").(bool)),
-			Branch:         toString(d.Get("branch")),
-		},
-		Repository: toString(d.Get("repository")),
-	}
-
-	description, ok := d.GetOk("description")
-	if ok {
-		ret.UpdateInput.Description = toOptionalString(description)
+		UpdateInput: moduleUpdateInput(d),
+		Repository:  toString(d.Get("repository")),
 	}
 
 	foundGitlab := false
@@ -205,12 +199,8 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		ret.Provider = graphql.NewString("GITHUB")
 	}
 
-	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		var labels []graphql.String
-		for _, label := range labelSet.List() {
-			labels = append(labels, graphql.String(label.(string)))
-		}
-		ret.UpdateInput.Labels = &labels
+	if namepsace, ok := d.GetOk("namespace"); !foundGitlab && ok {
+		ret.Provider = toString(d.Get("namespace"))
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
