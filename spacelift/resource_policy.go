@@ -21,29 +21,30 @@ func resourcePolicy() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the policy - should be unique in one account",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:        schema.TypeString,
 				Description: "Body of the policy",
 				Required:    true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:        schema.TypeString,
 				Description: "Body of the policy",
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice(
 					[]string{
+						"GIT_PUSH",
+						"INITIALIZATION",
 						"LOGIN",
 						"STACK_ACCESS",
-						"INITIALIZATION",
-						"TERRAFORM_PLAN",
 						"TASK_RUN",
+						"TERRAFORM_PLAN",
 					},
 					false,
 				),

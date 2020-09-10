@@ -25,6 +25,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_context":              dataContext(),
 			"spacelift_environment_variable": dataEnvironmentVariable(),
 			"spacelift_gcp_service_account":  dataGCPServiceAccount(),
+			"spacelift_ips":                  dataIPs(),
 			"spacelift_module":               dataModule(),
 			"spacelift_mounted_file":         dataMountedFile(),
 			"spacelift_policy":               dataPolicy(),

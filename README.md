@@ -58,6 +58,7 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_context` - [data source](#spacelift_context-data-source) and [resource](#spacelift_context-resource);
 - `spacelift_context_attachment` - [data source](#spacelift_context_attachment_data-source) and [resource](#spacelift_context_attachment_resource);
 - `spacelift_environment_variable` - [data source](#spacelift_environment_variable-data-source) and [resource](#spacelift_environment_variable-resource);
+- `spacelift_ips` - [data source](#spacelift_ips-data-source);
 - `spacelift_module` - [data source](#spacelift_module-data-source) and [resource](#spacelift_module-resource);
 - `spacelift_mounted_file` - [data source](#spacelift_mounted_file-data-source) and [resource](#spacelift_mounted_file-resource);
 - `spacelift_policy` - [data source](#spacelift_policy-data-source) and [resource](#spacelift_policy-resource);
@@ -298,6 +299,28 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - ID of the environment variable;
 - `checksum` - SHA-256 checksum of the value;
+
+[^ Back to all resources](#resources)
+
+### `spacelift_ips` data source
+
+`spacelift_ips` returns the list of Spacelift's outgoing IP addresses, which you can use to whitelist connections coming from the Spacelift's "mothership".
+
+#### Example usage
+
+```python
+data "spacelift_ips" "ips" {}
+```
+
+#### Argument reference
+
+This data source does not support arguments.
+
+#### Attributes reference
+
+The following attributes are exported:
+
+- `ids` - set of Spacelift's outgoing IPs;
 
 [^ Back to all resources](#resources)
 
