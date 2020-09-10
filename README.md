@@ -303,13 +303,13 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_module` data source
 
-`spacelift_module` combines source code and configuration to create a runtime environment where resources are managed. In this way it's similar to a stack in AWS CloudFormation, or a project on generic CI/CD platforms.
+`spacelift_module` is a special type of [stack](#spacelift_stack-resource) used to test Terraform modules.
 
 #### Example usage
 
 ```python
-data "spacelift_module" "k8s-core" {
-  module_id = "k8s-core"
+data "spacelift_module" "k8s-module" {
+  module_id = "k8s-module"
 }
 ```
 
@@ -327,27 +327,24 @@ See the [module resource](#spacelift_module-resource) for details on the returne
 
 ### `spacelift_module` resource
 
-`spacelift_module` combines source code and configuration to create a runtime environment where resources are managed. In this way it's similar to a stack in AWS CloudFormation, or a project on generic CI/CD platforms.
+`spacelift_module` is a special type of [stack](#spacelift_stack-resource) used to test Terraform modules.
 
 #### Example usage
 
 ```python
-resource "spacelift_module" "k8s-core" {
+resource "spacelift_module" "k8s-module" {
   administrative    = true
-  autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
+  description       = "Infra terraform module"
   project_root      = "/project"
-  repository        = "core-infra"
-  terraform_version = "0.12.6"
+  repository        = "terraform-super-module"
 }
 ```
 
 For Gitlab-hosted repositories:
 
 ```python
-resource "spacelift_module" "k8s-core-gitlab" {
+resource "spacelift_module" "k8s-module-gitlab" {
   gitlab {
     namespace = "spacelift"
   }
@@ -355,21 +352,18 @@ resource "spacelift_module" "k8s-core-gitlab" {
   administrative    = true
   autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
-  repository        = "core-infra"
-  terraform_version = "0.12.6"
+  description       = "Infra terraform module"
+  repository        = "terraform-super-module"
 }
 ```
 
 With IAM role delegation (only required fields):
 
 ```python
-resource "spacelift_module" "k8s-core" {
+resource "spacelift_module" "k8s-module" {
   branch            = "master"
-  name              = "Kubernetes core services"
-  repository        = "core-infra"
+  name              = "Kubernetes terraform module"
+  repository        = "terraform-super-module"
 }
 
 resource "aws_iam_role" "spacelift" {
@@ -377,7 +371,7 @@ resource "aws_iam_role" "spacelift" {
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [jsondecode(spacelift_module.k8s-core.aws_assume_role_policy_statement)]
+    Statement = [jsondecode(spacelift_module.k8s-module.aws_assume_role_policy_statement)]
   })
 }
 
@@ -386,8 +380,8 @@ resource "aws_iam_role_policy_attachment" "spacelift" {
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-resource "spacelift_aws_role" "k8s-core" {
-  stack_id = spacelift_module.k8s-core.id
+resource "spacelift_aws_role" "k8s-module" {
+  module_id = spacelift_module.k8s-module.id
   role_arn = aws_iam_role.spacelift.arn
 }
 ```
@@ -400,11 +394,7 @@ The following arguments are supported:
 - `name` - (Required) - Name of the stack - should be unique within one account;
 - `repository` - (Required) - Name of the GitHub repository, without the owner part;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
-- `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
-- `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
-- `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
-- `project_root` - (Optional) - Directory that is relative to the workspace root containing the entrypoint to the Stack.;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
@@ -412,7 +402,7 @@ The following arguments are supported:
 
 In addition to all arguments above, the following attributes are exported:
 
-- `id` - The immutable ID (slug) of the stack;
+- `id` - The immutable ID (slug) of the module;
 - `aws_assume_role_policy_statement` - JSON-encoded AWS IAM policy for the AWS IAM role trust relationship;
 
 [^ Back to all resources](#resources)
