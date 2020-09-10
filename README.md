@@ -68,9 +68,11 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_gcp_service_account` - [data source](#spacelift_gcp_service_account-data-source) and [resource](#spacelift_gcp_service_account-resource);
 - `spacelift_worker_pool` - [data source](#spacelift_worker_pool-data-source) and [resource](#spacelift_worker_pool-resource);
 
+**Note:** `spacelift_stack_aws_role` and `spacelift_stack_gcp_service_account` are **deprecated**. Please use [spacelift_aws_role](#spacelift_aws_role-data-source) and [spacelift_gcp_service_account](#spacelift_gcp_service_account-data-source) instead.
+
 ### `spacelift_context` data source
 
-`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
+`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) or [**modules**](#spacelift_module-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
 
 #### Example usage
 
@@ -94,7 +96,7 @@ See the [context resource](#spacelift_context-resource) for details on the retur
 
 ### `spacelift_context` resource
 
-`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
+`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) or [**modules**](#spacelift_module-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
 
 #### Example usage
 
@@ -146,7 +148,7 @@ See the [context attachment resource](#spacelift_context_attachment-resource) fo
 
 ### `spacelift_context_attachment` resource
 
-`spacelift_context_attachment` represents a Spacelift attachment of a single [context](#spacelift_context-resource) to a single [stack](#spacelift_stack-resource), with a predefined priority.
+`spacelift_context_attachment` represents a Spacelift attachment of a single [context](#spacelift_context-resource) to a single [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource), with a predefined priority.
 
 #### Example usage
 
@@ -191,7 +193,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_environment_variable` data source
 
-`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
+`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack) or [module](#spacelift_module-resource), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
 
 #### Example usage
 
