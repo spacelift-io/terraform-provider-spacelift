@@ -301,6 +301,122 @@ In addition to all arguments above, the following attributes are exported:
 
 [^ Back to all resources](#resources)
 
+### `spacelift_module` data source
+
+`spacelift_module` combines source code and configuration to create a runtime environment where resources are managed. In this way it's similar to a stack in AWS CloudFormation, or a project on generic CI/CD platforms.
+
+#### Example usage
+
+```python
+data "spacelift_module" "k8s-core" {
+  module_id = "k8s-core"
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `module_id` - (Required) - The ID (slug) of the module;
+
+#### Attributes reference
+
+See the [module resource](#spacelift_module-resource) for details on the returned attributes - they are identical.
+
+[^ Back to all resources](#resources)
+
+### `spacelift_module` resource
+
+`spacelift_module` combines source code and configuration to create a runtime environment where resources are managed. In this way it's similar to a stack in AWS CloudFormation, or a project on generic CI/CD platforms.
+
+#### Example usage
+
+```python
+resource "spacelift_module" "k8s-core" {
+  administrative    = true
+  autodeploy        = true
+  branch            = "master"
+  description       = "Shared cluster services (Datadog, Istio etc.)"
+  name              = "Kubernetes core services"
+  project_root      = "/project"
+  repository        = "core-infra"
+  terraform_version = "0.12.6"
+}
+```
+
+For Gitlab-hosted repositories:
+
+```python
+resource "spacelift_module" "k8s-core-gitlab" {
+  gitlab {
+    namespace = "spacelift"
+  }
+
+  administrative    = true
+  autodeploy        = true
+  branch            = "master"
+  description       = "Shared cluster services (Datadog, Istio etc.)"
+  name              = "Kubernetes core services"
+  project_root      = "/project"
+  repository        = "core-infra"
+  terraform_version = "0.12.6"
+}
+```
+
+With IAM role delegation (only required fields):
+
+```python
+resource "spacelift_module" "k8s-core" {
+  branch            = "master"
+  name              = "Kubernetes core services"
+  repository        = "core-infra"
+}
+
+resource "aws_iam_role" "spacelift" {
+  name = "spacelift"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [jsondecode(spacelift_module.k8s-core.aws_assume_role_policy_statement)]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "spacelift" {
+  role       = aws_iam_role.spacelift.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
+resource "spacelift_aws_role" "k8s-core" {
+  stack_id = spacelift_module.k8s-core.id
+  role_arn = aws_iam_role.spacelift.arn
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `branch` - (Required) - GitHub branch to apply changes to;
+- `name` - (Required) - Name of the stack - should be unique within one account;
+- `repository` - (Required) - Name of the GitHub repository, without the owner part;
+- `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
+- `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
+- `description` - (Optional) - Free-form stack description for GUI users;
+- `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
+- `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
+- `project_root` - (Optional) - Directory that is relative to the workspace root containing the entrypoint to the Stack.;
+- `terraform_version` - (Optional) - Terraform version to use;
+- `worker_pool_id` - (Optional) - ID of the worker pool to use;
+
+#### Attributes reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The immutable ID (slug) of the stack;
+- `aws_assume_role_policy_statement` - JSON-encoded AWS IAM policy for the AWS IAM role trust relationship;
+
+[^ Back to all resources](#resources)
+
 ### `spacelift_mounted_file` data source
 
 `spacelift_mounted_file` represents a file mounted in each Run's workspace that is part of a configuration of a [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack). In principle, it's very similar to an [environment variable](#spacelift_environment_variable-resource) except that the value is written to the filesystem rather than passed to the environment.
