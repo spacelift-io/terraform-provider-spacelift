@@ -58,12 +58,13 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_context` - [data source](#spacelift_context-data-source) and [resource](#spacelift_context-resource);
 - `spacelift_context_attachment` - [data source](#spacelift_context_attachment_data-source) and [resource](#spacelift_context_attachment_resource);
 - `spacelift_environment_variable` - [data source](#spacelift_environment_variable-data-source) and [resource](#spacelift_environment_variable-resource);
+- `spacelift_module` - [data source](#spacelift_module-data-source) and [resource](#spacelift_module-resource);
 - `spacelift_mounted_file` - [data source](#spacelift_mounted_file-data-source) and [resource](#spacelift_mounted_file-resource);
 - `spacelift_policy` - [data source](#spacelift_policy-data-source) and [resource](#spacelift_policy-resource);
 - `spacelift_policy_attachment` - [resource](#spacelift_policy_attachment-resource);
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
-- `spacelift_stack_aws_role` - [data source](#spacelift_stack_aws_role-data-source) and [resource](#spacelift_stack_aws_role-resource);
-- `spacelift_stack_gcp_service_account` - [data source](#spacelift_stack_gcp_service_account-data-source) and [resource](#spacelift_stack_gcp_service_account-resource);
+- `spacelift_aws_role` - [data source](#spacelift_aws_role-data-source) and [resource](#spacelift_aws_role-resource);
+- `spacelift_gcp_service_account` - [data source](#spacelift_gcp_service_account-data-source) and [resource](#spacelift_gcp_service_account-resource);
 - `spacelift_worker_pool` - [data source](#spacelift_worker_pool-data-source) and [resource](#spacelift_worker_pool-resource);
 
 ### `spacelift_context` data source
@@ -612,7 +613,7 @@ resource "aws_iam_role_policy_attachment" "spacelift" {
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-resource "spacelift_stack_aws_role" "k8s-core" {
+resource "spacelift_aws_role" "k8s-core" {
   stack_id = spacelift_stack.k8s-core.id
   role_arn = aws_iam_role.spacelift.arn
 }
@@ -643,16 +644,26 @@ In addition to all arguments above, the following attributes are exported:
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_aws_role` data source
+### `spacelift_aws_role` data source
 
-`spacelift_stack_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
+`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
 
-Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).
+Note: when assuming credentials, Spacelift will use `$accountName/$stackID` or `$accountName/$moduleID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).
 
 #### Example usage
 
+For a Module:
+
 ```python
-data "spacelift_stack_aws_role" "k8s-core" {
+data "spacelift_aws_role" "k8s-module" {
+  module_id = "k8s-module"
+}
+```
+
+For a Stack
+
+```python
+data "spacelift_aws_role" "k8s-core" {
   stack_id = "k8s-core"
 }
 ```
@@ -661,17 +672,20 @@ data "spacelift_stack_aws_role" "k8s-core" {
 
 The following arguments are supported:
 
-- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
-See the [stack AWS role resource](#spacelift_stack_aws_role-resource) for details on the returned attributes - they are identical.
+See the [stack AWS role resource](#spacelift_aws_role-resource) for details on the returned attributes - they are identical.
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_aws_role` resource
+### `spacelift_aws_role` resource
 
-`spacelift_stack_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
+`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
 
 Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).
 
@@ -692,8 +706,15 @@ resource "aws_iam_role_policy_attachment" "spacelift" {
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-resource "spacelift_stack_aws_role" "k8s-core" {
+# for a Stack:
+resource "spacelift_aws_role" "k8s-core" {
   stack_id = "k8s-core"
+  role_arn = aws_iam_role.spacelift.arn
+}
+
+# or for a Module:
+resource "spacelift_aws_role" "k8s-core" {
+  module_id = "k8s-core"
   role_arn = aws_iam_role.spacelift.arn
 }
 ```
@@ -702,8 +723,11 @@ resource "spacelift_stack_aws_role" "k8s-core" {
 
 The following arguments are supported:
 
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
 - `role_arn` - (Required) - ARN of the AWS IAM role to attach;
-- `stack_id` - (Required) - ID of the stack which assumes the AWS IAM role;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -713,14 +737,24 @@ In addition to all arguments above, the following attributes are exported:
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_gcp_service_account` data source
+### `spacelift_gcp_service_account` data source
 
-`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+`spacelift_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
 
 #### Example usage
 
+For a Module:
+
 ```python
-data "spacelift_stack_gcp_service_account" "k8s-core" {
+data "spacelift_gcp_service_account" "k8s-module" {
+  module_id = "k8s-module"
+}
+```
+
+For a Stack:
+
+```python
+data "spacelift_gcp_service_account" "k8s-core" {
   stack_id = "k8s-core"
 }
 ```
@@ -729,17 +763,20 @@ data "spacelift_stack_gcp_service_account" "k8s-core" {
 
 The following arguments are supported:
 
-- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
-See the [resource](#spacelift_stack_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
+See the [resource](#spacelift_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_gcp_service_account` resource
+### `spacelift_gcp_service_account` resource
 
-`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+`spacelift_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
 
 #### Example usage
 
@@ -750,7 +787,7 @@ resource "spacelift_stack" "k8s-core" {
   repository        = "core-infra"
 }
 
-resource "spacelift_stack_gcp_service_account" "k8s-core" {
+resource "spacelift_gcp_service_account" "k8s-core" {
   stack_id = spacelift_stack.k8s-core.id
 
   token_scopes = [
@@ -769,7 +806,7 @@ resource "google_project" "k8s-core" {
 resource "google_project_iam_member" "k8s-core" {
   project = google_project.k8s-core.id
   role    = "roles/owner"
-  member  = spacelift_stack_gcp_service_account.k8s-core.service_account_email
+  member  = spacelift_gcp_service_account.k8s-core.service_account_email
 }
 ```
 
@@ -777,8 +814,11 @@ resource "google_project_iam_member" "k8s-core" {
 
 The following arguments are supported:
 
-- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
 - `token_scopes` - (Required) - List of scopes to request when generating the temporary OAuth token. At least one scope is required;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
