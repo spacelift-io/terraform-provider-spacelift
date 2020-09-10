@@ -5,6 +5,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Deprecated! Used for backwards compatibility.
+func dataStackGCPServiceAccount() *schema.Resource {
+	schema := dataGCPServiceAccount()
+	schema.DeprecationMessage = "use spacelift_gcp_service_account data source instead"
+
+	return schema
+}
+
 func dataGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
 		Read: dataGCPServiceAccountRead,

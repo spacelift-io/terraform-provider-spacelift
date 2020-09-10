@@ -8,6 +8,14 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
+// Deprecated! Used for backwards compatibility.
+func resourceStackGCPServiceAccount() *schema.Resource {
+	schema := resourceGCPServiceAccount()
+	schema.DeprecationMessage = "use spacelift_gcp_service_account resource instead"
+
+	return schema
+}
+
 func resourceGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceGCPServiceAccountCreate,

@@ -7,6 +7,14 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
+// Deprecated! Used for backwards compatibility.
+func dataStackAWSRole() *schema.Resource {
+	schema := dataAWSRole()
+	schema.DeprecationMessage = "use spacelift_aws_role data source instead"
+
+	return schema
+}
+
 func dataAWSRole() *schema.Resource {
 	return &schema.Resource{
 		Read: dataAWSRoleRead,
