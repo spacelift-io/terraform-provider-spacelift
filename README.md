@@ -206,7 +206,7 @@ data "spacelift_environment_variable" "ireland-kubeconfig" {
 For a module:
 
 ```python
-data "spacelift_environment_variable" "core-kubeconfig" {
+data "spacelift_environment_variable" "module-kubeconfig" {
   module_id = "k8s-module"
   name     = "KUBECONFIG"
 }
@@ -258,7 +258,7 @@ resource "spacelift_environment_variable" "ireland-kubeconfig" {
 For a module:
 
 ```python
-resource "spacelift_environment_variable" "core-kubeconfig" {
+resource "spacelift_environment_variable" "module-kubeconfig" {
   module_id  = "k8s-module"
   name       = "KUBECONFIG"
   value      = "/project/spacelift/kubeconfig"
@@ -425,8 +425,8 @@ data "spacelift_mounted_file" "ireland-kubeconfig" {
 For a module:
 
 ```python
-data "spacelift_mounted_file" "core-kubeconfig" {
-  module_id     = "k8s-core"
+data "spacelift_mounted_file" "module-kubeconfig" {
+  module_id     = "k8s-module"
   relative_path = "kubeconfig"
 }
 ```
@@ -476,8 +476,8 @@ resource "spacelift_mounted_file" "ireland-kubeconfig" {
 For a module:
 
 ```python
-resource "spacelift_mounted_file" "core-kubeconfig" {
-  module_id     = "k8s-core"
+resource "spacelift_mounted_file" "module-kubeconfig" {
+  module_id     = "k8s-module"
   relative_path = "kubeconfig"
   value         = filebase64("${path.module}/kubeconfig.json")
 }
