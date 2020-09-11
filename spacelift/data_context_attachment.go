@@ -14,28 +14,28 @@ func dataContextAttachment() *schema.Resource {
 		Read: dataContextAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
-			"attachment_id": &schema.Schema{
+			"attachment_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the attachment",
 				Required:    true,
 			},
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the attached context",
 				Computed:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the attached module",
 				ConflictsWith: []string{"stack_id"},
 				Computed:      true,
 			},
-			"priority": &schema.Schema{
+			"priority": {
 				Type:        schema.TypeInt,
 				Description: "Priority of the context attachment, used in case of conflicts",
 				Computed:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the attached stack",
 				ConflictsWith: []string{"module_id"},

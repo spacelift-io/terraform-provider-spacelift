@@ -14,40 +14,40 @@ func dataMountedFile() *schema.Resource {
 		Read: dataMountedFileRead,
 
 		Schema: map[string]*schema.Schema{
-			"checksum": &schema.Schema{
+			"checksum": {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
 			},
-			"content": &schema.Schema{
+			"content": {
 				Type:        schema.TypeString,
 				Description: "Content of the mounted file encoded using Base-64",
 				Sensitive:   true,
 				Computed:    true,
 			},
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the context where the mounted file is stored",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id", "module_id"},
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module where the mounted file is stored",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 			},
-			"relative_path": &schema.Schema{
+			"relative_path": {
 				Type:        schema.TypeString,
 				Description: "Relative path to the mounted file",
 				Required:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack where the mounted file is stored",
 				Optional:    true,
 			},
-			"write_only": &schema.Schema{
+			"write_only": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the value can be read back outside a Run",
 				Computed:    true,

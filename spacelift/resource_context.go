@@ -20,12 +20,12 @@ func resourceContext() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form context description for users",
 				Optional:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the context - should be unique in one account",
 				Required:    true,

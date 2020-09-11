@@ -12,17 +12,17 @@ func dataContext() *schema.Resource {
 		Read: dataContextRead,
 
 		Schema: map[string]*schema.Schema{
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:        schema.TypeString,
 				Description: "Immutable ID (slug) of the context",
 				Required:    true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form context description for users",
 				Computed:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the context",
 				Computed:    true,

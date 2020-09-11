@@ -31,19 +31,19 @@ func resourceAWSRole() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module which assumes the AWS IAM role",
 				ConflictsWith: []string{"stack_id"},
 				Optional:      true,
 				ForceNew:      true,
 			},
-			"role_arn": &schema.Schema{
+			"role_arn": {
 				Type:        schema.TypeString,
 				Description: "ARN of the AWS IAM role to attach",
 				Required:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which assumes the AWS IAM role",
 				Optional:    true,

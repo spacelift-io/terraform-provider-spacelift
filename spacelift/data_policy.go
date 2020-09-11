@@ -12,22 +12,22 @@ func dataPolicy() *schema.Resource {
 		Read: dataPolicyRead,
 
 		Schema: map[string]*schema.Schema{
-			"policy_id": &schema.Schema{
+			"policy_id": {
 				Type:        schema.TypeString,
 				Description: "Immutable ID (slug) of the policy",
 				Required:    true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:        schema.TypeString,
 				Description: "Body of the policy",
 				Computed:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the policy",
 				Computed:    true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:        schema.TypeString,
 				Description: "Type of the policy",
 				Computed:    true,

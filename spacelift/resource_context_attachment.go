@@ -22,27 +22,27 @@ func resourceContextAttachment() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the context to attach",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module to attach the context to",
 				ConflictsWith: []string{"stack_id"},
 				Optional:      true,
 				ForceNew:      true,
 			},
-			"priority": &schema.Schema{
+			"priority": {
 				Type:        schema.TypeInt,
 				Description: "Priority of the context attachment, used in case of conflicts",
 				Optional:    true,
 				Default:     0,
 				ForceNew:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the stack to attach the context to",
 				ConflictsWith: []string{"module_id"},

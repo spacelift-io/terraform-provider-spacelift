@@ -22,12 +22,12 @@ func resourceMountedFile() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"checksum": &schema.Schema{
+			"checksum": {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
 			},
-			"content": &schema.Schema{
+			"content": {
 				Type:             schema.TypeString,
 				Description:      "Content of the mounted file encoded using Base-64",
 				DiffSuppressFunc: suppressValueChange,
@@ -35,34 +35,34 @@ func resourceMountedFile() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 			},
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the context on which the mounted file is defined",
 				Optional:      true,
 				ConflictsWith: []string{"module_id", "stack_id"},
 				ForceNew:      true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module on which the mounted file is defined",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
-			"relative_path": &schema.Schema{
+			"relative_path": {
 				Type:        schema.TypeString,
 				Description: "Relative path to the mounted file, without the /spacelift/project/ prefix",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the stack on which the mounted file is defined",
 				Optional:      true,
 				ConflictsWith: []string{"context_id"},
 				ForceNew:      true,
 			},
-			"write_only": &schema.Schema{
+			"write_only": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the content can be read back outside a Run",
 				Optional:    true,

@@ -21,20 +21,20 @@ func resourcePolicyAttachment() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"policy_id": &schema.Schema{
+			"policy_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the policy to attach",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module to attach the policy to",
 				ConflictsWith: []string{"stack_id"},
 				Optional:      true,
 				ForceNew:      true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack to attach the policy to",
 				Optional:    true,

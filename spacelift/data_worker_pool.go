@@ -11,23 +11,23 @@ func dataWorkerPool() *schema.Resource {
 	return &schema.Resource{
 		Read: dataWorkerPoolRead,
 		Schema: map[string]*schema.Schema{
-			"config": &schema.Schema{
+			"config": {
 				Type:        schema.TypeString,
 				Description: "credentials necessary to connect WorkerPool's workers to the control plane",
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the worker pool",
 				Computed:    true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "description of the worker pool",
 				Computed:    true,
 			},
-			"worker_pool_id": &schema.Schema{
+			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool",
 				Required:    true,

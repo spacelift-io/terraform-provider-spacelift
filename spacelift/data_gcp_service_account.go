@@ -18,25 +18,29 @@ func dataGCPServiceAccount() *schema.Resource {
 		Read: dataGCPServiceAccountRead,
 
 		Schema: map[string]*schema.Schema{
-			"service_account_email": &schema.Schema{
+			"service_account_email": {
 				Type:        schema.TypeString,
 				Description: "Email address of the GCP service account dedicated for this stack",
 				Computed:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the stack which uses GCP service account credentials",
 				ConflictsWith: []string{"stack_id"},
 				Optional:      true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which uses GCP service account credentials",
 				Optional:    true,
 			},
-			"token_scopes": &schema.Schema{
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+			"token_scopes": {
+				Type:        schema.TypeSet,
+				Description: "List of Google API scopes",
+				Elem: &schema.Schema{
+					Type:        schema.TypeString,
+					Description: "Name (it's actually always a URL) of a single Google API scope",
+				},
 				Computed: true,
 			},
 		},

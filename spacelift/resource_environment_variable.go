@@ -25,38 +25,38 @@ func resourceEnvironmentVariable() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"checksum": &schema.Schema{
+			"checksum": {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
 			},
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the context on which the environment variable is defined",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id", "module_id"},
 				ForceNew:      true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module on which the environment variable is defined",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the environment variable",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack on which the environment variable is defined",
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"value": &schema.Schema{
+			"value": {
 				Type:             schema.TypeString,
 				Description:      "Value of the environment variable",
 				DiffSuppressFunc: suppressValueChange,
@@ -64,7 +64,7 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 			},
-			"write_only": &schema.Schema{
+			"write_only": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the value can be read back outside a Run",
 				Optional:    true,
