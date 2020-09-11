@@ -6,6 +6,8 @@ jobs:
   deployment:
     name: Build and deploy the image
     runs-on: ubuntu-latest
+    env:
+      DOCKER_IMAGE: spacelift/runner:${{ github.ref == 'refs/heads/master' && 'latest' || 'future' }}
 
     steps:
       - name: Check out repository code
@@ -18,8 +20,8 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build the image
-        run: docker build --tag spacelift/runner .
+        run: docker build --tag ${DOCKER_IMAGE} .
 
       - name: Push the image to Docker Hub
-        if: ${{ github.ref == 'refs/heads/master' }}
-        run: docker push spacelift/runner
+        if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future' }}
+        run: docker push ${DOCKER_IMAGE}
