@@ -21,7 +21,7 @@ func dataMountedFile() *schema.Resource {
 			},
 			"content": {
 				Type:        schema.TypeString,
-				Description: "Content of the mounted file encoded using Base-64",
+				Description: "content of the mounted file encoded using Base-64",
 				Sensitive:   true,
 				Computed:    true,
 			},
@@ -39,7 +39,7 @@ func dataMountedFile() *schema.Resource {
 			},
 			"relative_path": {
 				Type:        schema.TypeString,
-				Description: "Relative path to the mounted file",
+				Description: "relative path to the mounted file",
 				Required:    true,
 			},
 			"stack_id": {
@@ -49,7 +49,7 @@ func dataMountedFile() *schema.Resource {
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether the value can be read back outside a Run",
+				Description: "indicates whether the value can be read back outside a Run",
 				Computed:    true,
 			},
 		},

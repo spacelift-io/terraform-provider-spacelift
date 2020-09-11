@@ -20,7 +20,7 @@ func dataGCPServiceAccount() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"service_account_email": {
 				Type:        schema.TypeString,
-				Description: "Email address of the GCP service account dedicated for this stack",
+				Description: "email address of the GCP service account dedicated for this stack",
 				Computed:    true,
 			},
 			"module_id": {
@@ -36,12 +36,9 @@ func dataGCPServiceAccount() *schema.Resource {
 			},
 			"token_scopes": {
 				Type:        schema.TypeSet,
-				Description: "List of Google API scopes",
-				Elem: &schema.Schema{
-					Type:        schema.TypeString,
-					Description: "Name (it's actually always a URL) of a single Google API scope",
-				},
-				Computed: true,
+				Description: "list of Google API scopes",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
 			},
 		},
 	}

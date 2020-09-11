@@ -10,9 +10,10 @@ func dataIPs() *schema.Resource {
 		Read: ipsRead,
 		Schema: map[string]*schema.Schema{
 			"ips": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Computed: true,
+				Type:        schema.TypeSet,
+				Description: "the list of spacelift.io outgoing IP addresses",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
 			},
 		},
 	}

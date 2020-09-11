@@ -11,11 +11,6 @@ func dataWebhook() *schema.Resource {
 	return &schema.Resource{
 		Read: dataWebhookRead,
 		Schema: map[string]*schema.Schema{
-			"deleted": {
-				Type:        schema.TypeBool,
-				Description: "is deleted",
-				Computed:    true,
-			},
 			"enabled": {
 				Type:        schema.TypeBool,
 				Description: "enables or disables sending webhooks",
@@ -93,7 +88,6 @@ func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(webhookID)
-	d.Set("deleted", module.Integrations.Webhooks[webhookIndex].Deleted)
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
@@ -130,7 +124,6 @@ func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(webhookID)
-	d.Set("deleted", stack.Integrations.Webhooks[webhookIndex].Deleted)
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", stack.Integrations.Webhooks[webhookIndex].Secret)

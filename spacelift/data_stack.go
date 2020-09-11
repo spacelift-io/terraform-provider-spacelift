@@ -14,12 +14,12 @@ func dataStack() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this stack can administer others",
+				Description: "indicates whether this stack can administer others",
 				Computed:    true,
 			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether changes to this stack can be automatically deployed",
+				Description: "indicates whether changes to this stack can be automatically deployed",
 				Computed:    true,
 			},
 			"aws_assume_role_policy_statement": {
@@ -29,23 +29,24 @@ func dataStack() *schema.Resource {
 			},
 			"branch": {
 				Type:        schema.TypeString,
-				Description: "GitHub branch to apply changes to",
+				Description: "Repository branch to treat as the default 'main' branch",
 				Computed:    true,
 			},
 			"description": {
 				Type:        schema.TypeString,
-				Description: "Free-form stack description for users",
+				Description: "free-form stack description for users",
 				Computed:    true,
 			},
 			"gitlab": {
 				Type:        schema.TypeList,
-				Description: "Gitlab-related attributes",
+				Description: "GitLab-related attributes",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "GitLab namespace of the stack's repository",
+							Computed:    true,
 						},
 					},
 				},

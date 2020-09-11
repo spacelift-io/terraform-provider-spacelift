@@ -33,7 +33,7 @@ func dataEnvironmentVariable() *schema.Resource {
 			},
 			"name": {
 				Type:        schema.TypeString,
-				Description: "Name of the environment variable",
+				Description: "name of the environment variable",
 				Required:    true,
 			},
 			"stack_id": {
@@ -43,13 +43,13 @@ func dataEnvironmentVariable() *schema.Resource {
 			},
 			"value": {
 				Type:        schema.TypeString,
-				Description: "Value of the environment variable",
+				Description: "value of the environment variable",
 				Sensitive:   true,
 				Computed:    true,
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether the value can be read back outside a Run",
+				Description: "indicates whether the value can be read back outside a Run",
 				Computed:    true,
 			},
 		},

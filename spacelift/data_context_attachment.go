@@ -32,7 +32,7 @@ func dataContextAttachment() *schema.Resource {
 			},
 			"priority": {
 				Type:        schema.TypeInt,
-				Description: "Priority of the context attachment, used in case of conflicts",
+				Description: "priority of the context attachment, used in case of conflicts",
 				Computed:    true,
 			},
 			"stack_id": {

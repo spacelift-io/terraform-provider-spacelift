@@ -17,7 +17,6 @@ type Module struct {
 		} `graphql:"gcp"`
 		Webhooks []struct {
 			ID       string `graphql:"id"`
-			Deleted  bool   `graphql:"deleted"`
 			Enabled  bool   `graphql:"enabled"`
 			Endpoint string `graphql:"endpoint"`
 			Secret   string `graphql:"secret"`

@@ -22,7 +22,7 @@ func (e *AWSRoleTest) TestLifecycle_Module() {
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
+		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
 		`{"data":{"module":{"integrations":{"aws":{"assumedRoleArn":"arn:aws:iam::075108987694:role/terraform"}}}}}`,
 		7,
 	)
@@ -70,7 +70,7 @@ func (e *AWSRoleTest) TestLifecycle_Stack() {
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
 		`{"data":{"stack":{"integrations":{"aws":{"assumedRoleArn":"arn:aws:iam::075108987694:role/terraform"}}}}}`,
 		7,
 	)
