@@ -12,23 +12,72 @@ type ContextAttachmentTest struct {
 	ResourceTest
 }
 
-func (e *ContextAttachmentTest) TestLifecycle_OK() {
+func (e *ContextAttachmentTest) TestLifecycle_Module() {
 	defer gock.Off()
 
 	e.posts( // Mocking out the context attachment mutation.
-		`{"query":"mutation($id:ID!$priority:Int!$stack:ID!){contextAttach(id: $id, stack: $stack, priority: $priority){id,stackId,priority}}","variables":{"id":"babys-first-context","priority":8,"stack":"babys-first-stack"}}`,
+		`{"query":"mutation($id:ID!$priority:Int!$stack:ID!){contextAttach(id: $id, stack: $stack, priority: $priority){id,stackId,isModule,priority}}","variables":{"id":"babys-first-context","priority":8,"stack":"babys-first-module"}}`,
 		`{"data":{"contextAttach":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}}`,
 		1,
 	)
 
 	e.posts( // Mocking out the context attachment query.
-		`{"query":"query($context:ID!$id:ID!){context(id: $context){attachedStack(id: $id){id,stackId,priority}}}","variables":{"context":"babys-first-context","id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}`,
+		`{"query":"query($context:ID!$id:ID!){context(id: $context){attachedStack(id: $id){id,stackId,isModule,priority}}}","variables":{"context":"babys-first-context","id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}`,
+		`{"data":{"context":{"attachedStack":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV","stackId":"babys-first-module","isModule":true,"priority":8}}}}`,
+		5,
+	)
+
+	e.posts( // Mocking out the context detachment mutation.
+		`{"query":"mutation($id:ID!){contextDetach(id: $id){id,stackId,isModule,priority}}","variables":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}`,
+		`{"data":{"contextDetach":{}}}`,
+		1,
+	)
+
+	e.testsResource([]resource.TestStep{
+		{
+			Config: `
+resource "spacelift_context_attachment" "attachment" {
+  context_id = "babys-first-context"
+  module_id  = "babys-first-module"
+  priority   = 8
+}
+
+data "spacelift_context_attachment" "attachment" {
+  attachment_id = spacelift_context_attachment.attachment.id
+}
+`,
+			Check: resource.ComposeTestCheckFunc(
+				// Test resource.
+				resource.TestCheckResourceAttr("spacelift_context_attachment.attachment", "id", "babys-first-context/01DJN6A8MHD9ZKYJ3NHC5QAPTV"),
+				resource.TestCheckResourceAttr("spacelift_context_attachment.attachment", "module_id", "babys-first-module"),
+				resource.TestCheckResourceAttr("spacelift_context_attachment.attachment", "priority", "8"),
+
+				// Test data.
+				resource.TestCheckResourceAttr("data.spacelift_context_attachment.attachment", "id", "babys-first-context/01DJN6A8MHD9ZKYJ3NHC5QAPTV"),
+				resource.TestCheckResourceAttr("data.spacelift_context_attachment.attachment", "module_id", "babys-first-module"),
+				resource.TestCheckResourceAttr("data.spacelift_context_attachment.attachment", "priority", "8"),
+			),
+		},
+	})
+}
+
+func (e *ContextAttachmentTest) TestLifecycle_Stack() {
+	defer gock.Off()
+
+	e.posts( // Mocking out the context attachment mutation.
+		`{"query":"mutation($id:ID!$priority:Int!$stack:ID!){contextAttach(id: $id, stack: $stack, priority: $priority){id,stackId,isModule,priority}}","variables":{"id":"babys-first-context","priority":8,"stack":"babys-first-stack"}}`,
+		`{"data":{"contextAttach":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}}`,
+		1,
+	)
+
+	e.posts( // Mocking out the context attachment query.
+		`{"query":"query($context:ID!$id:ID!){context(id: $context){attachedStack(id: $id){id,stackId,isModule,priority}}}","variables":{"context":"babys-first-context","id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}`,
 		`{"data":{"context":{"attachedStack":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV","stackId":"babys-first-stack","priority":8}}}}`,
 		5,
 	)
 
 	e.posts( // Mocking out the context detachment mutation.
-		`{"query":"mutation($id:ID!){contextDetach(id: $id){id,stackId,priority}}","variables":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}`,
+		`{"query":"mutation($id:ID!){contextDetach(id: $id){id,stackId,isModule,priority}}","variables":{"id":"01DJN6A8MHD9ZKYJ3NHC5QAPTV"}}`,
 		`{"data":{"contextDetach":{}}}`,
 		1,
 	)

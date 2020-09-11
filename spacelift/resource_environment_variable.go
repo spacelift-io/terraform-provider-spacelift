@@ -34,6 +34,13 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "ID of the context on which the environment variable is defined",
 				Optional:      true,
+				ConflictsWith: []string{"stack_id", "module_id"},
+				ForceNew:      true,
+			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module on which the environment variable is defined",
+				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
@@ -44,11 +51,10 @@ func resourceEnvironmentVariable() *schema.Resource {
 				ForceNew:    true,
 			},
 			"stack_id": &schema.Schema{
-				Type:          schema.TypeString,
-				Description:   "ID of the stack on which the environment variable is defined",
-				Optional:      true,
-				ConflictsWith: []string{"context_id"},
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the stack on which the environment variable is defined",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"value": &schema.Schema{
 				Type:             schema.TypeString,
@@ -89,12 +95,21 @@ func resourceEnvironmentVariableCreate(d *schema.ResourceData, meta interface{})
 		variables["stack"] = toID(stackID)
 	}
 
-	if contextOK == stackOK {
-		return errors.New("either context_id or stack_id must be provided")
+	moduleID, moduleOK := d.GetOk("module_id")
+	if moduleOK {
+		variables["stack"] = toID(moduleID)
+	}
+
+	if !(contextOK || stackOK || moduleOK) {
+		return errors.New("either context_id or stack_id/module_id must be provided")
 	}
 
 	if contextOK {
 		return resourceEnvironmentVariableCreateContext(d, meta.(*Client), variables)
+	}
+
+	if moduleOK {
+		return resourceEnvironmentVariableCreateModule(d, meta.(*Client), variables)
 	}
 
 	return resourceEnvironmentVariableCreateStack(d, meta.(*Client), variables)
@@ -114,6 +129,25 @@ func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *Cl
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("name")))
+
+	return resourceEnvironmentVariableRead(d, client)
+}
+
+func resourceEnvironmentVariableCreateModule(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+	var mutation struct {
+		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
+	}
+
+	if err := client.Mutate(&mutation, variables); err != nil {
+		return errors.Wrap(err, "could not create module environment variable")
+	}
+
+	if d.Get("write_only").(bool) {
+		d.Set("value", "")
+	}
+
+	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("name")))
+
 	return resourceEnvironmentVariableRead(d, client)
 }
 
@@ -131,6 +165,7 @@ func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *Clie
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("name")))
+
 	return resourceEnvironmentVariableRead(d, client)
 }
 
@@ -147,6 +182,8 @@ func resourceEnvironmentVariableRead(d *schema.ResourceData, meta interface{}) e
 	switch idParts[0] {
 	case "context":
 		element, err = resourceEnvironmentVariableReadContext(d, client, toID(idParts[1]), toID(idParts[2]))
+	case "module":
+		element, err = resourceEnvironmentVariableReadModule(d, client, toID(idParts[1]), toID(idParts[2]))
 	case "stack":
 		element, err = resourceEnvironmentVariableReadStack(d, client, toID(idParts[1]), toID(idParts[2]))
 	default:
@@ -188,6 +225,24 @@ func resourceEnvironmentVariableReadContext(d *schema.ResourceData, client *Clie
 	return query.Context.ConfigElement, nil
 }
 
+func resourceEnvironmentVariableReadModule(d *schema.ResourceData, client *Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+	var query struct {
+		Module *struct {
+			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
+		} `graphql:"module(id: $module)"`
+	}
+
+	if err := client.Query(&query, map[string]interface{}{"module": module, "id": ID}); err != nil {
+		return nil, errors.Wrap(err, "could not query for module environment variable")
+	}
+
+	if query.Module == nil {
+		return nil, nil
+	}
+
+	return query.Module.ConfigElement, nil
+}
+
 func resourceEnvironmentVariableReadStack(d *schema.ResourceData, client *Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
@@ -218,7 +273,7 @@ func resourceEnvironmentVariableDelete(d *schema.ResourceData, meta interface{})
 	switch idParts[0] {
 	case "context":
 		err = resourceEnvironmentVariableDeleteContext(d, client, toID(idParts[1]), toID(idParts[2]))
-	case "stack":
+	case "module", "stack":
 		err = resourceEnvironmentVariableDeleteStack(d, client, toID(idParts[1]), toID(idParts[2]))
 	default:
 		return errors.Errorf("unexpected resource type: %s", idParts[0])

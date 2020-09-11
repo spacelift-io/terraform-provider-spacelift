@@ -27,10 +27,17 @@ func resourcePolicyAttachment() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module to attach the policy to",
+				ConflictsWith: []string{"stack_id"},
+				Optional:      true,
+				ForceNew:      true,
+			},
 			"stack_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "ID of the stack to attach the policy to",
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 		},
@@ -45,8 +52,15 @@ func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) er
 	policyID := d.Get("policy_id").(string)
 
 	variables := map[string]interface{}{
-		"id":    toID(policyID),
-		"stack": toID(d.Get("stack_id")),
+		"id": toID(policyID),
+	}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["stack"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["stack"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
@@ -86,7 +100,12 @@ func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) erro
 
 	attachment := query.Policy.Attachment
 	d.Set("policy_id", idParts[0])
-	d.Set("stack_id", attachment.StackID)
+
+	if attachment.IsModule {
+		d.Set("module_id", attachment.StackID)
+	} else {
+		d.Set("stack_id", attachment.StackID)
+	}
 
 	return nil
 }

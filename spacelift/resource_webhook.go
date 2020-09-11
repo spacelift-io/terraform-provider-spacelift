@@ -8,12 +8,12 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
-func resourceStackWebhook() *schema.Resource {
+func resourceWebhook() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceStackWebhookCreate,
-		Read:   resourceStackWebhookRead,
-		Update: resourceStackWebhookUpdate,
-		Delete: resourceStackWebhookDelete,
+		Create: resourceWebhookCreate,
+		Read:   resourceWebhookRead,
+		Update: resourceWebhookUpdate,
+		Delete: resourceWebhookDelete,
 
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
@@ -36,6 +36,12 @@ func resourceStackWebhook() *schema.Resource {
 				Description: "endpoint to send the POST request to",
 				Required:    true,
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the module which triggers the webhooks",
+				Optional:      true,
+				ConflictsWith: []string{"stack_id"},
+			},
 			"secret": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
@@ -45,17 +51,16 @@ func resourceStackWebhook() *schema.Resource {
 			"stack_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
-				Required:    true,
+				Optional:    true,
 			},
 		},
 	}
 }
 
-func resourceStackWebhookCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceWebhookCreate(d *schema.ResourceData, meta interface{}) error {
 	enabled := d.Get("enabled").(bool)
 	endpoint := d.Get("endpoint").(string)
 	secret := d.Get("secret").(string)
-	stackID := d.Get("stack_id").(string)
 
 	var mutation struct {
 		WebhooksIntegration struct {
@@ -65,7 +70,6 @@ func resourceStackWebhookCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	variables := map[string]interface{}{
-		"stack": toID(stackID),
 		"input": structs.WebhooksIntegrationInput{
 			Enabled:  graphql.Boolean(enabled),
 			Endpoint: graphql.String(endpoint),
@@ -73,8 +77,16 @@ func resourceStackWebhookCreate(d *schema.ResourceData, meta interface{}) error 
 		},
 	}
 
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["stack"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["stack"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
+	}
+
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create webhook on the stack")
+		return errors.Wrap(err, "could not create webhook")
 	}
 
 	if !mutation.WebhooksIntegration.Enabled {
@@ -87,14 +99,67 @@ func resourceStackWebhookCreate(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
+func resourceWebhookRead(d *schema.ResourceData, meta interface{}) error {
+	if _, ok := d.GetOk("module_id"); ok {
+		return resourceModuleWebhookRead(d, meta)
+	}
+
+	if _, ok := d.GetOk("stack_id"); ok {
+		return resourceStackWebhookRead(d, meta)
+	}
+
+	return errors.New("either module_id or stack_id must be provided")
+}
+
+func resourceModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
+	var query struct {
+		Module *structs.Module `graphql:"module(id: $id)"`
+	}
+
+	variables := map[string]interface{}{
+		"id": toID(d.Get("module_id")),
+	}
+
+	if err := meta.(*Client).Query(&query, variables); err != nil {
+		return errors.Wrap(err, "could not query for module")
+	}
+
+	module := query.Module
+	if module == nil {
+		d.SetId("")
+		return nil
+	}
+
+	webhookID := d.Id()
+
+	webhookIndex := -1
+	for i, webhook := range module.Integrations.Webhooks {
+		if webhook.ID == webhookID {
+			webhookIndex = i
+			break
+		}
+	}
+	if webhookIndex == -1 {
+		d.SetId("")
+		return nil
+	}
+
+	d.SetId(webhookID)
+	d.Set("deleted", module.Integrations.Webhooks[webhookIndex].Deleted)
+	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
+	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
+	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
+
+	return nil
+}
+
 func resourceStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	stackID := d.Get("stack_id")
 	variables := map[string]interface{}{
-		"id": toID(stackID),
+		"id": toID(d.Get("stack_id")),
 	}
 
 	if err := meta.(*Client).Query(&query, variables); err != nil {
@@ -130,11 +195,10 @@ func resourceStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceWebhookUpdate(d *schema.ResourceData, meta interface{}) error {
 	enabled := d.Get("enabled").(bool)
 	endpoint := d.Get("endpoint").(string)
 	secret := d.Get("secret").(string)
-	stackID := d.Get("stack_id").(string)
 	webhookID := d.Id()
 
 	var mutation struct {
@@ -145,13 +209,20 @@ func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	variables := map[string]interface{}{
-		"stack":   toID(stackID),
 		"webhook": toID(webhookID),
 		"input": structs.WebhooksIntegrationInput{
 			Enabled:  graphql.Boolean(enabled),
 			Endpoint: graphql.String(endpoint),
 			Secret:   graphql.String(secret),
 		},
+	}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["stack"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["stack"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
@@ -161,7 +232,7 @@ func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func resourceStackWebhookDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceWebhookDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
 		WebhooksIntegration struct {
 			Id string `graphql:"id"`
@@ -169,8 +240,15 @@ func resourceStackWebhookDelete(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	variables := map[string]interface{}{
-		"stack":   toID(d.Get("stack_id").(string)),
 		"webhook": toID(d.Id()),
+	}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["stack"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["stack"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {

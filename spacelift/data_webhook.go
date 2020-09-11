@@ -7,9 +7,9 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
 )
 
-func dataStackWebhook() *schema.Resource {
+func dataWebhook() *schema.Resource {
 	return &schema.Resource{
-		Read: dataStackWebhookRead,
+		Read: dataWebhookRead,
 		Schema: map[string]*schema.Schema{
 			"deleted": &schema.Schema{
 				Type:        schema.TypeBool,
@@ -26,6 +26,12 @@ func dataStackWebhook() *schema.Resource {
 				Description: "endpoint to send the POST request to",
 				Computed:    true,
 			},
+			"module_id": &schema.Schema{
+				Type:          schema.TypeString,
+				Description:   "ID of the stack which triggers the webhooks",
+				Optional:      true,
+				ConflictsWith: []string{"stack_id"},
+			},
 			"secret": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
@@ -34,7 +40,7 @@ func dataStackWebhook() *schema.Resource {
 			"stack_id": &schema.Schema{
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
-				Required:    true,
+				Optional:    true,
 			},
 			"webhook_id": &schema.Schema{
 				Type:        schema.TypeString,
@@ -45,6 +51,55 @@ func dataStackWebhook() *schema.Resource {
 	}
 }
 
+func dataWebhookRead(d *schema.ResourceData, meta interface{}) error {
+	if _, ok := d.GetOk("module_id"); ok {
+		return dataModuleWebhookRead(d, meta)
+	}
+
+	if _, ok := d.GetOk("stack_id"); ok {
+		return dataStackWebhookRead(d, meta)
+	}
+
+	return errors.New("either module_id or stack_id must be provided")
+}
+
+func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
+	var query struct {
+		Module *structs.Module `graphql:"module(id: $id)"`
+	}
+
+	moduleID := d.Get("module_id").(string)
+	webhookID := d.Get("webhook_id").(string)
+	variables := map[string]interface{}{"id": toID(moduleID)}
+
+	if err := meta.(*Client).Query(&query, variables); err != nil {
+		return errors.Wrap(err, "could not query for module")
+	}
+
+	module := query.Module
+	if module == nil {
+		return errors.New("module not found")
+	}
+
+	webhookIndex := -1
+	for i, webhook := range module.Integrations.Webhooks {
+		if webhook.ID == webhookID {
+			webhookIndex = i
+			break
+		}
+	}
+	if webhookIndex == -1 {
+		return errors.New("webhook not found")
+	}
+
+	d.SetId(webhookID)
+	d.Set("deleted", module.Integrations.Webhooks[webhookIndex].Deleted)
+	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
+	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
+	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
+
+	return nil
+}
 func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
