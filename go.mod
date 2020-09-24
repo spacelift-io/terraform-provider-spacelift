@@ -7,7 +7,9 @@ require (
 	github.com/pkg/errors v0.8.1
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f
 	github.com/stretchr/testify v1.4.0
+	golang.org/x/lint v0.0.0-20200302205851-738671d3881b // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/tools v0.0.0-20200911120008-d49a6cb6ca90 // indirect
 	gopkg.in/h2non/gock.v1 v1.0.15
 )
 

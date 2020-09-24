@@ -30,19 +30,19 @@ func (e *ModuleTest) TestLifecycle_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:ModuleCreateInput!){moduleCreate(input: $input){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"input":{"updateInput":{"administrative":true,"branch":"master","description":"My description","labels":["label"],"workerPool":null},"namespace":null,"provider":"GITHUB","repository":"core-infra"}}}`,
+		`{"query":"mutation($input:ModuleCreateInput!){moduleCreate(input: $input){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"input":{"updateInput":{"administrative":true,"branch":"master","description":"My description","labels":["label"],"workerPool":null},"namespace":null,"provider":"GITHUB","repository":"core-infra"}}}`,
 		`{"data":{"moduleCreate":{"id":"babys-first-module"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
+		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
 		`{"data":{"module":{"id":"babys-first-module","administrative":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"},"gcp":{"serviceAccountEmail":null,"tokenScopes":[]},"webhooks":[]},"labels":["label"],"namespace":"terraform-super-module","provider":"GITHUB","repository":"core-infra","workerPool":null}}}`,
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
+		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)
@@ -105,20 +105,20 @@ func (e *ModuleTest) TestLifecycleGitlab_OK() {
 		Reply(http.StatusOK)
 
 	e.posts(
-		`{"query":"mutation($input:ModuleCreateInput!){moduleCreate(input: $input){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"input":{"updateInput":{"administrative":true,"branch":"master","description":"My description","labels":["label"],"workerPool":"worker-pool"},"namespace":"spacelift","provider":"GITLAB","repository":"core-infra"}}}`,
+		`{"query":"mutation($input:ModuleCreateInput!){moduleCreate(input: $input){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"input":{"updateInput":{"administrative":true,"branch":"master","description":"My description","labels":["label"],"workerPool":"worker-pool"},"namespace":"spacelift","provider":"GITLAB","repository":"core-infra"}}}`,
 		`{"data":{"moduleCreate":{"id":"babys-first-module"}}}`,
 		1,
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
+		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
 		`{"data":{"module":{"id":"babys-first-module","administrative":true,"branch":"master","description":"My description","integrations":{"aws":{"assumeRolePolicyStatement":"bacon"},"gcp":{"serviceAccountEmail":null,"tokenScopes":[]},"webhooks":[]},"labels":["label"],"namespace":"spacelift","provider":"GITLAB","repository":"core-infra","workerPool":{"id":"worker-pool"}}}}`,
 
 		7,
 	)
 
 	e.posts(
-		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
+		`{"query":"mutation($id:ID!){stackDelete(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
 		`{"data":{"stackDelete":{}}}`,
 		1,
 	)

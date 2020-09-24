@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func resourceWebhook() *schema.Resource {
@@ -20,35 +20,30 @@ func resourceWebhook() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"deleted": &schema.Schema{
-				Type:        schema.TypeBool,
-				Description: "is deleted",
-				Computed:    true,
-			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:        schema.TypeBool,
 				Description: "enables or disables sending webhooks",
 				Optional:    true,
 				Default:     true,
 			},
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:        schema.TypeString,
 				Description: "endpoint to send the POST request to",
 				Required:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module which triggers the webhooks",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 			},
-			"secret": &schema.Schema{
+			"secret": {
 				Type:        schema.TypeString,
 				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
 				Optional:    true,
 				Default:     "",
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
 				Optional:    true,
@@ -64,7 +59,7 @@ func resourceWebhookCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var mutation struct {
 		WebhooksIntegration struct {
-			Id      string `graphql:"id"`
+			ID      string `graphql:"id"`
 			Enabled bool   `graphql:"enabled"`
 		} `graphql:"webhooksIntegrationCreate(stack: $stack, input: $input)"`
 	}
@@ -93,8 +88,7 @@ func resourceWebhookCreate(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("webhook not activated")
 	}
 
-	d.SetId(mutation.WebhooksIntegration.Id)
-	d.Set("deleted", false)
+	d.SetId(mutation.WebhooksIntegration.ID)
 
 	return nil
 }
@@ -145,7 +139,6 @@ func resourceModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(webhookID)
-	d.Set("deleted", module.Integrations.Webhooks[webhookIndex].Deleted)
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
@@ -187,7 +180,6 @@ func resourceStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(webhookID)
-	d.Set("deleted", stack.Integrations.Webhooks[webhookIndex].Deleted)
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", stack.Integrations.Webhooks[webhookIndex].Secret)
@@ -203,7 +195,7 @@ func resourceWebhookUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	var mutation struct {
 		WebhooksIntegration struct {
-			Id      string `graphql:"id"`
+			ID      string `graphql:"id"`
 			Enabled bool   `graphql:"enabled"`
 		} `graphql:"webhooksIntegrationUpdate(stack: $stack, id: $webhook, input: $input)"`
 	}
@@ -235,7 +227,7 @@ func resourceWebhookUpdate(d *schema.ResourceData, meta interface{}) error {
 func resourceWebhookDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
 		WebhooksIntegration struct {
-			Id string `graphql:"id"`
+			ID string `graphql:"id"`
 		} `graphql:"webhooksIntegrationDelete(stack: $stack, id: $webhook)"`
 	}
 

@@ -22,8 +22,8 @@ func (e *WebhookTest) TestLifecycle_Module() {
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
-		`{"data":{"module":{"integrations":{"webhooks":[{"id":"babys-first-webhook","deleted":false,"enabled":true,"endpoint":"localtest.me/amazin","secret":"test_secret2"}]}}}}`,
+		`{"query":"query($id:ID!){module(id: $id){id,administrative,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,namespace,provider,repository,workerPool{id}}}","variables":{"id":"babys-first-module"}}`,
+		`{"data":{"module":{"integrations":{"webhooks":[{"id":"babys-first-webhook","enabled":true,"endpoint":"localtest.me/amazin","secret":"test_secret2"}]}}}}`,
 		7,
 	)
 
@@ -52,7 +52,6 @@ data "spacelift_webhook" "webhook" {
 				// Test resource.
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "module_id", "babys-first-module"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "id", "babys-first-webhook"),
-				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "deleted", "false"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "enabled", "true"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "endpoint", "localtest.me/amazin"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "secret", "test_secret2"),
@@ -60,7 +59,6 @@ data "spacelift_webhook" "webhook" {
 				// Test data.
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "module_id", "babys-first-module"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "id", "babys-first-webhook"),
-				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "deleted", "false"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "enabled", "true"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "endpoint", "localtest.me/amazin"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "secret", "test_secret2"),
@@ -79,8 +77,8 @@ func (e *WebhookTest) TestLifecycle_Stack() {
 	)
 
 	e.posts(
-		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,deleted,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
-		`{"data":{"stack":{"integrations":{"webhooks":[{"id":"babys-first-webhook","deleted":false,"enabled":true,"endpoint":"localtest.me/amazin","secret":"test_secret2"}]}}}}`,
+		`{"query":"query($id:ID!){stack(id: $id){id,administrative,autodeploy,branch,description,integrations{aws{assumedRoleArn,assumeRolePolicyStatement},gcp{serviceAccountEmail,tokenScopes},webhooks{id,enabled,endpoint,secret}},labels,managesStateFile,name,namespace,projectRoot,provider,repository,terraformVersion,workerPool{id}}}","variables":{"id":"babys-first-stack"}}`,
+		`{"data":{"stack":{"integrations":{"webhooks":[{"id":"babys-first-webhook","enabled":true,"endpoint":"localtest.me/amazin","secret":"test_secret2"}]}}}}`,
 		7,
 	)
 
@@ -109,7 +107,6 @@ data "spacelift_webhook" "webhook" {
 				// Test resource.
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "stack_id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "id", "babys-first-webhook"),
-				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "deleted", "false"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "enabled", "true"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "endpoint", "localtest.me/amazin"),
 				resource.TestCheckResourceAttr("spacelift_webhook.webhook", "secret", "test_secret2"),
@@ -117,7 +114,6 @@ data "spacelift_webhook" "webhook" {
 				// Test data.
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "stack_id", "babys-first-stack"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "id", "babys-first-webhook"),
-				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "deleted", "false"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "enabled", "true"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "endpoint", "localtest.me/amazin"),
 				resource.TestCheckResourceAttr("data.spacelift_webhook.webhook", "secret", "test_secret2"),

@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func dataModule() *schema.Resource {
@@ -14,7 +14,7 @@ func dataModule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this module can administer others",
+				Description: "indicates whether this module can administer others",
 				Computed:    true,
 			},
 			"aws_assume_role_policy_statement": {
@@ -29,21 +29,22 @@ func dataModule() *schema.Resource {
 			},
 			"description": {
 				Type:        schema.TypeString,
-				Description: "Free-form module description for users",
+				Description: "free-form module description for human users (supports Markdown)",
 				Computed:    true,
 			},
 			"gitlab": {
 				Type:        schema.TypeList,
-				Description: "Gitlab-related attributes",
-				Computed:    true,
+				Description: "GitLab configuration",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Computed: true,
+							Type:        schema.TypeString,
+							Description: "GitLab namespace of the repository",
+							Computed:    true,
 						},
 					},
 				},
+				Computed: true,
 			},
 			"labels": {
 				Type:     schema.TypeSet,

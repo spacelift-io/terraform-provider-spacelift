@@ -4,45 +4,40 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func dataWebhook() *schema.Resource {
 	return &schema.Resource{
 		Read: dataWebhookRead,
 		Schema: map[string]*schema.Schema{
-			"deleted": &schema.Schema{
-				Type:        schema.TypeBool,
-				Description: "is deleted",
-				Computed:    true,
-			},
-			"enabled": &schema.Schema{
+			"enabled": {
 				Type:        schema.TypeBool,
 				Description: "enables or disables sending webhooks",
 				Computed:    true,
 			},
-			"endpoint": &schema.Schema{
+			"endpoint": {
 				Type:        schema.TypeString,
 				Description: "endpoint to send the POST request to",
 				Computed:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the stack which triggers the webhooks",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 			},
-			"secret": &schema.Schema{
+			"secret": {
 				Type:        schema.TypeString,
 				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
 				Computed:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
 				Optional:    true,
 			},
-			"webhook_id": &schema.Schema{
+			"webhook_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the webhook",
 				Required:    true,
@@ -93,7 +88,6 @@ func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(webhookID)
-	d.Set("deleted", module.Integrations.Webhooks[webhookIndex].Deleted)
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
@@ -130,7 +124,6 @@ func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(webhookID)
-	d.Set("deleted", stack.Integrations.Webhooks[webhookIndex].Deleted)
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", stack.Integrations.Webhooks[webhookIndex].Secret)

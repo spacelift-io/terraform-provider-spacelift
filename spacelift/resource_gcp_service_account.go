@@ -5,7 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 // Deprecated! Used for backwards compatibility.
@@ -28,25 +28,25 @@ func resourceGCPServiceAccount() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"service_account_email": &schema.Schema{
+			"service_account_email": {
 				Type:        schema.TypeString,
 				Description: "Email address of the GCP service account dedicated for this stack",
 				Computed:    true,
 			},
-			"module_id": &schema.Schema{
+			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the module which uses GCP service account credentials",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which uses GCP service account credentials",
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"token_scopes": &schema.Schema{
+			"token_scopes": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				MinItems:    1,
