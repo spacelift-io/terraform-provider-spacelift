@@ -411,7 +411,7 @@ See the [policy resource](#spacelift_policy-resource) for details on the returne
 
 ```python
 resource "spacelift_policy" "no-weekend-deploys" {
-  name = "Let's not deploy any changes over the weekeend"
+  name = "Let's not deploy any changes over the weekend
   body = file("policies/no-weekend-deploys.rego")
   type = "TERRAFORM_PLAN"
 }
@@ -435,11 +435,13 @@ The following arguments are supported:
 - `name` - (Required) The name of the the policy - should be unique within one account;
 - `body` - (Required) The body of the policy - may be provided inline or read from a file;
 - `type` - (Required) One of the supported types of policies. Currently the following options are available:
+  - `GIT_PUSH` - controls how Git push events are interpreted;
   - `LOGIN` - controls who can log in and in what capacity;
   - `STACK_ACCESS` - controls who gets what level of access to a Stack;
   - `INITIALIZATION` - controls whether Spacelift runs can be started;
   - `TERRAFORM_PLAN` - validates the outcome of Terraform plans;
   - `TASK_RUN` - controls whether Spacelift tasks can be started;
+  - `TRIGGER` - controls what happens when blocking runs terminate;
 
 #### Attributes reference
 
@@ -457,7 +459,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ```python
 resource "spacelift_policy" "no-weekend-deploys" {
-  name = "Let's not deploy any changes over the weekeend"
+  name = "Let's not deploy any changes over the weekend"
   body = file("policies/no-weekend-deploys.rego")
   type = "TERRAFORM_PLAN"
 }
@@ -591,8 +593,9 @@ The following arguments are supported:
 - `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
+- `labels` - (Optional) - List of labels to set on the Stack;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
-- `project_root` - (Optional) - Directory that is relative to the workspace root containing the entrypoint to the Stack.;
+- `project_root` - (Optional) - Directory that is relative to the workspace root containing the entry point to the Stack.;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 

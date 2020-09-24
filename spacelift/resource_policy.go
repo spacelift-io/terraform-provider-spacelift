@@ -45,6 +45,7 @@ func resourcePolicy() *schema.Resource {
 						"STACK_ACCESS",
 						"TASK_RUN",
 						"TERRAFORM_PLAN",
+						"TRIGGER",
 					},
 					false,
 				),
