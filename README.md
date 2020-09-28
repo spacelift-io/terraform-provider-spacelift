@@ -650,6 +650,7 @@ The following arguments are supported:
 - `module_id` - (Optional) - ID of the module to attach the policy to;
 - `policy_id` - (Required) - ID of the policy to attach;
 - `stack_id` - (Optional) - ID of the stack to attach the policy to;
+- `custom_input` - (Optional) - JSON-encoded custom input to be passed to the evaluated document at the "attachment" key;
 
 Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
