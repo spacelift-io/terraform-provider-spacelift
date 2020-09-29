@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -92,11 +93,12 @@ func resourceStackAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error 
 	stackID := d.Get("stack_id").(string)
 	roleARN := d.Get("role_arn").(string)
 
-	if err := resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN); err != nil {
-		return errors.Wrap(err, "could not update AWS role delegation")
-	}
+	var acc multierror.Accumulator
 
-	return nil
+	acc.Push(errors.Wrap(resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN), "could not update AWS role delegation"))
+	acc.Push(resourceStackAWSRoleRead(d, meta))
+
+	return acc.Error()
 }
 
 func resourceStackAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {

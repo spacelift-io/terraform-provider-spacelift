@@ -9,6 +9,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
+	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -176,11 +177,12 @@ func resourceWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 		variables["description"] = graphql.String(desc.(string))
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not update worker pool")
-	}
+	var acc multierror.Accumulator
 
-	return nil
+	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update worker pool"))
+	acc.Push(resourceWorkerPoolRead(d, meta))
+
+	return acc.Error()
 }
 
 func resourceWorkerPoolDelete(d *schema.ResourceData, meta interface{}) error {
