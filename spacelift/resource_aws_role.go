@@ -89,11 +89,11 @@ func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := d.GetOk("module_id"); ok {
-		return resourceModuleRead(d, meta)
+		return resourceModuleAWSRoleRead(d, meta)
 	}
 
 	if _, ok := d.GetOk("stack_id"); ok {
-		return resourceStackRead(d, meta)
+		return resourceStackAWSRoleRead(d, meta)
 	}
 
 	return errors.New("either module_id or stack_id must be provided")

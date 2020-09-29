@@ -20,6 +20,9 @@ jobs:
 
       - name: Lint the code using "golint"
         run: go get -u golang.org/x/lint/golint && golint -set_exit_status ./...
+      
+      - name: Run staticcheck
+        run: go get -u honnef.co/go/tools/cmd/staticcheck && staticcheck ./...
 
       - name: Test with coverage
         run: go test -coverprofile=coverage.txt -race -coverpkg=./... ./...
