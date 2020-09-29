@@ -7,21 +7,21 @@ jobs:
     name: Build and deploy the image
     runs-on: ubuntu-latest
     env:
-      DOCKER_IMAGE: spacelift/runner:${{ github.ref == 'refs/heads/master' && 'latest' || 'future' }}
+      DOCKER_IMAGE: quay.io/spacelift/runner:${{ github.ref == 'refs/heads/master' && 'latest' || 'future' }}
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@master
 
-      - name: Log in to Docker Hub
-        run: echo ${DOCKERHUB_PASSWORD} | docker login --username ${DOCKERHUB_USERNAME} --password-stdin
+      - name: Log in to quay.io
+        run: echo ${QUAY_PASSWORD} | docker login --username ${QUAY_USERNAME} --password-stdin quay.io
         env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Build the image
         run: docker build --tag ${DOCKER_IMAGE} .
 
-      - name: Push the image to Docker Hub
+      - name: Push the image to quay.io
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future' }}
         run: docker push ${DOCKER_IMAGE}
