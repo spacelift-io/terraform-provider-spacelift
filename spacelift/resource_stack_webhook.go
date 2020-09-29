@@ -158,7 +158,7 @@ func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error 
 	var acc multierror.Accumulator
 
 	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update webhook"))
-	acc.Push(resourceStackWebhookRead(d, meta))
+	acc.Push(errors.Wrap(resourceStackWebhookRead(d, meta), "could not read the current state"))
 
 	return acc.Error()
 }

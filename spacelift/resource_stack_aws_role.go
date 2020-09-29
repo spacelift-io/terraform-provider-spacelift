@@ -96,7 +96,7 @@ func resourceStackAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error 
 	var acc multierror.Accumulator
 
 	acc.Push(errors.Wrap(resourceStackAWSRoleSet(meta.(*Client), stackID, roleARN), "could not update AWS role delegation"))
-	acc.Push(resourceStackAWSRoleRead(d, meta))
+	acc.Push(errors.Wrap(resourceStackAWSRoleRead(d, meta), "could not read the current state"))
 
 	return acc.Error()
 }
