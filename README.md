@@ -417,6 +417,7 @@ The following arguments are supported:
 
 - `branch` - (Required) - GitHub branch to apply changes to;
 - `name` - (Required) - Name of the stack - should be unique within one account;
+- `labels` - (Optional) - List of labels to set on the Module;
 - `repository` - (Required) - Name of the GitHub repository, without the owner part;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
