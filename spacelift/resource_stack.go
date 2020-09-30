@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -221,12 +220,11 @@ func resourceStackUpdate(d *schema.ResourceData, meta interface{}) error {
 		"input": stackInput(d),
 	}
 
-	var acc multierror.Accumulator
+	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+		return errors.Wrap(err, "could not update stack")
+	}
 
-	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update stack"))
-	acc.Push(errors.Wrap(resourceStackRead(d, meta), "could not read the current state"))
-
-	return acc.Error()
+	return resourceStackRead(d, meta)
 }
 
 func resourceStackDelete(d *schema.ResourceData, meta interface{}) error {

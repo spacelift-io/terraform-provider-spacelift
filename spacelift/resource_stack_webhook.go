@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -155,12 +154,11 @@ func resourceStackWebhookUpdate(d *schema.ResourceData, meta interface{}) error 
 		},
 	}
 
-	var acc multierror.Accumulator
+	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+		return errors.Wrap(err, "could not update webhook")
+	}
 
-	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update webhook"))
-	acc.Push(errors.Wrap(resourceStackWebhookRead(d, meta), "could not read the current state"))
-
-	return acc.Error()
+	return nil
 }
 
 func resourceStackWebhookDelete(d *schema.ResourceData, meta interface{}) error {
