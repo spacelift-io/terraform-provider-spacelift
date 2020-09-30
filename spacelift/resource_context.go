@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -98,11 +99,12 @@ func resourceContextUpdate(d *schema.ResourceData, meta interface{}) error {
 		variables["description"] = toOptionalString(description)
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not update context")
-	}
+	var acc multierror.Accumulator
 
-	return resourceContextRead(d, meta)
+	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update context"))
+	acc.Push(errors.Wrap(resourceContextRead(d, meta), "could not read the current state"))
+
+	return acc.Error()
 }
 
 func resourceContextDelete(d *schema.ResourceData, meta interface{}) error {
