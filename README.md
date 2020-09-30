@@ -361,7 +361,6 @@ resource "spacelift_module" "k8s-module" {
   administrative    = true
   branch            = "master"
   description       = "Infra terraform module"
-  project_root      = "/project"
   repository        = "terraform-super-module"
 }
 ```
@@ -375,7 +374,6 @@ resource "spacelift_module" "k8s-module-gitlab" {
   }
 
   administrative    = true
-  autodeploy        = true
   branch            = "master"
   description       = "Infra terraform module"
   repository        = "terraform-super-module"
