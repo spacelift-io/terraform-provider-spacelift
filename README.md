@@ -420,7 +420,6 @@ The following arguments are supported:
 - `repository` - (Required) - Name of the GitHub repository, without the owner part;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
-- `terraform_version` - (Optional) - Terraform version to use;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
 #### Attributes reference
