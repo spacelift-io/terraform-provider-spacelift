@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -152,11 +153,12 @@ func resourceModuleUpdate(d *schema.ResourceData, meta interface{}) error {
 		"input": moduleUpdateInput(d),
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not update module")
-	}
+	var acc multierror.Accumulator
 
-	return resourceModuleRead(d, meta)
+	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update module"))
+	acc.Push(errors.Wrap(resourceModuleRead(d, meta), "could not read the current state"))
+
+	return acc.Error()
 }
 
 func resourceModuleDelete(d *schema.ResourceData, meta interface{}) error {
