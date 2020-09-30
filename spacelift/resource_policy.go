@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"github.com/fluxio/multierror"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/pkg/errors"
@@ -108,11 +109,12 @@ func resourcePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 		"body": toString(d.Get("body")),
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not update policy")
-	}
+	var acc multierror.Accumulator
 
-	return resourcePolicyRead(d, meta)
+	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update policy"))
+	acc.Push(errors.Wrap(resourcePolicyRead(d, meta), "could not read the current state"))
+
+	return acc.Error()
 }
 
 func resourcePolicyDelete(d *schema.ResourceData, meta interface{}) error {
