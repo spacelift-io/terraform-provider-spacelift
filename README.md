@@ -482,7 +482,7 @@ See the [mounted file resource](#spacelift_mounted_file-resource) for details on
 
 ### `spacelift_mounted_file` resource
 
-`spacelift_mounted_file` represents a file mounted in each Run's workspace that is part of a configuration of a [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack). In principle, it's very similar to an [environment variable](#spacelift_environment_variable-resource) except that the value is written to the filesystem rather than passed to the environment.
+`spacelift_mounted_file` represents a file mounted in each Run's workspace that is part of a configuration of a [context](#spacelift_context-resource), a [stack](#spacelift_stack-resource) or a [module](#spacelift_module-resource). In principle, it's very similar to an [environment variable](#spacelift_environment_variable-resource) except that the value is written to the filesystem rather than passed to the environment.
 
 #### Example usage
 
@@ -492,7 +492,7 @@ For a context:
 resource "spacelift_mounted_file" "ireland-kubeconfig" {
   context_id    = "prod-k8s-ie"
   relative_path = "kubeconfig"
-  value         = filebase64("${path.module}/kubeconfig.json")
+  content         = filebase64("${path.module}/kubeconfig.json")
 }
 ```
 
@@ -502,7 +502,7 @@ For a module:
 resource "spacelift_mounted_file" "module-kubeconfig" {
   module_id     = "k8s-module"
   relative_path = "kubeconfig"
-  value         = filebase64("${path.module}/kubeconfig.json")
+  content         = filebase64("${path.module}/kubeconfig.json")
 }
 ```
 
@@ -512,7 +512,7 @@ For a stack:
 resource "spacelift_mounted_file" "core-kubeconfig" {
   stack_id      = "k8s-core"
   relative_path = "kubeconfig"
-  value         = filebase64("${path.module}/kubeconfig.json")
+  content         = filebase64("${path.module}/kubeconfig.json")
 }
 ```
 
