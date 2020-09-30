@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func dataPolicy() *schema.Resource {
@@ -12,24 +12,24 @@ func dataPolicy() *schema.Resource {
 		Read: dataPolicyRead,
 
 		Schema: map[string]*schema.Schema{
-			"policy_id": &schema.Schema{
+			"policy_id": {
 				Type:        schema.TypeString,
-				Description: "Immutable ID (slug) of the policy",
+				Description: "immutable ID (slug) of the policy",
 				Required:    true,
 			},
-			"body": &schema.Schema{
+			"body": {
 				Type:        schema.TypeString,
-				Description: "Body of the policy",
+				Description: "body of the policy",
 				Computed:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
-				Description: "Name of the policy",
+				Description: "name of the policy",
 				Computed:    true,
 			},
-			"type": &schema.Schema{
+			"type": {
 				Type:        schema.TypeString,
-				Description: "Type of the policy",
+				Description: "type of the policy",
 				Computed:    true,
 			},
 		},

@@ -59,17 +59,20 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_context_attachment` - [data source](#spacelift_context_attachment_data-source) and [resource](#spacelift_context_attachment_resource);
 - `spacelift_environment_variable` - [data source](#spacelift_environment_variable-data-source) and [resource](#spacelift_environment_variable-resource);
 - `spacelift_ips` - [data source](#spacelift_ips-data-source);
+- `spacelift_module` - [data source](#spacelift_module-data-source) and [resource](#spacelift_module-resource);
 - `spacelift_mounted_file` - [data source](#spacelift_mounted_file-data-source) and [resource](#spacelift_mounted_file-resource);
 - `spacelift_policy` - [data source](#spacelift_policy-data-source) and [resource](#spacelift_policy-resource);
 - `spacelift_policy_attachment` - [resource](#spacelift_policy_attachment-resource);
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
-- `spacelift_stack_aws_role` - [data source](#spacelift_stack_aws_role-data-source) and [resource](#spacelift_stack_aws_role-resource);
-- `spacelift_stack_gcp_service_account` - [data source](#spacelift_stack_gcp_service_account-data-source) and [resource](#spacelift_stack_gcp_service_account-resource);
+- `spacelift_aws_role` - [data source](#spacelift_aws_role-data-source) and [resource](#spacelift_aws_role-resource);
+- `spacelift_gcp_service_account` - [data source](#spacelift_gcp_service_account-data-source) and [resource](#spacelift_gcp_service_account-resource);
 - `spacelift_worker_pool` - [data source](#spacelift_worker_pool-data-source) and [resource](#spacelift_worker_pool-resource);
+
+**Note:** `spacelift_stack_aws_role` and `spacelift_stack_gcp_service_account` are **deprecated**. Please use [spacelift_aws_role](#spacelift_aws_role-data-source) and [spacelift_gcp_service_account](#spacelift_gcp_service_account-data-source) instead.
 
 ### `spacelift_context` data source
 
-`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
+`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) or [**modules**](#spacelift_module-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
 
 #### Example usage
 
@@ -93,7 +96,7 @@ See the [context resource](#spacelift_context-resource) for details on the retur
 
 ### `spacelift_context` resource
 
-`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
+`spacelift_context` represents a Spacelift **context** - a collection of configuration elements (either environment variables or mounted files) that can be administratively attached to multiple [**stacks**](#spacelift_stack-resource) or [**modules**](#spacelift_module-resource) using a [**context attachment**]($spacelift_context_attachment_resource) resource.
 
 #### Example usage
 
@@ -145,9 +148,11 @@ See the [context attachment resource](#spacelift_context_attachment-resource) fo
 
 ### `spacelift_context_attachment` resource
 
-`spacelift_context_attachment` represents a Spacelift attachment of a single [context](#spacelift_context-resource) to a single [stack](#spacelift_stack-resource), with a predefined priority.
+`spacelift_context_attachment` represents a Spacelift attachment of a single [context](#spacelift_context-resource) to a single [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource), with a predefined priority.
 
 #### Example usage
+
+For a stack:
 
 ```python
 resource "spacelift_context_attachment" "attachment" {
@@ -157,13 +162,26 @@ resource "spacelift_context_attachment" "attachment" {
 }
 ```
 
+For a module:
+
+```python
+resource "spacelift_context_attachment" "attachment" {
+  context_id = "prod-k8s-ie"
+  module_id  = "k8s-module"
+  priority   = 0
+}
+```
+
 #### Argument reference
 
 The following arguments are supported:
 
 - `context_id` - (Required) - ID of the context to attach;
-- `stack_id` - (Required) - ID of the stack to attach the context to;
+- `module_id` - (Optional) - ID of the module to attach the context to;
+- `stack_id` - (Optional) - ID of the stack to attach the context to;
 - `priority` - (Optional) - Priority of the context attachment, used in cases where multiple contexts define the same value: the one with the lowest `priority` value will take precedence;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -175,7 +193,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_environment_variable` data source
 
-`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
+`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack) or [module](#spacelift_module-resource), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
 
 #### Example usage
 
@@ -185,6 +203,15 @@ For a context:
 data "spacelift_environment_variable" "ireland-kubeconfig" {
   context_id = "prod-k8s-ie"
   name       = "KUBECONFIG"
+}
+```
+
+For a module:
+
+```python
+data "spacelift_environment_variable" "module-kubeconfig" {
+  module_id = "k8s-module"
+  name     = "KUBECONFIG"
 }
 ```
 
@@ -203,9 +230,10 @@ The following arguments are supported:
 
 - `name` - (Required) - Name of the environment variable;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
+- `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id`, `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -224,6 +252,17 @@ For a context:
 ```python
 resource "spacelift_environment_variable" "ireland-kubeconfig" {
   context_id = "prod-k8s-ie"
+  name       = "KUBECONFIG"
+  value      = "/project/spacelift/kubeconfig"
+  write_only = false
+}
+```
+
+For a module:
+
+```python
+resource "spacelift_environment_variable" "module-kubeconfig" {
+  module_id  = "k8s-module"
   name       = "KUBECONFIG"
   value      = "/project/spacelift/kubeconfig"
   write_only = false
@@ -249,9 +288,10 @@ The following arguments are supported:
 - `value` - (Required) - Value of the environment variable;
 - `write_only` - (Optional) - Indicates whether the value can be read back outside a Run - for safety, this defaults to **true**;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
+- `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id`, `module_id`, `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 Also note that if `write_only` is set to `true`, the `value` is not stored in the state, and will not be reported back by either the data source or the resource. Instead, its SHA-256 checksum will be used to compare the new value to the one passed to Spacelift.
 
@@ -286,6 +326,112 @@ The following attributes are exported:
 
 [^ Back to all resources](#resources)
 
+### `spacelift_module` data source
+
+`spacelift_module` is a special type of [stack](#spacelift_stack-resource) used to test Terraform modules.
+
+#### Example usage
+
+```python
+data "spacelift_module" "k8s-module" {
+  module_id = "k8s-module"
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `module_id` - (Required) - The ID (slug) of the module;
+
+#### Attributes reference
+
+See the [module resource](#spacelift_module-resource) for details on the returned attributes - they are identical.
+
+[^ Back to all resources](#resources)
+
+### `spacelift_module` resource
+
+`spacelift_module` is a special type of [stack](#spacelift_stack-resource) used to test Terraform modules.
+
+#### Example usage
+
+```python
+resource "spacelift_module" "k8s-module" {
+  administrative    = true
+  branch            = "master"
+  description       = "Infra terraform module"
+  project_root      = "/project"
+  repository        = "terraform-super-module"
+}
+```
+
+For Gitlab-hosted repositories:
+
+```python
+resource "spacelift_module" "k8s-module-gitlab" {
+  gitlab {
+    namespace = "spacelift"
+  }
+
+  administrative    = true
+  autodeploy        = true
+  branch            = "master"
+  description       = "Infra terraform module"
+  repository        = "terraform-super-module"
+}
+```
+
+With IAM role delegation (only required fields):
+
+```python
+resource "spacelift_module" "k8s-module" {
+  branch            = "master"
+  name              = "Kubernetes terraform module"
+  repository        = "terraform-super-module"
+}
+
+resource "aws_iam_role" "spacelift" {
+  name = "spacelift"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [jsondecode(spacelift_module.k8s-module.aws_assume_role_policy_statement)]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "spacelift" {
+  role       = aws_iam_role.spacelift.name
+  policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
+}
+
+resource "spacelift_aws_role" "k8s-module" {
+  module_id = spacelift_module.k8s-module.id
+  role_arn = aws_iam_role.spacelift.arn
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `branch` - (Required) - GitHub branch to apply changes to;
+- `name` - (Required) - Name of the stack - should be unique within one account;
+- `repository` - (Required) - Name of the GitHub repository, without the owner part;
+- `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
+- `description` - (Optional) - Free-form stack description for GUI users;
+- `terraform_version` - (Optional) - Terraform version to use;
+- `worker_pool_id` - (Optional) - ID of the worker pool to use;
+
+#### Attributes reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The immutable ID (slug) of the module;
+- `aws_assume_role_policy_statement` - JSON-encoded AWS IAM policy for the AWS IAM role trust relationship;
+
+[^ Back to all resources](#resources)
+
 ### `spacelift_mounted_file` data source
 
 `spacelift_mounted_file` represents a file mounted in each Run's workspace that is part of a configuration of a [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack). In principle, it's very similar to an [environment variable](#spacelift_environment_variable-resource) except that the value is written to the filesystem rather than passed to the environment.
@@ -297,6 +443,15 @@ For a context:
 ```python
 data "spacelift_mounted_file" "ireland-kubeconfig" {
   context_id    = "prod-k8s-ie"
+  relative_path = "kubeconfig"
+}
+```
+
+For a module:
+
+```python
+data "spacelift_mounted_file" "module-kubeconfig" {
+  module_id     = "k8s-module"
   relative_path = "kubeconfig"
 }
 ```
@@ -316,9 +471,10 @@ The following arguments are supported:
 
 - `relative_path` - (Required) - Relative path to the mounted file. The full (absolute) path to the file will be prefixed with `/spacelift/project/`;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
+- `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id` `module_id`,`stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -342,6 +498,16 @@ resource "spacelift_mounted_file" "ireland-kubeconfig" {
 }
 ```
 
+For a module:
+
+```python
+resource "spacelift_mounted_file" "module-kubeconfig" {
+  module_id     = "k8s-module"
+  relative_path = "kubeconfig"
+  value         = filebase64("${path.module}/kubeconfig.json")
+}
+```
+
 For a stack:
 
 ```python
@@ -359,10 +525,11 @@ The following arguments are supported:
 - `content` - (Required) - Content of the mounted file encoded using Base-64;
 - `relative_path` - (Required) - Relative path to the mounted file, without the `/spacelift/project/` prefix;
 - `context_id` - (Optional) - ID of the context on which the mounted file is defined;
+- `module_id` - (Optional) - ID of the module on which the mounted file is defined;
 - `stack_id` - (Optional) - ID of the stack on which the mounted file is defined;
 - `write_only` - (Optional) - Indicates whether the content can be read back outside a Run;
 
-Note that `context_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+Note that `context_id`, `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 Also note that if `write_only` is set to `true`, the `content` is not stored in the state, and will not be reported back by either the data source or the resource. Instead, its SHA-256 checksum will be used to compare the new value to the one passed to Spacelift.
 
@@ -480,8 +647,12 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 
 The following arguments are supported:
 
+- `module_id` - (Optional) - ID of the module to attach the policy to;
 - `policy_id` - (Required) - ID of the policy to attach;
-- `stack_id` - (Required) - ID of the stack to attach the policy to;
+- `stack_id` - (Optional) - ID of the stack to attach the policy to;
+- `custom_input` - (Optional) - JSON-encoded custom input to be passed to the evaluated document at the "attachment" key;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -576,7 +747,7 @@ resource "aws_iam_role_policy_attachment" "spacelift" {
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-resource "spacelift_stack_aws_role" "k8s-core" {
+resource "spacelift_aws_role" "k8s-core" {
   stack_id = spacelift_stack.k8s-core.id
   role_arn = aws_iam_role.spacelift.arn
 }
@@ -608,16 +779,26 @@ In addition to all arguments above, the following attributes are exported:
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_aws_role` data source
+### `spacelift_aws_role` data source
 
-`spacelift_stack_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
+`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
 
-Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).
+Note: when assuming credentials, Spacelift will use `$accountName/$stackID` or `$accountName/$moduleID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).
 
 #### Example usage
 
+For a Module:
+
 ```python
-data "spacelift_stack_aws_role" "k8s-core" {
+data "spacelift_aws_role" "k8s-module" {
+  module_id = "k8s-module"
+}
+```
+
+For a Stack
+
+```python
+data "spacelift_aws_role" "k8s-core" {
   stack_id = "k8s-core"
 }
 ```
@@ -626,17 +807,20 @@ data "spacelift_stack_aws_role" "k8s-core" {
 
 The following arguments are supported:
 
-- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
-See the [stack AWS role resource](#spacelift_stack_aws_role-resource) for details on the returned attributes - they are identical.
+See the [stack AWS role resource](#spacelift_aws_role-resource) for details on the returned attributes - they are identical.
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_aws_role` resource
+### `spacelift_aws_role` resource
 
-`spacelift_stack_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
+`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
 
 Note: when assuming credentials, Spacelift will use `$accountName/$stackID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).
 
@@ -657,8 +841,15 @@ resource "aws_iam_role_policy_attachment" "spacelift" {
   policy_arn = "arn:aws:iam::aws:policy/PowerUserAccess"
 }
 
-resource "spacelift_stack_aws_role" "k8s-core" {
+# for a Stack:
+resource "spacelift_aws_role" "k8s-core" {
   stack_id = "k8s-core"
+  role_arn = aws_iam_role.spacelift.arn
+}
+
+# or for a Module:
+resource "spacelift_aws_role" "k8s-core" {
+  module_id = "k8s-core"
   role_arn = aws_iam_role.spacelift.arn
 }
 ```
@@ -667,8 +858,11 @@ resource "spacelift_stack_aws_role" "k8s-core" {
 
 The following arguments are supported:
 
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
 - `role_arn` - (Required) - ARN of the AWS IAM role to attach;
-- `stack_id` - (Required) - ID of the stack which assumes the AWS IAM role;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
@@ -678,14 +872,24 @@ In addition to all arguments above, the following attributes are exported:
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_gcp_service_account` data source
+### `spacelift_gcp_service_account` data source
 
-`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+`spacelift_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
 
 #### Example usage
 
+For a Module:
+
 ```python
-data "spacelift_stack_gcp_service_account" "k8s-core" {
+data "spacelift_gcp_service_account" "k8s-module" {
+  module_id = "k8s-module"
+}
+```
+
+For a Stack:
+
+```python
+data "spacelift_gcp_service_account" "k8s-core" {
   stack_id = "k8s-core"
 }
 ```
@@ -694,17 +898,20 @@ data "spacelift_stack_gcp_service_account" "k8s-core" {
 
 The following arguments are supported:
 
-- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 
-See the [resource](#spacelift_stack_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
+See the [resource](#spacelift_gcp_service_account-resource) documentation for details on the returned attributes - they are identical.
 
 [^ Back to all resources](#resources)
 
-### `spacelift_stack_gcp_service_account` resource
+### `spacelift_gcp_service_account` resource
 
-`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+`spacelift_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
 
 #### Example usage
 
@@ -715,7 +922,7 @@ resource "spacelift_stack" "k8s-core" {
   repository        = "core-infra"
 }
 
-resource "spacelift_stack_gcp_service_account" "k8s-core" {
+resource "spacelift_gcp_service_account" "k8s-core" {
   stack_id = spacelift_stack.k8s-core.id
 
   token_scopes = [
@@ -734,7 +941,7 @@ resource "google_project" "k8s-core" {
 resource "google_project_iam_member" "k8s-core" {
   project = google_project.k8s-core.id
   role    = "roles/owner"
-  member  = spacelift_stack_gcp_service_account.k8s-core.service_account_email
+  member  = spacelift_gcp_service_account.k8s-core.service_account_email
 }
 ```
 
@@ -742,8 +949,11 @@ resource "google_project_iam_member" "k8s-core" {
 
 The following arguments are supported:
 
-- `stack_id` - (Required) - The immutable ID (slug) of the stack;
+- `module_id` - (Optional) - The immutable ID (slug) of the module;
+- `stack_id` - (Optional) - The immutable ID (slug) of the stack;
 - `token_scopes` - (Required) - List of scopes to request when generating the temporary OAuth token. At least one scope is required;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
 
 #### Attributes reference
 

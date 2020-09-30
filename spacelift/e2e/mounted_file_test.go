@@ -70,6 +70,66 @@ data "spacelift_mounted_file" "context_file" {
 	})
 }
 
+func (e *MountedFileTest) TestLifecycle_Module() {
+	defer gock.Off()
+
+	e.posts(
+		`{"query":"query($id:ID!$module:ID!){module(id: $module){configElement(id: $id){id,checksum,type,value,writeOnly}}}","variables":{"id":"secret/key","module":"babys-first-module"}}`,
+		`{"data":{"module":{"configElement":{"id":"module/babys-first-module/secret/key","checksum":"916de3d556bb83674e3a297e77a6ba4a590f28b15c119640d4a22a31c6182d94","type":"FILE_MOUNT","value":null,"writeOnly":true}}}}`,
+		7,
+	)
+
+	e.posts(
+		`{"query":"mutation($config:ConfigInput!$stack:ID!){stackConfigAdd(stack: $stack, config: $config){id,checksum,type,value,writeOnly}}","variables":{"config":{"id":"secret/key","type":"FILE_MOUNT","value":"YmFjb24=","writeOnly":true},"stack":"babys-first-module"}}`,
+		`{"data":{"stackConfigAdd":{"id":"module/babys-first-module/secret/key"}}}`,
+		1,
+	)
+
+	e.posts(
+		`{"query":"mutation($id:ID!$stack:ID!){stackConfigDelete(stack: $stack, id: $id){id,checksum,type,value,writeOnly}}","variables":{"id":"secret/key","stack":"babys-first-module"}}`,
+		`{"data":{"stackConfigDelete":{}}}`,
+		1,
+	)
+
+	e.testsResource([]resource.TestStep{
+		{
+			Config: `
+resource "spacelift_mounted_file" "module_file" {
+  module_id     = "babys-first-module"
+  relative_path = "secret/key"
+  content       = "YmFjb24="
+}
+
+data "spacelift_mounted_file" "module_file" {
+  module_id     = "babys-first-module"
+  relative_path = "secret/key"
+}
+`,
+			Check: resource.ComposeTestCheckFunc(
+				// Test resource.
+				resource.TestCheckResourceAttr("spacelift_mounted_file.module_file", "id", "module/babys-first-module/secret/key"),
+				resource.TestCheckResourceAttr("spacelift_mounted_file.module_file", "checksum", "916de3d556bb83674e3a297e77a6ba4a590f28b15c119640d4a22a31c6182d94"),
+				resource.TestCheckResourceAttr("spacelift_mounted_file.module_file", "module_id", "babys-first-module"),
+				resource.TestCheckResourceAttr("spacelift_mounted_file.module_file", "relative_path", "secret/key"),
+				resource.TestCheckResourceAttr("spacelift_mounted_file.module_file", "content", ""),
+				resource.TestCheckResourceAttr("spacelift_mounted_file.module_file", "write_only", "true"),
+				resource.TestCheckNoResourceAttr("spacelift_mounted_file.module_file", "context_id"),
+				resource.TestCheckNoResourceAttr("spacelift_mounted_file.module_file", "stack_id"),
+
+				// Test data.
+				resource.TestCheckResourceAttr("data.spacelift_mounted_file.module_file", "id", "module/babys-first-module/secret/key"),
+				resource.TestCheckResourceAttr("data.spacelift_mounted_file.module_file", "checksum", "916de3d556bb83674e3a297e77a6ba4a590f28b15c119640d4a22a31c6182d94"),
+				resource.TestCheckResourceAttr("data.spacelift_mounted_file.module_file", "module_id", "babys-first-module"),
+				resource.TestCheckResourceAttr("data.spacelift_mounted_file.module_file", "relative_path", "secret/key"),
+				resource.TestCheckResourceAttr("data.spacelift_mounted_file.module_file", "content", ""),
+				resource.TestCheckResourceAttr("data.spacelift_mounted_file.module_file", "write_only", "true"),
+				resource.TestCheckNoResourceAttr("data.spacelift_mounted_file.module_file", "context_id"),
+				resource.TestCheckNoResourceAttr("data.spacelift_mounted_file.module_file", "stack_id"),
+			),
+		},
+	})
+}
+
 func (e *MountedFileTest) TestLifecycle_Stack() {
 	defer gock.Off()
 

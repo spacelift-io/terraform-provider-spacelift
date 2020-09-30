@@ -6,7 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func resourceContext() *schema.Resource {
@@ -21,12 +21,12 @@ func resourceContext() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form context description for users",
 				Optional:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the context - should be unique in one account",
 				Required:    true,

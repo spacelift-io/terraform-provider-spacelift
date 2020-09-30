@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func resourceMountedFile() *schema.Resource {
@@ -22,12 +22,12 @@ func resourceMountedFile() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"checksum": &schema.Schema{
+			"checksum": {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
 			},
-			"content": &schema.Schema{
+			"content": {
 				Type:             schema.TypeString,
 				Description:      "Content of the mounted file encoded using Base-64",
 				DiffSuppressFunc: suppressValueChange,
@@ -35,27 +35,34 @@ func resourceMountedFile() *schema.Resource {
 				Required:         true,
 				ForceNew:         true,
 			},
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the context on which the mounted file is defined",
+				Optional:      true,
+				ConflictsWith: []string{"module_id", "stack_id"},
+				ForceNew:      true,
+			},
+			"module_id": {
+				Type:          schema.TypeString,
+				Description:   "ID of the module on which the mounted file is defined",
 				Optional:      true,
 				ConflictsWith: []string{"stack_id"},
 				ForceNew:      true,
 			},
-			"relative_path": &schema.Schema{
+			"relative_path": {
 				Type:        schema.TypeString,
 				Description: "Relative path to the mounted file, without the /spacelift/project/ prefix",
 				Required:    true,
 				ForceNew:    true,
 			},
-			"stack_id": &schema.Schema{
+			"stack_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the stack on which the mounted file is defined",
 				Optional:      true,
 				ConflictsWith: []string{"context_id"},
 				ForceNew:      true,
 			},
-			"write_only": &schema.Schema{
+			"write_only": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the content can be read back outside a Run",
 				Optional:    true,
@@ -86,12 +93,21 @@ func resourceMountedFileCreate(d *schema.ResourceData, meta interface{}) error {
 		variables["stack"] = toID(stackID)
 	}
 
-	if contextOK == stackOK {
-		return errors.New("either context_id or stack_id must be provided")
+	moduleID, moduleOK := d.GetOk("module_id")
+	if moduleOK {
+		variables["stack"] = toID(moduleID)
+	}
+
+	if !(contextOK || stackOK || moduleOK) {
+		return errors.New("either context_id or stack_id/module_id must be provided")
 	}
 
 	if contextOK {
 		return resourceMountedFileCreateContext(d, meta.(*Client), variables)
+	}
+
+	if moduleOK {
+		return resourceMountedFileCreateModule(d, meta.(*Client), variables)
 	}
 
 	return resourceMountedFileCreateStack(d, meta.(*Client), variables)
@@ -111,6 +127,23 @@ func resourceMountedFileCreateContext(d *schema.ResourceData, client *Client, va
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("relative_path")))
+	return resourceMountedFileRead(d, client)
+}
+
+func resourceMountedFileCreateModule(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+	var mutation struct {
+		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
+	}
+
+	if err := client.Mutate(&mutation, variables); err != nil {
+		return errors.Wrap(err, "could not module mounted file")
+	}
+
+	if d.Get("write_only").(bool) {
+		d.Set("content", "")
+	}
+
+	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("relative_path")))
 	return resourceMountedFileRead(d, client)
 }
 
@@ -144,6 +177,8 @@ func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 	switch idParts[0] {
 	case "context":
 		element, err = resourceMountedFileReadContext(d, client, toID(idParts[1]), toID(idParts[2]))
+	case "module":
+		element, err = resourceMountedFileReadModule(d, client, toID(idParts[1]), toID(idParts[2]))
 	case "stack":
 		element, err = resourceMountedFileReadStack(d, client, toID(idParts[1]), toID(idParts[2]))
 	default:
@@ -185,6 +220,24 @@ func resourceMountedFileReadContext(d *schema.ResourceData, client *Client, cont
 	return query.Context.ConfigElement, nil
 }
 
+func resourceMountedFileReadModule(d *schema.ResourceData, client *Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+	var query struct {
+		Module *struct {
+			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
+		} `graphql:"module(id: $module)"`
+	}
+
+	if err := client.Query(&query, map[string]interface{}{"module": module, "id": ID}); err != nil {
+		return nil, errors.Wrap(err, "could not query for module mounted file")
+	}
+
+	if query.Module == nil {
+		return nil, nil
+	}
+
+	return query.Module.ConfigElement, nil
+}
+
 func resourceMountedFileReadStack(d *schema.ResourceData, client *Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
@@ -215,7 +268,7 @@ func resourceMountedFileDelete(d *schema.ResourceData, meta interface{}) error {
 	switch idParts[0] {
 	case "context":
 		err = resourceMountedFileDeleteContext(d, client, toID(idParts[1]), toID(idParts[2]))
-	case "stack":
+	case "stack", "module":
 		err = resourceMountedFileDeleteStack(d, client, toID(idParts[1]), toID(idParts[2]))
 	default:
 		return errors.Errorf("unexpected resource type: %s", idParts[0])

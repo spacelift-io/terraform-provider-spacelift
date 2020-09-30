@@ -4,7 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func dataContext() *schema.Resource {
@@ -12,19 +12,19 @@ func dataContext() *schema.Resource {
 		Read: dataContextRead,
 
 		Schema: map[string]*schema.Schema{
-			"context_id": &schema.Schema{
+			"context_id": {
 				Type:        schema.TypeString,
-				Description: "Immutable ID (slug) of the context",
+				Description: "immutable ID (slug) of the context",
 				Required:    true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
-				Description: "Free-form context description for users",
+				Description: "free-form context description for users",
 				Computed:    true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
-				Description: "Name of the context",
+				Description: "name of the context",
 				Computed:    true,
 			},
 		},

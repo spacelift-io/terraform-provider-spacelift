@@ -14,7 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func resourceWorkerPool() *schema.Resource {
@@ -29,30 +29,30 @@ func resourceWorkerPool() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"config": &schema.Schema{
+			"config": {
 				Type:        schema.TypeString,
 				Description: "credentials necessary to connect WorkerPool's workers to the control plane",
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the worker pool",
 				Required:    true,
 			},
-			"csr": &schema.Schema{
+			"csr": {
 				Type:        schema.TypeString,
 				Description: "certificate signing request in base64",
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:        schema.TypeString,
 				Description: "description of the worker pool",
 				Optional:    true,
 			},
-			"private_key": &schema.Schema{
+			"private_key": {
 				Type:        schema.TypeString,
 				Description: "private key in base64",
 				Computed:    true,

@@ -70,6 +70,63 @@ data "spacelift_environment_variable" "context_variable" {
 	})
 }
 
+func (e *EnvironmentVariableTest) TestLifecycle_Module() {
+	defer gock.Off()
+	e.posts(
+		`{"query":"query($id:ID!$module:ID!){module(id: $module){configElement(id: $id){id,checksum,type,value,writeOnly}}}","variables":{"id":"SECRET_KEY","module":"babys-first-module"}}`,
+		`{"data":{"module":{"configElement":{"id":"module/babys-first-module/SECRET_KEY","checksum":"f64b79a7d2493ddbb9aacaa69d6cca134ef190c8ed45a217cf640d93032af1c1","type":"ENVIRONMENT_VARIABLE","value":null,"writeOnly":true}}}}`,
+		7,
+	)
+
+	e.posts(
+		`{"query":"mutation($config:ConfigInput!$stack:ID!){stackConfigAdd(stack: $stack, config: $config){id,checksum,type,value,writeOnly}}","variables":{"config":{"id":"SECRET_KEY","type":"ENVIRONMENT_VARIABLE","value":"dont-tell-anyone","writeOnly":true},"stack":"babys-first-module"}}`,
+		`{"data":{"stackConfigAdd":{"id":"module/babys-first-module/SECRET_KEY"}}}`,
+		1,
+	)
+
+	e.posts(
+		`{"query":"mutation($id:ID!$stack:ID!){stackConfigDelete(stack: $stack, id: $id){id,checksum,type,value,writeOnly}}","variables":{"id":"SECRET_KEY","stack":"babys-first-module"}}`,
+		`{"data":{"stackConfigDelete":{}}}`,
+		1,
+	)
+
+	e.testsResource([]resource.TestStep{
+		{
+			Config: `
+resource "spacelift_environment_variable" "module_variable" {
+  module_id  = "babys-first-module"
+  name       = "SECRET_KEY"
+  value      = "dont-tell-anyone"
+}
+
+data "spacelift_environment_variable" "module_variable" {
+  module_id = "babys-first-module"
+  name       = "SECRET_KEY"
+}
+`,
+			Check: resource.ComposeTestCheckFunc(
+				// Test resource.
+				resource.TestCheckResourceAttr("spacelift_environment_variable.module_variable", "id", "module/babys-first-module/SECRET_KEY"),
+				resource.TestCheckResourceAttr("spacelift_environment_variable.module_variable", "checksum", "f64b79a7d2493ddbb9aacaa69d6cca134ef190c8ed45a217cf640d93032af1c1"),
+				resource.TestCheckResourceAttr("spacelift_environment_variable.module_variable", "module_id", "babys-first-module"),
+				resource.TestCheckResourceAttr("spacelift_environment_variable.module_variable", "name", "SECRET_KEY"),
+				resource.TestCheckResourceAttr("spacelift_environment_variable.module_variable", "value", ""),
+				resource.TestCheckResourceAttr("spacelift_environment_variable.module_variable", "write_only", "true"),
+				resource.TestCheckNoResourceAttr("spacelift_environment_variable.module_variable", "context_id"),
+
+				// Test data.
+				resource.TestCheckResourceAttr("data.spacelift_environment_variable.module_variable", "id", "module/babys-first-module/SECRET_KEY"),
+				resource.TestCheckResourceAttr("data.spacelift_environment_variable.module_variable", "checksum", "f64b79a7d2493ddbb9aacaa69d6cca134ef190c8ed45a217cf640d93032af1c1"),
+				resource.TestCheckResourceAttr("data.spacelift_environment_variable.module_variable", "module_id", "babys-first-module"),
+				resource.TestCheckResourceAttr("data.spacelift_environment_variable.module_variable", "name", "SECRET_KEY"),
+				resource.TestCheckResourceAttr("data.spacelift_environment_variable.module_variable", "value", ""),
+				resource.TestCheckResourceAttr("data.spacelift_environment_variable.module_variable", "write_only", "true"),
+				resource.TestCheckNoResourceAttr("data.spacelift_environment_variable.module_variable", "context_id"),
+			),
+		},
+	})
+}
+
 func (e *EnvironmentVariableTest) TestLifecycle_Stack() {
 	defer gock.Off()
 
