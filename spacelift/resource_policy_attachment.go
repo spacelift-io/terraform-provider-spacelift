@@ -174,7 +174,7 @@ func resourcePolicyAttachmentVariables(d *schema.ResourceData) (map[string]inter
 }
 
 func resourcePolicyAttachmentSetCustomInput(d *schema.ResourceData, variables map[string]interface{}) {
-	if input, ok := d.GetOk("custom_input"); ok {
+	if input, ok := d.GetOk("custom_input"); ok && input.(string) != "" {
 		variables["customInput"] = graphql.NewString(graphql.String(input.(string)))
 	} else {
 		variables["customInput"] = (*graphql.String)(nil)

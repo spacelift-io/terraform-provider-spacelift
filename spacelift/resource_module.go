@@ -164,7 +164,7 @@ func resourceModuleUpdate(d *schema.ResourceData, meta interface{}) error {
 
 func resourceModuleDelete(d *schema.ResourceData, meta interface{}) error {
 	var mutation struct {
-		DeleteModule *structs.Module `graphql:"stackDelete(id: $id)"`
+		DeleteModule *structs.Module `graphql:"moduleDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
