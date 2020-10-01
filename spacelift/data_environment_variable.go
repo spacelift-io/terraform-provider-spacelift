@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -91,7 +92,7 @@ func dataEnvironmentVariableReadContext(d *schema.ResourceData, meta interface{}
 		"id":      toID(variableName),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for context environment variable")
 	}
 
@@ -130,7 +131,7 @@ func dataEnvironmentVariableReadModule(d *schema.ResourceData, meta interface{})
 		"id":     toID(variableName),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module environment variable")
 	}
 
@@ -163,7 +164,7 @@ func dataEnvironmentVariableReadStack(d *schema.ResourceData, meta interface{}) 
 		"id":    toID(variableName),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack environment variable")
 	}
 

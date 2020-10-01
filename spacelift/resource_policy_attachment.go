@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -72,7 +73,7 @@ func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) er
 
 	resourcePolicyAttachmentSetCustomInput(d, variables)
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not attach policy")
 	}
 
@@ -98,7 +99,7 @@ func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) erro
 		"id":     toID(idParts[1]),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for policy attachment")
 	}
 
@@ -137,7 +138,7 @@ func resourcePolicyAttachmentUpdate(d *schema.ResourceData, meta interface{}) er
 		UpdateAttachment structs.PolicyAttachment `graphql:"policyAttachmentUpdate(id: $id, customInput: $customInput)"`
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not update policy attachment")
 	}
 
@@ -154,7 +155,7 @@ func resourcePolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) er
 		DetachPolicy *structs.PolicyAttachment `graphql:"policyDetach(id: $id)"`
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not detach policy")
 	}
 

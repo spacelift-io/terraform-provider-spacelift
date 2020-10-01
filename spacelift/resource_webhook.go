@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -81,7 +82,7 @@ func resourceWebhookCreate(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("either module_id or stack_id must be provided")
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not create webhook")
 	}
 
@@ -115,7 +116,7 @@ func resourceModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 		"id": toID(d.Get("module_id")),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module")
 	}
 
@@ -156,7 +157,7 @@ func resourceStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 		"id": toID(d.Get("stack_id")),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack")
 	}
 
@@ -220,7 +221,7 @@ func resourceWebhookUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	var acc multierror.Accumulator
 
-	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update webhook"))
+	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update webhook"))
 	acc.Push(errors.Wrap(resourceWebhookRead(d, meta), "could not read the current state"))
 
 	return acc.Error()
@@ -245,7 +246,7 @@ func resourceWebhookDelete(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("either module_id or stack_id must be provided")
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete webhook")
 	}
 

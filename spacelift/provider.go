@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/terraform"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
 // Provider returns an instance of Terraform resource provider for Spacelift.
@@ -119,7 +120,7 @@ func buildClientFromToken(token string) (interface{}, error) {
 		return nil, errors.Wrap(err, "could not parse the API token")
 	}
 
-	return &Client{Endpoint: claims.Audience, Token: token}, nil
+	return &internal.Client{Endpoint: claims.Audience, Token: token}, nil
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (interface{}, error) {

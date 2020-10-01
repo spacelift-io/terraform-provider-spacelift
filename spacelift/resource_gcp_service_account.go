@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -84,7 +85,7 @@ func resourceGCPServiceAccountCreate(d *schema.ResourceData, meta interface{}) e
 		"tokenScopes": tokenScopes,
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not generate dedicated GCP role account for the stack")
 	}
 
@@ -122,7 +123,7 @@ func resourceGCPServiceAccountDelete(d *schema.ResourceData, meta interface{}) e
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete stack GCP service account")
 	}
 
@@ -142,7 +143,7 @@ func resourceModuleGCPServiceAccountReadWithHooks(d *schema.ResourceData, meta i
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module")
 	}
 
@@ -175,7 +176,7 @@ func resourceStackGCPServiceAccountReadWithHooks(d *schema.ResourceData, meta in
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack")
 	}
 

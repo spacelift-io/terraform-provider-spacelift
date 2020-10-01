@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -73,7 +74,7 @@ func resourceContextAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 		return errors.New("either module_id or stack_id must be provided")
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not attach context")
 	}
 
@@ -98,7 +99,7 @@ func resourceContextAttachmentRead(d *schema.ResourceData, meta interface{}) err
 		"id":      toID(idParts[1]),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for context attachment")
 	}
 
@@ -132,7 +133,7 @@ func resourceContextAttachmentDelete(d *schema.ResourceData, meta interface{}) e
 
 	variables := map[string]interface{}{"id": toID(idParts[1])}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not detach context")
 	}
 
