@@ -58,23 +58,19 @@ func dataEnvironmentVariable() *schema.Resource {
 }
 
 func dataEnvironmentVariableRead(d *schema.ResourceData, meta interface{}) error {
-	_, contextOK := d.GetOk("context_id")
-	_, moduleOK := d.GetOk("module_id")
-	_, stackOK := d.GetOk("stack_id")
-
-	if !(contextOK || moduleOK || stackOK) {
-		return errors.New("either context_id or stack_id/module_id must be provided")
-	}
-
-	if contextOK {
+	if _, ok := d.GetOk("context_id"); ok {
 		return dataEnvironmentVariableReadContext(d, meta)
 	}
 
-	if moduleOK {
+	if _, ok := d.GetOk("module_id"); ok {
 		return dataEnvironmentVariableReadModule(d, meta)
 	}
 
-	return dataEnvironmentVariableReadStack(d, meta)
+	if _, ok := d.GetOk("stack_id"); ok {
+		return dataEnvironmentVariableReadStack(d, meta)
+	}
+
+	return errors.New("context_id, module_id or stack_id must be provided")
 }
 
 func dataEnvironmentVariableReadContext(d *schema.ResourceData, meta interface{}) error {

@@ -83,20 +83,20 @@ func resourceContextAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 }
 
 func resourceContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	idParts := strings.Split(d.Id(), "/")
-	if len(idParts) != 2 {
-		return errors.Errorf("unexpected ID: %s", d.Id())
+	variables := map[string]interface{}{"context": d.Get("context_id").(string)}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["id"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["id"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	var query struct {
 		Context *struct {
 			Attachment *structs.ContextAttachment `graphql:"attachedStack(id: $id)"`
 		} `graphql:"context(id: $context)"`
-	}
-
-	variables := map[string]interface{}{
-		"context": toID(idParts[0]),
-		"id":      toID(idParts[1]),
 	}
 
 	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
@@ -109,7 +109,7 @@ func resourceContextAttachmentRead(d *schema.ResourceData, meta interface{}) err
 	}
 
 	attachment := query.Context.Attachment
-	d.Set("context_id", idParts[0])
+
 	d.Set("priority", attachment.Priority)
 
 	if attachment.IsModule {

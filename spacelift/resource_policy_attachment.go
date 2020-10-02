@@ -83,20 +83,20 @@ func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	idParts := strings.Split(d.Id(), "/")
-	if len(idParts) != 2 {
-		return errors.Errorf("unexpected ID: %s", d.Id())
+	variables := map[string]interface{}{"policy": d.Get("policy_id").(string)}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["id"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["id"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	var query struct {
 		Policy *struct {
 			Attachment *structs.PolicyAttachment `graphql:"attachedStack(id: $id)"`
 		} `graphql:"policy(id: $policy)"`
-	}
-
-	variables := map[string]interface{}{
-		"policy": toID(idParts[0]),
-		"id":     toID(idParts[1]),
 	}
 
 	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
@@ -109,7 +109,6 @@ func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	attachment := query.Policy.Attachment
-	d.Set("policy_id", idParts[0])
 
 	if attachment.IsModule {
 		d.Set("module_id", attachment.StackID)
