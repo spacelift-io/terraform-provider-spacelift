@@ -70,13 +70,13 @@ func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("module not found")
 	}
 
-	d.SetId(moduleID.(string))
-
 	if roleARN := module.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
-		d.Set("role_arn", "")
+		return errors.New("this module is missing the AWS integration")
 	}
+
+	d.SetId(moduleID.(string))
 
 	return nil
 }
@@ -98,13 +98,13 @@ func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("stack not found")
 	}
 
-	d.SetId(stackID.(string))
-
 	if roleARN := stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
-		d.Set("role_arn", "")
+		return errors.New("this stack is missing the AWS integration")
 	}
+
+	d.SetId(stackID.(string))
 
 	return nil
 }

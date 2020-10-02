@@ -10,41 +10,34 @@ import (
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
-func TestAWSRoleResource(t *testing.T) {
+func TestAWSRoleData(t *testing.T) {
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("with a stack", func(t *testing.T) {
-		config := func(roleARN string) string {
-			return fmt.Sprintf(`
-				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
-				}
-
-				resource "spacelift_aws_role" "test" {
-					stack_id = spacelift_stack.test.id
-					role_arn = "%s"
-				}
-			`, randomID, roleARN)
-		}
-
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("arn:aws:iam::039653571618:role/empty-test-role"),
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch     = "master"
+						repository = "demo"
+						name       = "Test stack %s"
+					}
+
+					resource "spacelift_aws_role" "test" {
+						stack_id = spacelift_stack.test.id
+						role_arn = "arn:aws:iam::039653571618:role/empty-test-role"
+					}
+
+					data "spacelift_aws_role" "test" {
+						stack_id = spacelift_aws_role.test.stack_id
+					}
+				`, randomID),
 				Check: Resource(
-					"spacelift_aws_role.test",
+					"data.spacelift_aws_role.test",
 					Attribute("id", IsNotEmpty()),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 					AttributeNotPresent("module_id"),
-				),
-			},
-			{
-				Config: config("arn:aws:iam::039653571618:role/another-empty-test-role"),
-				Check: Resource(
-					"spacelift_aws_role.test",
-					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/another-empty-test-role")),
 				),
 			},
 		})
@@ -57,16 +50,20 @@ func TestAWSRoleResource(t *testing.T) {
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
-
 				resource "spacelift_aws_role" "test" {
 					module_id = spacelift_module.test.id
 					role_arn  = "arn:aws:iam::039653571618:role/empty-test-role"
 				}
+
+				data "spacelift_aws_role" "test" {
+					module_id = spacelift_aws_role.test.module_id
+				}
 			`,
 			Check: Resource(
-				"spacelift_aws_role.test",
+				"data.spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
