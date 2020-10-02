@@ -1,11 +1,10 @@
 package spacelift
 
 import (
-	"strings"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -14,21 +13,16 @@ func dataContextAttachment() *schema.Resource {
 		Read: dataContextAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
-			"attachment_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the attachment",
-				Required:    true,
-			},
 			"context_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the attached context",
-				Computed:    true,
+				Required:    true,
 			},
 			"module_id": {
 				Type:          schema.TypeString,
 				Description:   "ID of the attached module",
 				ConflictsWith: []string{"stack_id"},
-				Computed:      true,
+				Optional:      true,
 			},
 			"priority": {
 				Type:        schema.TypeInt,
@@ -39,21 +33,24 @@ func dataContextAttachment() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "ID of the attached stack",
 				ConflictsWith: []string{"module_id"},
-				Computed:      true,
+				Optional:      true,
 			},
 		},
 	}
 }
 
 func dataContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	attachmentID := d.Get("attachment_id")
-
-	parts := strings.SplitN(attachmentID.(string), "/", 2)
-	if len(parts) != 2 {
-		return errors.Errorf("unexpected attachment ID: %s", attachmentID)
+	variables := map[string]interface{}{
+		"context": toID(d.Get("context_id").(string)),
 	}
 
-	d.Set("context_id", parts[0])
+	if ID, ok := d.GetOk("module_id"); ok {
+		variables["id"] = toID(ID.(string))
+	} else if ID, ok := d.GetOk("stack_id"); ok {
+		variables["id"] = toID(ID.(string))
+	} else {
+		return errors.Errorf("either module_id or stack_id must be present")
+	}
 
 	var query struct {
 		Context *struct {
@@ -61,32 +58,25 @@ func dataContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 		} `graphql:"context(id: $context)"`
 	}
 
-	variables := map[string]interface{}{
-		"context": toID(parts[0]),
-		"id":      toID(parts[1]),
-	}
-
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
+		d.SetId("")
 		return errors.Wrap(err, "could not query for context attachment")
 	}
 
 	if query.Context == nil {
+		d.SetId("")
 		return errors.New("context not found")
 	}
 
 	if query.Context.Attachment == nil {
+		d.SetId("")
 		return errors.New("context attachment not found")
 	}
 
 	attachment := query.Context.Attachment
-	d.SetId(attachmentID.(string))
-	d.Set("priority", attachment.Priority)
 
-	if attachment.IsModule {
-		d.Set("module_id", attachment.StackID)
-	} else {
-		d.Set("stack_id", attachment.StackID)
-	}
+	d.SetId(attachment.ID)
+	d.Set("priority", attachment.Priority)
 
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -105,17 +106,17 @@ func resourceEnvironmentVariableCreate(d *schema.ResourceData, meta interface{})
 	}
 
 	if contextOK {
-		return resourceEnvironmentVariableCreateContext(d, meta.(*Client), variables)
+		return resourceEnvironmentVariableCreateContext(d, meta.(*internal.Client), variables)
 	}
 
 	if moduleOK {
-		return resourceEnvironmentVariableCreateModule(d, meta.(*Client), variables)
+		return resourceEnvironmentVariableCreateModule(d, meta.(*internal.Client), variables)
 	}
 
-	return resourceEnvironmentVariableCreateStack(d, meta.(*Client), variables)
+	return resourceEnvironmentVariableCreateStack(d, meta.(*internal.Client), variables)
 }
 
-func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
 	var mutation struct {
 		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
@@ -133,7 +134,7 @@ func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *Cl
 	return resourceEnvironmentVariableRead(d, client)
 }
 
-func resourceEnvironmentVariableCreateModule(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceEnvironmentVariableCreateModule(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
 	var mutation struct {
 		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
@@ -151,7 +152,7 @@ func resourceEnvironmentVariableCreateModule(d *schema.ResourceData, client *Cli
 	return resourceEnvironmentVariableRead(d, client)
 }
 
-func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
 	var mutation struct {
 		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
@@ -175,7 +176,7 @@ func resourceEnvironmentVariableRead(d *schema.ResourceData, meta interface{}) e
 		return errors.Errorf("unexpected resource ID: %s", d.Id())
 	}
 
-	client := meta.(*Client)
+	client := meta.(*internal.Client)
 	var element *structs.ConfigElement
 	var err error
 
@@ -207,7 +208,7 @@ func resourceEnvironmentVariableRead(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceEnvironmentVariableReadContext(d *schema.ResourceData, client *Client, context graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadContext(d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -225,7 +226,7 @@ func resourceEnvironmentVariableReadContext(d *schema.ResourceData, client *Clie
 	return query.Context.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableReadModule(d *schema.ResourceData, client *Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadModule(d *schema.ResourceData, client *internal.Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -243,7 +244,7 @@ func resourceEnvironmentVariableReadModule(d *schema.ResourceData, client *Clien
 	return query.Module.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableReadStack(d *schema.ResourceData, client *Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadStack(d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -267,7 +268,7 @@ func resourceEnvironmentVariableDelete(d *schema.ResourceData, meta interface{})
 		return errors.Errorf("unexpected resource ID: %s", d.Id())
 	}
 
-	client := meta.(*Client)
+	client := meta.(*internal.Client)
 	var err error
 
 	switch idParts[0] {
@@ -287,7 +288,7 @@ func resourceEnvironmentVariableDelete(d *schema.ResourceData, meta interface{})
 	return nil
 }
 
-func resourceEnvironmentVariableDeleteContext(d *schema.ResourceData, client *Client, context graphql.ID, ID graphql.ID) error {
+func resourceEnvironmentVariableDeleteContext(d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) error {
 	var mutation struct {
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
@@ -295,7 +296,7 @@ func resourceEnvironmentVariableDeleteContext(d *schema.ResourceData, client *Cl
 	return client.Mutate(&mutation, map[string]interface{}{"context": context, "id": ID})
 }
 
-func resourceEnvironmentVariableDeleteStack(d *schema.ResourceData, client *Client, stack graphql.ID, ID graphql.ID) error {
+func resourceEnvironmentVariableDeleteStack(d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
 	var mutation struct {
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}

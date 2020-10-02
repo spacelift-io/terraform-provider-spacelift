@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -72,7 +73,7 @@ func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) er
 
 	resourcePolicyAttachmentSetCustomInput(d, variables)
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not attach policy")
 	}
 
@@ -82,9 +83,14 @@ func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) er
 }
 
 func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
-	idParts := strings.Split(d.Id(), "/")
-	if len(idParts) != 2 {
-		return errors.Errorf("unexpected ID: %s", d.Id())
+	variables := map[string]interface{}{"policy": d.Get("policy_id").(string)}
+
+	if stackID, ok := d.GetOk("stack_id"); ok {
+		variables["id"] = toID(stackID)
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["id"] = toID(moduleID)
+	} else {
+		return errors.New("either module_id or stack_id must be provided")
 	}
 
 	var query struct {
@@ -93,12 +99,7 @@ func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) erro
 		} `graphql:"policy(id: $policy)"`
 	}
 
-	variables := map[string]interface{}{
-		"policy": toID(idParts[0]),
-		"id":     toID(idParts[1]),
-	}
-
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for policy attachment")
 	}
 
@@ -108,7 +109,6 @@ func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) erro
 	}
 
 	attachment := query.Policy.Attachment
-	d.Set("policy_id", idParts[0])
 
 	if attachment.IsModule {
 		d.Set("module_id", attachment.StackID)
@@ -137,7 +137,7 @@ func resourcePolicyAttachmentUpdate(d *schema.ResourceData, meta interface{}) er
 		UpdateAttachment structs.PolicyAttachment `graphql:"policyAttachmentUpdate(id: $id, customInput: $customInput)"`
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not update policy attachment")
 	}
 
@@ -154,7 +154,7 @@ func resourcePolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) er
 		DetachPolicy *structs.PolicyAttachment `graphql:"policyDetach(id: $id)"`
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not detach policy")
 	}
 
@@ -173,7 +173,7 @@ func resourcePolicyAttachmentVariables(d *schema.ResourceData) (map[string]inter
 }
 
 func resourcePolicyAttachmentSetCustomInput(d *schema.ResourceData, variables map[string]interface{}) {
-	if input, ok := d.GetOk("custom_input"); ok {
+	if input, ok := d.GetOk("custom_input"); ok && input.(string) != "" {
 		variables["customInput"] = graphql.NewString(graphql.String(input.(string)))
 	} else {
 		variables["customInput"] = (*graphql.String)(nil)

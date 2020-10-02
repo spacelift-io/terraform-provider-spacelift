@@ -3,6 +3,8 @@ package spacelift
 import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
+
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
 func dataIPs() *schema.Resource {
@@ -26,7 +28,7 @@ func ipsRead(d *schema.ResourceData, meta interface{}) error {
 		IPs []string `graphql:"outgoingIPAddresses"`
 	}
 
-	if err := meta.(*Client).Query(&query, nil); err != nil {
+	if err := meta.(*internal.Client).Query(&query, nil); err != nil {
 		d.SetId("")
 		return errors.Wrap(err, "could not query for outgoing IP addresses")
 	}

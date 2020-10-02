@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -77,7 +78,7 @@ func dataModuleRead(d *schema.ResourceData, meta interface{}) error {
 
 	moduleID := d.Get("module_id")
 	variables := map[string]interface{}{"id": toID(moduleID)}
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module")
 	}
 

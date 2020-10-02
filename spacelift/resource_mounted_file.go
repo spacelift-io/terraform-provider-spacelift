@@ -8,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -103,17 +104,17 @@ func resourceMountedFileCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if contextOK {
-		return resourceMountedFileCreateContext(d, meta.(*Client), variables)
+		return resourceMountedFileCreateContext(d, meta.(*internal.Client), variables)
 	}
 
 	if moduleOK {
-		return resourceMountedFileCreateModule(d, meta.(*Client), variables)
+		return resourceMountedFileCreateModule(d, meta.(*internal.Client), variables)
 	}
 
-	return resourceMountedFileCreateStack(d, meta.(*Client), variables)
+	return resourceMountedFileCreateStack(d, meta.(*internal.Client), variables)
 }
 
-func resourceMountedFileCreateContext(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceMountedFileCreateContext(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
 	var mutation struct {
 		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
@@ -130,7 +131,7 @@ func resourceMountedFileCreateContext(d *schema.ResourceData, client *Client, va
 	return resourceMountedFileRead(d, client)
 }
 
-func resourceMountedFileCreateModule(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceMountedFileCreateModule(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
 	var mutation struct {
 		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
@@ -147,7 +148,7 @@ func resourceMountedFileCreateModule(d *schema.ResourceData, client *Client, var
 	return resourceMountedFileRead(d, client)
 }
 
-func resourceMountedFileCreateStack(d *schema.ResourceData, client *Client, variables map[string]interface{}) error {
+func resourceMountedFileCreateStack(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
 	var mutation struct {
 		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
@@ -170,7 +171,7 @@ func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.Errorf("unexpected resource ID: %s", d.Id())
 	}
 
-	client := meta.(*Client)
+	client := meta.(*internal.Client)
 	var element *structs.ConfigElement
 	var err error
 
@@ -202,7 +203,7 @@ func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceMountedFileReadContext(d *schema.ResourceData, client *Client, context graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceMountedFileReadContext(d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -220,7 +221,7 @@ func resourceMountedFileReadContext(d *schema.ResourceData, client *Client, cont
 	return query.Context.ConfigElement, nil
 }
 
-func resourceMountedFileReadModule(d *schema.ResourceData, client *Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceMountedFileReadModule(d *schema.ResourceData, client *internal.Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -238,7 +239,7 @@ func resourceMountedFileReadModule(d *schema.ResourceData, client *Client, modul
 	return query.Module.ConfigElement, nil
 }
 
-func resourceMountedFileReadStack(d *schema.ResourceData, client *Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceMountedFileReadStack(d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -262,7 +263,7 @@ func resourceMountedFileDelete(d *schema.ResourceData, meta interface{}) error {
 		return errors.Errorf("unexpected resource ID: %s", d.Id())
 	}
 
-	client := meta.(*Client)
+	client := meta.(*internal.Client)
 	var err error
 
 	switch idParts[0] {
@@ -282,7 +283,7 @@ func resourceMountedFileDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceMountedFileDeleteContext(d *schema.ResourceData, client *Client, context graphql.ID, ID graphql.ID) error {
+func resourceMountedFileDeleteContext(d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) error {
 	var mutation struct {
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
@@ -290,7 +291,7 @@ func resourceMountedFileDeleteContext(d *schema.ResourceData, client *Client, co
 	return client.Mutate(&mutation, map[string]interface{}{"context": context, "id": ID})
 }
 
-func resourceMountedFileDeleteStack(d *schema.ResourceData, client *Client, stack graphql.ID, ID graphql.ID) error {
+func resourceMountedFileDeleteStack(d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
 	var mutation struct {
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}

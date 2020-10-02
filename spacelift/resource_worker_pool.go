@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -121,7 +122,7 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 		variables["csr"] = graphql.String(cert)
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not create worker pool")
 	}
 
@@ -142,7 +143,7 @@ func resourceWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for worker pool")
 	}
 
@@ -179,7 +180,7 @@ func resourceWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	var acc multierror.Accumulator
 
-	acc.Push(errors.Wrap(meta.(*Client).Mutate(&mutation, variables), "could not update worker pool"))
+	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update worker pool"))
 	acc.Push(errors.Wrap(resourceWorkerPoolRead(d, meta), "could not read the current state"))
 
 	return acc.Error()
@@ -192,7 +193,7 @@ func resourceWorkerPoolDelete(d *schema.ResourceData, meta interface{}) error {
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete worker pool")
 	}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -70,7 +71,7 @@ func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	for i := 0; i < 5; i++ {
-		err = resourceAWSRoleSet(meta.(*Client), ID, roleARN)
+		err = resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN)
 		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
 			break
 		}
@@ -107,7 +108,7 @@ func resourceModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module")
 	}
 
@@ -132,7 +133,7 @@ func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack")
 	}
 
@@ -164,7 +165,7 @@ func resourceAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	var acc multierror.Accumulator
 
-	acc.Push(errors.Wrap(resourceAWSRoleSet(meta.(*Client), ID, roleARN), "could not update AWS role delegation"))
+	acc.Push(errors.Wrap(resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN), "could not update AWS role delegation"))
 	acc.Push(errors.Wrap(resourceAWSRoleRead(d, meta), "could not read the current state"))
 
 	return acc.Error()
@@ -187,7 +188,7 @@ func resourceAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("either module_id or stack_id must be provided")
 	}
 
-	if err := meta.(*Client).Mutate(&mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not delete AWS role delegation")
 	}
 
@@ -199,7 +200,7 @@ func resourceAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceAWSRoleSet(client *Client, ID, roleARN string) error {
+func resourceAWSRoleSet(client *internal.Client, ID, roleARN string) error {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
