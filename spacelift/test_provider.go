@@ -2,7 +2,9 @@ package spacelift
 
 import (
 	"sync"
+	"testing"
 
+	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
@@ -19,4 +21,14 @@ func testProvider() terraform.ResourceProvider {
 	}
 
 	return provider
+}
+
+func testSteps(t *testing.T, steps []resource.TestStep) {
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers: map[string]terraform.ResourceProvider{
+			"spacelift": testProvider(),
+		},
+		Steps: steps,
+	})
 }

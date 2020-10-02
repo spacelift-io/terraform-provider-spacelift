@@ -10,7 +10,7 @@ import (
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
-func TestMountedFileResource(t *testing.T) {
+func TestEnvironmentVariableResource(t *testing.T) {
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("with a context", func(t *testing.T) {
@@ -20,11 +20,11 @@ func TestMountedFileResource(t *testing.T) {
 					name = "My first context %s"
 				}
 
-				resource "spacelift_mounted_file" "test" {
-					context_id    = spacelift_context.test.id
-					content       = base64encode("bacon is tasty")
-					relative_path = "bacon.txt"
-					write_only    = %t
+				resource "spacelift_environment_variable" "test" {
+					context_id = spacelift_context.test.id
+					name       = "BACON"
+					value      = "is tasty"
+					write_only = %t
 				}
 			`, randomID, writeOnly)
 		}
@@ -33,17 +33,24 @@ func TestMountedFileResource(t *testing.T) {
 			{
 				Config: config(true),
 				Check: Resource(
-					"spacelift_mounted_file.test",
+					"spacelift_environment_variable.test",
 					Attribute("id", IsNotEmpty()),
-					Attribute("checksum", Equals("fb13e7977b7548a324b598e155b5b5ba3dcca2dad5789abe1411a88fa544be9b")),
+					Attribute("checksum", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
 					Attribute("context_id", Contains(randomID)),
-					Attribute("relative_path", Equals("bacon.txt")),
+					Attribute("name", Equals("BACON")),
+					Attribute("value", IsEmpty()),
 					Attribute("write_only", Equals("true")),
+					AttributeNotPresent("module_id"),
+					AttributeNotPresent("stack_id"),
 				),
 			},
 			{
 				Config: config(false),
-				Check:  Resource("spacelift_mounted_file.test", Attribute("write_only", Equals("false"))),
+				Check: Resource(
+					"spacelift_environment_variable.test",
+					Attribute("value", Equals("is tasty")),
+					Attribute("write_only", Equals("false")),
+				),
 			},
 		})
 	})
@@ -56,16 +63,19 @@ func TestMountedFileResource(t *testing.T) {
 					repository     = "terraform-bacon-tasty"
 				}
 	
-				resource "spacelift_mounted_file" "test" {
-					module_id     = spacelift_module.test.id
-					content       = base64encode("bacon is tasty")
-					relative_path = "bacon.txt"
+				resource "spacelift_environment_variable" "test" {
+					module_id = spacelift_module.test.id
+					name      = "BACON"
+					value     = "is tasty"
 				}
 			`,
 			Check: Resource(
-				"spacelift_mounted_file.test",
+				"spacelift_environment_variable.test",
 				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("value", IsEmpty()),
 				Attribute("write_only", Equals("true")),
+				AttributeNotPresent("context_id"),
+				AttributeNotPresent("stack_id"),
 			),
 		}})
 	})
@@ -79,16 +89,19 @@ func TestMountedFileResource(t *testing.T) {
 					name       = "Test stack %s"
 				}
 	
-				resource "spacelift_mounted_file" "test" {
-					stack_id      = spacelift_stack.test.id
-					content       = base64encode("bacon is tasty")
-					relative_path = "bacon.txt"
+				resource "spacelift_environment_variable" "test" {
+					stack_id = spacelift_stack.test.id
+					value    = "is tasty"
+					name     = "BACON"
 				}
 			`, randomID),
 			Check: Resource(
-				"spacelift_mounted_file.test",
+				"spacelift_environment_variable.test",
 				Attribute("stack_id", StartsWith("test-stack-")),
 				Attribute("stack_id", Contains(randomID)),
+				Attribute("value", IsEmpty()),
+				AttributeNotPresent("context_id"),
+				AttributeNotPresent("module_id"),
 			),
 		}})
 	})

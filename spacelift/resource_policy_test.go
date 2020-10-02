@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -29,25 +28,19 @@ func TestPolicyResource(t *testing.T) {
 			`, randomID, message)
 		}
 
-		resource.Test(t, resource.TestCase{
-			IsUnitTest: true,
-			Providers: map[string]terraform.ResourceProvider{
-				"spacelift": testProvider(),
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("boom"),
+				Check: Resource(
+					"spacelift_policy.test",
+					Attribute("id", StartsWith("my-first-policy")),
+					Attribute("body", Contains("boom")),
+					Attribute("type", Equals("TERRAFORM_PLAN")),
+				),
 			},
-			Steps: []resource.TestStep{
-				{
-					Config: config("boom"),
-					Check: Resource(
-						"spacelift_policy.test",
-						Attribute("id", StartsWith("my-first-policy")),
-						Attribute("body", Contains("boom")),
-						Attribute("type", Equals("TERRAFORM_PLAN")),
-					),
-				},
-				{
-					Config: config("bang"),
-					Check:  Resource("spacelift_policy.test", Attribute("body", Contains("bang"))),
-				},
+			{
+				Config: config("bang"),
+				Check:  Resource("spacelift_policy.test", Attribute("body", Contains("bang"))),
 			},
 		})
 	})

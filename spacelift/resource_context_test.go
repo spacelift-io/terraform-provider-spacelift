@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform/helper/acctest"
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -26,28 +25,22 @@ func TestContextResource(t *testing.T) {
 			`, randomID, description)
 		}
 
-		resource.Test(t, resource.TestCase{
-			IsUnitTest: true,
-			Providers: map[string]terraform.ResourceProvider{
-				"spacelift": testProvider(),
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("old description"),
+				Check: Resource(
+					"spacelift_context.test",
+					Attribute("id", StartsWith("provider-test-context-")),
+					Attribute("name", StartsWith("Provider test context")),
+					Attribute("description", Equals("old description")),
+				),
 			},
-			Steps: []resource.TestStep{
-				{
-					Config: config("old description"),
-					Check: Resource(
-						"spacelift_context.test",
-						Attribute("id", StartsWith("provider-test-context-")),
-						Attribute("name", StartsWith("Provider test context")),
-						Attribute("description", Equals("old description")),
-					),
-				},
-				{
-					Config: config("new description"),
-					Check: Resource(
-						"spacelift_context.test",
-						Attribute("description", Equals("new description")),
-					),
-				},
+			{
+				Config: config("new description"),
+				Check: Resource(
+					"spacelift_context.test",
+					Attribute("description", Equals("new description")),
+				),
 			},
 		})
 	})

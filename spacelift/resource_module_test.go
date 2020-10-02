@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -24,28 +23,22 @@ func TestModuleResource(t *testing.T) {
 			`, description)
 		}
 
-		resource.Test(t, resource.TestCase{
-			IsUnitTest: true,
-			Providers: map[string]terraform.ResourceProvider{
-				"spacelift": testProvider(),
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("old description"),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("id", Equals("terraform-bacon-tasty")),
+					Attribute("administrative", Equals("true")),
+					Attribute("branch", Equals("master")),
+					Attribute("description", Equals("old description")),
+					SetEquals("labels", "one", "two"),
+					Attribute("repository", Equals("terraform-bacon-tasty")),
+				),
 			},
-			Steps: []resource.TestStep{
-				{
-					Config: config("old description"),
-					Check: Resource(
-						"spacelift_module.test",
-						Attribute("id", Equals("terraform-bacon-tasty")),
-						Attribute("administrative", Equals("true")),
-						Attribute("branch", Equals("master")),
-						Attribute("description", Equals("old description")),
-						SetEquals("labels", "one", "two"),
-						Attribute("repository", Equals("terraform-bacon-tasty")),
-					),
-				},
-				{
-					Config: config("new description"),
-					Check:  Resource("spacelift_module.test", Attribute("description", Equals("new description"))),
-				},
+			{
+				Config: config("new description"),
+				Check:  Resource("spacelift_module.test", Attribute("description", Equals("new description"))),
 			},
 		})
 	})
