@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@master
+      
+      - name: Say "bacon"
+        run: echo "bacon"
 
       - name: Test with coverage
         run: go test -coverprofile=coverage.txt -race -coverpkg=./... ./...
