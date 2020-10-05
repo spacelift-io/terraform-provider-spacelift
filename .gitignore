@@ -13,3 +13,5 @@
 
 # IDE-specific folders/files
 .idea/
+
+.env

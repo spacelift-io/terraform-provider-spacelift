@@ -4,6 +4,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -60,7 +61,7 @@ func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	moduleID := d.Get("module_id")
 	variables := map[string]interface{}{"id": toID(moduleID)}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module")
 	}
 
@@ -69,13 +70,13 @@ func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("module not found")
 	}
 
-	d.SetId(moduleID.(string))
-
 	if roleARN := module.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
-		d.Set("role_arn", "")
+		return errors.New("this module is missing the AWS integration")
 	}
+
+	d.SetId(moduleID.(string))
 
 	return nil
 }
@@ -88,7 +89,7 @@ func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	stackID := d.Get("stack_id")
 	variables := map[string]interface{}{"id": toID(stackID)}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack")
 	}
 
@@ -97,13 +98,13 @@ func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.New("stack not found")
 	}
 
-	d.SetId(stackID.(string))
-
 	if roleARN := stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
-		d.Set("role_arn", "")
+		return errors.New("this stack is missing the AWS integration")
 	}
+
+	d.SetId(stackID.(string))
 
 	return nil
 }

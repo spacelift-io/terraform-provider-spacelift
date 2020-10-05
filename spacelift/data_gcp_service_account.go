@@ -46,26 +46,24 @@ func dataGCPServiceAccount() *schema.Resource {
 
 func dataGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
 	var err error
-	d.SetId(d.Get("stack_id").(string))
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		d.SetId(stackID.(string))
 		err = resourceStackGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
 			return errors.New(message)
 		})
-	}
-
-	if moduleID, ok := d.GetOk("module_id"); ok {
+	} else if moduleID, ok := d.GetOk("module_id"); ok {
 		d.SetId(moduleID.(string))
 		err = resourceModuleGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
 			return errors.New(message)
 		})
+	} else {
+		err = errors.New("either stack_id or module_id must be set")
 	}
 
 	if err != nil {
 		d.SetId("")
-		return err
 	}
 
-	return nil
+	return err
 }

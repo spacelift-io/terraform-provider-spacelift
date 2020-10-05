@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/pkg/errors"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -91,7 +92,7 @@ func dataMountedFileReadContext(d *schema.ResourceData, meta interface{}) error 
 		"id":      toID(variableName),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for context mounted file")
 	}
 
@@ -130,7 +131,7 @@ func dataMountedFileReadModule(d *schema.ResourceData, meta interface{}) error {
 		"id":     toID(variableName),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module mounted file")
 	}
 
@@ -164,7 +165,7 @@ func dataMountedFileReadStack(d *schema.ResourceData, meta interface{}) error {
 		"id":    toID(variableName),
 	}
 
-	if err := meta.(*Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack mounted file")
 	}
 

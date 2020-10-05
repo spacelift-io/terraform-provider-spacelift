@@ -1,4 +1,4 @@
-package spacelift
+package internal
 
 import (
 	"context"
