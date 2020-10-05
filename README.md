@@ -66,6 +66,7 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
 - `spacelift_aws_role` - [data source](#spacelift_aws_role-data-source) and [resource](#spacelift_aws_role-resource);
 - `spacelift_gcp_service_account` - [data source](#spacelift_gcp_service_account-data-source) and [resource](#spacelift_gcp_service_account-resource);
+- `spacelift_webhook` - [data source](#spacelift_webhook-data-source) and [resource](#spacelift_webhook-resource);
 - `spacelift_worker_pool` - [data source](#spacelift_worker_pool-data-source) and [resource](#spacelift_worker_pool-resource);
 
 **Note:** `spacelift_stack_aws_role` and `spacelift_stack_gcp_service_account` are **deprecated**. Please use [spacelift_aws_role](#spacelift_aws_role-data-source) and [spacelift_gcp_service_account](#spacelift_gcp_service_account-data-source) instead.
@@ -124,7 +125,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_context_attachment` data source
 
-`spacelift_context_attachment` represents a Spacelift attachment of a single [context](#spacelift_context-resource) to a single [stack](#spacelift_stack-resource), with a predefined priority.
+`spacelift_context_attachment` represents a Spacelift attachment of a single [context](#spacelift_context-resource) to a single [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource), with a predefined priority.
 
 #### Example usage
 
@@ -193,7 +194,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_environment_variable` data source
 
-`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack) or [module](#spacelift_module-resource), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
+`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource), [stack](#spacelift_stack-resource) or a [module](#spacelift_module-resource), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
 
 #### Example usage
 
@@ -243,7 +244,7 @@ See the [environment variable resource](#spacelift_environment_variable-resource
 
 ### `spacelift_environment_variable` resource
 
-`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
+`spacelift_environment_variable` defines an environment variable on the [context](#spacelift_context-resource), [stack](#spacelift_stack-resource) or a [module](#spacelift_module-resource), thereby allowing to pass and share various secrets and configuration details between Spacelift stacks.
 
 #### Example usage
 
@@ -432,7 +433,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_mounted_file` data source
 
-`spacelift_mounted_file` represents a file mounted in each Run's workspace that is part of a configuration of a [context](#spacelift_context-resource) or a [stack](#spacelift_context-stack). In principle, it's very similar to an [environment variable](#spacelift_environment_variable-resource) except that the value is written to the filesystem rather than passed to the environment.
+`spacelift_mounted_file` represents a file mounted in each Run's workspace that is part of a configuration of a [context](#spacelift_context-resource), [stack](#spacelift_stack-resource) or a [module](#spacelift_module-resource). In principle, it's very similar to an [environment variable](#spacelift_environment_variable-resource) except that the value is written to the filesystem rather than passed to the environment.
 
 #### Example usage
 
@@ -492,7 +493,7 @@ For a context:
 resource "spacelift_mounted_file" "ireland-kubeconfig" {
   context_id    = "prod-k8s-ie"
   relative_path = "kubeconfig"
-  content         = filebase64("${path.module}/kubeconfig.json")
+  content       = filebase64("${path.module}/kubeconfig.json")
 }
 ```
 
@@ -502,7 +503,7 @@ For a module:
 resource "spacelift_mounted_file" "module-kubeconfig" {
   module_id     = "k8s-module"
   relative_path = "kubeconfig"
-  content         = filebase64("${path.module}/kubeconfig.json")
+  content       = filebase64("${path.module}/kubeconfig.json")
 }
 ```
 
@@ -512,7 +513,7 @@ For a stack:
 resource "spacelift_mounted_file" "core-kubeconfig" {
   stack_id      = "k8s-core"
   relative_path = "kubeconfig"
-  content         = filebase64("${path.module}/kubeconfig.json")
+  content       = filebase64("${path.module}/kubeconfig.json")
 }
 ```
 
@@ -618,7 +619,7 @@ In addition to all arguments above, the following attributes are exported:
 
 ### `spacelift_policy_attachment` resource
 
-`spacelift_policy_attachment` represents a relationship between a Policy and a Stack. Each policy can only be attached to a stack once. `LOGIN` policies are the exception because they apply globally and not to individual stacks. An attempt to attach one will fail.
+`spacelift_policy_attachment` represents a relationship between a Policy and a Stack/Module. Each policy can only be attached to a stack/module once. `LOGIN` policies are the exception because they apply globally and not to individual stacks/modules. An attempt to attach one will fail.
 
 #### Example usage
 
@@ -959,6 +960,64 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the service account attachment;
 - `service_account_email` - The email address associated with the generated GCP service account;
+
+[^ Back to all resources](#resources)
+
+
+### `spacelift_webhook` data source
+
+`spacelift_webhook` represents a webhook endpoint to which Spacelift sends the POST request about run state changes.
+
+#### Example usage
+
+```python
+data "spacelift_webhook" "webhook" {
+  webhook_id = spacelift_webhook.webhook.id
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `webhook_id` - (Required) - The immutable ID (slug) of the webhook.;
+
+#### Attributes reference
+
+See the [webhook](#spacelift_webhook-resource) resource for details on the returned attributes - they are identical.
+
+[^ Back to all resources](#resources)
+
+### `spacelift_webhook` resource
+
+`spacelift_webhook` represents a webhook endpoint to which Spacelift sends the POST request about run state changes.
+
+#### Example usage
+
+```python
+resource "spacelift_webhook" "webhook" {
+  endpoint = "https://example.com/webhooks"
+  stack_id = "k8s-core"
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `endpoint` - (Required) - The endpoint to send the POST request to;
+- `enabled` - (Optional) - The boolean which enables or disables sending webhooks (default: true);
+- `module_id` - (Optional) - The ID of the module which triggers the webhooks;
+- `secret` - (Optional) - The secret is used to sign each POST request so you're able to verify that the request comes from us;
+- `stack_id` - (Optional) - The ID of the stack which triggers the webhooks;
+
+Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of them _must_ be specified.
+
+#### Attributes reference
+
+In addition to all arguments above, the following attributes are exported:
+
+- `id` - The immutable ID (slug) of the webhook;
 
 [^ Back to all resources](#resources)
 
