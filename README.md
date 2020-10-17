@@ -414,10 +414,11 @@ resource "spacelift_aws_role" "k8s-module" {
 
 The following arguments are supported:
 
-- `branch` - (Required) - GitHub branch to apply changes to;
-- `name` - (Required) - Name of the stack - should be unique within one account;
+- `branch` - (Required) - VCS branch to apply changes to;
+- `gitlab` - (Optional) - namespace block for GitLab integration:
+  - `namespace` - (Required) - GitLab namespace;
 - `labels` - (Optional) - List of labels to set on the Module;
-- `repository` - (Required) - Name of the GitHub repository, without the owner part;
+- `repository` - (Required) - Name of the repository, without the owner part;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
@@ -756,9 +757,11 @@ resource "spacelift_aws_role" "k8s-core" {
 
 The following arguments are supported:
 
-- `branch` - (Required) - GitHub branch to apply changes to;
+- `branch` - (Required) - VCS branch to apply changes to;
 - `name` - (Required) - Name of the stack - should be unique within one account;
-- `repository` - (Required) - Name of the GitHub repository, without the owner part;
+- `repository` - (Required) - Name of the VCS repository, without the owner part;
+- `gitlab` - (Optional) - namespace block for GitLab integration:
+  - `namespace` - (Required) - GitLab namespace;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
