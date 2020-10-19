@@ -2,19 +2,21 @@
 
 set -e
 
-RELEASE_PATH=build/release
-VERSIONS_PATH=build/providers/spacelift-io/spacelift
 VERSION="1.0.0"
 
-rm -rf build
+echo "Preparing the build directory..." 1>&2
+BUILD_PATH=build
+VERSION_PATH=build/${VERSION}
+MANIFESTS_PATH=${VERSION_PATH}/download
+RELEASE_PATH=${VERSION_PATH}/release
+rm -rf $BUILD_PATH
+mkdir -p $MANIFESTS_PATH
 mkdir -p $RELEASE_PATH
-mkdir -p $VERSIONS_PATH
-
-cp registry/versions.json $VERSIONS_PATH/versions
+cp registry/versions.json $BUILD_PATH/versions
 
 BASE_NAME=terraform-provider-spacelift
-HOSTNAME=tfproviders.spacelift.io
-DIGESTS_FILE=build/${BASE_NAME}_${VERSION}_SHA256SUMS
+HOSTNAME=downloads.${DOMAIN:-"spacelift.io"}
+CHECKSUMS_FILE=${RELEASE_PATH}/${BASE_NAME}_${VERSION}_SHA256SUMS
 
 GPG_KEY_ID=242AE94ABED6D1D91DF6B3E63053164C83E7F916
 GPG_ASCII_ARMOR=$(gpg --export --armor ${GPG_KEY_ID})
@@ -42,10 +44,10 @@ build () {
 
     # Step 3: write SHA to the sums file.
     SHASUM=$(openssl dgst -sha256 ${ZIP_PATH} | cut -d' ' -f2)
-    echo "${ZIP_NAME}  ${SHASUM}" >> $DIGESTS_FILE
+    echo "${ZIP_NAME}  ${SHASUM}" >> $CHECKSUMS_FILE
 
     # Step 4: Add JSON manifest file.
-    VERSION_DIR=${VERSIONS_PATH}/${VERSION}/download/${OS}
+    VERSION_DIR=${MANIFESTS_PATH}/${OS}
     mkdir -p $VERSION_DIR
 
     ARCH=${ARCH} \
@@ -87,7 +89,7 @@ echo "Signing the checksums file..." 1>&2
 
 gpg -u ${GPG_KEY_ID} \
     --sign \
-    --output $DIGESTS_FILE.sig \
+    --output $CHECKSUMS_FILE.sig \
     --passphrase=$GPG_PASSPHRASE \
     --pinentry-mode=loopback \
-    $DIGESTS_FILE
+    $CHECKSUMS_FILE
