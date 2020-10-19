@@ -1,6 +1,6 @@
 name: Test
 
-on: [push]
+on: [pull_request]
 
 jobs:
   deployment:
@@ -11,6 +11,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@master
+      
+      - name: Show environment
+        run: env
 
       - name: Check formatting using gofmt
         run: gofmt -s -l -d .
