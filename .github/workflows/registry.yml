@@ -1,0 +1,37 @@
+name: Registry
+
+on: [push]
+
+jobs:
+  registry:
+    name: Publish the provider to the registry
+    runs-on: ubuntu-latest
+    container: golang:1.15
+      
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@master
+
+      - name: Install utilities
+        run: apt-get update && apt-get install -y gettext-base zip
+
+      - name: Import the PGP key
+        env:
+          GPG_KEY_BASE64: ${{ secrets.GPG_KEY_BASE64 }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo ${GPG_KEY_BASE64} | base64 -d > spacelift.gpg
+          gpg --import \
+            --passphrase=$GPG_PASSPHRASE \
+            --pinentry-mode=loopback \
+            spacelift.gpg
+          rm spacelift.gpg
+          gpg -k
+
+      - name: Download dependencies to keep the build clean
+        run: go mod download
+        
+      - name: Build the package
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./registry/package.sh

@@ -1,0 +1,61 @@
+{
+    "versions": [
+        {
+            "version": "1.0.0",
+            "protocols": [
+                "4.0",
+                "5.1"
+            ],
+            "platforms": [
+                {
+                    "os": "darwin",
+                    "arch": "amd64"
+                },
+                {
+                    "os": "freebsd",
+                    "arch": "386"
+                },
+                {
+                    "os": "freebsd",
+                    "arch": "amd64"
+                },
+                {
+                    "os": "freebsd",
+                    "arch": "arm"
+                },
+                {
+                    "os": "linux",
+                    "arch": "386"
+                },
+                {
+                    "os": "linux",
+                    "arch": "amd64"
+                },
+                {
+                    "os": "linux",
+                    "arch": "arm"
+                },
+                {
+                    "os": "openbsd",
+                    "arch": "386"
+                },
+                {
+                    "os": "openbsd",
+                    "arch": "amd64"
+                },
+                {
+                    "os": "solaris",
+                    "arch": "amd64"
+                },
+                {
+                    "os": "windows",
+                    "arch": "386"
+                },
+                {
+                    "os": "windows",
+                    "arch": "amd64"
+                }
+            ]
+        }
+    ]
+}
