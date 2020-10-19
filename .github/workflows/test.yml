@@ -14,6 +14,8 @@ jobs:
       
       - name: Show environment
         run: env
+        env:
+          BACON: ${{ secrets.BACON }}
 
       - name: Check formatting using gofmt
         run: gofmt -s -l -d .
