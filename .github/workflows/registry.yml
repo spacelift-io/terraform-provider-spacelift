@@ -56,17 +56,17 @@ jobs:
         env:
           SOURCE_DIR: build
           DEST_DIR: v1/providers/spacelift-io/spacelift
-          AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_ACCESS_KEY_ID || secrets.PREPROD_AWS_ACCESS_KEY_ID }}
-          AWS_REGION: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_REGION || secrets.PREPROD_AWS_REGION }}
-          AWS_S3_BUCKET: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_S3_BUCKET || secrets.PREPROD_AWS_S3_BUCKET }}
-          AWS_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_SECRET_ACCESS_KEY || secrets.PREPROD_AWS_SECRET_ACCESS_KEY }}
+          AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/master' && secrets.AWS_ACCESS_KEY_ID || secrets.PREPROD_AWS_ACCESS_KEY_ID }}
+          AWS_REGION: ${{ github.ref == 'refs/heads/master' && secrets.AWS_REGION || secrets.PREPROD_AWS_REGION }}
+          AWS_S3_BUCKET: ${{ github.ref == 'refs/heads/master' && secrets.AWS_S3_BUCKET || secrets.PREPROD_AWS_S3_BUCKET }}
+          AWS_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/master' && secrets.AWS_SECRET_ACCESS_KEY || secrets.PREPROD_AWS_SECRET_ACCESS_KEY }}
 
       - name: Invalidate CloudFront distribution
         uses: chetan/invalidate-cloudfront-action@2d2d3f464dcae0bea80ceff79e89960bbac6a754
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future'
         env:
-          AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_ACCESS_KEY_ID || secrets.PREPROD_AWS_ACCESS_KEY_ID }}
-          AWS_REGION: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_REGION || secrets.PREPROD_AWS_REGION }}
-          AWS_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_SECRET_ACCESS_KEY || secrets.PREPROD_AWS_SECRET_ACCESS_KEY }}
-          DISTRIBUTION: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DISTRIBUTION || secrets.PREPROD_DISTRIBUTION }}
+          AWS_ACCESS_KEY_ID: ${{ github.ref == 'refs/heads/master' && secrets.AWS_ACCESS_KEY_ID || secrets.PREPROD_AWS_ACCESS_KEY_ID }}
+          AWS_REGION: ${{ github.ref == 'refs/heads/master' && secrets.AWS_REGION || secrets.PREPROD_AWS_REGION }}
+          AWS_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/master' && secrets.AWS_SECRET_ACCESS_KEY || secrets.PREPROD_AWS_SECRET_ACCESS_KEY }}
+          DISTRIBUTION: ${{ github.ref == 'refs/heads/master' && secrets.DISTRIBUTION || secrets.PREPROD_DISTRIBUTION }}
           PATHS: "/v1/providers/spacelift-io/spacelift/*"
