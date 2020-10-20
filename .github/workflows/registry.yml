@@ -69,4 +69,4 @@ jobs:
           AWS_REGION: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_REGION || secrets.PREPROD_AWS_REGION }}
           AWS_SECRET_ACCESS_KEY: ${{ github.ref == 'refs/heads/master' && secrets.PROD_AWS_SECRET_ACCESS_KEY || secrets.PREPROD_AWS_SECRET_ACCESS_KEY }}
           DISTRIBUTION: ${{ github.ref == 'refs/heads/master' && secrets.PROD_DISTRIBUTION || secrets.PREPROD_DISTRIBUTION }}
-          PATHS: "v1/providers/spacelift-io/spacelift/*"
+          PATHS: "/v1/providers/spacelift-io/spacelift/*"
