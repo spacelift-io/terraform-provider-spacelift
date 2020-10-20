@@ -44,7 +44,7 @@ build () {
 
     # Step 3: write SHA to the sums file.
     SHASUM=$(openssl dgst -sha256 ${ZIP_PATH} | cut -d' ' -f2)
-    echo "${ZIP_NAME}  ${SHASUM}" >> $CHECKSUMS_FILE
+    echo "${SHASUM}  ${ZIP_NAME}" >> $CHECKSUMS_FILE
 
     # Step 4: Add JSON manifest file.
     VERSION_DIR=${MANIFESTS_PATH}/${OS}
