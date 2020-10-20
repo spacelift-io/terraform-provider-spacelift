@@ -6,9 +6,9 @@
     "os": "${OS}",
     "arch": "${ARCH}",
     "filename": "${BASE_NAME}_${VERSION}_${OS}_amd64.zip",
-    "download_url": "https://${HOSTNAME}/${BASE_NAME}/${VERSION}/${BASE_NAME}_${VERSION}_${OS}_${ARCH}.zip",
-    "shasums_url": "https://${HOSTNAME}/${BASE_NAME}/${VERSION}/${BASE_NAME}_${VERSION}_SHA256SUMS",
-    "shasums_signature_url": "https://${HOSTNAME}/${BASE_NAME}/${VERSION}/${BASE_NAME}_${VERSION}_SHA256SUMS.sig",
+    "download_url": "https://${HOSTNAME}/v1/providers/spacelift-io/spacelift/${VERSION}/release/${BASE_NAME}_${VERSION}_${OS}_${ARCH}.zip",
+    "shasums_url": "https://${HOSTNAME}/v1/providers/spacelift-io/spacelift/${VERSION}/release/${BASE_NAME}_${VERSION}_SHA256SUMS",
+    "shasums_signature_url": "https://${HOSTNAME}/v1/providers/spacelift-io/spacelift/${VERSION}/release/${BASE_NAME}_${VERSION}_SHA256SUMS.sig",
     "shasum": "${SHASUM}",
     "signing_keys": {
         "gpg_public_keys": [
