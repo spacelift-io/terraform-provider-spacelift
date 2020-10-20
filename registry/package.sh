@@ -61,28 +61,9 @@ build () {
     envsubst < registry/version.json > $VERSION_DIR/${ARCH}
 }
 
-# macOS
 build "darwin" "amd64"
-
-# FreeBSD
-build "freebsd" "386"
-build "freebsd" "amd64"
-build "freebsd" "arm"
-
-# Linux
-build "linux" "386"
 build "linux" "amd64"
 build "linux" "arm"
-
-# OpenBSD
-build "openbsd" "386"
-build "openbsd" "amd64"
-
-# Solaris
-build "solaris" "amd64"
-
-# Windows
-build "windows" "386"
 build "windows" "amd64"
 
 echo "Signing the checksums file..." 1>&2
