@@ -51,7 +51,7 @@ jobs:
       
       - name: Upload provider data to S3
         uses: jakejarvis/s3-sync-action@7ed8b112447abb09f1da74f3466e4194fc7a6311
-        if: github.ref == 'refs/heads/master' && github.ref == 'refs/heads/future'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future'
         with: { args: "--delete" }
         env:
           SOURCE_DIR: build
