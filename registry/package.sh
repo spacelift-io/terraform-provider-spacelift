@@ -28,7 +28,7 @@ build () {
 
     echo "Compiling for ${OS} on ${ARCH}..." 1>&2
 
-    BINARY_PATH=${RELEASE_PATH}/${BASE_NAME}_v${VERSION}_x4
+    BINARY_NAME=${BASE_NAME}_v${VERSION}_x4
     ZIP_NAME=${BASE_NAME}_${VERSION}_${OS}_${ARCH}.zip
     ZIP_PATH=${RELEASE_PATH}/${ZIP_NAME}
 
@@ -36,11 +36,12 @@ build () {
     CGO_ENABLED=0 \
     GOOS=$OS \
     GOARCH=$ARCH \
-    go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o $BINARY_PATH
+    go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o $BINARY_NAME
 
     # Step 2: zip and remove source binary
-    zip $ZIP_PATH $BINARY_PATH
-    rm $BINARY_PATH
+    zip $ZIP_NAME $BINARY_NAME
+    rm $BINARY_NAME
+    mv $ZIP_NAME $ZIP_PATH
 
     # Step 3: write SHA to the sums file.
     SHASUM=$(openssl dgst -sha256 ${ZIP_PATH} | cut -d' ' -f2)
