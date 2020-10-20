@@ -68,9 +68,10 @@ build "windows" "amd64"
 
 echo "Signing the checksums file..." 1>&2
 
-gpg -u ${GPG_KEY_ID} \
-    --sign \
-    --output $CHECKSUMS_FILE.sig \
+gpg \
+    --local-user ${GPG_KEY_ID}   \
+    --output=$CHECKSUMS_FILE.sig \
     --passphrase=$GPG_PASSPHRASE \
-    --pinentry-mode=loopback \
+    --pinentry-mode=loopback     \
+    --detach-sig                 \
     $CHECKSUMS_FILE
