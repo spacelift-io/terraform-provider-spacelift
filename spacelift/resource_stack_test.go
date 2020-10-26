@@ -73,7 +73,7 @@ func TestStackResource(t *testing.T) {
 				}
 				
 				resource "spacelift_worker_pool" "test" {
-					name        = "My first worker pool"
+					name        = "Autoretryable worker pool."
 					description = "test worker pool"
 				}
 			`, description, randomID)
