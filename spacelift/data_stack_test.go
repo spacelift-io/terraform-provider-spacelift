@@ -20,7 +20,7 @@ func TestStackData(t *testing.T) {
 			resource "spacelift_stack" "test" {
 				administrative = true
 				autodeploy     = true
-				autoretry      = true
+				autoretry      = false
 				branch         = "master"
 				description    = "description"
 				labels         = ["one", "two"]
@@ -38,7 +38,7 @@ func TestStackData(t *testing.T) {
 			Attribute("id", StartsWith("test-stack-")),
 			Attribute("administrative", Equals("true")),
 			Attribute("autodeploy", Equals("true")),
-			Attribute("autoretry", Equals("true")),
+			Attribute("autoretry", Equals("false")),
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),
