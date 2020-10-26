@@ -23,6 +23,11 @@ func dataStack() *schema.Resource {
 				Description: "indicates whether changes to this stack can be automatically deployed",
 				Computed:    true,
 			},
+			"autoretry": {
+				Type:        schema.TypeBool,
+				Description: "indicates whether obsolete proposed changes should automatically be retried",
+				Computed:    true,
+			},
 			"aws_assume_role_policy_statement": {
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
@@ -115,6 +120,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(stackID.(string))
 	d.Set("administrative", stack.Administrative)
 	d.Set("autodeploy", stack.Autodeploy)
+	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 
