@@ -39,6 +39,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"autoretry": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether obsolete proposed changes should automatically be retried",
+				Optional:    true,
+				Default:     false,
+			},
 			"aws_assume_role_policy_statement": {
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
@@ -169,6 +175,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 
 	d.Set("administrative", stack.Administrative)
 	d.Set("autodeploy", stack.Autodeploy)
+	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
 	d.Set("manage_state", stack.ManagesStateFile)
@@ -250,6 +257,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret := structs.StackInput{
 		Administrative: graphql.Boolean(d.Get("administrative").(bool)),
 		Autodeploy:     graphql.Boolean(d.Get("autodeploy").(bool)),
+		Autoretry:      graphql.Boolean(d.Get("autoretry").(bool)),
 		Branch:         toString(d.Get("branch")),
 		Name:           toString(d.Get("name")),
 		Repository:     toString(d.Get("repository")),

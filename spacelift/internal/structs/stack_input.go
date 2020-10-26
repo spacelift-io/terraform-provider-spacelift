@@ -6,6 +6,7 @@ import "github.com/shurcooL/graphql"
 type StackInput struct {
 	Administrative   graphql.Boolean   `json:"administrative"`
 	Autodeploy       graphql.Boolean   `json:"autodeploy"`
+	Autoretry        graphql.Boolean   `json:"autoretry"`
 	Branch           graphql.String    `json:"branch"`
 	Description      *graphql.String   `json:"description"`
 	Labels           *[]graphql.String `json:"labels"`
