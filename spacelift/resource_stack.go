@@ -97,7 +97,6 @@ func resourceStack() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Name of the stack - should be unique in one account",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"project_root": {
 				Type:        schema.TypeString,
