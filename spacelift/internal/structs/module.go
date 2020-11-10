@@ -22,11 +22,12 @@ type Module struct {
 			Secret   string `graphql:"secret"`
 		} `graphql:"webhooks"`
 	} `graphql:"integrations"`
-	Labels     []string `graphql:"labels"`
-	Namespace  string   `graphql:"namespace"`
-	Provider   string   `graphql:"provider"`
-	Repository string   `graphql:"repository"`
-	WorkerPool *struct {
+	Labels         []string `graphql:"labels"`
+	Namespace      string   `graphql:"namespace"`
+	Provider       string   `graphql:"provider"`
+	Repository     string   `graphql:"repository"`
+	SharedAccounts []string `graphql:"sharedAccounts"`
+	WorkerPool     *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
 }

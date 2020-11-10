@@ -12,11 +12,12 @@ func TestModuleData(t *testing.T) {
 	testSteps(t, []resource.TestStep{{
 		Config: `
 			resource "spacelift_module" "test" {
-				administrative = true
-				branch         = "master"
-				description    = "description"
-				labels         = ["one", "two"]
-				repository     = "terraform-bacon-tasty"
+				administrative  = true
+				branch          = "master"
+				description     = "description"
+				labels          = ["one", "two"]
+				repository      = "terraform-bacon-tasty"
+				shared_accounts = ["foo-subdomain", "bar-subdomain"]
 			}
 
 			data "spacelift_module" "test" {
@@ -31,6 +32,7 @@ func TestModuleData(t *testing.T) {
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),
 			Attribute("repository", Equals("terraform-bacon-tasty")),
+			SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 		),
 	}})
 }
