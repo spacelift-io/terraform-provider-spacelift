@@ -16,5 +16,6 @@ type ModuleUpdateInput struct {
 	Branch         graphql.String    `json:"branch"`
 	Description    *graphql.String   `json:"description"`
 	Labels         *[]graphql.String `json:"labels"`
+	SharedAccounts *[]graphql.String `json:"sharedAccounts"`
 	WorkerPool     *graphql.ID       `json:"workerPool"`
 }

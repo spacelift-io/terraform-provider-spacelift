@@ -62,6 +62,12 @@ func dataModule() *schema.Resource {
 				Description: "ID (slug) of the module",
 				Required:    true,
 			},
+			"shared_accounts": {
+				Type:        schema.TypeSet,
+				Description: "List of the accounts (subdomains) which have access to the Module ",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool to use",
@@ -107,6 +113,12 @@ func dataModuleRead(d *schema.ResourceData, meta interface{}) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	sharedAccounts := schema.NewSet(schema.HashString, []interface{}{})
+	for _, account := range module.SharedAccounts {
+		sharedAccounts.Add(account)
+	}
+	d.Set("shared_accounts", sharedAccounts)
 
 	d.Set("repository", module.Repository)
 
