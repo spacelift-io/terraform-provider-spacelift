@@ -64,7 +64,7 @@ func dataModule() *schema.Resource {
 			},
 			"shared_accounts": {
 				Type:        schema.TypeSet,
-				Description: "List of the accounts (subdomains) which have access to the Module ",
+				Description: "List of the accounts (subdomains) which should have access to the Module",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},

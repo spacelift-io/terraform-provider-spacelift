@@ -421,6 +421,7 @@ The following arguments are supported:
 - `repository` - (Required) - Name of the repository, without the owner part;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
+- `shared_accounts` - (Optional) - List of the accounts (subdomains) which should have access to the Module;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
 #### Attributes reference
