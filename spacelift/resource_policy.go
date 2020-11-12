@@ -11,6 +11,26 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
+var policyTypes = []string{
+	"ACCESS",
+	"GIT_PUSH",
+	"INITIALIZATION",
+	"LOGIN",
+	"PLAN",
+	"STACK_ACCESS", // deprecated
+	"TASK",
+	"TASK_RUN",       // deprecated
+	"TERRAFORM_PLAN", // deprecated
+	"TRIGGER",
+}
+
+// This is a map of new policy type names to the ones they are replacing.
+var typeNameReplacements = map[string]string{
+	"ACCESS": "STACK_ACCESS",
+	"PLAN":   "TERRAFORM_PLAN",
+	"TASK":   "TASK_RUN",
+}
+
 func resourcePolicy() *schema.Resource {
 	return &schema.Resource{
 		Create: resourcePolicyCreate,
@@ -39,17 +59,15 @@ func resourcePolicy() *schema.Resource {
 				Description: "Body of the policy",
 				Required:    true,
 				ForceNew:    true,
+				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
+					// If the backend responds with a new name, but we still have the old
+					// name defined or stored in the state, let's not do the replacement.
+					previous, ok := typeNameReplacements[new]
+					return ok && previous == old
+				},
 				ValidateFunc: validation.StringInSlice(
-					[]string{
-						"GIT_PUSH",
-						"INITIALIZATION",
-						"LOGIN",
-						"STACK_ACCESS",
-						"TASK_RUN",
-						"TERRAFORM_PLAN",
-						"TRIGGER",
-					},
-					false,
+					policyTypes,
+					false, // case-sensitive match
 				),
 			},
 		},
