@@ -66,6 +66,12 @@ func resourceModule() *schema.Resource {
 				Description: "Name of the repository, without the owner part",
 				Required:    true,
 			},
+			"shared_accounts": {
+				Type:        schema.TypeSet,
+				Description: "List of the accounts (subdomains) which should have access to the Module",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool to use",
@@ -134,6 +140,12 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	sharedAccounts := schema.NewSet(schema.HashString, []interface{}{})
+	for _, account := range module.SharedAccounts {
+		sharedAccounts.Add(account)
+	}
+	d.Set("shared_accounts", sharedAccounts)
 
 	if workerPool := module.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)
@@ -220,6 +232,14 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 			labels = append(labels, graphql.String(label.(string)))
 		}
 		ret.Labels = &labels
+	}
+
+	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
+		var sharedAccounts []graphql.String
+		for _, account := range sharedAccountsSet.List() {
+			sharedAccounts = append(sharedAccounts, graphql.String(account.(string)))
+		}
+		ret.SharedAccounts = &sharedAccounts
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
