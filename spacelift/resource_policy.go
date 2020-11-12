@@ -62,8 +62,11 @@ func resourcePolicy() *schema.Resource {
 				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
 					// If the backend responds with a new name, but we still have the old
 					// name defined or stored in the state, let's not do the replacement.
-					previous, ok := typeNameReplacements[new]
-					return ok && previous == old
+					if previous, ok := typeNameReplacements[new]; ok && previous == old {
+						return true
+					}
+					next, ok := typeNameReplacements[old]
+					return ok && next == new
 				},
 				ValidateFunc: validation.StringInSlice(
 					policyTypes,
