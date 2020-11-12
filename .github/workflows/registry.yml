@@ -17,7 +17,6 @@ jobs:
 
       - name: Import the PGP key
         env:
-          DOMAIN: ${{ github.ref == 'refs/heads/future' && 'spacelift.dev' || 'spacelift.io' }}
           GPG_KEY_BASE64: ${{ secrets.GPG_KEY_BASE64 }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
@@ -33,6 +32,7 @@ jobs:
         
       - name: Build the package
         env:
+          DOMAIN: ${{ github.ref == 'refs/heads/future' && 'spacelift.dev' || 'spacelift.io' }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: ./registry/package.sh
 
