@@ -23,7 +23,7 @@ func TestPolicyData(t *testing.T) {
 
 					deny["boom"] { true }
 					EOF
-					type = "TERRAFORM_PLAN"
+					type = "PLAN"
 				}
 
 				data "spacelift_policy" "test" {
@@ -34,7 +34,7 @@ func TestPolicyData(t *testing.T) {
 				"data.spacelift_policy.test",
 				Attribute("id", StartsWith("my-first-policy")),
 				Attribute("body", Contains("boom")),
-				Attribute("type", Equals("TERRAFORM_PLAN")),
+				Attribute("type", Equals("PLAN")),
 			),
 		}})
 	})

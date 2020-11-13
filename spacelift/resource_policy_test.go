@@ -23,7 +23,7 @@ func TestPolicyResource(t *testing.T) {
 
 					deny["%s"] { true }
 					EOF
-					type = "TERRAFORM_PLAN"
+					type = "PLAN"
 				}
 			`, randomID, message)
 		}
@@ -35,7 +35,7 @@ func TestPolicyResource(t *testing.T) {
 					"spacelift_policy.test",
 					Attribute("id", StartsWith("my-first-policy")),
 					Attribute("body", Contains("boom")),
-					Attribute("type", Equals("TERRAFORM_PLAN")),
+					Attribute("type", Equals("PLAN")),
 				),
 			},
 			{
