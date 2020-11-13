@@ -19,7 +19,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
 					body = "package spacelift"
-					type = "TERRAFORM_PLAN"
+					type = "PLAN"
 				}
 
 				resource "spacelift_stack" "test" {
@@ -60,7 +60,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
 					body = "package spacelift"
-					type = "TERRAFORM_PLAN"
+					type = "PLAN"
 				}
 	
 				resource "spacelift_module" "test" {
