@@ -581,7 +581,7 @@ See the [policy resource](#spacelift_policy-resource) for details on the returne
 resource "spacelift_policy" "no-weekend-deploys" {
   name = "Let's not deploy any changes over the weekend
   body = file("policies/no-weekend-deploys.rego")
-  type = "TERRAFORM_PLAN"
+  type = "PLAN"
 }
 
 resource "spacelift_stack" "core-infra-production" {
@@ -603,12 +603,12 @@ The following arguments are supported:
 - `name` - (Required) The name of the the policy - should be unique within one account;
 - `body` - (Required) The body of the policy - may be provided inline or read from a file;
 - `type` - (Required) One of the supported types of policies. Currently the following options are available:
+  - `ACCESS` - controls who gets what level of access to a Stack;
   - `GIT_PUSH` - controls how Git push events are interpreted;
   - `LOGIN` - controls who can log in and in what capacity;
-  - `STACK_ACCESS` - controls who gets what level of access to a Stack;
   - `INITIALIZATION` - controls whether Spacelift runs can be started;
-  - `TERRAFORM_PLAN` - validates the outcome of Terraform plans;
-  - `TASK_RUN` - controls whether Spacelift tasks can be started;
+  - `PLAN` - validates the outcome of Terraform plans;
+  - `TASK` - controls whether Spacelift tasks can be started;
   - `TRIGGER` - controls what happens when blocking runs terminate;
 
 #### Attributes reference
@@ -629,7 +629,7 @@ In addition to all arguments above, the following attributes are exported:
 resource "spacelift_policy" "no-weekend-deploys" {
   name = "Let's not deploy any changes over the weekend"
   body = file("policies/no-weekend-deploys.rego")
-  type = "TERRAFORM_PLAN"
+  type = "PLAN"
 }
 
 resource "spacelift_stack" "core-infra-production" {
