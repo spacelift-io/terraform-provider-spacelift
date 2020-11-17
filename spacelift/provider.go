@@ -54,6 +54,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_aws_role":                  dataAWSRole(),
 			"spacelift_context_attachment":        dataContextAttachment(),
 			"spacelift_context":                   dataContext(),
+			"spacelift_current_stack":             dataCurrentStack(),
 			"spacelift_environment_variable":      dataEnvironmentVariable(),
 			"spacelift_gcp_service_account":       dataGCPServiceAccount(),
 			"spacelift_ips":                       dataIPs(),

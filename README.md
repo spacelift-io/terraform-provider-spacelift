@@ -57,6 +57,7 @@ The Spacelift Terraform provider provides the following building blocks:
 
 - `spacelift_context` - [data source](#spacelift_context-data-source) and [resource](#spacelift_context-resource);
 - `spacelift_context_attachment` - [data source](#spacelift_context_attachment_data-source) and [resource](#spacelift_context_attachment_resource);
+- `spacelift_current_stack` - [data source](#spacelift_current_stack-data-source);
 - `spacelift_environment_variable` - [data source](#spacelift_environment_variable-data-source) and [resource](#spacelift_environment_variable-resource);
 - `spacelift_ips` - [data source](#spacelift_ips-data-source);
 - `spacelift_module` - [data source](#spacelift_module-data-source) and [resource](#spacelift_module-resource);
@@ -189,6 +190,30 @@ Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID of the attachment;
+
+[^ Back to all resources](#resources)
+
+### `spacelift_current_stack` data source
+
+`spacelift_current_stack` is a data source that provides information about the current administrative stack if the run is executed within Spacelift by a stack or module. This allows clever tricks like attaching contexts or policies to the stack that manages them.
+
+#### Example usage
+
+```python
+data "spacelift_current_stack" "this" {}
+
+resource "spacelift_environment_variable" "core-kubeconfig" {
+  stack_id   = data.spacelift_current_stack.this.id
+  name       = "CHUNKY"
+  value      = "bacon"
+}
+```
+
+#### Attributes reference
+
+This resource only exports one attribute:
+
+- `id` - The immutable ID of the current stack or module;
 
 [^ Back to all resources](#resources)
 
