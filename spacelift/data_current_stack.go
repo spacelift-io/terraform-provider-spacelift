@@ -18,8 +18,13 @@ func dataCurrentStack() *schema.Resource {
 func dataCurrentStackRead(d *schema.ResourceData, meta interface{}) error {
 	var claims jwt.StandardClaims
 
-	if _, _, err := (&jwt.Parser{}).ParseUnverified(meta.(*internal.Client).Token, &claims); err != nil {
-		return errors.Wrap(err, "could not parse client token")
+	_, _, err := (&jwt.Parser{}).ParseUnverified(meta.(*internal.Client).Token, &claims)
+	if err != nil {
+		// Don't care about validation errors, we don't actually validate those
+		// tokens, we only parse them.
+		if _, isValidation := err.(*jwt.ValidationError); !isValidation {
+			return errors.Wrap(err, "could not parse client token")
+		}
 	}
 
 	if issuer := claims.Issuer; issuer != "spacelift" {
