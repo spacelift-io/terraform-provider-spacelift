@@ -21,12 +21,14 @@ func TestStackData(t *testing.T) {
 				administrative = true
 				autodeploy     = true
 				autoretry      = false
+				before_init    = ["terraform fmt -check", "tflint"]
 				branch         = "master"
 				description    = "description"
 				labels         = ["one", "two"]
 				name           = "Test stack %s"
 				project_root   = "root"
 				repository     = "demo"
+				runner_image   = "custom_image:runner"
 			}
 
 			data "spacelift_stack" "test" {
@@ -39,12 +41,14 @@ func TestStackData(t *testing.T) {
 			Attribute("administrative", Equals("true")),
 			Attribute("autodeploy", Equals("true")),
 			Attribute("autoretry", Equals("false")),
+			SetEquals("before_init", "terraform fmt -check", "tflint"),
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),
 			Attribute("name", StartsWith("Test stack")),
 			Attribute("project_root", Equals("root")),
 			Attribute("repository", Equals("demo")),
+			Attribute("runner_image", Equals("custom_image:runner")),
 		),
 	}})
 }

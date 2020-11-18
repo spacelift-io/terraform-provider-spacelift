@@ -50,6 +50,12 @@ func resourceStack() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"before_init": {
+				Type:        schema.TypeSet,
+				Description: "List of before-init scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"branch": {
 				Type:        schema.TypeString,
 				Description: "GitHub branch to apply changes to",
@@ -107,6 +113,11 @@ func resourceStack() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
 				Required:    true,
+			},
+			"runner_image": {
+				Type:        schema.TypeString,
+				Description: "Name of the Docker image used to process the Run",
+				Optional:    true,
 			},
 			"terraform_version": {
 				Type:        schema.TypeString,
@@ -181,6 +192,12 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("name", stack.Name)
 	d.Set("repository", stack.Repository)
 
+	cmds := schema.NewSet(schema.HashString, []interface{}{})
+	for _, cmd := range stack.BeforeInit {
+		cmds.Add(cmd)
+	}
+	d.Set("before_init", cmds)
+
 	if description := stack.Description; description != nil {
 		d.Set("description", *description)
 	}
@@ -203,6 +220,10 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 
 	if projectRoot := stack.ProjectRoot; projectRoot != nil {
 		d.Set("project_root", *projectRoot)
+	}
+
+	if runnerImage := stack.RunnerImage; runnerImage != nil {
+		d.Set("runner_image", *runnerImage)
 	}
 
 	if terraformVersion := stack.TerraformVersion; terraformVersion != nil {
@@ -262,6 +283,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Repository:     toString(d.Get("repository")),
 	}
 
+	if beforeInitSet, ok := d.Get("before_init").(*schema.Set); ok {
+		var cmds []graphql.String
+		for _, cmd := range beforeInitSet.List() {
+			cmds = append(cmds, graphql.String(cmd.(string)))
+		}
+		ret.BeforeInit = &cmds
+	}
+
 	description, ok := d.GetOk("description")
 	if ok {
 		ret.Description = toOptionalString(description)
@@ -289,6 +318,10 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if projectRoot, ok := d.GetOk("project_root"); ok {
 		ret.ProjectRoot = toOptionalString(projectRoot)
+	}
+
+	if runnerImage, ok := d.GetOk("runner_image"); ok {
+		ret.RunnerImage = toOptionalString(runnerImage)
 	}
 
 	if terraformVersion, ok := d.GetOk("terraform_version"); ok {

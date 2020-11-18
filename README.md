@@ -790,11 +790,13 @@ The following arguments are supported:
   - `namespace` - (Required) - GitLab namespace;
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
+- `before_init` - (Optional) - List of before-init scripts;
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
 - `labels` - (Optional) - List of labels to set on the Stack;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
 - `project_root` - (Optional) - Directory that is relative to the workspace root containing the entry point to the Stack.;
+- `runner_image` - (Optional) - Name of the Docker image used to process the Run;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 

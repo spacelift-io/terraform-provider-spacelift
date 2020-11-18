@@ -7,6 +7,7 @@ type StackInput struct {
 	Administrative   graphql.Boolean   `json:"administrative"`
 	Autodeploy       graphql.Boolean   `json:"autodeploy"`
 	Autoretry        graphql.Boolean   `json:"autoretry"`
+	BeforeInit       *[]graphql.String `json:"beforeInit"`
 	Branch           graphql.String    `json:"branch"`
 	Description      *graphql.String   `json:"description"`
 	Labels           *[]graphql.String `json:"labels"`
@@ -15,6 +16,7 @@ type StackInput struct {
 	ProjectRoot      *graphql.String   `json:"projectRoot"`
 	Provider         *graphql.String   `json:"provider"`
 	Repository       graphql.String    `json:"repository"`
+	RunnerImage      *graphql.String   `json:"runnerImage"`
 	TerraformVersion *graphql.String   `json:"terraformVersion"`
 	WorkerPool       *graphql.ID       `json:"workerPool"`
 }

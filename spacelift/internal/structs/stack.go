@@ -2,12 +2,13 @@ package structs
 
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
-	ID             string  `graphql:"id"`
-	Administrative bool    `graphql:"administrative"`
-	Autodeploy     bool    `graphql:"autodeploy"`
-	Autoretry      bool    `graphql:"autoretry"`
-	Branch         string  `graphql:"branch"`
-	Description    *string `graphql:"description"`
+	ID             string   `graphql:"id"`
+	Administrative bool     `graphql:"administrative"`
+	Autodeploy     bool     `graphql:"autodeploy"`
+	Autoretry      bool     `graphql:"autoretry"`
+	BeforeInit     []string `graphql:"beforeInit"`
+	Branch         string   `graphql:"branch"`
+	Description    *string  `graphql:"description"`
 	Integrations   *struct {
 		AWS struct {
 			AssumedRoleARN            *string `graphql:"assumedRoleArn"`
@@ -31,6 +32,7 @@ type Stack struct {
 	ProjectRoot      *string  `graphql:"projectRoot"`
 	Provider         string   `graphql:"provider"`
 	Repository       string   `graphql:"repository"`
+	RunnerImage      *string  `graphql:"runnerImage"`
 	TerraformVersion *string  `graphql:"terraformVersion"`
 	WorkerPool       *struct {
 		ID string `graphql:"id"`
