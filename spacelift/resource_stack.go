@@ -116,7 +116,7 @@ func resourceStack() *schema.Resource {
 			},
 			"runner_image": {
 				Type:        schema.TypeString,
-				Description: "Name of the Docker image used to process the Run",
+				Description: "Name of the Docker image used to process Runs",
 				Optional:    true,
 			},
 			"terraform_version": {
@@ -188,19 +188,19 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
+	d.Set("description", stack.Description)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
+	d.Set("project_root", stack.ProjectRoot)
 	d.Set("repository", stack.Repository)
+	d.Set("runner_image", stack.RunnerImage)
+	d.Set("terraform_version", stack.TerraformVersion)
 
 	cmds := schema.NewSet(schema.HashString, []interface{}{})
 	for _, cmd := range stack.BeforeInit {
 		cmds.Add(cmd)
 	}
 	d.Set("before_init", cmds)
-
-	if description := stack.Description; description != nil {
-		d.Set("description", *description)
-	}
 
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
@@ -217,18 +217,6 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
-
-	if projectRoot := stack.ProjectRoot; projectRoot != nil {
-		d.Set("project_root", *projectRoot)
-	}
-
-	if runnerImage := stack.RunnerImage; runnerImage != nil {
-		d.Set("runner_image", *runnerImage)
-	}
-
-	if terraformVersion := stack.TerraformVersion; terraformVersion != nil {
-		d.Set("terraform_version", *terraformVersion)
-	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)

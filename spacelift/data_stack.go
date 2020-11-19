@@ -90,7 +90,7 @@ func dataStack() *schema.Resource {
 			},
 			"runner_image": {
 				Type:        schema.TypeString,
-				Description: "Name of the Docker image used to process the Run",
+				Description: "Name of the Docker image used to process Runs",
 				Computed:    true,
 			},
 			"stack_id": {
@@ -134,6 +134,13 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
+	d.Set("description", stack.Description)
+	d.Set("manage_state", stack.ManagesStateFile)
+	d.Set("name", stack.Name)
+	d.Set("project_root", stack.ProjectRoot)
+	d.Set("repository", stack.Repository)
+	d.Set("runner_image", stack.RunnerImage)
+	d.Set("terraform_version", stack.TerraformVersion)
 
 	cmds := schema.NewSet(schema.HashString, []interface{}{})
 	for _, cmd := range stack.BeforeInit {
@@ -156,34 +163,6 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
-
-	d.Set("manage_state", stack.ManagesStateFile)
-	d.Set("name", stack.Name)
-	d.Set("repository", stack.Repository)
-
-	if stack.Description != nil {
-		d.Set("description", *stack.Description)
-	} else {
-		d.Set("description", nil)
-	}
-
-	if stack.ProjectRoot != nil {
-		d.Set("project_root", *stack.ProjectRoot)
-	} else {
-		d.Set("project_root", nil)
-	}
-
-	if stack.RunnerImage != nil {
-		d.Set("runner_image", *stack.RunnerImage)
-	} else {
-		d.Set("runner_image", nil)
-	}
-
-	if stack.TerraformVersion != nil {
-		d.Set("terraform_version", *stack.TerraformVersion)
-	} else {
-		d.Set("terraform_version", nil)
-	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)

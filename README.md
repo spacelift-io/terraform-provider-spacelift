@@ -796,7 +796,7 @@ The following arguments are supported:
 - `labels` - (Optional) - List of labels to set on the Stack;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
 - `project_root` - (Optional) - Directory that is relative to the workspace root containing the entry point to the Stack.;
-- `runner_image` - (Optional) - Name of the Docker image used to process the Run;
+- `runner_image` - (Optional) - Name of the Docker image used to process Runs;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
