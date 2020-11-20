@@ -30,6 +30,7 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"context_id": {
 				Type:          schema.TypeString,
