@@ -34,7 +34,6 @@ func TestMountedFileData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_mounted_file.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("checksum", Equals("fb13e7977b7548a324b598e155b5b5ba3dcca2dad5789abe1411a88fa544be9b")),
 				Attribute("content", IsEmpty()),
 				Attribute("context_id", Contains(randomID)),
 				Attribute("relative_path", Equals("bacon.txt")),

@@ -30,7 +30,6 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
-				ForceNew:    true,
 			},
 			"context_id": {
 				Type:          schema.TypeString,
@@ -126,10 +125,6 @@ func resourceEnvironmentVariableCreateContext(d *schema.ResourceData, client *in
 		return errors.Wrap(err, "could not create context environment variable")
 	}
 
-	if d.Get("write_only").(bool) {
-		d.Set("value", "")
-	}
-
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("name")))
 
 	return resourceEnvironmentVariableRead(d, client)
@@ -144,10 +139,6 @@ func resourceEnvironmentVariableCreateModule(d *schema.ResourceData, client *int
 		return errors.Wrap(err, "could not create module environment variable")
 	}
 
-	if d.Get("write_only").(bool) {
-		d.Set("value", "")
-	}
-
 	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("name")))
 
 	return resourceEnvironmentVariableRead(d, client)
@@ -160,10 +151,6 @@ func resourceEnvironmentVariableCreateStack(d *schema.ResourceData, client *inte
 
 	if err := client.Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not create stack environment variable")
-	}
-
-	if d.Get("write_only").(bool) {
-		d.Set("value", "")
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("name")))
@@ -201,11 +188,14 @@ func resourceEnvironmentVariableRead(d *schema.ResourceData, meta interface{}) e
 		return nil
 	}
 
-	if element.WriteOnly {
-		d.Set("value", nil)
+	d.Set("checksum", element.Checksum)
+
+	if value := element.Value; value != nil {
+		d.Set("value", *value)
+	} else {
+		d.Set("value", element.Checksum)
 	}
 
-	d.Set("checksum", element.Checksum)
 	return nil
 }
 
@@ -305,14 +295,14 @@ func resourceEnvironmentVariableDeleteStack(d *schema.ResourceData, client *inte
 	return client.Mutate(&mutation, map[string]interface{}{"stack": stack, "id": ID})
 }
 
-func suppressValueChange(_, _, value string, d *schema.ResourceData) bool {
-	checksum, ok := d.GetOk("checksum")
-	if !ok {
+func suppressValueChange(_, old, new string, d *schema.ResourceData) bool {
+	oldValueChecksum, err := hex.DecodeString(old)
+	if err != nil {
+		// This is normal if the value is plaintext.
 		return false
 	}
 
-	oldValueChecksum, _ := hex.DecodeString(checksum.(string))
-	newValueChecksum := sha256.Sum256([]byte(value))
+	newValueChecksum := sha256.Sum256([]byte(new))
 
 	return subtle.ConstantTimeCompare(newValueChecksum[:], oldValueChecksum) == 1
 }
