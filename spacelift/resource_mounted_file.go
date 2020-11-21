@@ -27,6 +27,7 @@ func resourceMountedFile() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
+				ForceNew:    true,
 			},
 			"content": {
 				Type:             schema.TypeString,
