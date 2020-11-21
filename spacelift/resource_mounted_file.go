@@ -27,7 +27,6 @@ func resourceMountedFile() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "SHA-256 checksum of the value",
 				Computed:    true,
-				ForceNew:    true,
 			},
 			"content": {
 				Type:             schema.TypeString,
@@ -124,10 +123,6 @@ func resourceMountedFileCreateContext(d *schema.ResourceData, client *internal.C
 		return errors.Wrap(err, "could not create context mounted file")
 	}
 
-	if d.Get("write_only").(bool) {
-		d.Set("content", "")
-	}
-
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("relative_path")))
 	return resourceMountedFileRead(d, client)
 }
@@ -141,10 +136,6 @@ func resourceMountedFileCreateModule(d *schema.ResourceData, client *internal.Cl
 		return errors.Wrap(err, "could not module mounted file")
 	}
 
-	if d.Get("write_only").(bool) {
-		d.Set("content", "")
-	}
-
 	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("relative_path")))
 	return resourceMountedFileRead(d, client)
 }
@@ -156,10 +147,6 @@ func resourceMountedFileCreateStack(d *schema.ResourceData, client *internal.Cli
 
 	if err := client.Mutate(&mutation, variables); err != nil {
 		return errors.Wrap(err, "could not create stack mounted file")
-	}
-
-	if d.Get("write_only").(bool) {
-		d.Set("content", "")
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("relative_path")))
@@ -196,11 +183,14 @@ func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	if element.WriteOnly {
-		d.Set("content", nil)
+	d.Set("checksum", element.Checksum)
+
+	if value := element.Value; value != nil {
+		d.Set("content", *value)
+	} else {
+		d.Set("content", element.Checksum)
 	}
 
-	d.Set("checksum", element.Checksum)
 	return nil
 }
 
