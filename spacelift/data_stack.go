@@ -33,6 +33,12 @@ func dataStack() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"before_init": {
+				Type:        schema.TypeSet,
+				Description: "List of before-init scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
 			"branch": {
 				Type:        schema.TypeString,
 				Description: "Repository branch to treat as the default 'main' branch",
@@ -82,6 +88,11 @@ func dataStack() *schema.Resource {
 				Description: "Name of the repository, without the owner part",
 				Computed:    true,
 			},
+			"runner_image": {
+				Type:        schema.TypeString,
+				Description: "Name of the Docker image used to process Runs",
+				Computed:    true,
+			},
 			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID (slug) of the stack",
@@ -123,6 +134,19 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", stack.Branch)
+	d.Set("description", stack.Description)
+	d.Set("manage_state", stack.ManagesStateFile)
+	d.Set("name", stack.Name)
+	d.Set("project_root", stack.ProjectRoot)
+	d.Set("repository", stack.Repository)
+	d.Set("runner_image", stack.RunnerImage)
+	d.Set("terraform_version", stack.TerraformVersion)
+
+	cmds := schema.NewSet(schema.HashString, []interface{}{})
+	for _, cmd := range stack.BeforeInit {
+		cmds.Add(cmd)
+	}
+	d.Set("before_init", cmds)
 
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
@@ -139,28 +163,6 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
-
-	d.Set("manage_state", stack.ManagesStateFile)
-	d.Set("name", stack.Name)
-	d.Set("repository", stack.Repository)
-
-	if stack.Description != nil {
-		d.Set("description", *stack.Description)
-	} else {
-		d.Set("description", nil)
-	}
-
-	if stack.ProjectRoot != nil {
-		d.Set("project_root", *stack.ProjectRoot)
-	} else {
-		d.Set("project_root", nil)
-	}
-
-	if stack.TerraformVersion != nil {
-		d.Set("terraform_version", *stack.TerraformVersion)
-	} else {
-		d.Set("terraform_version", nil)
-	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)

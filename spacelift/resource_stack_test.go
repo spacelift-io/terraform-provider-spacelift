@@ -22,12 +22,14 @@ func TestStackResource(t *testing.T) {
 					administrative = true
 					autodeploy     = true
 					autoretry      = false
+					before_init    = ["terraform fmt -check", "tflint"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
 					name           = "Provider test stack %s"
 					project_root   = "root"
 					repository     = "demo"
+					runner_image   = "custom_image:runner"
 				}
 			`, description, randomID)
 		}
@@ -41,12 +43,14 @@ func TestStackResource(t *testing.T) {
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
 					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
 				),
 			},
 			{
@@ -63,15 +67,17 @@ func TestStackResource(t *testing.T) {
 					administrative = true
 					autodeploy     = true
 					autoretry      = true
+					before_init    = ["terraform fmt -check", "tflint"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
 					name           = "Provider test stack %s"
 					project_root   = "root"
 					repository     = "demo"
+					runner_image   = "custom_image:runner"
 					worker_pool_id = spacelift_worker_pool.test.id
 				}
-				
+
 				resource "spacelift_worker_pool" "test" {
 					name        = "Autoretryable worker pool."
 					description = "test worker pool"
@@ -88,12 +94,14 @@ func TestStackResource(t *testing.T) {
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("true")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
 					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
 				),
 			},
 			{
