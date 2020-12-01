@@ -391,16 +391,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			CloudFormationInput: &structs.CloudFormationInput{
 				EntryTemplateFile: toString(cloudFormation[0].(map[string]interface{})["entry_template_file"]),
 				Region:            toString(cloudFormation[0].(map[string]interface{})["region"]),
-				// TODO: On the backend, make this the stack slug by default.
-				StackName:      toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
-				TemplateBucket: toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
+				StackName:         toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
+				TemplateBucket:    toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
 			},
 		}
 	} else if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
 		ret.VendorConfig = &structs.VendorConfigInput{
 			Pulumi: &structs.PulumiInput{
-				LoginURL: toString(pulumi[0].(map[string]interface{})["login_url"]),
-				// TODO: On the backend, make this the stack slug by default.
+				LoginURL:  toString(pulumi[0].(map[string]interface{})["login_url"]),
 				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
 			},
 		}
