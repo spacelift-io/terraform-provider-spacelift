@@ -1,7 +1,12 @@
 package structs
 
+// StackConfigVendorCloudFormation is a graphql union typename.
 const StackConfigVendorCloudFormation = "StackConfigVendorCloudFormation"
+
+// StackConfigVendorPulumi is a graphql union typename.
 const StackConfigVendorPulumi = "StackConfigVendorPulumi"
+
+// StackConfigVendorTerraform is a graphql union typename.
 const StackConfigVendorTerraform = "StackConfigVendorTerraform"
 
 // Stack represents the Stack data relevant to the provider.
