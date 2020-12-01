@@ -1,5 +1,9 @@
 package structs
 
+const StackConfigVendorCloudFormation = "StackConfigVendorCloudFormation"
+const StackConfigVendorPulumi = "StackConfigVendorPulumi"
+const StackConfigVendorTerraform = "StackConfigVendorTerraform"
+
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
 	ID             string   `graphql:"id"`
@@ -35,20 +39,18 @@ type Stack struct {
 	RunnerImage      *string  `graphql:"runnerImage"`
 	TerraformVersion *string  `graphql:"terraformVersion"`
 	VendorConfig     struct {
+		Typename       string `graphql:"__typename"`
 		CloudFormation struct {
-			Typename          string `graphql:"__typename"`
 			EntryTemplateName string `graphql:"entryTemplateFile"`
 			Region            string `graphql:"region"`
 			StackName         string `graphql:"stackName"`
 			TemplateBucket    string `graphql:"templateBucket"`
 		} `graphql:"... on StackConfigVendorCloudFormation"`
 		Pulumi struct {
-			Typename  string `graphql:"__typename"`
 			LoginURL  string `graphql:"loginURL"`
 			StackName string `graphql:"stackName"`
 		} `graphql:"... on StackConfigVendorPulumi"`
 		Terraform struct {
-			Typename string `graphql:"__typename"`
 		} `graphql:"... on StackConfigVendorTerraform"`
 	} `graphql:"vendorConfig"`
 	WorkerPool *struct {

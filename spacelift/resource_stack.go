@@ -268,13 +268,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
-	if stack.VendorConfig.CloudFormation.Typename == "" {
-		d.Set("cloudformation", []interface{}{})
-	}
-	if stack.VendorConfig.Pulumi.Typename == "" {
-		d.Set("pulumi", []interface{}{})
-	}
-	if stack.VendorConfig.CloudFormation.Typename != "" {
+	if stack.VendorConfig.Typename == structs.StackConfigVendorCloudFormation {
 		m := map[string]interface{}{
 			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
@@ -283,7 +277,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.Set("cloudformation", []interface{}{m})
-	} else if stack.VendorConfig.Pulumi.Typename != "" {
+	} else if stack.VendorConfig.Typename == structs.StackConfigVendorPulumi {
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
 			"stack_name": stack.VendorConfig.Pulumi.StackName,
