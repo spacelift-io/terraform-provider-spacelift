@@ -61,7 +61,7 @@ func dataStack() *schema.Resource {
 							Description: "AWS region to use",
 							Computed:    true,
 						},
-						"cloudformation_stack_name": {
+						"stack_name": {
 							Type:        schema.TypeString,
 							Description: "CloudFormation stack name",
 							Computed:    true,
@@ -125,7 +125,7 @@ func dataStack() *schema.Resource {
 							Description: "State backend to log into on Run initialize.",
 							Computed:    true,
 						},
-						"pulumi_stack_name": {
+						"stack_name": {
 							Type:        schema.TypeString,
 							Description: "Pulumi stack name to use with the state backend.",
 							Computed:    true,
@@ -214,19 +214,25 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
+	if stack.VendorConfig.CloudFormation.Typename == "" {
+		d.Set("cloudformation", []interface{}{})
+	}
+	if stack.VendorConfig.Pulumi.Typename == "" {
+		d.Set("pulumi", []interface{}{})
+	}
 	if stack.VendorConfig.CloudFormation.Typename != "" {
 		m := map[string]interface{}{
-			"entry_template_name":       stack.VendorConfig.CloudFormation.EntryTemplateName,
-			"region":                    stack.VendorConfig.CloudFormation.Region,
-			"cloudformation_stack_name": stack.VendorConfig.CloudFormation.StackName,
-			"template_bucket":           stack.VendorConfig.CloudFormation.TemplateBucket,
+			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"region":              stack.VendorConfig.CloudFormation.Region,
+			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
+			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
 		}
 
 		d.Set("cloudformation", []interface{}{m})
 	} else if stack.VendorConfig.Pulumi.Typename != "" {
 		m := map[string]interface{}{
-			"login_url":         stack.VendorConfig.Pulumi.LoginURL,
-			"pulumi_stack_name": stack.VendorConfig.Pulumi.StackName,
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
 		}
 
 		d.Set("pulumi", []interface{}{m})

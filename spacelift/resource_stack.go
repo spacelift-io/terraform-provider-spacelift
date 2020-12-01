@@ -78,7 +78,7 @@ func resourceStack() *schema.Resource {
 							Description: "AWS region to use",
 							Required:    true,
 						},
-						"cloudformation_stack_name": {
+						"stack_name": {
 							Type:        schema.TypeString,
 							Description: "CloudFormation stack name",
 							Required:    true,
@@ -151,7 +151,7 @@ func resourceStack() *schema.Resource {
 							Description: "State backend to log into on Run initialize.",
 							Required:    true,
 						},
-						"pulumi_stack_name": {
+						"stack_name": {
 							Type:        schema.TypeString,
 							Description: "Pulumi stack name to use with the state backend.",
 							Required:    true,
@@ -276,17 +276,17 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if stack.VendorConfig.CloudFormation.Typename != "" {
 		m := map[string]interface{}{
-			"entry_template_file":       stack.VendorConfig.CloudFormation.EntryTemplateName,
-			"region":                    stack.VendorConfig.CloudFormation.Region,
-			"template_bucket":           stack.VendorConfig.CloudFormation.TemplateBucket,
-			"cloudformation_stack_name": stack.VendorConfig.CloudFormation.StackName,
+			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"region":              stack.VendorConfig.CloudFormation.Region,
+			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
+			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
 		}
 
 		d.Set("cloudformation", []interface{}{m})
 	} else if stack.VendorConfig.Pulumi.Typename != "" {
 		m := map[string]interface{}{
-			"login_url":         stack.VendorConfig.Pulumi.LoginURL,
-			"pulumi_stack_name": stack.VendorConfig.Pulumi.StackName,
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
 		}
 
 		d.Set("pulumi", []interface{}{m})
@@ -396,7 +396,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 				EntryTemplateFile: toString(cloudFormation[0].(map[string]interface{})["entry_template_file"]),
 				Region:            toString(cloudFormation[0].(map[string]interface{})["region"]),
 				// TODO: On the backend, make this the stack slug by default.
-				StackName:      toString(cloudFormation[0].(map[string]interface{})["cloudformation_stack_name"]),
+				StackName:      toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
 				TemplateBucket: toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
 			},
 		}
@@ -405,7 +405,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			Pulumi: &structs.PulumiInput{
 				LoginURL: toString(pulumi[0].(map[string]interface{})["login_url"]),
 				// TODO: On the backend, make this the stack slug by default.
-				StackName: toString(pulumi[0].(map[string]interface{})["pulumi_stack_name"]),
+				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
 			},
 		}
 	} else {
