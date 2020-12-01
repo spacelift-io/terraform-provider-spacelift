@@ -62,10 +62,11 @@ func resourceStack() *schema.Resource {
 				Required:    true,
 			},
 			"cloudformation": {
-				Type:        schema.TypeList,
-				Description: "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
-				Optional:    true,
-				MaxItems:    1,
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"pulumi"},
+				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
+				Optional:      true,
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"entry_template_file": {
@@ -140,10 +141,11 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 			},
 			"pulumi": {
-				Type:        schema.TypeList,
-				Description: "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
-				Optional:    true,
-				MaxItems:    1,
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"cloudformation"},
+				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
+				Optional:      true,
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"login_url": {
