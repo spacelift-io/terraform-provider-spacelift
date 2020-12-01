@@ -214,14 +214,13 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
-	if stack.VendorConfig.Pulumi.Typename != "" {
-		m := map[string]interface{}{
-			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
-			"stack_name": stack.VendorConfig.Pulumi.StackName,
-		}
-
-		d.Set("pulumi", []interface{}{m})
-	} else if stack.VendorConfig.CloudFormation.Typename != "" {
+	if stack.VendorConfig.CloudFormation.Typename == "" {
+		d.Set("cloudformation", []interface{}{})
+	}
+	if stack.VendorConfig.Pulumi.Typename == "" {
+		d.Set("pulumi", []interface{}{})
+	}
+	if stack.VendorConfig.CloudFormation.Typename != "" {
 		m := map[string]interface{}{
 			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
@@ -230,6 +229,13 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.Set("cloudformation", []interface{}{m})
+	} else if stack.VendorConfig.Pulumi.Typename != "" {
+		m := map[string]interface{}{
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
+		}
+
+		d.Set("pulumi", []interface{}{m})
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {

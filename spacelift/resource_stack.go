@@ -268,14 +268,13 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
-	if stack.VendorConfig.Pulumi.Typename != "" {
-		m := map[string]interface{}{
-			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
-			"stack_name": stack.VendorConfig.Pulumi.StackName,
-		}
-
-		d.Set("pulumi", []interface{}{m})
-	} else if stack.VendorConfig.CloudFormation.Typename != "" {
+	if stack.VendorConfig.CloudFormation.Typename == "" {
+		d.Set("cloudformation", []interface{}{})
+	}
+	if stack.VendorConfig.Pulumi.Typename == "" {
+		d.Set("pulumi", []interface{}{})
+	}
+	if stack.VendorConfig.CloudFormation.Typename != "" {
 		m := map[string]interface{}{
 			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
@@ -284,6 +283,13 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.Set("cloudformation", []interface{}{m})
+	} else if stack.VendorConfig.Pulumi.Typename != "" {
+		m := map[string]interface{}{
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
+		}
+
+		d.Set("pulumi", []interface{}{m})
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
@@ -384,15 +390,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.TerraformVersion = toOptionalString(terraformVersion)
 	}
 
-	if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
-		ret.VendorConfig = &structs.VendorConfigInput{
-			Pulumi: &structs.PulumiInput{
-				LoginURL: toString(pulumi[0].(map[string]interface{})["login_url"]),
-				// TODO: On the backend, make this the stack slug by default.
-				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
-			},
-		}
-	} else if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
+	if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
 		ret.VendorConfig = &structs.VendorConfigInput{
 			CloudFormationInput: &structs.CloudFormationInput{
 				EntryTemplateFile: toString(cloudFormation[0].(map[string]interface{})["entry_template_file"]),
@@ -400,6 +398,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 				// TODO: On the backend, make this the stack slug by default.
 				StackName:      toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
 				TemplateBucket: toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
+			},
+		}
+	} else if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
+		ret.VendorConfig = &structs.VendorConfigInput{
+			Pulumi: &structs.PulumiInput{
+				LoginURL: toString(pulumi[0].(map[string]interface{})["login_url"]),
+				// TODO: On the backend, make this the stack slug by default.
+				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
 			},
 		}
 	} else {
