@@ -44,6 +44,36 @@ func dataStack() *schema.Resource {
 				Description: "Repository branch to treat as the default 'main' branch",
 				Computed:    true,
 			},
+			"cloudformation": {
+				Type:        schema.TypeList,
+				Description: "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
+				Computed:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"entry_template_file": {
+							Type:        schema.TypeString,
+							Description: "Template file `cloudformation package` will be called on",
+							Computed:    true,
+						},
+						"region": {
+							Type:        schema.TypeString,
+							Description: "AWS region to use",
+							Computed:    true,
+						},
+						"stack_name": {
+							Type:        schema.TypeString,
+							Description: "CloudFormation stack name",
+							Computed:    true,
+						},
+						"template_bucket": {
+							Type:        schema.TypeString,
+							Description: "S3 bucket to save CloudFormation templates to",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Description: "free-form stack description for users",
@@ -82,6 +112,26 @@ func dataStack() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Computed:    true,
+			},
+			"pulumi": {
+				Type:        schema.TypeList,
+				Description: "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
+				Computed:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"login_url": {
+							Type:        schema.TypeString,
+							Description: "State backend to log into on Run initialize.",
+							Computed:    true,
+						},
+						"stack_name": {
+							Type:        schema.TypeString,
+							Description: "Pulumi stack name to use with the state backend.",
+							Computed:    true,
+						},
+					},
+				},
 			},
 			"repository": {
 				Type:        schema.TypeString,
@@ -163,6 +213,24 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	if stack.VendorConfig.Pulumi.Typename != "" {
+		m := map[string]interface{}{
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
+		}
+
+		d.Set("pulumi", []interface{}{m})
+	} else if stack.VendorConfig.CloudFormation.Typename != "" {
+		m := map[string]interface{}{
+			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"region":              stack.VendorConfig.CloudFormation.Region,
+			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
+			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
+		}
+
+		d.Set("cloudformation", []interface{}{m})
+	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)

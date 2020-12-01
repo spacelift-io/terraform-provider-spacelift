@@ -34,7 +34,24 @@ type Stack struct {
 	Repository       string   `graphql:"repository"`
 	RunnerImage      *string  `graphql:"runnerImage"`
 	TerraformVersion *string  `graphql:"terraformVersion"`
-	WorkerPool       *struct {
+	VendorConfig     struct {
+		CloudFormation struct {
+			Typename          string `graphql:"__typename"`
+			EntryTemplateName string `graphql:"entryTemplateFile"`
+			Region            string `graphql:"region"`
+			StackName         string `graphql:"stackName"`
+			TemplateBucket    string `graphql:"templateBucket"`
+		} `graphql:"... on StackConfigVendorCloudFormation"`
+		Pulumi struct {
+			Typename  string `graphql:"__typename"`
+			LoginURL  string `graphql:"loginURL"`
+			StackName string `graphql:"stackName"`
+		} `graphql:"... on StackConfigVendorPulumi"`
+		Terraform struct {
+			Typename string `graphql:"__typename"`
+		} `graphql:"... on StackConfigVendorTerraform"`
+	} `graphql:"vendorConfig"`
+	WorkerPool *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
 }
