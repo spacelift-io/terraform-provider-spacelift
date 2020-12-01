@@ -110,4 +110,68 @@ func TestStackResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with GitHub and vendor-specific configuration", func(t *testing.T) {
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					administrative = true
+					autodeploy     = true
+					autoretry      = false
+					before_init    = ["terraform fmt -check", "tflint"]
+					branch         = "master"
+					labels         = ["one", "two"]
+					name           = "Provider test stack"
+					project_root   = "root"
+					repository     = "demo"
+					runner_image   = "custom_image:runner"
+					%s
+				}
+			`, vendorConfig)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(``),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
+					Attribute("branch", Equals("master")),
+					Attribute("description", Equals("old description")),
+					SetEquals("labels", "one", "two"),
+					Attribute("name", StartsWith("Provider test stack")),
+					Attribute("project_root", Equals("root")),
+					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+				),
+			},
+			{
+				Config: config(`pulumi {
+						login_url = "s3://bucket"
+						stack_name = "main"
+					}`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
+					Attribute("branch", Equals("master")),
+					Attribute("description", Equals("old description")),
+					SetEquals("labels", "one", "two"),
+					Attribute("name", StartsWith("Provider test stack")),
+					Attribute("project_root", Equals("root")),
+					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("pulumi[0].login_url", Equals("s3://bucket")),
+					Attribute("pulumi[0].stack_name", Equals("main")),
+				),
+			},
+		})
+	})
 }
