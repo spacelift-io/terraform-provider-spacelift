@@ -61,6 +61,37 @@ func resourceStack() *schema.Resource {
 				Description: "GitHub branch to apply changes to",
 				Required:    true,
 			},
+			"cloudformation": {
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"pulumi"},
+				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"entry_template_file": {
+							Type:        schema.TypeString,
+							Description: "Template file `cloudformation package` will be called on",
+							Required:    true,
+						},
+						"region": {
+							Type:        schema.TypeString,
+							Description: "AWS region to use",
+							Required:    true,
+						},
+						"stack_name": {
+							Type:        schema.TypeString,
+							Description: "CloudFormation stack name",
+							Required:    true,
+						},
+						"template_bucket": {
+							Type:        schema.TypeString,
+							Description: "S3 bucket to save CloudFormation templates to",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form stack description for users",
@@ -108,6 +139,27 @@ func resourceStack() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Optional:    true,
+			},
+			"pulumi": {
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"cloudformation"},
+				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"login_url": {
+							Type:        schema.TypeString,
+							Description: "State backend to log into on Run initialize.",
+							Required:    true,
+						},
+						"stack_name": {
+							Type:        schema.TypeString,
+							Description: "Pulumi stack name to use with the state backend.",
+							Required:    true,
+						},
+					},
+				},
 			},
 			"repository": {
 				Type:        schema.TypeString,
@@ -218,6 +270,24 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
+	if stack.VendorConfig.Typename == structs.StackConfigVendorCloudFormation {
+		m := map[string]interface{}{
+			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"region":              stack.VendorConfig.CloudFormation.Region,
+			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
+			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
+		}
+
+		d.Set("cloudformation", []interface{}{m})
+	} else if stack.VendorConfig.Typename == structs.StackConfigVendorPulumi {
+		m := map[string]interface{}{
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
+		}
+
+		d.Set("pulumi", []interface{}{m})
+	}
+
 	if workerPool := stack.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)
 	} else {
@@ -314,6 +384,28 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
 		ret.TerraformVersion = toOptionalString(terraformVersion)
+	}
+
+	if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
+		ret.VendorConfig = &structs.VendorConfigInput{
+			CloudFormationInput: &structs.CloudFormationInput{
+				EntryTemplateFile: toString(cloudFormation[0].(map[string]interface{})["entry_template_file"]),
+				Region:            toString(cloudFormation[0].(map[string]interface{})["region"]),
+				StackName:         toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
+				TemplateBucket:    toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
+			},
+		}
+	} else if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
+		ret.VendorConfig = &structs.VendorConfigInput{
+			Pulumi: &structs.PulumiInput{
+				LoginURL:  toString(pulumi[0].(map[string]interface{})["login_url"]),
+				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
+			},
+		}
+	} else {
+		ret.VendorConfig = &structs.VendorConfigInput{
+			Terraform: &struct{}{},
+		}
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
