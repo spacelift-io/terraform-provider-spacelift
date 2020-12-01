@@ -135,7 +135,7 @@ func TestStackResource(t *testing.T) {
 				Config: config(``),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("id", Equals("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -156,7 +156,7 @@ func TestStackResource(t *testing.T) {
 					}`),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("id", Equals("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -182,7 +182,7 @@ func TestStackResource(t *testing.T) {
 					}`),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("id", Equals("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -205,7 +205,7 @@ func TestStackResource(t *testing.T) {
 				Config: config(``),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("id", Equals("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
