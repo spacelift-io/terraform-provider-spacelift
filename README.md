@@ -35,13 +35,85 @@ terraform {
 
 ## Setup
 
-This provider is designed to require no setup. All runs in an [administrative stack](#todo) receive a temporary JWT token in the `SPACELIFT_API_TOKEN` environment variable, which is all the provider needs to run. **We strongly recommend using this approach**:
+### Running inside Spacelift
+
+When executed from inside a Spacelift run, this provider is designed to require no setup at all. All Spacelift jobs receive a temporary authentication token in the `SPACELIFT_API_TOKEN` environment variable, which is all the provider needs to run. 
+
+Important thing to note here though is that this API token will only allow operations to be performed on its own account. If you need to set up multiple Spacelift accounts from the same Terraform run, please refer to the next section describing the use of [API keys](https://docs.spacelift.io/integrations/api#api-key-management).
 
 ```python
 provider "spacelift" {}
 ```
 
-The alternative approach when not running in Spacelift is to pass a human user's JWT token, either through the environment (`SPACELIFT_API_TOKEN` variable) or using the provider's `api_token` field. Note though that all Spacelift tokens have a short expiry, so that in practice you will need to generate a new token before each Terraform run. **We discourage this approach**:
+### Running outside of Spacelift
+
+If you want to run the Spacelift provider outside of Spacelift, or you need to manage resources across multiple Spacelift accounts from the same Terraform project, the preferred method is to generate and use dedicated [API keys](https://docs.spacelift.io/integrations/api#api-key-management). Note that unless you're just accessing whitelisted data resources, the Terraform use case will normally require marking the API key as administrative.
+
+In order to set up the provider to use an API key, you will need the key ID, secret and the API key endpoint:
+
+```python
+variable "spacelift_key_id" {}
+variable "spacelift_key_secret" {}
+
+provider "spacelift" {
+  api_key_endpoint = "https://your-account.app.spacelift.io"
+  api_key_id       = var.spacelift_key_id
+  api_key_secret   = var.spacelift_key_secret
+}
+```
+
+These values can also be passed using environment variables, though this will only work to set up the provider for a single Spacelift account:
+
+- `SPACELIFT_API_KEY_ENDPOINT` for `api_key_endpoint`;
+- `SPACELIFT_API_KEY_ID` for `api_key_id`;
+- `SPACELIFT_API_KEY_SECRET` for `api_key_secret`;
+
+If you want to talk to multiple Spacelift accounts, you just need to set up [provider aliases](https://www.terraform.io/docs/configuration/providers.html#alias-multiple-provider-configurations) like this:
+
+```python
+variable "spacelift_first_key_id" {}
+variable "spacelift_first_key_secret" {}
+
+variable "spacelift_second_key_id" {}
+variable "spacelift_second_key_secret" {}
+
+provider "spacelift" {
+  alias = "first"
+
+  api_key_endpoint = "https://first.app.spacelift.io"
+  api_key_id       = var.spacelift_first_key_id
+  api_key_secret   = var.spacelift_first_key_secret
+}
+
+provider "spacelift" {
+  alias = "second"
+
+  api_key_endpoint = "https://second.app.spacelift.io"
+  api_key_id       = var.spacelift_second_key_id
+  api_key_secret   = var.spacelift_second_key_secret
+}
+```
+
+If you're running from inside Spacelift, you can still use the default, zero-setup provider for the current account with providers for accounts set up through API keys:
+
+```python
+variable "spacelift_that_key_id" {}
+variable "spacelift_that_key_secret" {}
+
+provider "spacelift" {
+  alias = "this"
+}
+
+provider "spacelift" {
+  alias = "that"
+
+  api_key_endpoint = "https://that.app.spacelift.io"
+  api_key_id       = var.spacelift_that_key_id
+  api_key_secret   = var.spacelift_that_key_secret
+}
+```
+
+The alternative approach when running locally is to pass a human user's JWT token, either through the environment (`SPACELIFT_API_TOKEN` variable) or using the provider's `api_token` field. Note though that all Spacelift tokens have a short expiry, so that in practice you will need to generate a new token before each Terraform run. **We stongly discourage this approach** and suggest using an API key instead for all systematic use cases:
 
 ```python
 variable "spacelift_api_token" {}
