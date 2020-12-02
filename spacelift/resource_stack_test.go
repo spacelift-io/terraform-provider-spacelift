@@ -110,4 +110,113 @@ func TestStackResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with GitHub and vendor-specific configuration", func(t *testing.T) {
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					administrative = true
+					autodeploy     = true
+					autoretry      = false
+					before_init    = ["terraform fmt -check", "tflint"]
+					branch         = "master"
+					labels         = ["one", "two"]
+					name           = "Provider test stack"
+					project_root   = "root"
+					repository     = "demo"
+					runner_image   = "custom_image:runner"
+					%s
+				}
+			`, vendorConfig)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(``),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("id", Equals("provider-test-stack")),
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
+					Attribute("branch", Equals("master")),
+					SetEquals("labels", "one", "two"),
+					Attribute("name", StartsWith("Provider test stack")),
+					Attribute("project_root", Equals("root")),
+					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+				),
+			},
+			{
+				Config: config(`pulumi {
+						login_url = "s3://bucket"
+						stack_name = "mainpl"
+					}`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("id", Equals("provider-test-stack")),
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
+					Attribute("branch", Equals("master")),
+					SetEquals("labels", "one", "two"),
+					Attribute("name", StartsWith("Provider test stack")),
+					Attribute("project_root", Equals("root")),
+					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("pulumi.0.login_url", Equals("s3://bucket")),
+					Attribute("pulumi.0.stack_name", Equals("mainpl")),
+					Attribute("cloudformation.#", Equals("0")),
+				),
+			},
+			{
+				Config: config(`cloudformation {
+						entry_template_file = "main.yaml"
+						region = "eu-central-1"
+						template_bucket = "s3://bucket"
+						stack_name = "maincf"
+					}`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("id", Equals("provider-test-stack")),
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
+					Attribute("branch", Equals("master")),
+					SetEquals("labels", "one", "two"),
+					Attribute("name", StartsWith("Provider test stack")),
+					Attribute("project_root", Equals("root")),
+					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("cloudformation.0.entry_template_file", Equals("main.yaml")),
+					Attribute("cloudformation.0.region", Equals("eu-central-1")),
+					Attribute("cloudformation.0.template_bucket", Equals("s3://bucket")),
+					Attribute("cloudformation.0.stack_name", Equals("maincf")),
+					Attribute("pulumi.#", Equals("0")),
+				),
+			},
+			{
+				Config: config(``),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("id", Equals("provider-test-stack")),
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("autoretry", Equals("false")),
+					SetEquals("before_init", "terraform fmt -check", "tflint"),
+					Attribute("branch", Equals("master")),
+					SetEquals("labels", "one", "two"),
+					Attribute("name", StartsWith("Provider test stack")),
+					Attribute("project_root", Equals("root")),
+					Attribute("repository", Equals("demo")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+				),
+			},
+		})
+	})
 }
