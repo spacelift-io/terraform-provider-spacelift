@@ -5,15 +5,15 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 var (
-	provider     terraform.ResourceProvider
+	provider     *schema.Provider
 	providerLock sync.Mutex
 )
 
-func testProvider() terraform.ResourceProvider {
+func testProvider() *schema.Provider {
 	providerLock.Lock()
 	defer providerLock.Unlock()
 	if provider == nil {
@@ -26,7 +26,7 @@ func testProvider() terraform.ResourceProvider {
 func testSteps(t *testing.T, steps []resource.TestStep) {
 	resource.Test(t, resource.TestCase{
 		IsUnitTest: true,
-		Providers: map[string]terraform.ResourceProvider{
+		Providers: map[string]*schema.Provider{
 			"spacelift": testProvider(),
 		},
 		Steps: steps,

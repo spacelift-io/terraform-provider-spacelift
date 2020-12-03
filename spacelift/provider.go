@@ -7,14 +7,14 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
 // Provider returns an instance of Terraform resource provider for Spacelift.
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"api_key_endpoint": {
