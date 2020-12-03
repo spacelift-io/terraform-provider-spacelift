@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 
 	"github.com/fluxio/multierror"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
@@ -26,7 +26,7 @@ func resourceWorkerPool() *schema.Resource {
 		Delete: resourceWorkerPoolDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
