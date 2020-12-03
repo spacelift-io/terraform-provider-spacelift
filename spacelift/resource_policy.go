@@ -39,7 +39,7 @@ func resourcePolicy() *schema.Resource {
 		Delete: resourcePolicyDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

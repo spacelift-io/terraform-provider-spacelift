@@ -22,7 +22,7 @@ func resourceEnvironmentVariable() *schema.Resource {
 		Delete: resourceEnvironmentVariableDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

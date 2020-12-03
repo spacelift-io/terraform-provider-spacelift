@@ -25,7 +25,7 @@ func resourceGCPServiceAccount() *schema.Resource {
 		Delete: resourceGCPServiceAccountDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

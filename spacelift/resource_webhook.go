@@ -18,7 +18,7 @@ func resourceWebhook() *schema.Resource {
 		Delete: resourceWebhookDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{

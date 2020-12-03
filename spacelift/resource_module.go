@@ -18,7 +18,7 @@ func resourceModule() *schema.Resource {
 		Delete: resourceModuleDelete,
 
 		Importer: &schema.ResourceImporter{
-			State: schema.ImportStatePassthrough,
+			StateContext: schema.ImportStatePassthroughContext,
 		},
 
 		Schema: map[string]*schema.Schema{
