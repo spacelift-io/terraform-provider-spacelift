@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 
 	"github.com/fluxio/multierror"
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
