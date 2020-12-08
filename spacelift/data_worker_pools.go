@@ -57,7 +57,7 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 
 	workerPools := query.WorkerPools
 	if workerPools == nil {
-		return errors.New("worker pools not found")
+		return nil
 	}
 
 	wps := flattenDataWorkerPoolsList(workerPools)
