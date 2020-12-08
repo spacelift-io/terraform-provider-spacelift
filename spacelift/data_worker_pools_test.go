@@ -29,10 +29,9 @@ func TestWorkerPoolsData(t *testing.T) {
 			}
 		`, randomID), Check: resource.ComposeTestCheckFunc(
 			Resource(datasourceName, Attribute("id", IsNotEmpty())),
-			// TODO: Check for inclusion
-			resource.TestCheckResourceAttrPair(datasourceName, "worker_pools.0.worker_pool_id", resourceName, "id"),
-			resource.TestCheckResourceAttrPair(datasourceName, "worker_pools.0.name", resourceName, "name"),
-			resource.TestCheckResourceAttrPair(datasourceName, "worker_pools.0.config", resourceName, "config"),
+			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "worker_pool_id"}, resourceName, "id"),
+			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "name"}, resourceName, "name"),
+			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "config"}, resourceName, "config"),
 		),
 	}})
 }
