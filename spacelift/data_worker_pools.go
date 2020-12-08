@@ -74,10 +74,10 @@ func flattenDataWorkerPoolsList(workerPools []*structs.WorkerPool) []map[string]
 	wps := make([]map[string]interface{}, len(workerPools))
 
 	for index, wp := range workerPools {
-		var description interface{}
+		var description *string
 
 		if wp.Description != nil {
-			description = *wp.Description
+			description = wp.Description
 		} else {
 			description = nil
 		}
