@@ -20,23 +20,23 @@ func dataWorkerPools() *schema.Resource {
 						"worker_pool_id": {
 							Type:        schema.TypeString,
 							Description: "ID of the worker pool",
-							Required:    true,
+							Computed:    true,
 						},
 						"config": {
 							Type:        schema.TypeString,
 							Description: "credentials necessary to connect WorkerPool's workers to the control plane",
 							Sensitive:   true,
-							Required:    true,
+							Computed:    true,
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Description: "name of the worker pool",
-							Required:    true,
+							Computed:    true,
 						},
 						"description": {
 							Type:        schema.TypeString,
 							Description: "description of the worker pool",
-							Required:    true,
+							Computed:    true,
 						},
 					},
 				},
