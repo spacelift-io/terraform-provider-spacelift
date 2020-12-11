@@ -46,7 +46,6 @@ func dataWorkerPools() *schema.Resource {
 }
 
 func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
-	d.SetId("spacelift-worker-pools")
 
 	var query struct {
 		WorkerPools []*structs.WorkerPool `graphql:"workerPools()"`
@@ -54,9 +53,10 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 	variables := map[string]interface{}{}
 
 	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		d.SetId("")
 		return errors.Wrap(err, "could not query for worker pools")
 	}
+
+	d.SetId("spacelift-worker-pools")
 
 	workerPools := query.WorkerPools
 	if workerPools == nil {
