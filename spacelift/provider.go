@@ -62,6 +62,7 @@ func Provider() *schema.Provider {
 			"spacelift_stack_aws_role":            dataStackAWSRole(),           // deprecated
 			"spacelift_stack_gcp_service_account": dataStackGCPServiceAccount(), // deprecated
 			"spacelift_worker_pool":               dataWorkerPool(),
+			"spacelift_worker_pools":              dataWorkerPools(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"spacelift_aws_role":                  resourceAWSRole(),
