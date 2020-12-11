@@ -65,8 +65,6 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 
 	wps := flattenDataWorkerPoolsList(workerPools)
 	if err := d.Set("worker_pools", wps); err != nil {
-		// unset resource ID because we must
-		d.SetId("")
 		return errors.Wrap(err, "could not set worker pools")
 	}
 
