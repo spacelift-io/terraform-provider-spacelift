@@ -59,6 +59,7 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 
 	workerPools := query.WorkerPools
 	if workerPools == nil {
+		d.Set("worker_pools", nil)
 		return nil
 	}
 
