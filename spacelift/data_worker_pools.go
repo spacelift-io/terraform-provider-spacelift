@@ -55,6 +55,8 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 		return errors.Wrap(err, "could not query for worker pools")
 	}
 
+	d.SetId("spacelift-worker-pools")
+
 	workerPools := query.WorkerPools
 	if workerPools == nil {
 		return nil
@@ -64,8 +66,6 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("worker_pools", wps); err != nil {
 		return errors.Wrap(err, "could not set worker pools")
 	}
-
-	d.SetId("spacelift-worker-pools")
 
 	return nil
 }
