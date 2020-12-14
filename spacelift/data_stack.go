@@ -1,7 +1,7 @@
 package spacelift
 
 import (
-	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -48,7 +48,6 @@ func dataStack() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Computed:    true,
-				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"entry_template_file": {
@@ -117,7 +116,6 @@ func dataStack() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Computed:    true,
-				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"login_url": {

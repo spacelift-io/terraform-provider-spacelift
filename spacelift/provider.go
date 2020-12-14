@@ -6,15 +6,15 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/hashicorp/terraform/helper/schema"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
 // Provider returns an instance of Terraform resource provider for Spacelift.
-func Provider() terraform.ResourceProvider {
+func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"api_key_endpoint": {
@@ -62,6 +62,7 @@ func Provider() terraform.ResourceProvider {
 			"spacelift_stack_aws_role":            dataStackAWSRole(),           // deprecated
 			"spacelift_stack_gcp_service_account": dataStackGCPServiceAccount(), // deprecated
 			"spacelift_worker_pool":               dataWorkerPool(),
+			"spacelift_worker_pools":              dataWorkerPools(),
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"spacelift_aws_role":                  resourceAWSRole(),

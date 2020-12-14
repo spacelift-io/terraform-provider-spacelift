@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/pkg/errors"
 )
 
@@ -33,6 +33,59 @@ func Resource(address string, checks ...AttributeCheck) resource.TestCheckFunc {
 			if err := check(resource.Primary.Attributes); err != nil {
 				return errors.Wrapf(err, "check %d on resource %s failed", index+1, address)
 			}
+		}
+
+		return nil
+	}
+}
+
+// CheckIfResourceNestedAttributeContainsResourceAttribute runs a value check
+// between the first resource and second resource.
+// The first resource attribute is assumed to have a only a single level of
+// depth.
+// The second resource attribute is assumed to be a regular attribute.
+// TODO:
+// - refactor this logic into the Resource method
+// - add support in the Attribute method to add special values (*) in the name?
+// - better support for collection testing?
+func CheckIfResourceNestedAttributeContainsResourceAttribute(firstResourceName string, firstResourceKeys []string, secondResourceName string, secondResourceKey string) resource.TestCheckFunc {
+	return func(state *terraform.State) error {
+		if len(state.Modules) == 0 {
+			return errors.New("no modules present")
+		}
+
+		firstResource, ok := state.Modules[0].Resources[firstResourceName]
+		if !ok {
+			return errors.Errorf("resource %s not found", firstResourceName)
+		}
+
+		secondResource, ok := state.Modules[0].Resources[secondResourceName]
+		if !ok {
+			return errors.Errorf("resource %s not found", secondResourceName)
+		}
+
+		firstResourceAttributeCountStr := firstResource.Primary.Attributes[fmt.Sprintf("%s.#", firstResourceKeys[0])]
+		firstResourceAttributeCount, err := strconv.Atoi(firstResourceAttributeCountStr)
+		if err != nil {
+			return errors.Errorf("Cannot convert attribute string representation %s to integer", firstResourceAttributeCountStr)
+		}
+
+		matchers := make([]string, firstResourceAttributeCount)
+		for i := 0; i < firstResourceAttributeCount; i++ {
+			matchers[i] = fmt.Sprintf("%s.%d.%s", firstResourceKeys[0], i, firstResourceKeys[1])
+		}
+
+		value := secondResource.Primary.Attributes[secondResourceKey]
+
+		valuesMatches := false
+		for _, matcher := range matchers {
+			if value == firstResource.Primary.Attributes[matcher] {
+				valuesMatches = true
+			}
+		}
+
+		if !valuesMatches {
+			return errors.Errorf("Cannot find match for value %s at attribute %s.%s.*.%s", value, firstResourceName, firstResourceKeys[0], firstResourceKeys[1])
 		}
 
 		return nil
