@@ -141,6 +141,7 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_gcp_service_account` - [data source](#spacelift_gcp_service_account-data-source) and [resource](#spacelift_gcp_service_account-resource);
 - `spacelift_webhook` - [data source](#spacelift_webhook-data-source) and [resource](#spacelift_webhook-resource);
 - `spacelift_worker_pool` - [data source](#spacelift_worker_pool-data-source) and [resource](#spacelift_worker_pool-resource);
+- `spacelift_worker_pools` - [data source](#spacelift_worker_pools-data-source);
 
 **Note:** `spacelift_stack_aws_role` and `spacelift_stack_gcp_service_account` are **deprecated**. Please use [spacelift_aws_role](#spacelift_aws_role-data-source) and [spacelift_gcp_service_account](#spacelift_gcp_service_account-data-source) instead.
 
@@ -1184,5 +1185,27 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The immutable ID (slug) of the worker pool;
 - `config` - The credentials necessary to connect WorkerPool's workers to the control plane;
 - `private_key` - Automatically generated private key (base64 format) if `csr` was not provided.;
+
+[^ Back to all resources](#resources)
+
+### `spacelift_worker_pools` data source
+
+`spacelift_worker_pools` represents the worker pools assigned to the Spacelift account.
+
+#### Example usage
+
+```python
+data "spacelift_worker_pools" "worker-pools" {}
+```
+
+#### Argument reference
+
+No arguments are supported.
+
+#### Attributes reference
+
+The following attributes are exported:
+
+- `worker_pools` - List of [`spacelift_worker_pool` data sources](#spacelift_worker_pool-data-source);
 
 [^ Back to all resources](#resources)
