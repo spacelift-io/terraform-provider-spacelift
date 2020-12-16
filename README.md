@@ -851,6 +851,24 @@ resource "spacelift_aws_role" "k8s-core" {
 }
 ```
 
+For Pulumi Stacks:
+```python
+resource "spacelift_stack" "k8s-core-pulumi" {
+  pulumi {
+    login_url  = "s3://pulumi-state-bucket"
+    stack_name = "kubernetes-core-services"
+  }
+
+  autodeploy        = true
+  branch            = "master"
+  description       = "Shared cluster services (Datadog, Istio etc.)"
+  name              = "Kubernetes core services"
+  project_root      = "/project"
+  repository        = "core-infra"
+  runner_image      = "public.ecr.aws/t0p9w2l5/runner-pulumi-javascript:latest"
+}
+```
+
 #### Argument reference
 
 The following arguments are supported:
@@ -868,6 +886,9 @@ The following arguments are supported:
 - `labels` - (Optional) - List of labels to set on the Stack;
 - `manage_state` - (Optional) - Boolean that determines if Spacelift should manage state for this stack. Default: `true`;
 - `project_root` - (Optional) - Directory that is relative to the workspace root containing the entry point to the Stack.;
+- `pulumi` - (Optional) - Pulumi-specific configuration block. Sets the Stack vendor to Pulumi if present.
+  - `login_url` - (Required) - State backend to log in to.
+  - `stack_name` - (Required) - Pulumi stack name to use in the backend (multiple stacks can use one state backend, provided they have different stack_name's).
 - `runner_image` - (Optional) - Name of the Docker image used to process Runs;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
