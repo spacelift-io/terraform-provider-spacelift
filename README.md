@@ -853,7 +853,7 @@ resource "spacelift_aws_role" "k8s-core" {
 
 For Pulumi Stacks:
 ```python
-resource "spacelift_stack" "k8s-core-gitlab" {
+resource "spacelift_stack" "k8s-core-pulumi" {
   pulumi {
     login_url  = "s3://pulumi-state-bucket"
     stack_name = "kubernetes-core-services"
