@@ -51,7 +51,7 @@ func resourceStack() *schema.Resource {
 				Computed:    true,
 			},
 			"before_init": {
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
@@ -239,6 +239,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("manage_state", stack.ManagesStateFile)
@@ -247,12 +248,6 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("terraform_version", stack.TerraformVersion)
-
-	cmds := schema.NewSet(schema.HashString, []interface{}{})
-	for _, cmd := range stack.BeforeInit {
-		cmds.Add(cmd)
-	}
-	d.Set("before_init", cmds)
 
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
@@ -341,9 +336,9 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Repository:     toString(d.Get("repository")),
 	}
 
-	if beforeInitSet, ok := d.Get("before_init").(*schema.Set); ok {
+	if beforeInits, ok := d.GetOk("before_init"); ok {
 		var cmds []graphql.String
-		for _, cmd := range beforeInitSet.List() {
+		for _, cmd := range beforeInits.([]interface{}) {
 			cmds = append(cmds, graphql.String(cmd.(string)))
 		}
 		ret.BeforeInit = &cmds
