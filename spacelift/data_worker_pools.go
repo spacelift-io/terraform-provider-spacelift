@@ -12,7 +12,7 @@ func dataWorkerPools() *schema.Resource {
 	return &schema.Resource{
 		Read: dataWorkerPoolsRead,
 		Schema: map[string]*schema.Schema{
-			"worker_pools": &schema.Schema{
+			"worker_pools": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
