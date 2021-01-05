@@ -336,13 +336,13 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Repository:     toString(d.Get("repository")),
 	}
 
-	if beforeInits, ok := d.GetOk("before_init"); ok {
-		var cmds []graphql.String
-		for _, cmd := range beforeInits.([]interface{}) {
-			cmds = append(cmds, graphql.String(cmd.(string)))
+	beforeInits := []graphql.String{}
+	if commands, ok := d.GetOk("before_init"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			beforeInits = append(beforeInits, graphql.String(cmd.(string)))
 		}
-		ret.BeforeInit = &cmds
 	}
+	ret.BeforeInit = &beforeInits
 
 	description, ok := d.GetOk("description")
 	if ok {
