@@ -13,9 +13,9 @@ import (
 func TestStackResource(t *testing.T) {
 	t.Parallel()
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with GitHub and no state import", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -63,6 +63,8 @@ func TestStackResource(t *testing.T) {
 	})
 
 	t.Run("with private worker pool and autoretry", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -116,6 +118,8 @@ func TestStackResource(t *testing.T) {
 	})
 
 	t.Run("with GitHub and vendor-specific configuration", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(vendorConfig string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -125,13 +129,13 @@ func TestStackResource(t *testing.T) {
 					before_init    = ["terraform fmt -check", "tflint"]
 					branch         = "master"
 					labels         = ["one", "two"]
-					name           = "Provider test stack"
+					name           = "Provider test stack %s"
 					project_root   = "root"
 					repository     = "demo"
 					runner_image   = "custom_image:runner"
 					%s
 				}
-			`, vendorConfig)
+			`, randomID, vendorConfig)
 		}
 
 		testSteps(t, []resource.TestStep{
@@ -139,7 +143,7 @@ func TestStackResource(t *testing.T) {
 				Config: config(``),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", Equals("provider-test-stack")),
+					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -161,7 +165,7 @@ func TestStackResource(t *testing.T) {
 					}`),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", Equals("provider-test-stack")),
+					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -188,7 +192,7 @@ func TestStackResource(t *testing.T) {
 					}`),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", Equals("provider-test-stack")),
+					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -212,7 +216,7 @@ func TestStackResource(t *testing.T) {
 				Config: config(``),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("id", Equals("provider-test-stack")),
+					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
@@ -227,6 +231,62 @@ func TestStackResource(t *testing.T) {
 					Attribute("runner_image", Equals("custom_image:runner")),
 					Attribute("cloudformation.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("unsetting fields", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		before := fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				administrative = true
+				autodeploy     = true
+				before_init    = ["terraform fmt -check", "tflint"]
+				branch         = "master"
+				description    = "bacon"
+				labels         = ["one", "two"]
+				name           = "Provider test stack %s"
+				project_root   = "root"
+				repository     = "demo"
+				runner_image   = "custom_image:runner"
+			}
+		`, randomID)
+
+		after := fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch         = "master"
+				name           = "Provider test stack %s"
+				repository     = "demo"
+			}
+		`, randomID)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: before,
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("administrative", Equals("true")),
+					Attribute("autodeploy", Equals("true")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("description", Equals("bacon")),
+					SetEquals("labels", "one", "two"),
+					Attribute("project_root", Equals("root")),
+					Attribute("runner_image", Equals("custom_image:runner")),
+				),
+			},
+			{
+				Config: after,
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("administrative", Equals("false")),
+					Attribute("autodeploy", Equals("false")),
+					Attribute("before_init.#", Equals("0")),
+					Attribute("description", IsEmpty()),
+					Attribute("labels.#", Equals("0")),
+					Attribute("project_root", IsEmpty()),
+					Attribute("runner_image", IsEmpty()),
 				),
 			},
 		})

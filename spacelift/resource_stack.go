@@ -336,7 +336,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Repository:     toString(d.Get("repository")),
 	}
 
-	var beforeInits []graphql.String
+	beforeInits := []graphql.String{}
 	if commands, ok := d.GetOk("before_init"); ok {
 		for _, cmd := range commands.([]interface{}) {
 			beforeInits = append(beforeInits, graphql.String(cmd.(string)))
