@@ -52,7 +52,7 @@ func resourceMountedFile() *schema.Resource {
 			},
 			"relative_path": {
 				Type:        schema.TypeString,
-				Description: "Relative path to the mounted file, without the /spacelift/project/ prefix",
+				Description: "Relative path to the mounted file, without the /mnt/workspace/ prefix",
 				Required:    true,
 				ForceNew:    true,
 			},
