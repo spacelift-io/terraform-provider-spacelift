@@ -568,7 +568,7 @@ data "spacelift_mounted_file" "core-kubeconfig" {
 
 The following arguments are supported:
 
-- `relative_path` - (Required) - Relative path to the mounted file. The full (absolute) path to the file will be prefixed with `/spacelift/project/`;
+- `relative_path` - (Required) - Relative path to the mounted file. The full (absolute) path to the file will be prefixed with `/mnt/workspace/`;
 - `context_id` - (Optional) - ID of the context on which the environment variable is defined;
 - `module_id` - (Optional) - ID of the module on which the environment variable is defined;
 - `stack_id` - (Optional) - ID of the stack on which the environment variable is defined;
@@ -622,7 +622,7 @@ resource "spacelift_mounted_file" "core-kubeconfig" {
 The following arguments are supported:
 
 - `content` - (Required) - Content of the mounted file encoded using Base-64;
-- `relative_path` - (Required) - Relative path to the mounted file, without the `/spacelift/project/` prefix;
+- `relative_path` - (Required) - Relative path to the mounted file, without the `/mnt/workspace/` prefix;
 - `context_id` - (Optional) - ID of the context on which the mounted file is defined;
 - `module_id` - (Optional) - ID of the module on which the mounted file is defined;
 - `stack_id` - (Optional) - ID of the stack on which the mounted file is defined;
