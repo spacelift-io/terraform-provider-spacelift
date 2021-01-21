@@ -420,7 +420,9 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
-		ret.TerraformVersion = toOptionalString(terraformVersion)
+		ret.VendorConfig = &structs.VendorConfigInput{Terraform: &structs.TerraformInput{
+			Version: toOptionalString(terraformVersion),
+		}}
 	}
 
 	if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
