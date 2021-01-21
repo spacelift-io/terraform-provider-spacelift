@@ -176,6 +176,7 @@ func resourceStack() *schema.Resource {
 				ConflictsWith: []string{"cloudformation", "pulumi", "terraform_version"},
 				Description:   "Terraform-specific configuration. Presence means this Stack is a Terraform Stack.",
 				Optional:      true,
+				Computed:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
