@@ -146,6 +146,25 @@ func dataStack() *schema.Resource {
 				Description: "ID (slug) of the stack",
 				Required:    true,
 			},
+			"terraform": {
+				Type:        schema.TypeList,
+				Description: "Terraform-specific configuration. Presence means this Stack is a Terraform Stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"version": {
+							Type:        schema.TypeString,
+							Description: "Terraform version to be used by the Stack",
+							Computed:    true,
+						},
+						"workspace": {
+							Type:        schema.TypeString,
+							Description: "Workspace to select before performing Terraform operations",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"terraform_version": {
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
@@ -207,7 +226,8 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
-	if stack.VendorConfig.Typename == structs.StackConfigVendorCloudFormation {
+	switch stack.VendorConfig.Typename {
+	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
 			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
@@ -216,13 +236,20 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.Set("cloudformation", []interface{}{m})
-	} else if stack.VendorConfig.Typename == structs.StackConfigVendorPulumi {
+	case structs.StackConfigVendorPulumi:
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
 			"stack_name": stack.VendorConfig.Pulumi.StackName,
 		}
 
 		d.Set("pulumi", []interface{}{m})
+	default:
+		m := map[string]interface{}{
+			"version":   stack.VendorConfig.Terraform.Version,
+			"workspace": stack.VendorConfig.Terraform.Workspace,
+		}
+
+		d.Set("terraform", []interface{}{m})
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
