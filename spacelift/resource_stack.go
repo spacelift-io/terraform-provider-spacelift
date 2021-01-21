@@ -183,6 +183,7 @@ func resourceStack() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "Terraform version to be used by the Stack",
 							Optional:    true,
+							Computed:    true,
 						},
 						"workspace": {
 							Type:        schema.TypeString,
@@ -198,6 +199,7 @@ func resourceStack() *schema.Resource {
 				Deprecated:    `Please use the "terraform" block instead`,
 				Description:   "Terraform version to use",
 				Optional:      true,
+				Computed:      true,
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
