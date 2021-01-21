@@ -180,10 +180,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"version": {
-							Type:        schema.TypeString,
-							Description: "Terraform version to be used by the Stack",
-							Optional:    true,
-							Computed:    true,
+							Type:             schema.TypeString,
+							Description:      "Terraform version to be used by the Stack",
+							Optional:         true,
+							DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
 						},
 						"workspace": {
 							Type:        schema.TypeString,
@@ -194,12 +194,12 @@ func resourceStack() *schema.Resource {
 				},
 			},
 			"terraform_version": {
-				Type:          schema.TypeString,
-				ConflictsWith: []string{"terraform"},
-				Deprecated:    `Please use the "terraform" block instead`,
-				Description:   "Terraform version to use",
-				Optional:      true,
-				Computed:      true,
+				Type:             schema.TypeString,
+				ConflictsWith:    []string{"terraform"},
+				Deprecated:       `Please use the "terraform" block instead`,
+				Description:      "Terraform version to use",
+				Optional:         true,
+				DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
@@ -488,4 +488,8 @@ func uploadStateFile(content string, meta interface{}) (string, error) {
 	}
 
 	return mutation.StateUploadURL.ObjectID, nil
+}
+
+func onceTheVersionIsSetDoNotUnset(_, _, new string, _ *schema.ResourceData) bool {
+	return new == ""
 }
