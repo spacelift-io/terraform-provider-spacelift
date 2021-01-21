@@ -251,6 +251,10 @@ func TestStackResource(t *testing.T) {
 				project_root   = "root"
 				repository     = "demo"
 				runner_image   = "custom_image:runner"
+
+				terraform {
+					workspace = "bacon"
+				}
 			}
 		`, randomID)
 
@@ -274,6 +278,8 @@ func TestStackResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("project_root", Equals("root")),
 					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("terraform.#", Equals("1")),
+					Attribute("terraform.0.workspace", Equals("bacon")),
 				),
 			},
 			{
@@ -287,6 +293,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),
 					Attribute("runner_image", IsEmpty()),
+					Attribute("terraform.#", Equals("0")),
 				),
 			},
 		})

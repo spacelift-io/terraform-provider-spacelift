@@ -29,6 +29,10 @@ func TestStackData(t *testing.T) {
 				project_root   = "root"
 				repository     = "demo"
 				runner_image   = "custom_image:runner"
+				
+				terraform {
+					workspace = "bacon"
+				}
 			}
 
 			data "spacelift_stack" "test" {
@@ -51,6 +55,9 @@ func TestStackData(t *testing.T) {
 			Attribute("project_root", Equals("root")),
 			Attribute("repository", Equals("demo")),
 			Attribute("runner_image", Equals("custom_image:runner")),
+			Attribute("terraform.#", Equals("1")),
+			Attribute("terraform.0.version", IsEmpty()),
+			Attribute("terraform.0.workspace", Equals("bacon")),
 		),
 	}})
 }

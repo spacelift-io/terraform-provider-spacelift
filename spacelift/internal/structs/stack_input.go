@@ -15,10 +15,10 @@ type StackInput struct {
 	Namespace        *graphql.String    `json:"namespace"`
 	ProjectRoot      *graphql.String    `json:"projectRoot"`
 	Provider         *graphql.String    `json:"provider"`
-	VendorConfig     *VendorConfigInput `json:"vendorConfig"`
 	Repository       graphql.String     `json:"repository"`
 	RunnerImage      *graphql.String    `json:"runnerImage"`
 	TerraformVersion *graphql.String    `json:"terraformVersion"`
+	VendorConfig     *VendorConfigInput `json:"vendorConfig"`
 	WorkerPool       *graphql.ID        `json:"workerPool"`
 }
 
@@ -26,8 +26,7 @@ type StackInput struct {
 type VendorConfigInput struct {
 	CloudFormationInput *CloudFormationInput `json:"cloudFormation"`
 	Pulumi              *PulumiInput         `json:"pulumi"`
-	Terraform           *struct {
-	} `json:"terraform"`
+	Terraform           *TerraformInput      `json:"terraform"`
 }
 
 // CloudFormationInput represents CloudFormation-specific configuration.
@@ -42,4 +41,10 @@ type CloudFormationInput struct {
 type PulumiInput struct {
 	LoginURL  graphql.String `json:"loginURL"`
 	StackName graphql.String `json:"stackName"`
+}
+
+// TerraformInput represents Terraform-specific configuration.
+type TerraformInput struct {
+	Version   *graphql.String `json:"version"`
+	Workspace *graphql.String `json:"workspace"`
 }
