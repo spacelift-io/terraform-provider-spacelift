@@ -12,15 +12,13 @@ provider "spacelift" {}
 resource "spacelift_stack" "core-infra-production" {
   name = "Core Infrastructure (production)"
 
-  administrative    = true
-  autodeploy        = true
-  branch            = "master"
-  description       = "Shared production infrastructure (networking, k8s)"
-  repository        = "core-infra"
-
-  terraform {
-    version = "0.12.6"
-  }
+  administrative      = true
+  autodeploy          = true
+  branch              = "master"
+  description         = "Shared production infrastructure (networking, k8s)"
+  repository          = "core-infra"
+  terraform_version   = "0.12.6"
+  terraform_workspace = "workspace"
 }
 ```
 ## Terraform 0.13.x
@@ -894,10 +892,8 @@ The following arguments are supported:
   - `login_url` - (Required) - State backend to log in to.
   - `stack_name` - (Required) - Pulumi stack name to use in the backend (multiple stacks can use one state backend, provided they have different stack_name's).
 - `runner_image` - (Optional) - Name of the Docker image used to process Runs;
-- `terraform` - (Optional) - Terraform-specific configuration block. Sets the Stack vendor to Terraform if present:
-  - `version` - (Optional) - Terraform version to use;
-  - `workspace` - (Optional) - Workspace to select before performing Terraform operations;
 - `terraform_version` - (Optional) - Terraform version to use;
+- `terraform_workspace` - (Optional) - Workspace to select before performing Terraform operations;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
 #### Attributes reference

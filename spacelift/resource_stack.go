@@ -63,7 +63,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"pulumi", "terraform"},
+				ConflictsWith: []string{"pulumi", "terraform_version", "terraform_workspace"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -142,7 +142,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "terraform"},
+				ConflictsWith: []string{"cloudformation", "terraform_version", "terraform_workspace"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -171,36 +171,16 @@ func resourceStack() *schema.Resource {
 				Description: "Name of the Docker image used to process Runs",
 				Optional:    true,
 			},
-			"terraform": {
-				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "pulumi", "terraform_version"},
-				Description:   "Terraform-specific configuration. Presence means this Stack is a Terraform Stack.",
-				Optional:      true,
-				Computed:      true,
-				MaxItems:      1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"version": {
-							Type:             schema.TypeString,
-							Description:      "Terraform version to be used by the Stack",
-							Optional:         true,
-							DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
-						},
-						"workspace": {
-							Type:        schema.TypeString,
-							Description: "Workspace to select before performing Terraform operations",
-							Optional:    true,
-						},
-					},
-				},
-			},
 			"terraform_version": {
 				Type:             schema.TypeString,
-				ConflictsWith:    []string{"terraform"},
-				Deprecated:       `Please use the "terraform" block instead`,
 				Description:      "Terraform version to use",
 				Optional:         true,
 				DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
+			},
+			"terraform_workspace": {
+				Type:        schema.TypeString,
+				Description: "Terraform workspace to select",
+				Optional:    true,
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
@@ -273,7 +253,6 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("project_root", stack.ProjectRoot)
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
-	d.Set("terraform_version", stack.TerraformVersion)
 
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
@@ -308,24 +287,9 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.Set("pulumi", []interface{}{m})
-	case structs.StackConfigVendorTerraform:
-		version := stack.VendorConfig.Terraform.Version
-		workspace := stack.VendorConfig.Terraform.Workspace
-
-		// Corner case: we don't *require* the "terraform" block to be set, but
-		// it is perfectly valid to make it empty and since both of its members
-		// are optional and can come back as `nil`, we would unset the key
-		// someone has set explicitly.
-		if _, ok := d.GetOk("terraform"); ok || version != nil || workspace != nil {
-			d.Set("terraform", []interface{}{
-				map[string]interface{}{
-					"version":   version,
-					"workspace": workspace,
-				},
-			})
-		} else {
-			d.Set("terraform", nil)
-		}
+	default:
+		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
+		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
@@ -444,20 +408,18 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
 			},
 		}
-	} else if terraform, ok := d.Get("terraform").([]interface{}); ok && len(terraform) > 0 {
+	} else {
 		terraformConfig := &structs.TerraformInput{}
 
-		if version := terraform[0].(map[string]interface{})["version"]; version != nil && version.(string) != "" {
-			terraformConfig.Version = toOptionalString(version)
+		if terraformVersion, ok := d.GetOk("terraform_version"); ok {
+			terraformConfig.Version = toOptionalString(terraformVersion)
 		}
 
-		if workspace := terraform[0].(map[string]interface{})["workspace"]; workspace != nil && workspace.(string) != "" {
-			terraformConfig.Workspace = toOptionalString(workspace)
+		if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {
+			terraformConfig.Workspace = toOptionalString(terraformWorkspace)
 		}
 
 		ret.VendorConfig = &structs.VendorConfigInput{Terraform: terraformConfig}
-	} else {
-		ret.VendorConfig = &structs.VendorConfigInput{Terraform: &structs.TerraformInput{}}
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {

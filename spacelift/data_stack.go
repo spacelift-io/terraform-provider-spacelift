@@ -146,28 +146,14 @@ func dataStack() *schema.Resource {
 				Description: "ID (slug) of the stack",
 				Required:    true,
 			},
-			"terraform": {
-				Type:        schema.TypeList,
-				Description: "Terraform-specific configuration. Presence means this Stack is a Terraform Stack.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"version": {
-							Type:        schema.TypeString,
-							Description: "Terraform version to be used by the Stack",
-							Computed:    true,
-						},
-						"workspace": {
-							Type:        schema.TypeString,
-							Description: "Workspace to select before performing Terraform operations",
-							Computed:    true,
-						},
-					},
-				},
-			},
 			"terraform_version": {
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
+				Computed:    true,
+			},
+			"terraform_workspace": {
+				Type:        schema.TypeString,
+				Description: "Terraform workspace to select",
 				Computed:    true,
 			},
 			"worker_pool_id": {
@@ -244,12 +230,8 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 
 		d.Set("pulumi", []interface{}{m})
 	default:
-		m := map[string]interface{}{
-			"version":   stack.VendorConfig.Terraform.Version,
-			"workspace": stack.VendorConfig.Terraform.Workspace,
-		}
-
-		d.Set("terraform", []interface{}{m})
+		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
+		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
