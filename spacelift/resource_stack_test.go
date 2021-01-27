@@ -23,6 +23,7 @@ func TestStackResource(t *testing.T) {
 					autodeploy     = true
 					autoretry      = false
 					before_init    = ["terraform fmt -check", "tflint"]
+					before_apply   = ["ls -la", "rm -rf /"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
@@ -46,6 +47,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -72,6 +76,7 @@ func TestStackResource(t *testing.T) {
 					autodeploy     = true
 					autoretry      = true
 					before_init    = ["terraform fmt -check", "tflint"]
+					before_apply   = ["ls -la", "rm -rf /"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
@@ -101,6 +106,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -127,6 +135,7 @@ func TestStackResource(t *testing.T) {
 					autodeploy     = true
 					autoretry      = false
 					before_init    = ["terraform fmt -check", "tflint"]
+					before_apply   = ["ls -la", "rm -rf /"]
 					branch         = "master"
 					labels         = ["one", "two"]
 					name           = "Provider test stack %s"
@@ -150,6 +159,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -172,6 +184,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -199,6 +214,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -223,6 +241,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -244,6 +265,7 @@ func TestStackResource(t *testing.T) {
 				administrative      = true
 				autodeploy          = true
 				before_init         = ["terraform fmt -check", "tflint"]
+				before_apply        = ["ls -la", "rm -rf /"]
 				branch              = "master"
 				description         = "bacon"
 				labels              = ["one", "two"]
@@ -272,6 +294,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("before_init.#", Equals("2")),
+					Attribute("before_apply.#", Equals("2")),
 					Attribute("description", Equals("bacon")),
 					SetEquals("labels", "one", "two"),
 					Attribute("project_root", Equals("root")),
@@ -287,6 +310,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("administrative", Equals("false")),
 					Attribute("autodeploy", Equals("false")),
 					Attribute("before_init.#", Equals("0")),
+					Attribute("before_apply.#", Equals("0")),
 					Attribute("description", IsEmpty()),
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),

@@ -15,6 +15,7 @@ type Stack struct {
 	Administrative bool     `graphql:"administrative"`
 	Autodeploy     bool     `graphql:"autodeploy"`
 	Autoretry      bool     `graphql:"autoretry"`
+	BeforeApply    []string `graphql:"beforeApply"`
 	BeforeInit     []string `graphql:"beforeInit"`
 	Branch         string   `graphql:"branch"`
 	Description    *string  `graphql:"description"`

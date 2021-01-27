@@ -33,6 +33,12 @@ func dataStack() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"before_apply": {
+				Type:        schema.TypeList,
+				Description: "List of before-apply scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
 			"before_init": {
 				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
@@ -186,6 +192,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("before_apply", stack.BeforeApply)
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)

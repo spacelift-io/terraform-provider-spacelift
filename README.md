@@ -883,6 +883,7 @@ The following arguments are supported:
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `autodeploy` - (Optional) - Indicates whether changes to this stack can be automatically deployed. Default: `false`;
 - `before_init` - (Optional) - List of before-init scripts;
+- `before_apply` - (Optional) - List of before-apply scripts;
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `import_state` - (Optional) - Content of the state file to import if Spacelift should manage the stack but the state has already been created externally. This only applies during creation and the field can be deleted afterwards without triggering a resource change;
 - `labels` - (Optional) - List of labels to set on the Stack;
