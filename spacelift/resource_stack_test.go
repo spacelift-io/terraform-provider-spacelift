@@ -241,16 +241,18 @@ func TestStackResource(t *testing.T) {
 
 		before := fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
-				administrative = true
-				autodeploy     = true
-				before_init    = ["terraform fmt -check", "tflint"]
-				branch         = "master"
-				description    = "bacon"
-				labels         = ["one", "two"]
-				name           = "Provider test stack %s"
-				project_root   = "root"
-				repository     = "demo"
-				runner_image   = "custom_image:runner"
+				administrative      = true
+				autodeploy          = true
+				before_init         = ["terraform fmt -check", "tflint"]
+				branch              = "master"
+				description         = "bacon"
+				labels              = ["one", "two"]
+				name                = "Provider test stack %s"
+				project_root        = "root"
+				repository          = "demo"
+				runner_image        = "custom_image:runner"
+				terraform_version   = "0.12.5"
+				terraform_workspace = "bacon"
 			}
 		`, randomID)
 
@@ -274,6 +276,8 @@ func TestStackResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("project_root", Equals("root")),
 					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("terraform_version", Equals("0.12.5")),
+					Attribute("terraform_workspace", Equals("bacon")),
 				),
 			},
 			{
@@ -287,6 +291,8 @@ func TestStackResource(t *testing.T) {
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),
 					Attribute("runner_image", IsEmpty()),
+					Attribute("terraform_version", Equals("0.12.5")),
+					Attribute("terraform_workspace", IsEmpty()),
 				),
 			},
 		})

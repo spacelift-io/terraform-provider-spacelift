@@ -18,17 +18,18 @@ func TestStackData(t *testing.T) {
 	testSteps(t, []resource.TestStep{{
 		Config: fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
-				administrative = true
-				autodeploy     = true
-				autoretry      = false
-				before_init    = ["terraform fmt -check", "tflint"]
-				branch         = "master"
-				description    = "description"
-				labels         = ["one", "two"]
-				name           = "Test stack %s"
-				project_root   = "root"
-				repository     = "demo"
-				runner_image   = "custom_image:runner"
+				administrative      = true
+				autodeploy          = true
+				autoretry           = false
+				before_init         = ["terraform fmt -check", "tflint"]
+				branch              = "master"
+				description         = "description"
+				labels              = ["one", "two"]
+				name                = "Test stack %s"
+				project_root        = "root"
+				repository          = "demo"
+				runner_image        = "custom_image:runner"
+				terraform_workspace = "bacon"
 			}
 
 			data "spacelift_stack" "test" {
@@ -51,6 +52,7 @@ func TestStackData(t *testing.T) {
 			Attribute("project_root", Equals("root")),
 			Attribute("repository", Equals("demo")),
 			Attribute("runner_image", Equals("custom_image:runner")),
+			Attribute("terraform_workspace", Equals("bacon")),
 		),
 	}})
 }

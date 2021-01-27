@@ -151,6 +151,11 @@ func dataStack() *schema.Resource {
 				Description: "Terraform version to use",
 				Computed:    true,
 			},
+			"terraform_workspace": {
+				Type:        schema.TypeString,
+				Description: "Terraform workspace to select",
+				Computed:    true,
+			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool to use",
@@ -207,7 +212,8 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
-	if stack.VendorConfig.Typename == structs.StackConfigVendorCloudFormation {
+	switch stack.VendorConfig.Typename {
+	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
 			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
@@ -216,13 +222,16 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		d.Set("cloudformation", []interface{}{m})
-	} else if stack.VendorConfig.Typename == structs.StackConfigVendorPulumi {
+	case structs.StackConfigVendorPulumi:
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
 			"stack_name": stack.VendorConfig.Pulumi.StackName,
 		}
 
 		d.Set("pulumi", []interface{}{m})
+	default:
+		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
+		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {

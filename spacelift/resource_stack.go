@@ -63,7 +63,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"pulumi"},
+				ConflictsWith: []string{"pulumi", "terraform_version", "terraform_workspace"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -142,7 +142,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation"},
+				ConflictsWith: []string{"cloudformation", "terraform_version", "terraform_workspace"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -172,8 +172,14 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 			},
 			"terraform_version": {
+				Type:             schema.TypeString,
+				Description:      "Terraform version to use",
+				Optional:         true,
+				DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
+			},
+			"terraform_workspace": {
 				Type:        schema.TypeString,
-				Description: "Terraform version to use",
+				Description: "Terraform workspace to select",
 				Optional:    true,
 			},
 			"worker_pool_id": {
@@ -247,7 +253,6 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("project_root", stack.ProjectRoot)
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
-	d.Set("terraform_version", stack.TerraformVersion)
 
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
@@ -265,22 +270,26 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	d.Set("labels", labels)
 
-	if stack.VendorConfig.Typename == structs.StackConfigVendorCloudFormation {
+	switch stack.VendorConfig.Typename {
+	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
 			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
-			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
 			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
+			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
 		}
 
 		d.Set("cloudformation", []interface{}{m})
-	} else if stack.VendorConfig.Typename == structs.StackConfigVendorPulumi {
+	case structs.StackConfigVendorPulumi:
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
 			"stack_name": stack.VendorConfig.Pulumi.StackName,
 		}
 
 		d.Set("pulumi", []interface{}{m})
+	default:
+		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
+		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
@@ -378,7 +387,9 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
-		ret.TerraformVersion = toOptionalString(terraformVersion)
+		ret.VendorConfig = &structs.VendorConfigInput{Terraform: &structs.TerraformInput{
+			Version: toOptionalString(terraformVersion),
+		}}
 	}
 
 	if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
@@ -398,9 +409,17 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			},
 		}
 	} else {
-		ret.VendorConfig = &structs.VendorConfigInput{
-			Terraform: &struct{}{},
+		terraformConfig := &structs.TerraformInput{}
+
+		if terraformVersion, ok := d.GetOk("terraform_version"); ok {
+			terraformConfig.Version = toOptionalString(terraformVersion)
 		}
+
+		if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {
+			terraformConfig.Workspace = toOptionalString(terraformWorkspace)
+		}
+
+		ret.VendorConfig = &structs.VendorConfigInput{Terraform: terraformConfig}
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
@@ -432,4 +451,8 @@ func uploadStateFile(content string, meta interface{}) (string, error) {
 	}
 
 	return mutation.StateUploadURL.ObjectID, nil
+}
+
+func onceTheVersionIsSetDoNotUnset(_, _, new string, _ *schema.ResourceData) bool {
+	return new == ""
 }
