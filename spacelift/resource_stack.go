@@ -50,6 +50,12 @@ func resourceStack() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"before_apply": {
+				Type:        schema.TypeList,
+				Description: "List of before-apply scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"before_init": {
 				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
@@ -245,6 +251,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("before_apply", stack.BeforeApply)
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
@@ -344,6 +351,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Name:           toString(d.Get("name")),
 		Repository:     toString(d.Get("repository")),
 	}
+
+	beforeApplies := []graphql.String{}
+	if commands, ok := d.GetOk("before_apply"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			beforeApplies = append(beforeApplies, graphql.String(cmd.(string)))
+		}
+	}
+	ret.BeforeApply = &beforeApplies
 
 	beforeInits := []graphql.String{}
 	if commands, ok := d.GetOk("before_init"); ok {
