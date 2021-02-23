@@ -37,6 +37,11 @@ func dataAWSRole() *schema.Resource {
 				Description: "ID of the stack which assumes the AWS IAM role",
 				Optional:    true,
 			},
+			"generate_credentials_in_worker": {
+				Type:        schema.TypeBool,
+				Description: "Generate AWS credentials will in the private worker",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -77,6 +82,7 @@ func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(moduleID.(string))
+	d.Set("generate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
 
 	return nil
 }
@@ -105,6 +111,7 @@ func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(stackID.(string))
+	d.Set("generate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
 
 	return nil
 }

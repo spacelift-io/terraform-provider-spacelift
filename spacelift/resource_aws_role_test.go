@@ -71,4 +71,54 @@ func TestAWSRoleResource(t *testing.T) {
 			),
 		}})
 	})
+
+	t.Run("with generating AWS creds in the worker for stack", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{{
+			Config: `
+				resource "spacelift_stack" "test" {
+					branch     = "master"
+					repository = "demo"
+					name       = "Test stack custom AWS"
+				}
+
+				resource "spacelift_aws_role" "test" {
+					stack_id = spacelift_stack.test.id
+					role_arn = "custom_role_arn"
+				}
+			`,
+			Check: Resource(
+				"spacelift_aws_role.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("stack_id", Equals("test-stack-custom-aws")),
+				Attribute("role_arn", Equals("custom_role_arn")),
+				Attribute("generate_credentials_in_worker", Equals("true")),
+				AttributeNotPresent("module_id"),
+			),
+		}})
+	})
+
+	t.Run("with generating AWS creds in the worker for module", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{{
+			Config: `
+				resource "spacelift_module" "test" {
+					branch     = "master"
+					repository = "terraform-bacon-tasty"
+				}
+
+				resource "spacelift_aws_role" "test" {
+					module_id                      = spacelift_module.test.id
+					role_arn                       = "custom_role_arn"
+					generate_credentials_in_worker = true
+				}
+			`,
+			Check: Resource(
+				"spacelift_aws_role.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("generate_credentials_in_worker", Equals("true")),
+				Attribute("generate_credentials_in_worker", Equals("true")),
+				AttributeNotPresent("stack_id"),
+			),
+		}})
+	})
 }

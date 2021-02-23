@@ -51,6 +51,12 @@ func resourceAWSRole() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"generate_credentials_in_worker": {
+				Type:        schema.TypeBool,
+				Description: "Generate AWS credentials will in the private worker",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -59,6 +65,7 @@ func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	var ID string
 
 	roleARN := d.Get("role_arn").(string)
+	generateCredentialsInWorker := d.Get("generate_credentials_in_worker").(bool)
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
@@ -71,7 +78,7 @@ func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	var err error
 
 	for i := 0; i < 5; i++ {
-		err = resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN)
+		err = resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN, generateCredentialsInWorker)
 		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
 			break
 		}
@@ -123,6 +130,8 @@ func resourceModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("role_arn", nil)
 	}
 
+	d.Set("genereate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
+
 	return nil
 }
 
@@ -148,12 +157,16 @@ func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		d.Set("role_arn", nil)
 	}
 
+	d.Set("genereate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
+
 	return nil
 }
 
 func resourceAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 	var ID string
+
 	roleARN := d.Get("role_arn").(string)
+	generateCredentialsInWorker := d.Get("generate_credentials_in_worker").(bool)
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
@@ -165,7 +178,7 @@ func resourceAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	var acc multierror.Accumulator
 
-	acc.Push(errors.Wrap(resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN), "could not update AWS role delegation"))
+	acc.Push(errors.Wrap(resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN, generateCredentialsInWorker), "could not update AWS role delegation"))
 	acc.Push(errors.Wrap(resourceAWSRoleRead(d, meta), "could not read the current state"))
 
 	return acc.Error()
@@ -200,16 +213,17 @@ func resourceAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceAWSRoleSet(client *internal.Client, ID, roleARN string) error {
+func resourceAWSRoleSet(client *internal.Client, ID, roleARN string, generateCredentialsInWorker bool) error {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
-		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn)"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":      toID(ID),
-		"roleArn": graphql.String(roleARN),
+		"id":                          toID(ID),
+		"roleArn":                     graphql.String(roleARN),
+		"generateCredentialsInWorker": graphql.Boolean(generateCredentialsInWorker),
 	}
 
 	if err := client.Mutate(&mutation, variables); err != nil {
