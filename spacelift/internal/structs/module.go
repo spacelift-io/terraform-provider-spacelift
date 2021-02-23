@@ -8,8 +8,9 @@ type Module struct {
 	Description    *string `graphql:"description"`
 	Integrations   struct {
 		AWS struct {
-			AssumedRoleARN            *string `graphql:"assumedRoleArn"`
-			AssumeRolePolicyStatement string  `graphql:"assumeRolePolicyStatement"`
+			AssumedRoleARN              *string `graphql:"assumedRoleArn"`
+			AssumeRolePolicyStatement   string  `graphql:"assumeRolePolicyStatement"`
+			GenerateCredentialsInWorker bool    `graphql:"generateCredentialsInWorker"`
 		} `graphql:"aws"`
 		GCP struct {
 			ServiceAccountEmail *string  `graphql:"serviceAccountEmail"`
