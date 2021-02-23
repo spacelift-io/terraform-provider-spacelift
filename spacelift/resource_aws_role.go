@@ -53,7 +53,7 @@ func resourceAWSRole() *schema.Resource {
 			},
 			"generate_credentials_in_worker": {
 				Type:        schema.TypeBool,
-				Description: "Generate AWS credentials will in the private worker",
+				Description: "Generate AWS credentials in the private worker",
 				Optional:    true,
 				Default:     false,
 			},

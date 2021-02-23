@@ -37,6 +37,7 @@ func TestAWSRoleResource(t *testing.T) {
 					Attribute("id", IsNotEmpty()),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+					Attribute("generate_credentials_in_worker", Equals("false")),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -67,6 +68,7 @@ func TestAWSRoleResource(t *testing.T) {
 				"spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
@@ -82,8 +84,9 @@ func TestAWSRoleResource(t *testing.T) {
 				}
 
 				resource "spacelift_aws_role" "test" {
-					stack_id = spacelift_stack.test.id
-					role_arn = "custom_role_arn"
+					stack_id                       = spacelift_stack.test.id
+					role_arn                       = "custom_role_arn"
+					generate_credentials_in_worker = true
 				}
 			`,
 			Check: Resource(
@@ -115,7 +118,6 @@ func TestAWSRoleResource(t *testing.T) {
 				"spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("module_id", Equals("terraform-bacon-tasty")),
-				Attribute("generate_credentials_in_worker", Equals("true")),
 				Attribute("generate_credentials_in_worker", Equals("true")),
 				AttributeNotPresent("stack_id"),
 			),
