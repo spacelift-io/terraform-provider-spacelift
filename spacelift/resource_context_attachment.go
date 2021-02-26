@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -16,9 +17,9 @@ import (
 
 func resourceContextAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceContextAttachmentCreate,
-		Read:   resourceContextAttachmentRead,
-		Delete: resourceContextAttachmentDelete,
+		CreateContext: resourceContextAttachmentCreate,
+		ReadContext:   resourceContextAttachmentRead,
+		DeleteContext: resourceContextAttachmentDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceContextAttachmentImport,
@@ -32,11 +33,11 @@ func resourceContextAttachment() *schema.Resource {
 				ForceNew:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module to attach the context to",
-				ConflictsWith: []string{"stack_id"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the module to attach the context to",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"priority": {
 				Type:        schema.TypeInt,
@@ -46,17 +47,16 @@ func resourceContextAttachment() *schema.Resource {
 				ForceNew:    true,
 			},
 			"stack_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the stack to attach the context to",
-				ConflictsWith: []string{"module_id"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the stack to attach the context to",
+				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
 }
 
-func resourceContextAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		AttachContext structs.ContextAttachment `graphql:"contextAttach(id: $id, stack: $stack, priority: $priority)"`
 	}
@@ -70,34 +70,31 @@ func resourceContextAttachmentCreate(d *schema.ResourceData, meta interface{}) e
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		variables["stack"] = toID(stackID)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		variables["stack"] = toID(moduleID)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		variables["stack"] = toID(d.Get("module_id"))
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not attach context")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not attach context: %v", err)
 	}
 
 	d.SetId(path.Join(contextID, mutation.AttachContext.ID))
+
 	return nil
 }
 
-func resourceContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func resourceContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	contextID := d.Get("context_id").(string)
 	var projectID string
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		projectID = stackID.(string)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		projectID = moduleID.(string)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		projectID = d.Get("module_id").(string)
 	}
 
-	if attachment, err := resourceContextAttachmentFetch(contextID, projectID, meta); err != nil {
-		return err
+	if attachment, err := resourceContextAttachmentFetch(ctx, contextID, projectID, meta); err != nil {
+		return diag.FromErr(err)
 	} else if attachment == nil {
 		d.SetId("")
 	} else {
@@ -107,10 +104,10 @@ func resourceContextAttachmentRead(d *schema.ResourceData, meta interface{}) err
 	return nil
 }
 
-func resourceContextAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	idParts := strings.Split(d.Id(), "/")
 	if len(idParts) != 2 {
-		return errors.Errorf("unexpected ID: %s", d.Id())
+		return diag.Errorf("unexpected ID: %s", d.Id())
 	}
 
 	var mutation struct {
@@ -119,15 +116,16 @@ func resourceContextAttachmentDelete(d *schema.ResourceData, meta interface{}) e
 
 	variables := map[string]interface{}{"id": toID(idParts[1])}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not detach context")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not detach context: %v", err)
 	}
 
 	d.SetId("")
+
 	return nil
 }
 
-func resourceContextAttachmentImport(_ context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceContextAttachmentImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
 	input := d.Id()
 
 	parts := strings.Split(input, "/")
@@ -137,7 +135,7 @@ func resourceContextAttachmentImport(_ context.Context, d *schema.ResourceData, 
 
 	contextID, projectID := parts[0], parts[1]
 
-	attachment, err := resourceContextAttachmentFetch(contextID, projectID, meta)
+	attachment, err := resourceContextAttachmentFetch(ctx, contextID, projectID, meta)
 	if err != nil {
 		return nil, err
 	} else if attachment == nil {
@@ -156,7 +154,7 @@ func resourceContextAttachmentImport(_ context.Context, d *schema.ResourceData, 
 	return []*schema.ResourceData{d}, nil
 }
 
-func resourceContextAttachmentFetch(contextID, projectID string, meta interface{}) (*structs.ContextAttachment, error) {
+func resourceContextAttachmentFetch(ctx context.Context, contextID, projectID string, meta interface{}) (*structs.ContextAttachment, error) {
 	var query struct {
 		Context *struct {
 			Attachment *structs.ContextAttachment `graphql:"attachedStack(id: $project)"`
@@ -168,7 +166,7 @@ func resourceContextAttachmentFetch(contextID, projectID string, meta interface{
 		"project": toID(projectID),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for context attachment")
 	}
 

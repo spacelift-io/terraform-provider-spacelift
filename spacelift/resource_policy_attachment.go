@@ -6,6 +6,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -16,10 +17,10 @@ import (
 
 func resourcePolicyAttachment() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePolicyAttachmentCreate,
-		Read:   resourcePolicyAttachmentRead,
-		Update: resourcePolicyAttachmentUpdate,
-		Delete: resourcePolicyAttachmentDelete,
+		CreateContext: resourcePolicyAttachmentCreate,
+		ReadContext:   resourcePolicyAttachmentRead,
+		UpdateContext: resourcePolicyAttachmentUpdate,
+		DeleteContext: resourcePolicyAttachmentDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: resourcePolicyAttachmentImport,
@@ -33,11 +34,11 @@ func resourcePolicyAttachment() *schema.Resource {
 				ForceNew:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module to attach the policy to",
-				ConflictsWith: []string{"stack_id"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the module to attach the policy to",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,
@@ -54,29 +55,25 @@ func resourcePolicyAttachment() *schema.Resource {
 	}
 }
 
-func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		AttachPolicy structs.PolicyAttachment `graphql:"policyAttach(id: $id, stack: $stack, customInput: $customInput)"`
 	}
 
 	policyID := d.Get("policy_id").(string)
 
-	variables := map[string]interface{}{
-		"id": toID(policyID),
-	}
+	variables := map[string]interface{}{"id": toID(policyID)}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		variables["stack"] = toID(stackID)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		variables["stack"] = toID(moduleID)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		variables["stack"] = toID(d.Get("module_id"))
 	}
 
 	resourcePolicyAttachmentSetCustomInput(d, variables)
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not attach policy")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not attach policy: %v", err)
 	}
 
 	d.SetId(path.Join(policyID, mutation.AttachPolicy.ID))
@@ -84,20 +81,19 @@ func resourcePolicyAttachmentCreate(d *schema.ResourceData, meta interface{}) er
 	return nil
 }
 
-func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	policyID := d.Get("policy_id").(string)
+
 	var projectID string
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		projectID = stackID.(string)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		projectID = moduleID.(string)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		projectID = d.Get("module_id").(string)
 	}
 
-	if attachment, err := resourcePolicyAttachmentFetch(policyID, projectID, meta); err != nil {
-		return err
+	if attachment, err := resourcePolicyAttachmentFetch(ctx, policyID, projectID, meta); err != nil {
+		return diag.FromErr(err)
 	} else if attachment == nil {
 		d.SetId("")
 	} else if attachment.CustomInput != nil {
@@ -109,10 +105,10 @@ func resourcePolicyAttachmentRead(d *schema.ResourceData, meta interface{}) erro
 	return nil
 }
 
-func resourcePolicyAttachmentUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	variables, err := resourcePolicyAttachmentVariables(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	resourcePolicyAttachmentSetCustomInput(d, variables)
@@ -121,25 +117,27 @@ func resourcePolicyAttachmentUpdate(d *schema.ResourceData, meta interface{}) er
 		UpdateAttachment structs.PolicyAttachment `graphql:"policyAttachmentUpdate(id: $id, customInput: $customInput)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not update policy attachment")
+	var ret diag.Diagnostics
+
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		ret = diag.Errorf("could not update policy attachment: %v", err)
 	}
 
-	return resourcePolicyAttachmentRead(d, meta)
+	return append(ret, resourcePolicyAttachmentRead(ctx, d, meta)...)
 }
 
-func resourcePolicyAttachmentDelete(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	variables, err := resourcePolicyAttachmentVariables(d)
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	var mutation struct {
 		DetachPolicy *structs.PolicyAttachment `graphql:"policyDetach(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not detach policy")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not detach policy: %v", err)
 	}
 
 	d.SetId("")
@@ -157,7 +155,7 @@ func resourcePolicyAttachmentImport(ctx context.Context, d *schema.ResourceData,
 
 	policyID, projectID := parts[0], parts[1]
 
-	attachment, err := resourcePolicyAttachmentFetch(policyID, projectID, meta)
+	attachment, err := resourcePolicyAttachmentFetch(ctx, policyID, projectID, meta)
 	if err != nil {
 		return nil, err
 	} else if attachment == nil {
@@ -193,7 +191,7 @@ func resourcePolicyAttachmentSetCustomInput(d *schema.ResourceData, variables ma
 	}
 }
 
-func resourcePolicyAttachmentFetch(policyID, projectID string, meta interface{}) (*structs.PolicyAttachment, error) {
+func resourcePolicyAttachmentFetch(ctx context.Context, policyID, projectID string, meta interface{}) (*structs.PolicyAttachment, error) {
 	var query struct {
 		Policy *struct {
 			Attachment *structs.PolicyAttachment `graphql:"attachedStack(id: $id)"`
@@ -205,7 +203,7 @@ func resourcePolicyAttachmentFetch(policyID, projectID string, meta interface{})
 		"id":     toID(projectID),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for policy attachment")
 	}
 

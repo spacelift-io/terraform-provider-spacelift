@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataContext() *schema.Resource {
 	return &schema.Resource{
-		Read: dataContextRead,
+		ReadContext: dataContextRead,
 
 		Schema: map[string]*schema.Schema{
 			"context_id": {
@@ -32,19 +34,19 @@ func dataContext() *schema.Resource {
 	}
 }
 
-func dataContextRead(d *schema.ResourceData, meta interface{}) error {
+func dataContextRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Context *structs.Context `graphql:"context(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Get("context_id"))}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for context")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for context: %v", err)
 	}
 
 	context := query.Context
 	if context == nil {
-		return errors.New("context not found")
+		return diag.Errorf("context not found")
 	}
 
 	d.SetId(context.ID)

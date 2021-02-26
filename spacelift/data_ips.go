@@ -1,15 +1,17 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
 func dataIPs() *schema.Resource {
 	return &schema.Resource{
-		Read: ipsRead,
+		ReadContext: ipsRead,
 		Schema: map[string]*schema.Schema{
 			"ips": {
 				Type:        schema.TypeSet,
@@ -21,16 +23,16 @@ func dataIPs() *schema.Resource {
 	}
 }
 
-func ipsRead(d *schema.ResourceData, meta interface{}) error {
+func ipsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId("spacelift-ips")
 
 	var query struct {
 		IPs []string `graphql:"outgoingIPAddresses"`
 	}
 
-	if err := meta.(*internal.Client).Query(&query, nil); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, &query, nil); err != nil {
 		d.SetId("")
-		return errors.Wrap(err, "could not query for outgoing IP addresses")
+		return diag.Errorf("could not query for outgoing IP addresses: %v", err)
 	}
 
 	ips := schema.NewSet(schema.HashString, []interface{}{})

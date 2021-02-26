@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataContextAttachment() *schema.Resource {
 	return &schema.Resource{
-		Read: dataContextAttachmentRead,
+		ReadContext: dataContextAttachmentRead,
 
 		Schema: map[string]*schema.Schema{
 			"context_id": {
@@ -19,10 +21,10 @@ func dataContextAttachment() *schema.Resource {
 				Required:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the attached module",
-				ConflictsWith: []string{"stack_id"},
-				Optional:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the attached module",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
 			},
 			"priority": {
 				Type:        schema.TypeInt,
@@ -30,16 +32,15 @@ func dataContextAttachment() *schema.Resource {
 				Computed:    true,
 			},
 			"stack_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the attached stack",
-				ConflictsWith: []string{"module_id"},
-				Optional:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the attached stack",
+				Optional:    true,
 			},
 		},
 	}
 }
 
-func dataContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
+func dataContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	variables := map[string]interface{}{
 		"context": toID(d.Get("context_id").(string)),
 	}
@@ -49,7 +50,7 @@ func dataContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 	} else if ID, ok := d.GetOk("stack_id"); ok {
 		variables["id"] = toID(ID.(string))
 	} else {
-		return errors.Errorf("either module_id or stack_id must be present")
+		return diag.Errorf("either module_id or stack_id must be present")
 	}
 
 	var query struct {
@@ -58,19 +59,19 @@ func dataContextAttachmentRead(d *schema.ResourceData, meta interface{}) error {
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
 		d.SetId("")
-		return errors.Wrap(err, "could not query for context attachment")
+		return diag.Errorf("could not query for context attachment: %v", err)
 	}
 
 	if query.Context == nil {
 		d.SetId("")
-		return errors.New("context not found")
+		return diag.Errorf("context not found")
 	}
 
 	if query.Context.Attachment == nil {
 		d.SetId("")
-		return errors.New("context attachment not found")
+		return diag.Errorf("context attachment not found")
 	}
 
 	attachment := query.Context.Attachment

@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -9,9 +10,8 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 
-	"github.com/fluxio/multierror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -20,10 +20,10 @@ import (
 
 func resourceWorkerPool() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceWorkerPoolCreate,
-		Read:   resourceWorkerPoolRead,
-		Update: resourceWorkerPoolUpdate,
-		Delete: resourceWorkerPoolDelete,
+		CreateContext: resourceWorkerPoolCreate,
+		ReadContext:   resourceWorkerPoolRead,
+		UpdateContext: resourceWorkerPoolUpdate,
+		DeleteContext: resourceWorkerPoolDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -63,7 +63,7 @@ func resourceWorkerPool() *schema.Resource {
 	}
 }
 
-func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	name := d.Get("name").(string)
 
 	var mutation struct {
@@ -84,7 +84,7 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	} else {
 		privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 		if err != nil {
-			return errors.Wrap(err, "couldn't generate private key")
+			return diag.Errorf("couldn't generate private key: %v", err)
 		}
 
 		subj := pkix.Name{
@@ -93,7 +93,7 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 		asn1Subj, err := asn1.Marshal(subj.ToRDNSequence())
 		if err != nil {
-			return errors.Wrap(err, "couldn't marshal certificate subject")
+			return diag.Errorf("couldn't marshal certificate subject: %v", err)
 		}
 		template := x509.CertificateRequest{
 			RawSubject:         asn1Subj,
@@ -102,7 +102,7 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 		csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, privateKey)
 		if err != nil {
-			return errors.Wrap(err, "couldn't create certificate request")
+			return diag.Errorf("couldn't create certificate request: %b", err)
 		}
 
 		cert := base64.StdEncoding.EncodeToString(
@@ -111,7 +111,7 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 
 		privASN1, err := x509.MarshalPKCS8PrivateKey(privateKey)
 		if err != nil {
-			return errors.Wrap(err, "could not pkcs8 marshal private key")
+			return diag.Errorf("could not pkcs8 marshal private key: %v", err)
 		}
 
 		d.Set("csr", cert)
@@ -122,8 +122,8 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 		variables["csr"] = graphql.String(cert)
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create worker pool")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create worker pool: %v", err)
 	}
 
 	d.SetId(mutation.WorkerPool.ID)
@@ -137,14 +137,14 @@ func resourceWorkerPoolCreate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
+func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPool(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for worker pool")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for worker pool: %v", err)
 	}
 
 	workerPool := query.WorkerPool
@@ -161,7 +161,7 @@ func resourceWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	name := d.Get("name").(string)
 
 	var mutation struct {
@@ -178,23 +178,24 @@ func resourceWorkerPoolUpdate(d *schema.ResourceData, meta interface{}) error {
 		variables["description"] = graphql.String(desc.(string))
 	}
 
-	var acc multierror.Accumulator
+	var ret diag.Diagnostics
 
-	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update worker pool"))
-	acc.Push(errors.Wrap(resourceWorkerPoolRead(d, meta), "could not read the current state"))
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		ret = diag.Errorf("could not update worker pool", err)
+	}
 
-	return acc.Error()
+	return append(ret, resourceWorkerPoolRead(ctx, d, meta)...)
 }
 
-func resourceWorkerPoolDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceWorkerPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPoolDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete worker pool")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete worker pool: %v", err)
 	}
 
 	d.SetId("")

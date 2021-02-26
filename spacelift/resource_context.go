@@ -1,9 +1,10 @@
 package spacelift
 
 import (
-	"github.com/fluxio/multierror"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -12,10 +13,10 @@ import (
 
 func resourceContext() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceContextCreate,
-		Read:   resourceContextRead,
-		Update: resourceContextUpdate,
-		Delete: resourceContextDelete,
+		CreateContext: resourceContextCreate,
+		ReadContext:   resourceContextRead,
+		UpdateContext: resourceContextUpdate,
+		DeleteContext: resourceContextDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -37,7 +38,7 @@ func resourceContext() *schema.Resource {
 	}
 }
 
-func resourceContextCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		CreateContext structs.Context `graphql:"contextCreate(name: $name, description: $description)"`
 	}
@@ -51,23 +52,23 @@ func resourceContextCreate(d *schema.ResourceData, meta interface{}) error {
 		variables["description"] = toOptionalString(description)
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create context")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create context: %v", err)
 	}
 
 	d.SetId(mutation.CreateContext.ID)
 
-	return resourceContextRead(d, meta)
+	return resourceContextRead(ctx, d, meta)
 }
 
-func resourceContextRead(d *schema.ResourceData, meta interface{}) error {
+func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Context *structs.Context `graphql:"context(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for context")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for context: %v", err)
 	}
 
 	context := query.Context
@@ -85,7 +86,7 @@ func resourceContextRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceContextUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		UpdateContext structs.Context `graphql:"contextUpdate(id: $id, name: $name, description: $description)"`
 	}
@@ -100,23 +101,26 @@ func resourceContextUpdate(d *schema.ResourceData, meta interface{}) error {
 		variables["description"] = toOptionalString(description)
 	}
 
-	var acc multierror.Accumulator
+	var ret diag.Diagnostics
 
-	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update context"))
-	acc.Push(errors.Wrap(resourceContextRead(d, meta), "could not read the current state"))
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		ret = append(ret, diag.Errorf("could not update context: %v", err)...)
+	}
 
-	return acc.Error()
+	ret = append(ret, resourceContextRead(ctx, d, meta)...)
+
+	return ret
 }
 
-func resourceContextDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceContextDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		DeleteContext *structs.Context `graphql:"contextDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete context")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete context: %v", err)
 	}
 
 	d.SetId("")

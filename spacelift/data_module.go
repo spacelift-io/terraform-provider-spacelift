@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataModule() *schema.Resource {
 	return &schema.Resource{
-		Read: dataModuleRead,
+		ReadContext: dataModuleRead,
 
 		Schema: map[string]*schema.Schema{
 			"administrative": {
@@ -77,20 +79,20 @@ func dataModule() *schema.Resource {
 	}
 }
 
-func dataModuleRead(d *schema.ResourceData, meta interface{}) error {
+func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	moduleID := d.Get("module_id")
 	variables := map[string]interface{}{"id": toID(moduleID)}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module: %v", err)
 	}
 
 	module := query.Module
 	if module == nil {
-		return errors.New("module not found")
+		return diag.Errorf("module not found")
 	}
 
 	d.SetId(moduleID.(string))
@@ -99,12 +101,10 @@ func dataModuleRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("branch", module.Branch)
 
 	if module.Provider == "GITLAB" {
-		m := map[string]interface{}{
-			"namespace": module.Namespace,
-		}
+		m := map[string]interface{}{"namespace": module.Namespace}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return errors.Wrap(err, "error setting gitlab (resource)")
+			return diag.Errorf("error setting gitlab (resource): %v", err)
 		}
 	}
 
