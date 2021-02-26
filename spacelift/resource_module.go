@@ -170,7 +170,7 @@ func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = append(ret, diag.FromErr(err)...)
+		ret = diag.FromErr(err)
 	}
 
 	return append(ret, resourceModuleRead(ctx, d, meta)...)

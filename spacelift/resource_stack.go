@@ -320,6 +320,7 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	var ret diag.Diagnostics
+
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update stack: %v", err)
 	}

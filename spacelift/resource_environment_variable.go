@@ -97,6 +97,8 @@ func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceDa
 		return resourceEnvironmentVariableCreateStack(ctx, d, meta.(*internal.Client), variables)
 	}
 
+	variables["stack"] = toID(d.Get("module_id"))
+
 	return resourceEnvironmentVariableCreateModule(ctx, d, meta.(*internal.Client), variables)
 }
 
@@ -152,13 +154,13 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	var element *structs.ConfigElement
 	var err error
 
-	switch idParts[0] {
+	switch resourceType, resourceID, variableName := idParts[0], idParts[1], idParts[2]; resourceType {
 	case "context":
-		element, err = resourceEnvironmentVariableReadContext(ctx, d, client, toID(idParts[1]), toID(idParts[2]))
+		element, err = resourceEnvironmentVariableReadContext(ctx, d, client, resourceID, variableName)
 	case "module":
-		element, err = resourceEnvironmentVariableReadModule(ctx, d, client, toID(idParts[1]), toID(idParts[2]))
+		element, err = resourceEnvironmentVariableReadModule(ctx, d, client, resourceID, variableName)
 	case "stack":
-		element, err = resourceEnvironmentVariableReadStack(ctx, d, client, toID(idParts[1]), toID(idParts[2]))
+		element, err = resourceEnvironmentVariableReadStack(ctx, d, client, resourceID, variableName)
 	default:
 		return diag.Errorf("unexpected resource type: %s", idParts[0])
 	}
@@ -183,14 +185,14 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context, ID string) (*structs.ConfigElement, error) {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"context": context, "id": ID}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(context), "id": toID(ID)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for context environment variable")
 	}
 
@@ -201,14 +203,14 @@ func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.Resou
 	return query.Context.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, module, ID string) (*structs.ConfigElement, error) {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"module(id: $module)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"module": module, "id": ID}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(module), "id": toID(ID)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for module environment variable")
 	}
 
@@ -219,14 +221,14 @@ func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.Resour
 	return query.Module.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, ID string) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"stack": stack, "id": ID}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stack), "id": toID(ID)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack environment variable")
 	}
 
@@ -246,11 +248,11 @@ func resourceEnvironmentVariableDelete(ctx context.Context, d *schema.ResourceDa
 	client := meta.(*internal.Client)
 	var err error
 
-	switch idParts[0] {
+	switch resourceType, resourceID, variableName := idParts[0], idParts[1], idParts[2]; resourceType {
 	case "context":
-		err = resourceEnvironmentVariableDeleteContext(ctx, d, client, toID(idParts[1]), toID(idParts[2]))
+		err = resourceEnvironmentVariableDeleteContext(ctx, d, client, resourceID, variableName)
 	case "module", "stack":
-		err = resourceEnvironmentVariableDeleteStack(ctx, d, client, toID(idParts[1]), toID(idParts[2]))
+		err = resourceEnvironmentVariableDeleteStack(ctx, d, client, resourceID, variableName)
 	default:
 		return diag.Errorf("unexpected resource type: %s", idParts[0])
 	}
@@ -263,20 +265,20 @@ func resourceEnvironmentVariableDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceEnvironmentVariableDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) error {
+func resourceEnvironmentVariableDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context, ID string) error {
 	var mutation struct {
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
 
-	return client.Mutate(ctx, &mutation, map[string]interface{}{"context": context, "id": ID})
+	return client.Mutate(ctx, &mutation, map[string]interface{}{"context": toID(context), "id": toID(ID)})
 }
 
-func resourceEnvironmentVariableDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
+func resourceEnvironmentVariableDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, ID string) error {
 	var mutation struct {
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}
 
-	return client.Mutate(ctx, &mutation, map[string]interface{}{"stack": stack, "id": ID})
+	return client.Mutate(ctx, &mutation, map[string]interface{}{"stack": toID(stack), "id": toID(ID)})
 }
 
 func suppressValueChange(_, old, new string, d *schema.ResourceData) bool {

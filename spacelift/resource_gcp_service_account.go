@@ -73,15 +73,15 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 		tokenScopes = append(tokenScopes, graphql.String(scope.(string)))
 	}
 
-	var id string
+	var ID string
 	if stackID, ok := d.GetOk("stack_id"); ok {
-		id = stackID.(string)
+		ID = stackID.(string)
 	} else {
-		id = d.Get("module_id").(string)
+		ID = d.Get("module_id").(string)
 	}
 
 	variables := map[string]interface{}{
-		"id":          toID(id),
+		"id":          toID(ID),
 		"tokenScopes": tokenScopes,
 	}
 
@@ -94,7 +94,7 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if d.Id() == "" {
-		d.SetId(id)
+		d.SetId(ID)
 	}
 
 	return resourceGCPServiceAccountRead(ctx, d, meta)

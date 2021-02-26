@@ -141,6 +141,7 @@ func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceDa
 
 	return nil
 }
+
 func dataEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
