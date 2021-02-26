@@ -219,7 +219,7 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, ID, roleAR
 	}
 
 	if err := client.Mutate(ctx, &mutation, variables); err != nil {
-		return errors.Wrap(err, "could not set AWS role delegation: %v")
+		return errors.Wrap(err, "could not set AWS role delegation")
 	}
 
 	if !mutation.AttachAWSRole.Activated {

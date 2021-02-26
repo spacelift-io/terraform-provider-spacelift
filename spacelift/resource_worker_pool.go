@@ -181,7 +181,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update worker pool", err)
+		ret = diag.Errorf("could not update worker pool: %v", err)
 	}
 
 	return append(ret, resourceWorkerPoolRead(ctx, d, meta)...)

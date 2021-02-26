@@ -61,7 +61,7 @@ func dataGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta
 		})
 	}
 
-	if len(ret) > 0 {
+	if ret.HasError() {
 		d.SetId("")
 	}
 

@@ -45,12 +45,10 @@ func dataContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta
 		"context": toID(d.Get("context_id").(string)),
 	}
 
-	if ID, ok := d.GetOk("module_id"); ok {
-		variables["id"] = toID(ID.(string))
-	} else if ID, ok := d.GetOk("stack_id"); ok {
-		variables["id"] = toID(ID.(string))
+	if moduleID, ok := d.GetOk("module_id"); ok {
+		variables["id"] = toID(moduleID)
 	} else {
-		return diag.Errorf("either module_id or stack_id must be present")
+		variables["id"] = toID(d.Get("stack_id"))
 	}
 
 	var query struct {
