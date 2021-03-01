@@ -36,7 +36,6 @@ func resourceWebhook() *schema.Resource {
 				case "module":
 					d.Set("module_id", resourceID)
 				case "stack":
-					d.SetId(resourceID)
 					d.Set("stack_id", resourceID)
 				default:
 					return nil, fmt.Errorf("invalid resource type %q, only module and stack are supported", resourceType)

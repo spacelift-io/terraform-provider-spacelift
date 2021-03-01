@@ -27,8 +27,6 @@ func TestContextResource(t *testing.T) {
 			`, randomID, description)
 		}
 
-		const resourceName = "spacelift_context.test"
-
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("old description"),

@@ -196,6 +196,10 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable identifier (slug) of the context;
 
+#### Importing
+
+Spacelift context can be imported using its user-facing ID ("slug") - see the GraphQL API or the URL in the web GUI.
+
 [^ Back to all resources](#resources)
 
 ### `spacelift_context_attachment` data source
@@ -264,6 +268,10 @@ Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID of the attachment;
+
+#### Importing
+
+Spacelift context attachment can be imported using a combination of two slugs one for the context (see the GraphQL API or the context URL in the web GUI) and one for the stack or module (see the GraphQL API or the stack/module URL in the web GUI). The exact format is `$contextId/$stackOrModuleId`.
 
 [^ Back to all resources](#resources)
 
@@ -338,6 +346,16 @@ Note that `context_id`, `module_id` and `stack_id` are mutually exclusive, and e
 #### Attributes reference
 
 See the [environment variable resource](#spacelift_environment_variable-resource) for details on the returned attributes - they are identical.
+
+#### Importing
+
+Spacelift environment variable can be imported using a three-part slash-delimited string consisting of the following:
+
+- type of the resource on which the environment variable is defined - supported values are `context`, `module` and `stack`;
+- user-facing ID (slug, see its URL) of the resource on which the environment variable is defined;
+- name of the environement variable;
+
+As an example, and ID like `stack/bacon/TASTY` represents an environment variable called `BACON`, defined on a *stack* whose user-facing ID is `tasty`.
 
 [^ Back to all resources](#resources)
 
@@ -530,6 +548,10 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The immutable ID (slug) of the module;
 - `aws_assume_role_policy_statement` - JSON-encoded AWS IAM policy for the AWS IAM role trust relationship;
 
+#### Importing
+
+Spacelift modules can be directly imported by their user-facing ID ("slug") that can be found through the GraphQL API or in their URL in the web GUI.
+
 [^ Back to all resources](#resources)
 
 ### `spacelift_mounted_file` data source
@@ -640,6 +662,16 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - ID of the mounted file;
 - `checksum` - SHA-256 checksum of the (base-64 encoded) content;
 
+#### Importing
+
+Spacelift mounted file can be imported using a three-part slash-delimited string consisting of the following:
+
+- type of the resource on which the mounted file defined - supported values are `context`, `module` and `stack`;
+- user-facing ID (slug, see its URL) of the resource on which the mounted file defined;
+- relative path of the mounted file;
+
+As an example, and ID like `stack/bacon/source/backend.tf` represents a mounted file with relative path `source/backend.tf`, defined on a *stack* whose user-facing ID is `tasty`.
+
 [^ Back to all resources](#resources)
 
 ### `spacelift_policy` data source
@@ -716,6 +748,10 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID of the policy;
 
+#### Importing
+
+Spacelift policies can be directly imported by their user-facing ID ("slug") that can be found through the GraphQL API or in the policy URL in the web GUI.
+
 [^ Back to all resources](#resources)
 
 ### `spacelift_policy_attachment` resource
@@ -759,6 +795,10 @@ Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The ID of the attachment;
+
+#### Importing
+
+Spacelift policy attachment can be imported using a combination of two slugs one for the policy (see the GraphQL API or the policy URL in the web GUI) and one for the stack or module (see the GraphQL API or stack/module URL in the web GUI). The exact format is `$policyId/$stackOrModuleId`.
 
 [^ Back to all resources](#resources)
 
@@ -904,6 +944,10 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The immutable ID (slug) of the stack;
 - `aws_assume_role_policy_statement` - JSON-encoded AWS IAM policy for the AWS IAM role trust relationship;
 
+#### Importing
+
+Spacelift stacks can be directly imported by their user-facing ID ("slug") that can be found through the GraphQL API or in the stack URL in the web GUI.
+
 [^ Back to all resources](#resources)
 
 ### `spacelift_aws_role` data source
@@ -1020,6 +1064,15 @@ In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the role;
 
+#### Importing
+
+Spacelift AWS role can be imported using a slash-delimited combination of:
+
+- the type of resource on which the role is defined - `module` or `stack`;
+- the user-facing ID ("slug") of that resource that can be found through the GraphQL API or the resource URL in the web GUI;
+
+As an example, `stack/bacon` will import the AWS role defined on a *stack* with ID "bacon".
+
 [^ Back to all resources](#resources)
 
 ### `spacelift_gcp_service_account` data source
@@ -1112,6 +1165,15 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The immutable ID (slug) of the service account attachment;
 - `service_account_email` - The email address associated with the generated GCP service account;
 
+#### Importing
+
+Spacelift GCP service account can be imported using a slash-delimited combination of:
+
+- the type of resource to which the service account is attached - `module` or `stack`;
+- the user-facing ID ("slug") of that resource that can be found through the GraphQL API or the resource URL in the web GUI;
+
+As an example, `stack/bacon` will import the GCP service account role defined on a *stack* with ID "bacon".
+
 [^ Back to all resources](#resources)
 
 
@@ -1169,6 +1231,16 @@ Note that `module_id` and `stack_id` are mutually exclusive, and exactly one of 
 In addition to all arguments above, the following attributes are exported:
 
 - `id` - The immutable ID (slug) of the webhook;
+
+#### Importing
+
+Spacelift webhooks can be imported using a slash-delimited combination of:
+
+- type of the resource on which the webhook is defined - `module` or `stack`;
+- user-facing ID of the resource on which the webhook is defined - see its URL in the web UI;
+- ID of the webhook itself, accessible through the GraphQL API;
+
+As an example, `stack/bacon/01EZR0K6YJPDXBSF0A06QHW0E3` will import a webhook with ID "01EZR0K6YJPDXBSF0A06QHW0E3", defined on a *stack* whose user-facing ID is "bacon".
 
 [^ Back to all resources](#resources)
 
@@ -1232,6 +1304,10 @@ In addition to all arguments above, the following attributes are exported:
 - `id` - The immutable ID (slug) of the worker pool;
 - `config` - The credentials necessary to connect WorkerPool's workers to the control plane;
 - `private_key` - Automatically generated private key (base64 format) if `csr` was not provided.;
+
+#### Importing
+
+Spacelift worker pools can be imported their unique ID that can be found in the GraphQL API or in the URL in the web GUI.
 
 [^ Back to all resources](#resources)
 
