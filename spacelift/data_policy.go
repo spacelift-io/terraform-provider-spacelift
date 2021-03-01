@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataPolicy() *schema.Resource {
 	return &schema.Resource{
-		Read: dataPolicyRead,
+		ReadContext: dataPolicyRead,
 
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
@@ -37,19 +39,19 @@ func dataPolicy() *schema.Resource {
 	}
 }
 
-func dataPolicyRead(d *schema.ResourceData, meta interface{}) error {
+func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Policy *structs.Policy `graphql:"policy(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Get("policy_id"))}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for policy")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for policy: %v", err)
 	}
 
 	policy := query.Policy
 	if policy == nil {
-		return errors.New("policy not found")
+		return diag.Errorf("policy not found")
 	}
 
 	d.SetId(policy.ID)

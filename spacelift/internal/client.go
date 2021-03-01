@@ -16,14 +16,12 @@ type Client struct {
 }
 
 // Mutate runs a GraphQL mutation.
-func (c *Client) Mutate(m interface{}, variables map[string]interface{}) error {
-	ctx := context.Background()
+func (c *Client) Mutate(ctx context.Context, m interface{}, variables map[string]interface{}) error {
 	return c.client(ctx).Mutate(ctx, m, variables)
 }
 
 // Query runs a GraphQL query.
-func (c *Client) Query(q interface{}, variables map[string]interface{}) error {
-	ctx := context.Background()
+func (c *Client) Query(ctx context.Context, q interface{}, variables map[string]interface{}) error {
 	return c.client(ctx).Query(ctx, q, variables)
 }
 

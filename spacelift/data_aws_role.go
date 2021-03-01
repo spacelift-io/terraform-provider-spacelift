@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -18,7 +20,7 @@ func dataStackAWSRole() *schema.Resource {
 
 func dataAWSRole() *schema.Resource {
 	return &schema.Resource{
-		Read: dataAWSRoleRead,
+		ReadContext: dataAWSRoleRead,
 
 		Schema: map[string]*schema.Schema{
 			"role_arn": {
@@ -27,10 +29,10 @@ func dataAWSRole() *schema.Resource {
 				Computed:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module which assumes the AWS IAM role",
-				ConflictsWith: []string{"stack_id"},
-				Optional:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the module which assumes the AWS IAM role",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,
@@ -46,19 +48,15 @@ func dataAWSRole() *schema.Resource {
 	}
 }
 
-func dataAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func dataAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
-		return dataModuleAWSRoleRead(d, meta)
+		return dataModuleAWSRoleRead(ctx, d, meta)
 	}
 
-	if _, ok := d.GetOk("stack_id"); ok {
-		return dataStackAWSRoleRead(d, meta)
-	}
-
-	return errors.New("either module_id or stack_id must be provided")
+	return dataStackAWSRoleRead(ctx, d, meta)
 }
 
-func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
@@ -66,19 +64,19 @@ func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	moduleID := d.Get("module_id")
 	variables := map[string]interface{}{"id": toID(moduleID)}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module: %v", err)
 	}
 
 	module := query.Module
 	if module == nil {
-		return errors.New("module not found")
+		return diag.Errorf("module not found")
 	}
 
 	if roleARN := module.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
-		return errors.New("this module is missing the AWS integration")
+		return diag.Errorf("this module is missing the AWS integration")
 	}
 
 	d.SetId(moduleID.(string))
@@ -87,7 +85,7 @@ func dataModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
@@ -95,19 +93,19 @@ func dataStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 	stackID := d.Get("stack_id")
 	variables := map[string]interface{}{"id": toID(stackID)}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack: %v", err)
 	}
 
 	stack := query.Stack
 	if stack == nil {
-		return errors.New("stack not found")
+		return diag.Errorf("stack not found")
 	}
 
 	if roleARN := stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
 		d.Set("role_arn", *roleARN)
 	} else {
-		return errors.New("this stack is missing the AWS integration")
+		return diag.Errorf("this stack is missing the AWS integration")
 	}
 
 	d.SetId(stackID.(string))

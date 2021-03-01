@@ -1,10 +1,11 @@
 package spacelift
 
 import (
-	"github.com/fluxio/multierror"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
-	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -33,10 +34,10 @@ var typeNameReplacements = map[string]string{
 
 func resourcePolicy() *schema.Resource {
 	return &schema.Resource{
-		Create: resourcePolicyCreate,
-		Read:   resourcePolicyRead,
-		Update: resourcePolicyUpdate,
-		Delete: resourcePolicyDelete,
+		CreateContext: resourcePolicyCreate,
+		ReadContext:   resourcePolicyRead,
+		UpdateContext: resourcePolicyUpdate,
+		DeleteContext: resourcePolicyDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -77,7 +78,7 @@ func resourcePolicy() *schema.Resource {
 	}
 }
 
-func resourcePolicyCreate(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type)"`
 	}
@@ -88,23 +89,23 @@ func resourcePolicyCreate(d *schema.ResourceData, meta interface{}) error {
 		"type": structs.PolicyType(d.Get("type").(string)),
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create policy")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create policy: %v", err)
 	}
 
 	d.SetId(mutation.CreatePolicy.ID)
 
-	return resourcePolicyRead(d, meta)
+	return resourcePolicyRead(ctx, d, meta)
 }
 
-func resourcePolicyRead(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Policy *structs.Policy `graphql:"policy(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for policy")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for policy: %v", err)
 	}
 
 	policy := query.Policy
@@ -120,7 +121,7 @@ func resourcePolicyRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourcePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body)"`
 	}
@@ -131,23 +132,24 @@ func resourcePolicyUpdate(d *schema.ResourceData, meta interface{}) error {
 		"body": toString(d.Get("body")),
 	}
 
-	var acc multierror.Accumulator
+	var ret diag.Diagnostics
 
-	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update policy"))
-	acc.Push(errors.Wrap(resourcePolicyRead(d, meta), "could not read the current state"))
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		ret = diag.Errorf("could not update policy: %v", err)
+	}
 
-	return acc.Error()
+	return append(ret, resourcePolicyRead(ctx, d, meta)...)
 }
 
-func resourcePolicyDelete(d *schema.ResourceData, meta interface{}) error {
+func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		DeletePolicy *structs.Policy `graphql:"policyDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete policy")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete policy: %v", err)
 	}
 
 	d.SetId("")

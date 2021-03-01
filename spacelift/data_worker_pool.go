@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataWorkerPool() *schema.Resource {
 	return &schema.Resource{
-		Read: dataWorkerPoolRead,
+		ReadContext: dataWorkerPoolRead,
 		Schema: map[string]*schema.Schema{
 			"config": {
 				Type:        schema.TypeString,
@@ -37,7 +39,7 @@ func dataWorkerPool() *schema.Resource {
 	}
 }
 
-func dataWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
+func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPool(id: $id)"`
 	}
@@ -45,13 +47,13 @@ func dataWorkerPoolRead(d *schema.ResourceData, meta interface{}) error {
 	workerPoolID := d.Get("worker_pool_id").(string)
 
 	variables := map[string]interface{}{"id": toID(workerPoolID)}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for worker pool")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for worker pool: %v", err)
 	}
 
 	workerPool := query.WorkerPool
 	if workerPool == nil {
-		return errors.New("worker pool not found")
+		return diag.Errorf("worker pool not found")
 	}
 
 	d.SetId(workerPoolID)

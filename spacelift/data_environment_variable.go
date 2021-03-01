@@ -1,10 +1,11 @@
 package spacelift
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -12,7 +13,7 @@ import (
 
 func dataEnvironmentVariable() *schema.Resource {
 	return &schema.Resource{
-		Read: dataEnvironmentVariableRead,
+		ReadContext: dataEnvironmentVariableRead,
 
 		Schema: map[string]*schema.Schema{
 			"checksum": {
@@ -21,16 +22,15 @@ func dataEnvironmentVariable() *schema.Resource {
 				Computed:    true,
 			},
 			"context_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the context on which the environment variable is defined",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id", "module_id"},
+				Type:         schema.TypeString,
+				Description:  "ID of the context on which the environment variable is defined",
+				ExactlyOneOf: []string{"context_id", "stack_id", "module_id"},
+				Optional:     true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module on which the environment variable is defined",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id"},
+				Type:        schema.TypeString,
+				Description: "ID of the module on which the environment variable is defined",
+				Optional:    true,
 			},
 			"name": {
 				Type:        schema.TypeString,
@@ -57,23 +57,19 @@ func dataEnvironmentVariable() *schema.Resource {
 	}
 }
 
-func dataEnvironmentVariableRead(d *schema.ResourceData, meta interface{}) error {
+func dataEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if _, ok := d.GetOk("context_id"); ok {
-		return dataEnvironmentVariableReadContext(d, meta)
+		return dataEnvironmentVariableReadContext(ctx, d, meta)
 	}
 
 	if _, ok := d.GetOk("module_id"); ok {
-		return dataEnvironmentVariableReadModule(d, meta)
+		return dataEnvironmentVariableReadModule(ctx, d, meta)
 	}
 
-	if _, ok := d.GetOk("stack_id"); ok {
-		return dataEnvironmentVariableReadStack(d, meta)
-	}
-
-	return errors.New("context_id, module_id or stack_id must be provided")
+	return dataEnvironmentVariableReadStack(ctx, d, meta)
 }
 
-func dataEnvironmentVariableReadContext(d *schema.ResourceData, meta interface{}) error {
+func dataEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -88,21 +84,21 @@ func dataEnvironmentVariableReadContext(d *schema.ResourceData, meta interface{}
 		"id":      toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for context environment variable")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for context environment variable: %v", err)
 	}
 
 	if query.Context == nil {
-		return errors.New("context not found")
+		return diag.Errorf("context not found")
 	}
 
 	configElement := query.Context.ConfigElement
 	if configElement == nil {
-		return errors.New("environment variable not found")
+		return diag.Errorf("environment variable not found")
 	}
 
 	if configElement.Type != "ENVIRONMENT_VARIABLE" {
-		return errors.New("config element is not an environment variable")
+		return diag.Errorf("config element is not an environment variable")
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", contextID, variableName))
@@ -112,7 +108,7 @@ func dataEnvironmentVariableReadContext(d *schema.ResourceData, meta interface{}
 	return nil
 }
 
-func dataEnvironmentVariableReadModule(d *schema.ResourceData, meta interface{}) error {
+func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -127,16 +123,16 @@ func dataEnvironmentVariableReadModule(d *schema.ResourceData, meta interface{})
 		"id":     toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module environment variable")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module environment variable: %v", err)
 	}
 
 	if query.Module == nil {
-		return errors.New("module not found")
+		return diag.Errorf("module not found")
 	}
 
 	if query.Module.ConfigElement == nil {
-		return errors.New("environment variable not found")
+		return diag.Errorf("environment variable not found")
 	}
 
 	d.SetId(fmt.Sprintf("module/%s/%s", moduleID, variableName))
@@ -145,7 +141,8 @@ func dataEnvironmentVariableReadModule(d *schema.ResourceData, meta interface{})
 
 	return nil
 }
-func dataEnvironmentVariableReadStack(d *schema.ResourceData, meta interface{}) error {
+
+func dataEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -160,16 +157,16 @@ func dataEnvironmentVariableReadStack(d *schema.ResourceData, meta interface{}) 
 		"id":    toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack environment variable")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack environment variable: %v", err)
 	}
 
 	if query.Stack == nil {
-		return errors.New("stack not found")
+		return diag.Errorf("stack not found")
 	}
 
 	if query.Stack.ConfigElement == nil {
-		return errors.New("environment variable not found")
+		return diag.Errorf("environment variable not found")
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", stackID, variableName))

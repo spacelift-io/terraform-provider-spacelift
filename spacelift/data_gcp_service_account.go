@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 )
 
 // Deprecated! Used for backwards compatibility.
@@ -15,7 +17,7 @@ func dataStackGCPServiceAccount() *schema.Resource {
 
 func dataGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
-		Read: dataGCPServiceAccountRead,
+		ReadContext: dataGCPServiceAccountRead,
 
 		Schema: map[string]*schema.Schema{
 			"service_account_email": {
@@ -24,10 +26,10 @@ func dataGCPServiceAccount() *schema.Resource {
 				Computed:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the stack which uses GCP service account credentials",
-				ConflictsWith: []string{"stack_id"},
-				Optional:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the stack which uses GCP service account credentials",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,
@@ -44,26 +46,24 @@ func dataGCPServiceAccount() *schema.Resource {
 	}
 }
 
-func dataGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
-	var err error
+func dataGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var ret diag.Diagnostics
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		d.SetId(stackID.(string))
-		err = resourceStackGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
-			return errors.New(message)
-		})
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		d.SetId(moduleID.(string))
-		err = resourceModuleGCPServiceAccountReadWithHooks(d, meta, func(message string) error {
-			return errors.New(message)
+		ret = resourceStackGCPServiceAccountReadWithHooks(ctx, d, meta, func(message string) diag.Diagnostics {
+			return diag.Errorf(message)
 		})
 	} else {
-		err = errors.New("either stack_id or module_id must be set")
+		d.SetId(d.Get("module_id").(string))
+		ret = resourceModuleGCPServiceAccountReadWithHooks(ctx, d, meta, func(message string) diag.Diagnostics {
+			return diag.Errorf(message)
+		})
 	}
 
-	if err != nil {
+	if ret.HasError() {
 		d.SetId("")
 	}
 
-	return err
+	return ret
 }
