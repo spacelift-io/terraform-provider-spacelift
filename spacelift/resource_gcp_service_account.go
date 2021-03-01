@@ -26,9 +26,7 @@ func resourceGCPServiceAccount() *schema.Resource {
 		UpdateContext: resourceGCPServiceAccountCreate,
 		DeleteContext: resourceGCPServiceAccountDelete,
 
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer: &schema.ResourceImporter{StateContext: importIntegration},
 
 		Schema: map[string]*schema.Schema{
 			"service_account_email": {
