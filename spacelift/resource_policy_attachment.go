@@ -169,7 +169,7 @@ func resourcePolicyAttachmentImport(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.SetId(path.Join(policyID, attachment.ID))
-	d.Set("context_id", policyID)
+	d.Set("policy_id", policyID)
 
 	return []*schema.ResourceData{d}, nil
 }

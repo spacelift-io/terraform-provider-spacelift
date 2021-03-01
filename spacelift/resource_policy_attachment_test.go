@@ -11,6 +11,8 @@ import (
 )
 
 func TestPolicyAttachmentResource(t *testing.T) {
+	const resourceName = "spacelift_policy_attachment.test"
+
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("with a stack", func(t *testing.T) {
@@ -40,7 +42,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 			{
 				Config: config("boom"),
 				Check: Resource(
-					"spacelift_policy_attachment.test",
+					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("policy_id", Contains(randomID)),
 					Attribute("stack_id", Contains(randomID)),
@@ -48,15 +50,22 @@ func TestPolicyAttachmentResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("my-first-policy-%s/test-stack-%s", randomID, randomID),
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("bang"),
-				Check:  Resource("spacelift_policy_attachment.test", Attribute("custom_input", Contains("bang"))),
+				Check:  Resource(resourceName, Attribute("custom_input", Contains("bang"))),
 			},
 		})
 	})
 
 	t.Run("with a module", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{{
-			Config: fmt.Sprintf(`
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
 					body = "package spacelift"
@@ -73,13 +82,20 @@ func TestPolicyAttachmentResource(t *testing.T) {
 					module_id = spacelift_module.test.id
 				}
 			`, randomID),
-			Check: Resource(
-				"spacelift_policy_attachment.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("policy_id", Contains(randomID)),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
-				AttributeNotPresent("custom_input"),
-			),
-		}})
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("policy_id", Contains(randomID)),
+					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					AttributeNotPresent("custom_input"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("my-first-policy-%s/terraform-bacon-tasty", randomID),
+				ImportStateVerify: true,
+			},
+		})
 	})
 }
