@@ -11,6 +11,7 @@ import (
 )
 
 func TestWebhookResource(t *testing.T) {
+	const resourceName = "spacelift_webhook.test"
 
 	t.Run("with a stack", func(t *testing.T) {
 		t.Parallel()
@@ -37,22 +38,29 @@ func TestWebhookResource(t *testing.T) {
 			{
 				Config: config("https://bacon.org"),
 				Check: Resource(
-					"spacelift_webhook.test",
+					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("endpoint", Equals("https://bacon.org")),
 					Attribute("secret", Equals("very-very-secret")),
 				),
 			},
 			{
+				ResourceName:        resourceName,
+				ImportState:         true,
+				ImportStateIdPrefix: fmt.Sprintf("stack/test-stack-%s/", randomID),
+				ImportStateVerify:   true,
+			},
+			{
 				Config: config("https://cabbage.org"),
-				Check:  Resource("spacelift_webhook.test", Attribute("endpoint", Equals("https://cabbage.org"))),
+				Check:  Resource(resourceName, Attribute("endpoint", Equals("https://cabbage.org"))),
 			},
 		})
 	})
 
 	t.Run("with a module", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{{
-			Config: `
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `
 			resource "spacelift_module" "test" {
 				branch     = "master"
 				repository = "terraform-bacon-tasty"
@@ -64,12 +72,19 @@ func TestWebhookResource(t *testing.T) {
 				secret    = "very-very-secret"
 			}
 		`,
-			Check: Resource(
-				"spacelift_webhook.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("endpoint", Equals("https://bacon.org")),
-				Attribute("secret", Equals("very-very-secret")),
-			),
-		}})
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("endpoint", Equals("https://bacon.org")),
+					Attribute("secret", Equals("very-very-secret")),
+				),
+			},
+			{
+				ResourceName:        resourceName,
+				ImportState:         true,
+				ImportStateIdPrefix: "module/terraform-bacon-tasty/",
+				ImportStateVerify:   true,
+			},
+		})
 	})
 }

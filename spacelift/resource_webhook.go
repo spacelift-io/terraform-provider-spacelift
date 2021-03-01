@@ -2,6 +2,8 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -19,7 +21,31 @@ func resourceWebhook() *schema.Resource {
 		DeleteContext: resourceWebhookDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+				ID := d.Id()
+
+				parts := strings.Split(ID, "/")
+
+				if len(parts) != 3 {
+					return nil, fmt.Errorf("invalid ID: expected [stack|module]/$projectId/$webhookId, got %q", ID)
+				}
+
+				resourceType, resourceID, webhookID := parts[0], parts[1], parts[2]
+
+				switch resourceType {
+				case "module":
+					d.Set("module_id", resourceID)
+				case "stack":
+					d.SetId(resourceID)
+					d.Set("stack_id", resourceID)
+				default:
+					return nil, fmt.Errorf("invalid resource type %q, only module and stack are supported", resourceType)
+				}
+
+				d.SetId(webhookID)
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
