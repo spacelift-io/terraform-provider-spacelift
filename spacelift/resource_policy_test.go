@@ -11,6 +11,8 @@ import (
 )
 
 func TestPolicyResource(t *testing.T) {
+	const resourceName = "spacelift_policy.test"
+
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("creates and updates a policy", func(t *testing.T) {
@@ -32,15 +34,23 @@ func TestPolicyResource(t *testing.T) {
 			{
 				Config: config("boom"),
 				Check: Resource(
-					"spacelift_policy.test",
+					resourceName,
 					Attribute("id", StartsWith("my-first-policy")),
 					Attribute("body", Contains("boom")),
 					Attribute("type", Equals("PLAN")),
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("bang"),
-				Check:  Resource("spacelift_policy.test", Attribute("body", Contains("bang"))),
+				Check: Resource(
+					resourceName,
+					Attribute("body", Contains("bang")),
+				),
 			},
 		})
 	})
