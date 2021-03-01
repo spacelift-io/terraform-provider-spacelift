@@ -150,13 +150,15 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 	var element *structs.ConfigElement
 	var err error
 
-	switch resourceType, resourceID, filePath := idParts[0], idParts[1], idParts[2]; resourceType {
+	resourceType, resourceID, relativePath := idParts[0], idParts[1], idParts[2]
+
+	switch resourceType {
 	case "context":
-		element, err = resourceMountedFileReadContext(ctx, d, client, resourceID, filePath)
+		element, err = resourceMountedFileReadContext(ctx, d, client, resourceID, relativePath)
 	case "module":
-		element, err = resourceMountedFileReadModule(ctx, d, client, resourceID, filePath)
+		element, err = resourceMountedFileReadModule(ctx, d, client, resourceID, relativePath)
 	case "stack":
-		element, err = resourceMountedFileReadStack(ctx, d, client, resourceID, filePath)
+		element, err = resourceMountedFileReadStack(ctx, d, client, resourceID, relativePath)
 	default:
 		return diag.Errorf("unexpected resource type: %s", idParts[0])
 	}
@@ -171,6 +173,8 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	d.Set("checksum", element.Checksum)
+	d.Set("relative_path", relativePath)
+	d.Set("write_only", element.WriteOnly)
 
 	if value := element.Value; value != nil {
 		d.Set("content", *value)
@@ -181,14 +185,14 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func resourceMountedFileReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context, ID string) (*structs.ConfigElement, error) {
+func resourceMountedFileReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, contextID, relativePath string) (*structs.ConfigElement, error) {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(context), "id": toID(ID)}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(contextID), "id": toID(relativePath)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for context mounted file")
 	}
 
@@ -196,17 +200,19 @@ func resourceMountedFileReadContext(ctx context.Context, d *schema.ResourceData,
 		return nil, nil
 	}
 
+	d.Set("context_id", contextID)
+
 	return query.Context.ConfigElement, nil
 }
 
-func resourceMountedFileReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, module, ID string) (*structs.ConfigElement, error) {
+func resourceMountedFileReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, moduleID, relativePath string) (*structs.ConfigElement, error) {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"module(id: $module)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(module), "id": toID(ID)}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(moduleID), "id": toID(relativePath)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for module mounted file")
 	}
 
@@ -214,23 +220,27 @@ func resourceMountedFileReadModule(ctx context.Context, d *schema.ResourceData, 
 		return nil, nil
 	}
 
+	d.Set("module_id", moduleID)
+
 	return query.Module.ConfigElement, nil
 }
 
-func resourceMountedFileReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, ID string) (*structs.ConfigElement, error) {
+func resourceMountedFileReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stackID, relativePath string) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stack), "id": toID(ID)}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stackID), "id": toID(relativePath)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack mounted file")
 	}
 
 	if query.Stack == nil {
 		return nil, nil
 	}
+
+	d.Set("stack_id", stackID)
 
 	return query.Stack.ConfigElement, nil
 }
