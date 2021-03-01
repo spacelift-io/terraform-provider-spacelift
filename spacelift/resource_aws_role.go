@@ -141,13 +141,7 @@ func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta
 		return nil
 	}
 
-	if roleARN := query.Module.Integrations.AWS.AssumedRoleARN; roleARN != nil {
-		d.Set("role_arn", roleARN)
-	} else {
-		d.Set("role_arn", nil)
-	}
-
-	d.Set("generate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
+	resourceAWSRoleSetIntegration(d, &query.Module.Integrations)
 
 	return nil
 }
@@ -168,13 +162,7 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 		return nil
 	}
 
-	if roleARN := query.Stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
-		d.Set("role_arn", roleARN)
-	} else {
-		d.Set("role_arn", nil)
-	}
-
-	d.Set("generate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
+	resourceAWSRoleSetIntegration(d, query.Stack.Integrations)
 
 	return nil
 }
