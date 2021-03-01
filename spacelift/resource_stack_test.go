@@ -35,11 +35,13 @@ func TestStackResource(t *testing.T) {
 			`, description, randomID)
 		}
 
+		const resourceName = "spacelift_stack.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -58,6 +60,11 @@ func TestStackResource(t *testing.T) {
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: config("new description"),

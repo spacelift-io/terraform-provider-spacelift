@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -30,7 +31,28 @@ func resourceAWSRole() *schema.Resource {
 		DeleteContext: resourceAWSRoleDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: func(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+				ID := d.Id()
+
+				parts := strings.Split(ID, "/")
+
+				if len(parts) != 2 {
+					return nil, fmt.Errorf("invalid ID: expected [stack|module]/$id, got %q", ID)
+				}
+
+				switch resourceType, resourceID := parts[0], parts[1]; resourceType {
+				case "module":
+					d.SetId(resourceID)
+					d.Set("module_id", resourceID)
+				case "stack":
+					d.SetId(resourceID)
+					d.Set("stack_id", resourceID)
+				default:
+					return nil, fmt.Errorf("invalid resource type %q, only module and stack are supported", resourceType)
+				}
+
+				return []*schema.ResourceData{d}, nil
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -125,7 +147,7 @@ func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("role_arn", nil)
 	}
 
-	d.Set("genereate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
+	d.Set("generate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
 
 	return nil
 }
@@ -152,7 +174,7 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 		d.Set("role_arn", nil)
 	}
 
-	d.Set("genereate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
+	d.Set("generate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
 
 	return nil
 }
@@ -227,4 +249,14 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, ID, roleAR
 	}
 
 	return nil
+}
+
+func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs.Integrations) {
+	if roleARN := integrations.AWS.AssumedRoleARN; roleARN != nil {
+		d.Set("role_arn", roleARN)
+	} else {
+		d.Set("role_arn", nil)
+	}
+
+	d.Set("generate_credentials_in_worker", integrations.AWS.GenerateCredentialsInWorker)
 }

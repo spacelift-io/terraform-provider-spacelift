@@ -25,20 +25,27 @@ func TestContextResource(t *testing.T) {
 			`, randomID, description)
 		}
 
+		const resourceName = "spacelift_context.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_context.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-context-")),
 					Attribute("name", StartsWith("Provider test context")),
 					Attribute("description", Equals("old description")),
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("new description"),
 				Check: Resource(
-					"spacelift_context.test",
+					resourceName,
 					Attribute("description", Equals("new description")),
 				),
 			},
