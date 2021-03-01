@@ -154,7 +154,9 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	var element *structs.ConfigElement
 	var err error
 
-	switch resourceType, resourceID, variableName := idParts[0], idParts[1], idParts[2]; resourceType {
+	resourceType, resourceID, variableName := idParts[0], idParts[1], idParts[2]
+
+	switch resourceType {
 	case "context":
 		element, err = resourceEnvironmentVariableReadContext(ctx, d, client, resourceID, variableName)
 	case "module":
@@ -175,6 +177,8 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	d.Set("checksum", element.Checksum)
+	d.Set("name", variableName)
+	d.Set("write_only", element.WriteOnly)
 
 	if value := element.Value; value != nil {
 		d.Set("value", *value)
@@ -185,14 +189,14 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context, ID string) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, contextID, variableName string) (*structs.ConfigElement, error) {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(context), "id": toID(ID)}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(contextID), "id": toID(variableName)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for context environment variable")
 	}
 
@@ -200,17 +204,19 @@ func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.Resou
 		return nil, nil
 	}
 
+	d.Set("context_id", contextID)
+
 	return query.Context.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, module, ID string) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, moduleID, variableName string) (*structs.ConfigElement, error) {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"module(id: $module)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(module), "id": toID(ID)}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(moduleID), "id": toID(variableName)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for module environment variable")
 	}
 
@@ -218,23 +224,27 @@ func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.Resour
 		return nil, nil
 	}
 
+	d.Set("module_id", moduleID)
+
 	return query.Module.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, ID string) (*structs.ConfigElement, error) {
+func resourceEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stackID, variableName string) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stack), "id": toID(ID)}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stackID), "id": toID(variableName)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack environment variable")
 	}
 
 	if query.Stack == nil {
 		return nil, nil
 	}
+
+	d.Set("stack_id", stackID)
 
 	return query.Stack.ConfigElement, nil
 }
