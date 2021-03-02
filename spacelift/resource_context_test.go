@@ -13,6 +13,8 @@ import (
 func TestContextResource(t *testing.T) {
 	t.Parallel()
 
+	const resourceName = "spacelift_context.test"
+
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("creates and updates contexts without an error", func(t *testing.T) {
@@ -29,16 +31,21 @@ func TestContextResource(t *testing.T) {
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_context.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-context-")),
 					Attribute("name", StartsWith("Provider test context")),
 					Attribute("description", Equals("old description")),
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("new description"),
 				Check: Resource(
-					"spacelift_context.test",
+					resourceName,
 					Attribute("description", Equals("new description")),
 				),
 			},

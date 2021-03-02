@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -19,14 +21,12 @@ func resourceStackGCPServiceAccount() *schema.Resource {
 
 func resourceGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceGCPServiceAccountCreate,
-		Read:   resourceGCPServiceAccountRead,
-		Update: resourceGCPServiceAccountCreate,
-		Delete: resourceGCPServiceAccountDelete,
+		CreateContext: resourceGCPServiceAccountCreate,
+		ReadContext:   resourceGCPServiceAccountRead,
+		UpdateContext: resourceGCPServiceAccountCreate,
+		DeleteContext: resourceGCPServiceAccountDelete,
 
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer: &schema.ResourceImporter{StateContext: importIntegration},
 
 		Schema: map[string]*schema.Schema{
 			"service_account_email": {
@@ -35,11 +35,11 @@ func resourceGCPServiceAccount() *schema.Resource {
 				Computed:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module which uses GCP service account credentials",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id"},
-				ForceNew:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the module which uses GCP service account credentials",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,
@@ -59,7 +59,7 @@ func resourceGCPServiceAccount() *schema.Resource {
 	}
 }
 
-func resourceGCPServiceAccountCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		CreateGCPIntegration struct {
 			Activated bool `graphql:"activated"`
@@ -71,50 +71,48 @@ func resourceGCPServiceAccountCreate(d *schema.ResourceData, meta interface{}) e
 		tokenScopes = append(tokenScopes, graphql.String(scope.(string)))
 	}
 
-	var id string
+	var ID string
 	if stackID, ok := d.GetOk("stack_id"); ok {
-		id = stackID.(string)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		id = moduleID.(string)
+		ID = stackID.(string)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		ID = d.Get("module_id").(string)
 	}
 
 	variables := map[string]interface{}{
-		"id":          toID(id),
+		"id":          toID(ID),
 		"tokenScopes": tokenScopes,
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not generate dedicated GCP role account for the stack")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not generate dedicated GCP role account for the stack: %v", err)
 	}
 
 	if !mutation.CreateGCPIntegration.Activated {
-		return errors.New("GCP integration not activated")
+		return diag.Errorf("GCP integration not activated")
 	}
 
 	if d.Id() == "" {
-		d.SetId(id)
+		d.SetId(ID)
 	}
 
-	return resourceGCPServiceAccountRead(d, meta)
+	return resourceGCPServiceAccountRead(ctx, d, meta)
 }
 
-func resourceGCPServiceAccountRead(d *schema.ResourceData, meta interface{}) error {
+func resourceGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
-		return resourceModuleGCPServiceAccountReadWithHooks(d, meta, func(_ string) error {
+		return resourceModuleGCPServiceAccountReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
 			d.SetId("")
 			return nil
 		})
 	}
 
-	return resourceStackGCPServiceAccountReadWithHooks(d, meta, func(_ string) error {
+	return resourceStackGCPServiceAccountReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
 		d.SetId("")
 		return nil
 	})
 }
 
-func resourceGCPServiceAccountDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceGCPServiceAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		DeleteGCPIntegration struct {
 			Activated bool `graphql:"activated"`
@@ -123,12 +121,12 @@ func resourceGCPServiceAccountDelete(d *schema.ResourceData, meta interface{}) e
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete stack GCP service account")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete stack GCP service account: %v", err)
 	}
 
 	if mutation.DeleteGCPIntegration.Activated {
-		return errors.New("did not disable GCP integration, still reporting as activated")
+		return diag.Errorf("did not disable GCP integration, still reporting as activated")
 	}
 
 	d.SetId("")
@@ -136,15 +134,15 @@ func resourceGCPServiceAccountDelete(d *schema.ResourceData, meta interface{}) e
 	return nil
 }
 
-func resourceModuleGCPServiceAccountReadWithHooks(d *schema.ResourceData, meta interface{}, onNil func(message string) error) error {
+func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta interface{}, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module: %v", err)
 	}
 
 	if query.Module == nil {
@@ -169,15 +167,15 @@ func resourceModuleGCPServiceAccountReadWithHooks(d *schema.ResourceData, meta i
 	return nil
 }
 
-func resourceStackGCPServiceAccountReadWithHooks(d *schema.ResourceData, meta interface{}, onNil func(message string) error) error {
+func resourceStackGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta interface{}, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack: %v", err)
 	}
 
 	if query.Stack == nil {

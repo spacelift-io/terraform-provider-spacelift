@@ -1,9 +1,11 @@
 package spacelift
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -14,9 +16,9 @@ import (
 
 func resourceMountedFile() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceMountedFileCreate,
-		Read:   resourceMountedFileRead,
-		Delete: resourceMountedFileDelete,
+		CreateContext: resourceMountedFileCreate,
+		ReadContext:   resourceMountedFileRead,
+		DeleteContext: resourceMountedFileDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -37,18 +39,17 @@ func resourceMountedFile() *schema.Resource {
 				ForceNew:         true,
 			},
 			"context_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the context on which the mounted file is defined",
-				Optional:      true,
-				ConflictsWith: []string{"module_id", "stack_id"},
-				ForceNew:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the context on which the mounted file is defined",
+				ExactlyOneOf: []string{"context_id", "module_id", "stack_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module on which the mounted file is defined",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id"},
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the module on which the mounted file is defined",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"relative_path": {
 				Type:        schema.TypeString,
@@ -57,11 +58,10 @@ func resourceMountedFile() *schema.Resource {
 				ForceNew:    true,
 			},
 			"stack_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the stack on which the mounted file is defined",
-				Optional:      true,
-				ConflictsWith: []string{"context_id"},
-				ForceNew:      true,
+				Type:        schema.TypeString,
+				Description: "ID of the stack on which the mounted file is defined",
+				Optional:    true,
+				ForceNew:    true,
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
@@ -74,7 +74,7 @@ func resourceMountedFile() *schema.Resource {
 	}
 }
 
-func resourceMountedFileCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
 			ID:        toID(d.Get("relative_path")),
@@ -84,98 +84,87 @@ func resourceMountedFileCreate(d *schema.ResourceData, meta interface{}) error {
 		},
 	}
 
-	contextID, contextOK := d.GetOk("context_id")
-	if contextOK {
+	if contextID, ok := d.GetOk("context_id"); ok {
 		variables["context"] = toID(contextID)
+		return resourceMountedFileCreateContext(ctx, d, meta.(*internal.Client), variables)
 	}
 
-	stackID, stackOK := d.GetOk("stack_id")
-	if stackOK {
+	if stackID, ok := d.GetOk("stack_id"); ok {
 		variables["stack"] = toID(stackID)
+		return resourceMountedFileCreateStack(ctx, d, meta.(*internal.Client), variables)
 	}
 
-	moduleID, moduleOK := d.GetOk("module_id")
-	if moduleOK {
-		variables["stack"] = toID(moduleID)
-	}
-
-	if !(contextOK || stackOK || moduleOK) {
-		return errors.New("either context_id or stack_id/module_id must be provided")
-	}
-
-	if contextOK {
-		return resourceMountedFileCreateContext(d, meta.(*internal.Client), variables)
-	}
-
-	if moduleOK {
-		return resourceMountedFileCreateModule(d, meta.(*internal.Client), variables)
-	}
-
-	return resourceMountedFileCreateStack(d, meta.(*internal.Client), variables)
+	variables["stack"] = toID(d.Get("module_id"))
+	return resourceMountedFileCreateModule(ctx, d, meta.(*internal.Client), variables)
 }
 
-func resourceMountedFileCreateContext(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
+func resourceMountedFileCreateContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
 	var mutation struct {
 		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
 
-	if err := client.Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create context mounted file")
+	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create context mounted file: %v", err)
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("relative_path")))
-	return resourceMountedFileRead(d, client)
+
+	return resourceMountedFileRead(ctx, d, client)
 }
 
-func resourceMountedFileCreateModule(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
+func resourceMountedFileCreateModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
 	var mutation struct {
 		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
-	if err := client.Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not module mounted file")
+	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not module mounted file: %v", err)
 	}
 
 	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("relative_path")))
-	return resourceMountedFileRead(d, client)
+
+	return resourceMountedFileRead(ctx, d, client)
 }
 
-func resourceMountedFileCreateStack(d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) error {
+func resourceMountedFileCreateStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
 	var mutation struct {
 		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
-	if err := client.Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create stack mounted file")
+	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create stack mounted file: %v", err)
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("relative_path")))
-	return resourceMountedFileRead(d, client)
+
+	return resourceMountedFileRead(ctx, d, client)
 }
 
-func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
+func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 3)
 	if len(idParts) != 3 {
-		return errors.Errorf("unexpected resource ID: %s", d.Id())
+		return diag.Errorf("unexpected resource ID: %s", d.Id())
 	}
 
 	client := meta.(*internal.Client)
 	var element *structs.ConfigElement
 	var err error
 
-	switch idParts[0] {
+	resourceType, resourceID, relativePath := idParts[0], idParts[1], idParts[2]
+
+	switch resourceType {
 	case "context":
-		element, err = resourceMountedFileReadContext(d, client, toID(idParts[1]), toID(idParts[2]))
+		element, err = resourceMountedFileReadContext(ctx, d, client, resourceID, relativePath)
 	case "module":
-		element, err = resourceMountedFileReadModule(d, client, toID(idParts[1]), toID(idParts[2]))
+		element, err = resourceMountedFileReadModule(ctx, d, client, resourceID, relativePath)
 	case "stack":
-		element, err = resourceMountedFileReadStack(d, client, toID(idParts[1]), toID(idParts[2]))
+		element, err = resourceMountedFileReadStack(ctx, d, client, resourceID, relativePath)
 	default:
-		return errors.Errorf("unexpected resource type: %s", idParts[0])
+		return diag.Errorf("unexpected resource type: %s", idParts[0])
 	}
 
 	if err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	if element == nil {
@@ -184,6 +173,8 @@ func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.Set("checksum", element.Checksum)
+	d.Set("relative_path", relativePath)
+	d.Set("write_only", element.WriteOnly)
 
 	if value := element.Value; value != nil {
 		d.Set("content", *value)
@@ -194,14 +185,14 @@ func resourceMountedFileRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceMountedFileReadContext(d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceMountedFileReadContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, contextID, relativePath string) (*structs.ConfigElement, error) {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := client.Query(&query, map[string]interface{}{"context": context, "id": ID}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(contextID), "id": toID(relativePath)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for context mounted file")
 	}
 
@@ -209,17 +200,19 @@ func resourceMountedFileReadContext(d *schema.ResourceData, client *internal.Cli
 		return nil, nil
 	}
 
+	d.Set("context_id", contextID)
+
 	return query.Context.ConfigElement, nil
 }
 
-func resourceMountedFileReadModule(d *schema.ResourceData, client *internal.Client, module graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceMountedFileReadModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, moduleID, relativePath string) (*structs.ConfigElement, error) {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"module(id: $module)"`
 	}
 
-	if err := client.Query(&query, map[string]interface{}{"module": module, "id": ID}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(moduleID), "id": toID(relativePath)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for module mounted file")
 	}
 
@@ -227,17 +220,19 @@ func resourceMountedFileReadModule(d *schema.ResourceData, client *internal.Clie
 		return nil, nil
 	}
 
+	d.Set("module_id", moduleID)
+
 	return query.Module.ConfigElement, nil
 }
 
-func resourceMountedFileReadStack(d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) (*structs.ConfigElement, error) {
+func resourceMountedFileReadStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stackID, relativePath string) (*structs.ConfigElement, error) {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := client.Query(&query, map[string]interface{}{"stack": stack, "id": ID}); err != nil {
+	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stackID), "id": toID(relativePath)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack mounted file")
 	}
 
@@ -245,47 +240,50 @@ func resourceMountedFileReadStack(d *schema.ResourceData, client *internal.Clien
 		return nil, nil
 	}
 
+	d.Set("stack_id", stackID)
+
 	return query.Stack.ConfigElement, nil
 }
 
-func resourceMountedFileDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceMountedFileDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 3)
 	if len(idParts) != 3 {
-		return errors.Errorf("unexpected resource ID: %s", d.Id())
+		return diag.Errorf("unexpected resource ID: %s", d.Id())
 	}
 
 	client := meta.(*internal.Client)
 	var err error
 
-	switch idParts[0] {
+	switch resourceType, contextID, fileID := idParts[0], idParts[1], idParts[2]; resourceType {
 	case "context":
-		err = resourceMountedFileDeleteContext(d, client, toID(idParts[1]), toID(idParts[2]))
+		err = resourceMountedFileDeleteContext(ctx, d, client, toID(contextID), toID(fileID))
 	case "stack", "module":
-		err = resourceMountedFileDeleteStack(d, client, toID(idParts[1]), toID(idParts[2]))
+		err = resourceMountedFileDeleteStack(ctx, d, client, toID(contextID), toID(fileID))
 	default:
-		return errors.Errorf("unexpected resource type: %s", idParts[0])
+		return diag.Errorf("unexpected resource type: %s", resourceType)
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "could not delete mounted file")
+		return diag.Errorf("could not delete mounted file: %v", err)
 	}
 
 	d.SetId("")
+
 	return nil
 }
 
-func resourceMountedFileDeleteContext(d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) error {
+func resourceMountedFileDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) error {
 	var mutation struct {
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
 
-	return client.Mutate(&mutation, map[string]interface{}{"context": context, "id": ID})
+	return client.Mutate(ctx, &mutation, map[string]interface{}{"context": context, "id": ID})
 }
 
-func resourceMountedFileDeleteStack(d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
+func resourceMountedFileDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
 	var mutation struct {
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}
 
-	return client.Mutate(&mutation, map[string]interface{}{"stack": stack, "id": ID})
+	return client.Mutate(ctx, &mutation, map[string]interface{}{"stack": stack, "id": ID})
 }

@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataWebhook() *schema.Resource {
 	return &schema.Resource{
-		Read: dataWebhookRead,
+		ReadContext: dataWebhookRead,
 		Schema: map[string]*schema.Schema{
 			"enabled": {
 				Type:        schema.TypeBool,
@@ -23,10 +25,10 @@ func dataWebhook() *schema.Resource {
 				Computed:    true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the stack which triggers the webhooks",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id"},
+				Type:         schema.TypeString,
+				Description:  "ID of the stack which triggers the webhooks",
+				Optional:     true,
+				ExactlyOneOf: []string{"module_id", "stack_id"},
 			},
 			"secret": {
 				Type:        schema.TypeString,
@@ -47,19 +49,15 @@ func dataWebhook() *schema.Resource {
 	}
 }
 
-func dataWebhookRead(d *schema.ResourceData, meta interface{}) error {
+func dataWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
-		return dataModuleWebhookRead(d, meta)
+		return dataModuleWebhookRead(ctx, d, meta)
 	}
 
-	if _, ok := d.GetOk("stack_id"); ok {
-		return dataStackWebhookRead(d, meta)
-	}
-
-	return errors.New("either module_id or stack_id must be provided")
+	return dataStackWebhookRead(ctx, d, meta)
 }
 
-func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
+func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
@@ -68,13 +66,13 @@ func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	webhookID := d.Get("webhook_id").(string)
 	variables := map[string]interface{}{"id": toID(moduleID)}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module: %v", err)
 	}
 
 	module := query.Module
 	if module == nil {
-		return errors.New("module not found")
+		return diag.Errorf("module not found")
 	}
 
 	webhookIndex := -1
@@ -85,7 +83,7 @@ func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if webhookIndex == -1 {
-		return errors.New("webhook not found")
+		return diag.Errorf("webhook not found")
 	}
 
 	d.SetId(webhookID)
@@ -95,7 +93,7 @@ func dataModuleWebhookRead(d *schema.ResourceData, meta interface{}) error {
 
 	return nil
 }
-func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
+func dataStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
@@ -104,13 +102,13 @@ func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 	webhookID := d.Get("webhook_id").(string)
 	variables := map[string]interface{}{"id": toID(stackID)}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack: %v", err)
 	}
 
 	stack := query.Stack
 	if stack == nil {
-		return errors.New("stack not found")
+		return diag.Errorf("stack not found")
 	}
 
 	webhookIndex := -1
@@ -121,7 +119,7 @@ func dataStackWebhookRead(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 	if webhookIndex == -1 {
-		return errors.New("webhook not found")
+		return diag.Errorf("webhook not found")
 	}
 
 	d.SetId(webhookID)

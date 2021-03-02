@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataStack() *schema.Resource {
 	return &schema.Resource{
-		Read: dataStackRead,
+		ReadContext: dataStackRead,
 
 		Schema: map[string]*schema.Schema{
 			"administrative": {
@@ -31,6 +33,12 @@ func dataStack() *schema.Resource {
 			"aws_assume_role_policy_statement": {
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
+				Computed:    true,
+			},
+			"before_apply": {
+				Type:        schema.TypeList,
+				Description: "List of before-apply scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
 			"before_init": {
@@ -165,20 +173,20 @@ func dataStack() *schema.Resource {
 	}
 }
 
-func dataStackRead(d *schema.ResourceData, meta interface{}) error {
+func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	stackID := d.Get("stack_id")
 	variables := map[string]interface{}{"id": toID(stackID)}
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack: %v", err)
 	}
 
 	stack := query.Stack
 	if stack == nil {
-		return errors.New("stack not found")
+		return diag.Errorf("stack not found")
 	}
 
 	d.SetId(stackID.(string))
@@ -186,6 +194,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("before_apply", stack.BeforeApply)
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
@@ -202,7 +211,7 @@ func dataStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return errors.Wrap(err, "error setting gitlab (resource)")
+			return diag.Errorf("error setting gitlab (resource): %v", err)
 		}
 	}
 

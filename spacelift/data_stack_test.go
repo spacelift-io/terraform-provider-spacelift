@@ -22,6 +22,7 @@ func TestStackData(t *testing.T) {
 				autodeploy          = true
 				autoretry           = false
 				before_init         = ["terraform fmt -check", "tflint"]
+				before_apply        = ["ls -la", "rm -rf /"]
 				branch              = "master"
 				description         = "description"
 				labels              = ["one", "two"]
@@ -45,6 +46,9 @@ func TestStackData(t *testing.T) {
 			Attribute("before_init.#", Equals("2")),
 			Attribute("before_init.0", Equals("terraform fmt -check")),
 			Attribute("before_init.1", Equals("tflint")),
+			Attribute("before_apply.#", Equals("2")),
+			Attribute("before_apply.0", Equals("ls -la")),
+			Attribute("before_apply.1", Equals("rm -rf /")),
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),

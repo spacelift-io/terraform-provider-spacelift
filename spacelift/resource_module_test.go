@@ -24,6 +24,8 @@ func TestModuleResource(t *testing.T) {
 			`, description)
 		}
 
+		const resourceName = "spacelift_module.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("old description"),
@@ -37,6 +39,11 @@ func TestModuleResource(t *testing.T) {
 					Attribute("repository", Equals("terraform-bacon-tasty")),
 					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: config("new description"),

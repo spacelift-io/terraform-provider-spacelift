@@ -1,10 +1,11 @@
 package spacelift
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
-	"github.com/fluxio/multierror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -17,10 +18,10 @@ const vcsProviderGitlab = "GITLAB"
 
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceStackCreate,
-		Read:   resourceStackRead,
-		Update: resourceStackUpdate,
-		Delete: resourceStackDelete,
+		CreateContext: resourceStackCreate,
+		ReadContext:   resourceStackRead,
+		UpdateContext: resourceStackUpdate,
+		DeleteContext: resourceStackDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -49,6 +50,12 @@ func resourceStack() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
+			},
+			"before_apply": {
+				Type:        schema.TypeList,
+				Description: "List of before-apply scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
 			},
 			"before_init": {
 				Type:        schema.TypeList,
@@ -191,7 +198,7 @@ func resourceStack() *schema.Resource {
 	}
 }
 
-func resourceStackCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID)"`
 	}
@@ -206,33 +213,33 @@ func resourceStackCreate(d *schema.ResourceData, meta interface{}) error {
 
 	content, ok := d.GetOk("import_state")
 	if ok && !manageState {
-		return errors.New(`"import_state" requires "manage_state" to be true`)
+		return diag.Errorf(`"import_state" requires "manage_state" to be true`)
 	} else if ok {
-		objectID, err := uploadStateFile(content.(string), meta)
+		objectID, err := uploadStateFile(ctx, content.(string), meta)
 		if err != nil {
-			return err
+			return diag.FromErr(err)
 		}
 		variables["stackObjectID"] = toOptionalString(objectID)
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create stack")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create stack: %v", err)
 	}
 
 	d.SetId(mutation.CreateStack.ID)
 
-	return resourceStackRead(d, meta)
+	return resourceStackRead(ctx, d, meta)
 }
 
-func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
+func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack: %v", err)
 	}
 
 	stack := query.Stack
@@ -245,6 +252,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("before_apply", stack.BeforeApply)
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
@@ -260,7 +268,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return errors.Wrap(err, "error setting gitlab (resource)")
+			return diag.Errorf("error setting gitlab (resource): %v", err)
 		}
 	}
 
@@ -301,7 +309,7 @@ func resourceStackRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceStackUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		UpdateStack structs.Stack `graphql:"stackUpdate(id: $id, input: $input)"`
 	}
@@ -311,23 +319,24 @@ func resourceStackUpdate(d *schema.ResourceData, meta interface{}) error {
 		"input": stackInput(d),
 	}
 
-	var acc multierror.Accumulator
+	var ret diag.Diagnostics
 
-	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update stack"))
-	acc.Push(errors.Wrap(resourceStackRead(d, meta), "could not read the current state"))
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		ret = diag.Errorf("could not update stack: %v", err)
+	}
 
-	return acc.Error()
+	return append(ret, resourceStackRead(ctx, d, meta)...)
 }
 
-func resourceStackDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete stack")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete stack: %v", err)
 	}
 
 	d.SetId("")
@@ -344,6 +353,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Name:           toString(d.Get("name")),
 		Repository:     toString(d.Get("repository")),
 	}
+
+	beforeApplies := []graphql.String{}
+	if commands, ok := d.GetOk("before_apply"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			beforeApplies = append(beforeApplies, graphql.String(cmd.(string)))
+		}
+	}
+	ret.BeforeApply = &beforeApplies
 
 	beforeInits := []graphql.String{}
 	if commands, ok := d.GetOk("before_init"); ok {
@@ -429,7 +446,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	return ret
 }
 
-func uploadStateFile(content string, meta interface{}) (string, error) {
+func uploadStateFile(ctx context.Context, content string, meta interface{}) (string, error) {
 	var mutation struct {
 		StateUploadURL struct {
 			ObjectID string `graphql:"objectId"`
@@ -437,7 +454,7 @@ func uploadStateFile(content string, meta interface{}) (string, error) {
 		} `graphql:"stateUploadUrl"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, nil); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, nil); err != nil {
 		return "", errors.Wrap(err, "could not generate state upload URL")
 	}
 

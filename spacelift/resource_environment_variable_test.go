@@ -29,6 +29,8 @@ func TestEnvironmentVariableResource(t *testing.T) {
 			`, randomID, writeOnly)
 		}
 
+		const resourceName = "spacelift_environment_variable.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config(true),
@@ -45,6 +47,11 @@ func TestEnvironmentVariableResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config(false),
 				Check: Resource(
 					"spacelift_environment_variable.test",
@@ -56,8 +63,11 @@ func TestEnvironmentVariableResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{{
-			Config: `
+		const resourceName = "spacelift_environment_variable.test"
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `
 				resource "spacelift_module" "test" {
 					branch         = "master"
 					repository     = "terraform-bacon-tasty"
@@ -69,20 +79,29 @@ func TestEnvironmentVariableResource(t *testing.T) {
 					value     = "is tasty"
 				}
 			`,
-			Check: Resource(
-				"spacelift_environment_variable.test",
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
-				Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
-				Attribute("write_only", Equals("true")),
-				AttributeNotPresent("context_id"),
-				AttributeNotPresent("stack_id"),
-			),
-		}})
+				Check: Resource(
+					resourceName,
+					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
+					Attribute("write_only", Equals("true")),
+					AttributeNotPresent("context_id"),
+					AttributeNotPresent("stack_id"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
 	})
 
 	t.Run("with a stack", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{{
-			Config: fmt.Sprintf(`
+		const resourceName = "spacelift_environment_variable.test"
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					branch     = "master"
 					repository = "demo"
@@ -95,14 +114,20 @@ func TestEnvironmentVariableResource(t *testing.T) {
 					name     = "BACON"
 				}
 			`, randomID),
-			Check: Resource(
-				"spacelift_environment_variable.test",
-				Attribute("stack_id", StartsWith("test-stack-")),
-				Attribute("stack_id", Contains(randomID)),
-				Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
-				AttributeNotPresent("context_id"),
-				AttributeNotPresent("module_id"),
-			),
-		}})
+				Check: Resource(
+					"spacelift_environment_variable.test",
+					Attribute("stack_id", StartsWith("test-stack-")),
+					Attribute("stack_id", Contains(randomID)),
+					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
+					AttributeNotPresent("context_id"),
+					AttributeNotPresent("module_id"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
 	})
 }

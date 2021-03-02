@@ -1,9 +1,10 @@
 package spacelift
 
 import (
-	"github.com/fluxio/multierror"
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -12,10 +13,10 @@ import (
 
 func resourceModule() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceModuleCreate,
-		Read:   resourceModuleRead,
-		Update: resourceModuleUpdate,
-		Delete: resourceModuleDelete,
+		CreateContext: resourceModuleCreate,
+		ReadContext:   resourceModuleRead,
+		UpdateContext: resourceModuleUpdate,
+		DeleteContext: resourceModuleDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -81,7 +82,7 @@ func resourceModule() *schema.Resource {
 	}
 }
 
-func resourceModuleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		CreateModule *structs.Module `graphql:"moduleCreate(input: $input)"`
 	}
@@ -90,24 +91,24 @@ func resourceModuleCreate(d *schema.ResourceData, meta interface{}) error {
 		"input": moduleCreateInput(d),
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not create module")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not create module: %v", err)
 	}
 
 	d.SetId(mutation.CreateModule.ID)
 
-	return resourceModuleRead(d, meta)
+	return resourceModuleRead(ctx, d, meta)
 }
 
-func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module: %v", err)
 	}
 
 	module := query.Module
@@ -131,7 +132,7 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return errors.Wrap(err, "error setting gitlab (resource)")
+			return diag.Errorf("error setting gitlab (resource): %v", err)
 		}
 	}
 
@@ -156,7 +157,7 @@ func resourceModuleRead(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceModuleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		UpdateModule structs.Module `graphql:"moduleUpdate(id: $id, input: $input)"`
 	}
@@ -166,23 +167,24 @@ func resourceModuleUpdate(d *schema.ResourceData, meta interface{}) error {
 		"input": moduleUpdateInput(d),
 	}
 
-	var acc multierror.Accumulator
+	var ret diag.Diagnostics
 
-	acc.Push(errors.Wrap(meta.(*internal.Client).Mutate(&mutation, variables), "could not update module"))
-	acc.Push(errors.Wrap(resourceModuleRead(d, meta), "could not read the current state"))
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		ret = diag.FromErr(err)
+	}
 
-	return acc.Error()
+	return append(ret, resourceModuleRead(ctx, d, meta)...)
 }
 
-func resourceModuleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		DeleteModule *structs.Module `graphql:"moduleDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete module")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete module: %v", err)
 	}
 
 	d.SetId("")

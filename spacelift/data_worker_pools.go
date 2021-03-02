@@ -1,8 +1,10 @@
 package spacelift
 
 import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -10,7 +12,7 @@ import (
 
 func dataWorkerPools() *schema.Resource {
 	return &schema.Resource{
-		Read: dataWorkerPoolsRead,
+		ReadContext: dataWorkerPoolsRead,
 		Schema: map[string]*schema.Schema{
 			"worker_pools": {
 				Type:     schema.TypeList,
@@ -45,15 +47,15 @@ func dataWorkerPools() *schema.Resource {
 	}
 }
 
-func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
+func dataWorkerPoolsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	var query struct {
 		WorkerPools []*structs.WorkerPool `graphql:"workerPools()"`
 	}
 	variables := map[string]interface{}{}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for worker pools")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for worker pools: %v", err)
 	}
 
 	d.SetId("spacelift-worker-pools")
@@ -67,7 +69,7 @@ func dataWorkerPoolsRead(d *schema.ResourceData, meta interface{}) error {
 	wps := flattenDataWorkerPoolsList(workerPools)
 	if err := d.Set("worker_pools", wps); err != nil {
 		d.SetId("")
-		return errors.Wrap(err, "could not set worker pools")
+		return diag.Errorf("could not set worker pools: %v", err)
 	}
 
 	return nil

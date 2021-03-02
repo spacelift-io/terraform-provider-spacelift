@@ -8,6 +8,7 @@ type StackInput struct {
 	Autodeploy     graphql.Boolean    `json:"autodeploy"`
 	Autoretry      graphql.Boolean    `json:"autoretry"`
 	BeforeInit     *[]graphql.String  `json:"beforeInit"`
+	BeforeApply    *[]graphql.String  `json:"beforeApply"`
 	Branch         graphql.String     `json:"branch"`
 	Description    *graphql.String    `json:"description"`
 	Labels         *[]graphql.String  `json:"labels"`

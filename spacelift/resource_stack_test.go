@@ -11,6 +11,8 @@ import (
 )
 
 func TestStackResource(t *testing.T) {
+	const resourceName = "spacelift_stack.test"
+
 	t.Parallel()
 
 	t.Run("with GitHub and no state import", func(t *testing.T) {
@@ -23,6 +25,7 @@ func TestStackResource(t *testing.T) {
 					autodeploy     = true
 					autoretry      = false
 					before_init    = ["terraform fmt -check", "tflint"]
+					before_apply   = ["ls -la", "rm -rf /"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
@@ -34,11 +37,13 @@ func TestStackResource(t *testing.T) {
 			`, description, randomID)
 		}
 
+		const resourceName = "spacelift_stack.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -46,6 +51,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -56,8 +64,13 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("new description"),
-				Check:  Resource("spacelift_stack.test", Attribute("description", Equals("new description"))),
+				Check:  Resource(resourceName, Attribute("description", Equals("new description"))),
 			},
 		})
 	})
@@ -72,6 +85,7 @@ func TestStackResource(t *testing.T) {
 					autodeploy     = true
 					autoretry      = true
 					before_init    = ["terraform fmt -check", "tflint"]
+					before_apply   = ["ls -la", "rm -rf /"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
@@ -93,7 +107,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -101,6 +115,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -111,8 +128,13 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("new description"),
-				Check:  Resource("spacelift_stack.test", Attribute("description", Equals("new description"))),
+				Check:  Resource(resourceName, Attribute("description", Equals("new description"))),
 			},
 		})
 	})
@@ -127,6 +149,7 @@ func TestStackResource(t *testing.T) {
 					autodeploy     = true
 					autoretry      = false
 					before_init    = ["terraform fmt -check", "tflint"]
+					before_apply   = ["ls -la", "rm -rf /"]
 					branch         = "master"
 					labels         = ["one", "two"]
 					name           = "Provider test stack %s"
@@ -142,7 +165,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: config(``),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -150,6 +173,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -159,12 +185,17 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config(`pulumi {
 						login_url = "s3://bucket"
 						stack_name = "mainpl"
 					}`),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -172,6 +203,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -191,7 +225,7 @@ func TestStackResource(t *testing.T) {
 						stack_name = "maincf"
 					}`),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -199,6 +233,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -215,7 +252,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: config(``),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -223,6 +260,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_init.#", Equals("2")),
 					Attribute("before_init.0", Equals("terraform fmt -check")),
 					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_apply.0", Equals("ls -la")),
+					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -244,6 +284,7 @@ func TestStackResource(t *testing.T) {
 				administrative      = true
 				autodeploy          = true
 				before_init         = ["terraform fmt -check", "tflint"]
+				before_apply        = ["ls -la", "rm -rf /"]
 				branch              = "master"
 				description         = "bacon"
 				labels              = ["one", "two"]
@@ -268,10 +309,11 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: before,
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("before_init.#", Equals("2")),
+					Attribute("before_apply.#", Equals("2")),
 					Attribute("description", Equals("bacon")),
 					SetEquals("labels", "one", "two"),
 					Attribute("project_root", Equals("root")),
@@ -281,12 +323,18 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: after,
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("administrative", Equals("false")),
 					Attribute("autodeploy", Equals("false")),
 					Attribute("before_init.#", Equals("0")),
+					Attribute("before_apply.#", Equals("0")),
 					Attribute("description", IsEmpty()),
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),

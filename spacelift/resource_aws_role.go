@@ -1,10 +1,11 @@
 package spacelift
 
 import (
+	"context"
 	"strings"
 	"time"
 
-	"github.com/fluxio/multierror"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -23,22 +24,20 @@ func resourceStackAWSRole() *schema.Resource {
 
 func resourceAWSRole() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceAWSRoleCreate,
-		Read:   resourceAWSRoleRead,
-		Update: resourceAWSRoleUpdate,
-		Delete: resourceAWSRoleDelete,
+		CreateContext: resourceAWSRoleCreate,
+		ReadContext:   resourceAWSRoleRead,
+		UpdateContext: resourceAWSRoleUpdate,
+		DeleteContext: resourceAWSRoleDelete,
 
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer: &schema.ResourceImporter{StateContext: importIntegration},
 
 		Schema: map[string]*schema.Schema{
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module which assumes the AWS IAM role",
-				ConflictsWith: []string{"stack_id"},
-				Optional:      true,
-				ForceNew:      true,
+				Type:         schema.TypeString,
+				Description:  "ID of the module which assumes the AWS IAM role",
+				ExactlyOneOf: []string{"module_id", "stack_id"},
+				Optional:     true,
+				ForceNew:     true,
 			},
 			"role_arn": {
 				Type:        schema.TypeString,
@@ -51,27 +50,32 @@ func resourceAWSRole() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"generate_credentials_in_worker": {
+				Type:        schema.TypeBool,
+				Description: "Generate AWS credentials in the private worker",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
 
-func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var ID string
 
 	roleARN := d.Get("role_arn").(string)
+	generateCredentialsInWorker := d.Get("generate_credentials_in_worker").(bool)
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		ID = moduleID.(string)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		ID = d.Get("module_id").(string)
 	}
 
 	var err error
 
 	for i := 0; i < 5; i++ {
-		err = resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN)
+		err = resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, roleARN, generateCredentialsInWorker)
 		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
 			break
 		}
@@ -81,7 +85,7 @@ func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if err != nil {
-		return errors.Wrap(err, "could not create AWS role delegation")
+		return diag.Errorf("could not create AWS role delegation: %v", err)
 	}
 
 	d.SetId(ID)
@@ -89,27 +93,23 @@ func resourceAWSRoleCreate(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func resourceAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
-		return resourceModuleAWSRoleRead(d, meta)
+		return resourceModuleAWSRoleRead(ctx, d, meta)
 	}
 
-	if _, ok := d.GetOk("stack_id"); ok {
-		return resourceStackAWSRoleRead(d, meta)
-	}
-
-	return errors.New("either module_id or stack_id must be provided")
+	return resourceStackAWSRoleRead(ctx, d, meta)
 }
 
-func resourceModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module: %v", err)
 	}
 
 	if query.Module == nil {
@@ -117,24 +117,20 @@ func resourceModuleAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	if roleARN := query.Module.Integrations.AWS.AssumedRoleARN; roleARN != nil {
-		d.Set("role_arn", roleARN)
-	} else {
-		d.Set("role_arn", nil)
-	}
+	resourceAWSRoleSetIntegration(d, &query.Module.Integrations)
 
 	return nil
 }
 
-func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
+func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack: %v", err)
 	}
 
 	if query.Stack == nil {
@@ -142,36 +138,33 @@ func resourceStackAWSRoleRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
-	if roleARN := query.Stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
-		d.Set("role_arn", roleARN)
-	} else {
-		d.Set("role_arn", nil)
-	}
+	resourceAWSRoleSetIntegration(d, query.Stack.Integrations)
 
 	return nil
 }
 
-func resourceAWSRoleUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var ID string
+
 	roleARN := d.Get("role_arn").(string)
+	generateCredentialsInWorker := d.Get("generate_credentials_in_worker").(bool)
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		ID = moduleID.(string)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		ID = d.Get("module_id").(string)
 	}
 
-	var acc multierror.Accumulator
+	var ret diag.Diagnostics
+	if err := resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, roleARN, generateCredentialsInWorker); err != nil {
+		ret = append(ret, diag.FromErr(err)...)
+	}
+	ret = append(ret, resourceAWSRoleRead(ctx, d, meta)...)
 
-	acc.Push(errors.Wrap(resourceAWSRoleSet(meta.(*internal.Client), ID, roleARN), "could not update AWS role delegation"))
-	acc.Push(errors.Wrap(resourceAWSRoleRead(d, meta), "could not read the current state"))
-
-	return acc.Error()
+	return ret
 }
 
-func resourceAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
+func resourceAWSRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
@@ -182,37 +175,36 @@ func resourceAWSRoleDelete(d *schema.ResourceData, meta interface{}) error {
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		variables["id"] = stackID.(string)
-	} else if moduleID, ok := d.GetOk("module_id"); ok {
-		variables["id"] = moduleID.(string)
 	} else {
-		return errors.New("either module_id or stack_id must be provided")
+		variables["id"] = d.Get("module_id").(string)
 	}
 
-	if err := meta.(*internal.Client).Mutate(&mutation, variables); err != nil {
-		return errors.Wrap(err, "could not delete AWS role delegation")
+	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+		return diag.Errorf("could not delete AWS role delegation: %v", err)
 	}
 
 	if mutation.AttachAWSRole.Activated {
-		return errors.New("did not disable AWS integration, still reporting as activated")
+		return diag.Errorf("did not disable AWS integration, still reporting as activated")
 	}
 
 	d.SetId("")
 	return nil
 }
 
-func resourceAWSRoleSet(client *internal.Client, ID, roleARN string) error {
+func resourceAWSRoleSet(ctx context.Context, client *internal.Client, ID, roleARN string, generateCredentialsInWorker bool) error {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
-		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn)"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":      toID(ID),
-		"roleArn": graphql.String(roleARN),
+		"id":                          toID(ID),
+		"roleArn":                     graphql.String(roleARN),
+		"generateCredentialsInWorker": graphql.Boolean(generateCredentialsInWorker),
 	}
 
-	if err := client.Mutate(&mutation, variables); err != nil {
+	if err := client.Mutate(ctx, &mutation, variables); err != nil {
 		return errors.Wrap(err, "could not set AWS role delegation")
 	}
 
@@ -221,4 +213,14 @@ func resourceAWSRoleSet(client *internal.Client, ID, roleARN string) error {
 	}
 
 	return nil
+}
+
+func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs.Integrations) {
+	if roleARN := integrations.AWS.AssumedRoleARN; roleARN != nil {
+		d.Set("role_arn", roleARN)
+	} else {
+		d.Set("role_arn", nil)
+	}
+
+	d.Set("generate_credentials_in_worker", integrations.AWS.GenerateCredentialsInWorker)
 }

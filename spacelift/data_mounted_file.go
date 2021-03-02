@@ -1,10 +1,11 @@
 package spacelift
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -12,7 +13,7 @@ import (
 
 func dataMountedFile() *schema.Resource {
 	return &schema.Resource{
-		Read: dataMountedFileRead,
+		ReadContext: dataMountedFileRead,
 
 		Schema: map[string]*schema.Schema{
 			"checksum": {
@@ -27,16 +28,16 @@ func dataMountedFile() *schema.Resource {
 				Computed:    true,
 			},
 			"context_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the context where the mounted file is stored",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id", "module_id"},
+				Type:         schema.TypeString,
+				Description:  "ID of the context where the mounted file is stored",
+				ExactlyOneOf: []string{"context_id", "stack_id", "module_id"},
+				Optional:     true,
 			},
 			"module_id": {
-				Type:          schema.TypeString,
-				Description:   "ID of the module where the mounted file is stored",
-				Optional:      true,
-				ConflictsWith: []string{"stack_id"},
+				Type:         schema.TypeString,
+				Description:  "ID of the module where the mounted file is stored",
+				ExactlyOneOf: []string{"context_id", "stack_id", "module_id"},
+				Optional:     true,
 			},
 			"relative_path": {
 				Type:        schema.TypeString,
@@ -44,9 +45,10 @@ func dataMountedFile() *schema.Resource {
 				Required:    true,
 			},
 			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the stack where the mounted file is stored",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "ID of the stack where the mounted file is stored",
+				ExactlyOneOf: []string{"context_id", "stack_id", "module_id"},
+				Optional:     true,
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
@@ -57,27 +59,19 @@ func dataMountedFile() *schema.Resource {
 	}
 }
 
-func dataMountedFileRead(d *schema.ResourceData, meta interface{}) error {
-	_, contextOK := d.GetOk("context_id")
-	_, moduleOK := d.GetOk("module_id")
-	_, stackOK := d.GetOk("stack_id")
-
-	if !(contextOK || moduleOK || stackOK) {
-		return errors.New("either context_id or stack_id/module_id must be provided")
+func dataMountedFileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	if _, ok := d.GetOk("context_id"); ok {
+		return dataMountedFileReadContext(ctx, d, meta)
 	}
 
-	if contextOK {
-		return dataMountedFileReadContext(d, meta)
+	if _, ok := d.GetOk("module_id"); ok {
+		return dataMountedFileReadModule(ctx, d, meta)
 	}
 
-	if moduleOK {
-		return dataMountedFileReadModule(d, meta)
-	}
-
-	return dataMountedFileReadStack(d, meta)
+	return dataMountedFileReadStack(ctx, d, meta)
 }
 
-func dataMountedFileReadContext(d *schema.ResourceData, meta interface{}) error {
+func dataMountedFileReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -92,21 +86,21 @@ func dataMountedFileReadContext(d *schema.ResourceData, meta interface{}) error 
 		"id":      toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for context mounted file")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for context mounted file: %v", err)
 	}
 
 	if query.Context == nil {
-		return errors.New("context not found")
+		return diag.Errorf("context not found")
 	}
 
 	configElement := query.Context.ConfigElement
 	if configElement == nil {
-		return errors.New("mounted file not found")
+		return diag.Errorf("mounted file not found")
 	}
 
 	if configElement.Type != "FILE_MOUNT" {
-		return errors.New("config element is not a mounted file")
+		return diag.Errorf("config element is not a mounted file")
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", contextID, variableName))
@@ -116,7 +110,7 @@ func dataMountedFileReadContext(d *schema.ResourceData, meta interface{}) error 
 	return nil
 }
 
-func dataMountedFileReadModule(d *schema.ResourceData, meta interface{}) error {
+func dataMountedFileReadModule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -131,16 +125,16 @@ func dataMountedFileReadModule(d *schema.ResourceData, meta interface{}) error {
 		"id":     toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module mounted file")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for module mounted file: %v", err)
 	}
 
 	if query.Module == nil {
-		return errors.New("module not found")
+		return diag.Errorf("module not found")
 	}
 
 	if query.Module.ConfigElement == nil {
-		return errors.New("mounted file not found")
+		return diag.Errorf("mounted file not found")
 	}
 
 	d.SetId(fmt.Sprintf("module/%s/%s", moduleID, variableName))
@@ -150,7 +144,7 @@ func dataMountedFileReadModule(d *schema.ResourceData, meta interface{}) error {
 	return nil
 }
 
-func dataMountedFileReadStack(d *schema.ResourceData, meta interface{}) error {
+func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -165,16 +159,16 @@ func dataMountedFileReadStack(d *schema.ResourceData, meta interface{}) error {
 		"id":    toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(&query, variables); err != nil {
-		return errors.Wrap(err, "could not query for stack mounted file")
+	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+		return diag.Errorf("could not query for stack mounted file: %v", err)
 	}
 
 	if query.Stack == nil {
-		return errors.New("stack not found")
+		return diag.Errorf("stack not found")
 	}
 
 	if query.Stack.ConfigElement == nil {
-		return errors.New("mounted file not found")
+		return diag.Errorf("mounted file not found")
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", stackID, variableName))
