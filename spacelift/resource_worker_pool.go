@@ -153,7 +153,9 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 		return nil
 	}
 
+	d.Set("config", workerPool.Config)
 	d.Set("name", workerPool.Name)
+
 	if description := workerPool.Description; description != nil {
 		d.Set("description", *description)
 	}

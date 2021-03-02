@@ -11,6 +11,8 @@ import (
 )
 
 func TestStackResource(t *testing.T) {
+	const resourceName = "spacelift_stack.test"
+
 	t.Parallel()
 
 	t.Run("with GitHub and no state import", func(t *testing.T) {
@@ -35,11 +37,13 @@ func TestStackResource(t *testing.T) {
 			`, description, randomID)
 		}
 
+		const resourceName = "spacelift_stack.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -60,8 +64,13 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("new description"),
-				Check:  Resource("spacelift_stack.test", Attribute("description", Equals("new description"))),
+				Check:  Resource(resourceName, Attribute("description", Equals("new description"))),
 			},
 		})
 	})
@@ -98,7 +107,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: config("old description"),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -119,8 +128,13 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("new description"),
-				Check:  Resource("spacelift_stack.test", Attribute("description", Equals("new description"))),
+				Check:  Resource(resourceName, Attribute("description", Equals("new description"))),
 			},
 		})
 	})
@@ -151,7 +165,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: config(``),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -171,12 +185,17 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: config(`pulumi {
 						login_url = "s3://bucket"
 						stack_name = "mainpl"
 					}`),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -206,7 +225,7 @@ func TestStackResource(t *testing.T) {
 						stack_name = "maincf"
 					}`),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -233,7 +252,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: config(``),
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
@@ -290,7 +309,7 @@ func TestStackResource(t *testing.T) {
 			{
 				Config: before,
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("before_init.#", Equals("2")),
@@ -304,9 +323,14 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
 				Config: after,
 				Check: Resource(
-					"spacelift_stack.test",
+					resourceName,
 					Attribute("administrative", Equals("false")),
 					Attribute("autodeploy", Equals("false")),
 					Attribute("before_init.#", Equals("0")),

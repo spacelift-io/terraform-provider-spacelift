@@ -29,9 +29,7 @@ func resourceAWSRole() *schema.Resource {
 		UpdateContext: resourceAWSRoleUpdate,
 		DeleteContext: resourceAWSRoleDelete,
 
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
+		Importer: &schema.ResourceImporter{StateContext: importIntegration},
 
 		Schema: map[string]*schema.Schema{
 			"module_id": {
@@ -119,13 +117,7 @@ func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta
 		return nil
 	}
 
-	if roleARN := query.Module.Integrations.AWS.AssumedRoleARN; roleARN != nil {
-		d.Set("role_arn", roleARN)
-	} else {
-		d.Set("role_arn", nil)
-	}
-
-	d.Set("genereate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
+	resourceAWSRoleSetIntegration(d, &query.Module.Integrations)
 
 	return nil
 }
@@ -146,13 +138,7 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 		return nil
 	}
 
-	if roleARN := query.Stack.Integrations.AWS.AssumedRoleARN; roleARN != nil {
-		d.Set("role_arn", roleARN)
-	} else {
-		d.Set("role_arn", nil)
-	}
-
-	d.Set("genereate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
+	resourceAWSRoleSetIntegration(d, query.Stack.Integrations)
 
 	return nil
 }
@@ -227,4 +213,14 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, ID, roleAR
 	}
 
 	return nil
+}
+
+func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs.Integrations) {
+	if roleARN := integrations.AWS.AssumedRoleARN; roleARN != nil {
+		d.Set("role_arn", roleARN)
+	} else {
+		d.Set("role_arn", nil)
+	}
+
+	d.Set("generate_credentials_in_worker", integrations.AWS.GenerateCredentialsInWorker)
 }

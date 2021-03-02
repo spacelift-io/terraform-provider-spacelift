@@ -34,11 +34,13 @@ func TestContextAttachmentResource(t *testing.T) {
 			`, randomID, randomID, priority)
 		}
 
+		const resourceName = "spacelift_context_attachment.test"
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config(1),
 				Check: Resource(
-					"spacelift_context_attachment.test",
+					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("context_id", Contains(randomID)),
 					AttributeNotPresent("module_id"),
@@ -47,9 +49,15 @@ func TestContextAttachmentResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("test-context-%s/test-stack-%s", randomID, randomID),
+				ImportStateVerify: true,
+			},
+			{
 				Config: config(2),
 				Check: Resource(
-					"spacelift_context_attachment.test",
+					resourceName,
 					Attribute("priority", Equals("2")),
 				),
 			},
@@ -57,8 +65,11 @@ func TestContextAttachmentResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{{
-			Config: fmt.Sprintf(`
+		const resourceName = "spacelift_context_attachment.test"
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
@@ -74,12 +85,18 @@ func TestContextAttachmentResource(t *testing.T) {
 					priority   = 1
 				}
 			`, randomID),
-			Check: Resource(
-				"spacelift_context_attachment.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
-				AttributeNotPresent("stack_id"),
-			),
-		}})
+				Check: Resource(
+					"spacelift_context_attachment.test",
+					Attribute("id", IsNotEmpty()),
+					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					AttributeNotPresent("stack_id"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("test-context-%s/terraform-bacon-tasty", randomID),
+				ImportStateVerify: true,
+			}})
 	})
 }

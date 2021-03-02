@@ -11,6 +11,8 @@ import (
 )
 
 func TestGCPServiceAccountResource(t *testing.T) {
+	const resourceName = "spacelift_gcp_service_account.test"
+
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("with a stack", func(t *testing.T) {
@@ -33,7 +35,7 @@ func TestGCPServiceAccountResource(t *testing.T) {
 			{
 				Config: config("https://www.googleapis.com/auth/compute"),
 				Check: Resource(
-					"spacelift_gcp_service_account.test",
+					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("service_account_email", IsNotEmpty()),
@@ -41,9 +43,15 @@ func TestGCPServiceAccountResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("stack/test-stack-%s", randomID),
+				ImportStateVerify: true,
+			},
+			{
 				Config: config("https://www.googleapis.com/auth/cloud-platform"),
 				Check: Resource(
-					"spacelift_gcp_service_account.test",
+					resourceName,
 					SetEquals("token_scopes", "https://www.googleapis.com/auth/cloud-platform"),
 				),
 			},
@@ -51,8 +59,9 @@ func TestGCPServiceAccountResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{{
-			Config: `
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `
 				resource "spacelift_module" "test" {
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
@@ -62,11 +71,18 @@ func TestGCPServiceAccountResource(t *testing.T) {
 					token_scopes = ["https://www.googleapis.com/auth/compute"]
 				}
 			`,
-			Check: Resource(
-				"spacelift_gcp_service_account.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
-			),
-		}})
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("module_id", Equals("terraform-bacon-tasty")),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     "module/terraform-bacon-tasty",
+				ImportStateVerify: true,
+			},
+		})
 	})
 }
