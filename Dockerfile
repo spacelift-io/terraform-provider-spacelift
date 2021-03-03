@@ -1,4 +1,4 @@
-FROM golang:1.13-alpine as builder
+FROM golang:1.16-alpine as builder
 
 RUN apk add --no-cache git
 ARG DIR=/project
@@ -8,7 +8,7 @@ RUN go mod download
 COPY . $DIR/
 RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /terraform-provider-spacelift
 
-FROM alpine:3.10
+FROM alpine:3.13.2
 
 RUN apk add --no-cache ca-certificates curl git openssh
 
