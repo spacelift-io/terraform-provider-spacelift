@@ -42,12 +42,12 @@ func dataAWSRole() *schema.Resource {
 			"generate_credentials_in_worker": {
 				Type:        schema.TypeBool,
 				Description: "Generate AWS credentials in the private worker",
-				Optional:    true,
+				Computed:    true,
 			},
 			"external_id": {
 				Type:        schema.TypeString,
 				Description: "Custom external ID (works only for private workers).",
-				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}
