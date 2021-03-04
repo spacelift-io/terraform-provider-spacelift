@@ -5,6 +5,7 @@ type Integrations struct {
 	AWS struct {
 		AssumedRoleARN              *string `graphql:"assumedRoleArn"`
 		AssumeRolePolicyStatement   string  `graphql:"assumeRolePolicyStatement"`
+		ExternalID                  *string `graphql:"externalID"`
 		GenerateCredentialsInWorker bool    `graphql:"generateCredentialsInWorker"`
 	} `graphql:"aws"`
 	GCP struct {

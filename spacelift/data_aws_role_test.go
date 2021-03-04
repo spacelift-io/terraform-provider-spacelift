@@ -97,6 +97,7 @@ func TestAWSRoleData(t *testing.T) {
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("role_arn", Equals("custom_role_arn")),
 					Attribute("generate_credentials_in_worker", Equals("true")),
+					Attribute("external_id", IsEmpty()),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -114,6 +115,7 @@ func TestAWSRoleData(t *testing.T) {
 					module_id                      = spacelift_module.test.id
 					role_arn                       = "custom_role_arn"
 					generate_credentials_in_worker = true
+					external_id                    = "external@id"
 				}
 
 				data "spacelift_aws_role" "test" {
@@ -126,6 +128,7 @@ func TestAWSRoleData(t *testing.T) {
 				Attribute("module_id", Equals("terraform-bacon-tasty")),
 				Attribute("role_arn", Equals("custom_role_arn")),
 				Attribute("generate_credentials_in_worker", Equals("true")),
+				Attribute("external_id", Equals("external@id")),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
