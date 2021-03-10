@@ -7,11 +7,17 @@ jobs:
     name: Build and deploy the image
     runs-on: ubuntu-latest
     env:
+      BASE_IMAGE: quay.io/spacelift/runner
       DOCKER_IMAGE: quay.io/spacelift/runner:${{ github.ref == 'refs/heads/master' && 'latest' || 'future' }}
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@master
+
+      - name: get current unix timestamp
+        id: vars
+        run: |
+          echo ::set-output name=now::$(date +%s)
 
       - name: Log in to quay.io
         run: echo ${QUAY_PASSWORD} | docker login --username ${QUAY_USERNAME} --password-stdin quay.io
@@ -20,8 +26,14 @@ jobs:
           QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Build the image
-        run: docker build --tag ${DOCKER_IMAGE} .
+        run: docker build --tag ${DOCKER_IMAGE} --tag ${BASE_IMAGE}:$TIMESTAMP .
+        env:
+          TIMESTAMP: ${{ steps.vars.outputs.now }}
 
-      - name: Push the image to quay.io
+      - name: Push latest image to quay.io
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future' }}
-        run: docker push ${DOCKER_IMAGE}
+        run: |
+          docker push ${DOCKER_IMAGE}
+          docker push ${BASE_IMAGE}:$TIMESTAMP
+        env:
+          TIMESTAMP: ${{ steps.vars.outputs.now }}
