@@ -14,7 +14,7 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@master
 
-      - name: get current unix timestamp
+      - name: Get current unix timestamp
         id: vars
         run: |
           echo ::set-output name=now::$(date +%s)
@@ -30,7 +30,7 @@ jobs:
         env:
           TIMESTAMP: ${{ steps.vars.outputs.now }}
 
-      - name: Push latest image to quay.io
+      - name: Push latest and timestamped image to quay.io
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future' }}
         run: |
           docker push ${DOCKER_IMAGE}
