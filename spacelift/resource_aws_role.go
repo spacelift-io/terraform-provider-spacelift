@@ -56,15 +56,17 @@ func resourceAWSRole() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"external_id": {
+				Type:        schema.TypeString,
+				Description: "Custom external ID (works only for private workers).",
+				Optional:    true,
+			},
 		},
 	}
 }
 
 func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var ID string
-
-	roleARN := d.Get("role_arn").(string)
-	generateCredentialsInWorker := d.Get("generate_credentials_in_worker").(bool)
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
@@ -75,7 +77,7 @@ func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta int
 	var err error
 
 	for i := 0; i < 5; i++ {
-		err = resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, roleARN, generateCredentialsInWorker)
+		err = resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, d)
 		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
 			break
 		}
@@ -146,9 +148,6 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 func resourceAWSRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var ID string
 
-	roleARN := d.Get("role_arn").(string)
-	generateCredentialsInWorker := d.Get("generate_credentials_in_worker").(bool)
-
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
 	} else {
@@ -156,7 +155,7 @@ func resourceAWSRoleUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	var ret diag.Diagnostics
-	if err := resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, roleARN, generateCredentialsInWorker); err != nil {
+	if err := resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, d); err != nil {
 		ret = append(ret, diag.FromErr(err)...)
 	}
 	ret = append(ret, resourceAWSRoleRead(ctx, d, meta)...)
@@ -191,17 +190,23 @@ func resourceAWSRoleDelete(ctx context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func resourceAWSRoleSet(ctx context.Context, client *internal.Client, ID, roleARN string, generateCredentialsInWorker bool) error {
+func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string, d *schema.ResourceData) error {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
-		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker)"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":                          toID(ID),
-		"roleArn":                     graphql.String(roleARN),
-		"generateCredentialsInWorker": graphql.Boolean(generateCredentialsInWorker),
+		"id":                          toID(id),
+		"roleArn":                     graphql.String(d.Get("role_arn").(string)),
+		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),
+	}
+
+	if externalID, ok := d.GetOk("external_id"); ok {
+		variables["externalID"] = toOptionalString(externalID)
+	} else {
+		variables["externalID"] = (*graphql.String)(nil)
 	}
 
 	if err := client.Mutate(ctx, &mutation, variables); err != nil {
@@ -223,4 +228,5 @@ func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs
 	}
 
 	d.Set("generate_credentials_in_worker", integrations.AWS.GenerateCredentialsInWorker)
+	d.Set("external_id", integrations.AWS.ExternalID)
 }

@@ -42,7 +42,12 @@ func dataAWSRole() *schema.Resource {
 			"generate_credentials_in_worker": {
 				Type:        schema.TypeBool,
 				Description: "Generate AWS credentials in the private worker",
-				Optional:    true,
+				Computed:    true,
+			},
+			"external_id": {
+				Type:        schema.TypeString,
+				Description: "Custom external ID (works only for private workers).",
+				Computed:    true,
 			},
 		},
 	}
@@ -81,6 +86,7 @@ func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.SetId(moduleID.(string))
 	d.Set("generate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
+	d.Set("external_id", module.Integrations.AWS.ExternalID)
 
 	return nil
 }
@@ -110,6 +116,7 @@ func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	d.SetId(stackID.(string))
 	d.Set("generate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
+	d.Set("external_id", stack.Integrations.AWS.ExternalID)
 
 	return nil
 }
