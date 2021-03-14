@@ -30,6 +30,16 @@ jobs:
         env:
           TIMESTAMP: ${{ steps.vars.outputs.now }}
 
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@f5e208a156392ee19cad188ecb4819501dde005f
+        with:
+          image-ref: quay.io/spacelift/runner:${{ steps.vars.outputs.now }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
       - name: Push latest and timestamped image to quay.io
         if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future' }}
         run: |
