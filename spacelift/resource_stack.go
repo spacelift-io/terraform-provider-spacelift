@@ -234,6 +234,7 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	d.SetId(mutation.CreateStack.ID)
+	d.Set("wait_for_destroy", d.Get("wait_for_destroy"))
 
 	return resourceStackRead(ctx, d, meta)
 }
@@ -268,10 +269,6 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("project_root", stack.ProjectRoot)
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
-
-	if _, ok := d.GetOk("wait_for_destroy"); !ok {
-		d.Set("wait_for_destroy", true)
-	}
 
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
@@ -335,6 +332,8 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update stack: %v", err)
 	}
+
+	d.Set("wait_for_destroy", d.Get("wait_for_destroy"))
 
 	return append(ret, resourceStackRead(ctx, d, meta)...)
 }
