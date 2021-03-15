@@ -192,8 +192,9 @@ func resourceStack() *schema.Resource {
 			},
 			"wait_for_destroy": {
 				Type:        schema.TypeBool,
-				Description: "If the Stack is marked with destroy_on_delete, wait for the destruction and deletion to finish. This might take a long time, if the stacks you destroy also destroy underlying other stacks and wait for them, etc.",
 				Default:     true,
+				Description: "If the Stack is marked with destroy_on_delete, wait for the destruction and deletion to finish. This might take a long time, if the stacks you destroy also destroy underlying other stacks and wait for them, etc.",
+				Optional:    true,
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
