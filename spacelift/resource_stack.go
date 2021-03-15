@@ -377,7 +377,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 			return nil
 		}
 
-		if stack.Deleting == false {
+		if !stack.Deleting {
 			return diag.Errorf("destruction of Stack unsuccessful, please check the destruction run logs")
 		}
 	}
