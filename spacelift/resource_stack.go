@@ -361,7 +361,13 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 func waitForDestroy(ctx context.Context, client *internal.Client, id string) diag.Diagnostics {
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
-	for range ticker.C {
+	for {
+		select {
+		case <-ctx.Done():
+			return diag.FromErr(ctx.Err())
+		case <-ticker.C:
+		}
+
 		var query struct {
 			Stack *structs.Stack `graphql:"stack(id: $id)"`
 		}
