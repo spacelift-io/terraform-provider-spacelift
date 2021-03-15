@@ -18,6 +18,7 @@ type Stack struct {
 	BeforeApply      []string      `graphql:"beforeApply"`
 	BeforeInit       []string      `graphql:"beforeInit"`
 	Branch           string        `graphql:"branch"`
+	Deleting         bool          `graphql:"deleting"`
 	Description      *string       `graphql:"description"`
 	Integrations     *Integrations `graphql:"integrations"`
 	Labels           []string      `graphql:"labels"`

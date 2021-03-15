@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -189,6 +190,12 @@ func resourceStack() *schema.Resource {
 				Description: "Terraform workspace to select",
 				Optional:    true,
 			},
+			"wait_for_destroy": {
+				Type:        schema.TypeBool,
+				Default:     true,
+				Description: "If the Stack is marked with destroy_on_delete, wait for the destruction and deletion to finish. This might take a long time, if the stacks you destroy also destroy underlying other stacks and wait for them, etc.",
+				Optional:    true,
+			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool to use",
@@ -227,6 +234,7 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	d.SetId(mutation.CreateStack.ID)
+	d.Set("wait_for_destroy", d.Get("wait_for_destroy"))
 
 	return resourceStackRead(ctx, d, meta)
 }
@@ -325,6 +333,8 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 		ret = diag.Errorf("could not update stack: %v", err)
 	}
 
+	d.Set("wait_for_destroy", d.Get("wait_for_destroy"))
+
 	return append(ret, resourceStackRead(ctx, d, meta)...)
 }
 
@@ -339,9 +349,48 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.Errorf("could not delete stack: %v", err)
 	}
 
+	if mutation.DeleteStack.Deleting {
+		if wait := d.Get("wait_for_destroy"); wait != nil && wait.(bool) {
+			if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), d.Id()); diagnostics.HasError() {
+				return diagnostics
+			}
+		}
+	}
+
 	d.SetId("")
 
 	return nil
+}
+
+func waitForDestroy(ctx context.Context, client *internal.Client, id string) diag.Diagnostics {
+	ticker := time.NewTicker(time.Second * 5)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return diag.FromErr(ctx.Err())
+		case <-ticker.C:
+		}
+
+		var query struct {
+			Stack *structs.Stack `graphql:"stack(id: $id)"`
+		}
+
+		variables := map[string]interface{}{"id": graphql.ID(id)}
+
+		if err := client.Query(ctx, &query, variables); err != nil {
+			return diag.Errorf("could not query for stack: %v", err)
+		}
+
+		stack := query.Stack
+		if stack == nil {
+			return nil
+		}
+
+		if !stack.Deleting {
+			return diag.Errorf("destruction of Stack unsuccessful, please check the destruction run logs")
+		}
+	}
 }
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
