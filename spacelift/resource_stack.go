@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -358,7 +359,9 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func waitForDestroy(ctx context.Context, client *internal.Client, id string) diag.Diagnostics {
-	for {
+	ticker := time.NewTicker(time.Second * 5)
+	defer ticker.Stop()
+	for range ticker.C {
 		var query struct {
 			Stack *structs.Stack `graphql:"stack(id: $id)"`
 		}
@@ -378,6 +381,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 			return diag.Errorf("destruction of Stack unsuccessful, please check the destruction run logs")
 		}
 	}
+	return diag.Errorf("ticker stopped prematurely, this shouldn't happen, if it did, something is wrong with the Go stdlib")
 }
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
