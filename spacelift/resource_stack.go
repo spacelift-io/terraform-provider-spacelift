@@ -189,6 +189,11 @@ func resourceStack() *schema.Resource {
 				Description: "Terraform workspace to select",
 				Optional:    true,
 			},
+			"wait_for_destroy": {
+				Type:        schema.TypeBool,
+				Description: "If Stack is marked with destroy_on_delete, wait for the destruction and deletion to finish. This might take a long time, if the stacks you destroy also destroy underlying other stacks and wait for them, etc.",
+				Default:     true,
+			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool to use",
@@ -339,9 +344,40 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.Errorf("could not delete stack: %v", err)
 	}
 
+	if mutation.DeleteStack.Deleting {
+		if wait := d.Get("wait_for_destroy"); wait != nil && wait.(bool) {
+			if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), d.Id()); diagnostics.HasError() {
+				return diagnostics
+			}
+		}
+	}
+
 	d.SetId("")
 
 	return nil
+}
+
+func waitForDestroy(ctx context.Context, client *internal.Client, id string) diag.Diagnostics {
+	for {
+		var query struct {
+			Stack *structs.Stack `graphql:"stack(id: $id)"`
+		}
+
+		variables := map[string]interface{}{"id": graphql.ID(id)}
+
+		if err := client.Query(ctx, &query, variables); err != nil {
+			return diag.Errorf("could not query for stack: %v", err)
+		}
+
+		stack := query.Stack
+		if stack == nil {
+			return nil
+		}
+
+		if stack.Deleting == false {
+			return diag.Errorf("destruction of Stack unsuccessful, please check the destruction run logs")
+		}
+	}
 }
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
