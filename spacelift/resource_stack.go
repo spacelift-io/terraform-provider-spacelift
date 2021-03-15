@@ -388,7 +388,6 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 			return diag.Errorf("destruction of Stack unsuccessful, please check the destruction run logs")
 		}
 	}
-	return diag.Errorf("ticker stopped prematurely, this shouldn't happen, if it did, something is wrong with the Go stdlib")
 }
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
