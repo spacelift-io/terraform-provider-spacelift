@@ -269,6 +269,10 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 
+	if d.Get("wait_for_destroy") == nil {
+		d.Set("wait_for_destroy", true)
+	}
+
 	if stack.Provider == "GITLAB" {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
