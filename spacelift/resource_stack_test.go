@@ -61,6 +61,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("project_root", Equals("root")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("wait_for_destroy", Equals("true")),
 				),
 			},
 			{
