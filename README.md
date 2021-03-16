@@ -935,7 +935,7 @@ The following arguments are supported:
 - `runner_image` - (Optional) - Name of the Docker image used to process Runs;
 - `terraform_version` - (Optional) - Terraform version to use;
 - `terraform_workspace` - (Optional) - Workspace to select before performing Terraform operations;
-- `wait_for_destroy` - (Optional) - If the Stack is marked with destroy_on_delete, wait for the destruction and deletion to finish. This might take a long time, if the stacks you destroy also destroy underlying other stacks and wait for them, etc. Default: `true`;
+- `wait_for_destroy` - (Optional) - If the Stack is marked with destroy_on_delete, it will wait for the destruction and deletion to finish. This might take a long time, if the stacks you destroy also destroy underlying other stacks and wait for them, etc. Default: `true`;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
 
 #### Attributes reference
