@@ -80,7 +80,7 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	var mutation struct {
-		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroy: true)"`
+		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroyResources: true)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string))}
