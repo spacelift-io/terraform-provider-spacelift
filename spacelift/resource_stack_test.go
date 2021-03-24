@@ -61,14 +61,12 @@ func TestStackResource(t *testing.T) {
 					Attribute("project_root", Equals("root")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
-					Attribute("wait_for_destroy", Equals("true")),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"wait_for_destroy"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: config("new description"),
@@ -77,7 +75,7 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
-	t.Run("with private worker pool and autoretry and no wait_for_destroy", func(t *testing.T) {
+	t.Run("with private worker pool and autoretry", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		config := func(description string) string {
@@ -95,7 +93,6 @@ func TestStackResource(t *testing.T) {
 					project_root     = "root"
 					repository       = "demo"
 					runner_image     = "custom_image:runner"
-					wait_for_destroy = false
 					worker_pool_id   = spacelift_worker_pool.test.id
 				}
 
@@ -128,14 +125,12 @@ func TestStackResource(t *testing.T) {
 					Attribute("project_root", Equals("root")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
-					Attribute("wait_for_destroy", Equals("false")),
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"wait_for_destroy"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: config("new description"),
@@ -190,10 +185,9 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"wait_for_destroy"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: config(`pulumi {
@@ -329,10 +323,9 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"wait_for_destroy"},
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: after,

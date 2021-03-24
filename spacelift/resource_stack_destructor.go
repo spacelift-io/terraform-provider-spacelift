@@ -34,7 +34,6 @@ func resourceStackDestructor() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "If set to true, destruction won't delete the stack",
 				Optional:    true,
-				ForceNew:    true,
 			},
 		},
 	}
