@@ -80,10 +80,10 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	var mutation struct {
-		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroy: $destroy)"`
+		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroy: true)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string)), "destroy": true}
+	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string))}
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack: %v", err)
