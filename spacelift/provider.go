@@ -75,6 +75,7 @@ func Provider() *schema.Provider {
 			"spacelift_policy_attachment":         resourcePolicyAttachment(),
 			"spacelift_policy":                    resourcePolicy(),
 			"spacelift_stack":                     resourceStack(),
+			"spacelift_stack_destructor":          resourceStackDestructor(),
 			"spacelift_stack_aws_role":            resourceStackAWSRole(),           // deprecated
 			"spacelift_stack_gcp_service_account": resourceStackGCPServiceAccount(), // deprecated
 			"spacelift_webhook":                   resourceWebhook(),
