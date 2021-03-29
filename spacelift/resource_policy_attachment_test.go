@@ -16,37 +16,33 @@ func TestPolicyAttachmentResource(t *testing.T) {
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("with a stack", func(t *testing.T) {
-		config := func(message string) string {
-			return fmt.Sprintf(`
-				resource "spacelift_policy" "test" {
-					name = "My first policy %s"
-					body = "package spacelift"
-					type = "PLAN"
-				}
+		config := fmt.Sprintf(`
+			resource "spacelift_policy" "test" {
+				name = "My first policy %s"
+				body = "package spacelift"
+				type = "PLAN"
+			}
 
-				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
-				}
+			resource "spacelift_stack" "test" {
+				branch     = "master"
+				repository = "demo"
+				name       = "Test stack %s"
+			}
 
-				resource "spacelift_policy_attachment" "test" {
-					policy_id    = spacelift_policy.test.id
-					stack_id     = spacelift_stack.test.id
-					custom_input = jsonencode({ message = "%s" })
-				}
-			`, randomID, randomID, message)
-		}
+			resource "spacelift_policy_attachment" "test" {
+				policy_id    = spacelift_policy.test.id
+				stack_id     = spacelift_stack.test.id
+			}
+		`, randomID, randomID)
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("boom"),
+				Config: config,
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("policy_id", Contains(randomID)),
 					Attribute("stack_id", Contains(randomID)),
-					Attribute("custom_input", Contains("boom")),
 				),
 			},
 			{
@@ -54,10 +50,6 @@ func TestPolicyAttachmentResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     fmt.Sprintf("my-first-policy-%s/test-stack-%s", randomID, randomID),
 				ImportStateVerify: true,
-			},
-			{
-				Config: config("bang"),
-				Check:  Resource(resourceName, Attribute("custom_input", Contains("bang"))),
 			},
 		})
 	})
@@ -87,7 +79,6 @@ func TestPolicyAttachmentResource(t *testing.T) {
 					Attribute("id", IsNotEmpty()),
 					Attribute("policy_id", Contains(randomID)),
 					Attribute("module_id", Equals("terraform-bacon-tasty")),
-					AttributeNotPresent("custom_input"),
 				),
 			},
 			{

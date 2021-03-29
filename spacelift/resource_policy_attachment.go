@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
-	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -19,7 +18,6 @@ func resourcePolicyAttachment() *schema.Resource {
 	return &schema.Resource{
 		CreateContext: resourcePolicyAttachmentCreate,
 		ReadContext:   resourcePolicyAttachmentRead,
-		UpdateContext: resourcePolicyAttachmentUpdate,
 		DeleteContext: resourcePolicyAttachmentDelete,
 
 		Importer: &schema.ResourceImporter{
@@ -46,18 +44,13 @@ func resourcePolicyAttachment() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"custom_input": {
-				Type:        schema.TypeString,
-				Description: `JSON-encoded custom input to be passed to the evaluated document at the "attachment" key`,
-				Optional:    true,
-			},
 		},
 	}
 }
 
 func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		AttachPolicy structs.PolicyAttachment `graphql:"policyAttach(id: $id, stack: $stack, customInput: $customInput)"`
+		AttachPolicy structs.PolicyAttachment `graphql:"policyAttach(id: $id, stack: $stack)"`
 	}
 
 	policyID := d.Get("policy_id").(string)
@@ -69,8 +62,6 @@ func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	} else {
 		variables["stack"] = toID(d.Get("module_id"))
 	}
-
-	resourcePolicyAttachmentSetCustomInput(d, variables)
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
 		return diag.Errorf("could not attach policy: %v", err)
@@ -96,34 +87,9 @@ func resourcePolicyAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	} else if attachment == nil {
 		d.SetId("")
-	} else if attachment.CustomInput != nil {
-		d.Set("custom_input", *attachment.CustomInput)
-	} else {
-		d.Set("custom_input", nil)
 	}
 
 	return nil
-}
-
-func resourcePolicyAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	variables, err := resourcePolicyAttachmentVariables(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	resourcePolicyAttachmentSetCustomInput(d, variables)
-
-	var mutation struct {
-		UpdateAttachment structs.PolicyAttachment `graphql:"policyAttachmentUpdate(id: $id, customInput: $customInput)"`
-	}
-
-	var ret diag.Diagnostics
-
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update policy attachment: %v", err)
-	}
-
-	return append(ret, resourcePolicyAttachmentRead(ctx, d, meta)...)
 }
 
 func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -181,14 +147,6 @@ func resourcePolicyAttachmentVariables(d *schema.ResourceData) (map[string]inter
 	}
 
 	return map[string]interface{}{"id": toID(idParts[1])}, nil
-}
-
-func resourcePolicyAttachmentSetCustomInput(d *schema.ResourceData, variables map[string]interface{}) {
-	if input, ok := d.GetOk("custom_input"); ok && input.(string) != "" {
-		variables["customInput"] = graphql.NewString(graphql.String(input.(string)))
-	} else {
-		variables["customInput"] = (*graphql.String)(nil)
-	}
 }
 
 func resourcePolicyAttachmentFetch(ctx context.Context, policyID, projectID string, meta interface{}) (*structs.PolicyAttachment, error) {
