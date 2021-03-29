@@ -13,7 +13,7 @@ RUN go mod download
 COPY . $DIR/
 RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /terraform-provider-spacelift
 
-FROM alpine:3.13.2
+FROM alpine:3.13.3
 
 RUN apk add --no-cache ca-certificates curl git openssh
 
