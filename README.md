@@ -981,6 +981,8 @@ The following arguments are supported:
 - `stack_id` - (Required) - ID of Stack to destroy;
 - `deactivated` - (Optional) - Setting this to true will allow the destruction of this destructor without triggering a destruction run on the related Stack. Default: `false`;
 
+[^ Back to all resources](#resources)
+
 ### `spacelift_aws_role` data source
 
 `spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual [stack](#spacelift_stack-resource) or [module](#spacelift_module-resource). If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment. 
