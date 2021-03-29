@@ -138,6 +138,7 @@ The Spacelift Terraform provider provides the following building blocks:
 - `spacelift_policy` - [data source](#spacelift_policy-data-source) and [resource](#spacelift_policy-resource);
 - `spacelift_policy_attachment` - [resource](#spacelift_policy_attachment-resource);
 - `spacelift_stack` - [data source](#spacelift_stack-data-source) and [resource](#spacelift_stack-resource);
+- `spacelift_stack_destructor` - [resource](#spacelift_stack_destructor-resource);
 - `spacelift_aws_role` - [data source](#spacelift_aws_role-data-source) and [resource](#spacelift_aws_role-resource);
 - `spacelift_gcp_service_account` - [data source](#spacelift_gcp_service_account-data-source) and [resource](#spacelift_gcp_service_account-resource);
 - `spacelift_webhook` - [data source](#spacelift_webhook-data-source) and [resource](#spacelift_webhook-resource);
@@ -947,6 +948,38 @@ In addition to all arguments above, the following attributes are exported:
 #### Importing
 
 Spacelift stacks can be directly imported by their user-facing ID ("slug") that can be found through the GraphQL API or in the stack URL in the web GUI.
+
+[^ Back to all resources](#resources)
+
+### `spacelift_stack_destructor` resource
+
+`spacelift_stack_destructor` is used to destroy the resources of a Stack before deleting it. `depends_on` should be used to make sure that all necessery resources (environment variables, roles, integrations, etc.) are still in place when the destruction run is executed.
+
+#### Example usage
+
+```python
+resource "spacelift_stack" "k8s-core" {
+  ...
+}
+
+resource "spacelift_environment_variable" "credentials" {
+  ...
+}
+
+resource "spacelift_stack_destructor" "k8s-core" {
+  depends_on = [
+    spacelift_environment_variable.credentials,
+  ]
+  stack_id = spacelift_stack.k8s-core.id
+}
+```
+
+#### Argument reference
+
+The following arguments are supported:
+
+- `stack_id` - (Required) - ID of Stack to destroy;
+- `deactivated` - (Optional) - Setting this to true will allow the destruction of this destructor without triggering a destruction run on the related Stack. Default: `false`;
 
 [^ Back to all resources](#resources)
 
