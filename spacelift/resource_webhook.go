@@ -69,6 +69,7 @@ func resourceWebhook() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
 				Optional:    true,
+				Sensitive:   true,
 				Default:     "",
 			},
 			"stack_id": {
