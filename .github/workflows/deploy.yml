@@ -21,6 +21,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Install bash
+        run: apk add --no-cache bash
+
       - name: Install latest AWS CLI
         id: install-aws-cli
         uses: unfor19/install-aws-cli-action@v1
