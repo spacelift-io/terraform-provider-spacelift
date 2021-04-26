@@ -22,7 +22,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Install bash
-        run: apk add --no-cache bash
+        run: apk add --no-cache bash sudo
 
       - name: Install latest AWS CLI
         id: install-aws-cli
