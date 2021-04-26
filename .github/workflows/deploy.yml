@@ -22,12 +22,11 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
-        uses: spacelift-io/aws-cli@6ae0e92ebf3071fefd0d47df8bc303c7b662b28c
+        uses: docker/login-action@v1
         with:
-          args: >-
-            ecr-public get-login-password --region us-east-1
-            |
-            docker login --username AWS --password-stdin public.ecr.aws
+          registry: public.ecr.aws
+          username: ${{ env.AWS_ACCESS_KEY_ID }}
+          password: ${{ env.AWS_SECRET_ACCESS_KEY }}
 
       - name: Build the image
         run: docker build --tag ${DOCKER_IMAGE} .
