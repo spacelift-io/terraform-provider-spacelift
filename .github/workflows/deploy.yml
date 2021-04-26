@@ -5,7 +5,8 @@ on: [push]
 jobs:
   deployment:
     name: Build and deploy the image
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    container: docker
     env:
       DOCKER_IMAGE: ${{ secrets.PUBLIC_RUNNER_TERRAFORM_ECR_REPOSITORY_URL }}:${{ github.ref == 'refs/heads/master' && 'latest' || 'future' }}
 
