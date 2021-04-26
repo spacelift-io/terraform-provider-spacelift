@@ -22,7 +22,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Amazon ECR
-        uses: ItsKarma/aws-cli@v1.70.0
+        uses: spacelift-io/aws-cli@6ae0e92ebf3071fefd0d47df8bc303c7b662b28c
         with:
           args: >-
             ecr-public get-login-password --region us-east-1
