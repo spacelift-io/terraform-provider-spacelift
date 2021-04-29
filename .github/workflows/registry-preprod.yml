@@ -1,0 +1,72 @@
+name: Registry
+
+on: [push]
+
+jobs:
+  registry:
+    name: Publish the provider to the registry
+    runs-on: self-hosted
+    container: golang:1.16-alpine
+      
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@master
+
+      - name: Install utilities
+        run: |
+          apk add --no-cache gettext-base gnupg python3 py3-pip zip
+          pip3 install --upgrade pip
+          pip3 install awscli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: ${{ secrets.PREPROD_AWS_REGION }}
+          role-to-assume: ${{ secrets.PREPROD_AWS_ROLE_ARN }}
+          role-external-id: ${{ secrets.PREPROD_AWS_EXTERNAL_ID }}
+          role-duration-seconds: 900
+
+      - name: Import the PGP key
+        env:
+          GPG_KEY_BASE64: ${{ secrets.GPG_KEY_BASE64 }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo ${GPG_KEY_BASE64} | base64 -d > spacelift.gpg
+          gpg --import \
+            --passphrase=$GPG_PASSPHRASE \
+            --pinentry-mode=loopback \
+            spacelift.gpg
+          rm spacelift.gpg
+
+      - name: Download dependencies to keep the build clean
+        run: go mod download
+        
+      - name: Build the package
+        env:
+          DOMAIN: spacelift.dev
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: ./registry/package.sh
+
+      - name: Test uploading the provider data to S3
+        run: >-
+          aws s3 sync
+          build s3://${{ secrets.PREPROD_AWS_S3_BUCKET }}/v1/providers/spacelift-io/spacelift
+          --no-progress
+          --delete
+          --dryrun
+      
+      - name: Upload the provider data to S3
+        if: github.ref == 'refs/heads/future'
+        run: >-
+          aws s3 sync
+          build s3://${{ secrets.PREPROD_AWS_S3_BUCKET }}/v1/providers/spacelift-io/spacelift
+          --no-progress
+          --delete
+          --dryrun
+
+      - name: Invalidate cache
+        if: github.ref == 'refs/heads/future'
+        run: >-
+          aws cloudfront create-invalidation
+          --distribution-id ${{ secrets.PREPROD_DISTRIBUTION }}
+          --paths "/*"
