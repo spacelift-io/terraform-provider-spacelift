@@ -1,4 +1,4 @@
-name: Registry
+name: Preprod registry
 
 on: [push]
 
@@ -14,7 +14,7 @@ jobs:
 
       - name: Install utilities
         run: |
-          apk add --no-cache gettext-base gnupg python3 py3-pip zip
+          apk add --no-cache bash gettext gnupg python3 py3-pip zip
           pip3 install --upgrade pip
           pip3 install awscli
 
