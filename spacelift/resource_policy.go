@@ -90,7 +90,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not create policy: %v", err)
+		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), err)
 	}
 
 	d.SetId(mutation.CreatePolicy.ID)
