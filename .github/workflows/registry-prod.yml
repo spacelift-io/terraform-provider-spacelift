@@ -14,7 +14,7 @@ jobs:
 
       - name: Install utilities
         run: |
-          apk add --no-cache bash gettext gnupg python3 py3-pip zip
+          apk add --no-cache bash gettext gnupg python3 py3-pip zip openssl
           pip3 install --upgrade pip
           pip3 install awscli
 
