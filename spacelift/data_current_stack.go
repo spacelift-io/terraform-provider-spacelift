@@ -22,7 +22,8 @@ func dataCurrentStackRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		// Don't care about validation errors, we don't actually validate those
 		// tokens, we only parse them.
-		if !errors.Is(err, &jwt.UnverfiableTokenError{}) {
+		var unverifiable *jwt.UnverfiableTokenError
+		if !errors.As(err, &unverifiable) {
 			return errors.Wrap(err, "could not parse client token")
 		}
 	}
