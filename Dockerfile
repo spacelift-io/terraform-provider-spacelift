@@ -24,7 +24,7 @@ RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o
 
 FROM alpine:3.13.5
 
-RUN apk.static upgrade --no-self-upgrade --available
+RUN apk -U upgrade
 RUN apk add --no-cache ca-certificates curl git openssh
 
 COPY --from=builder /bin/infracost /bin/infracost
