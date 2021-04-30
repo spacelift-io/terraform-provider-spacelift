@@ -5,7 +5,7 @@ on: [push]
 jobs:
   registry:
     name: Publish the provider to the registry
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container: golang:1.16
 
     steps:
@@ -21,9 +21,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ secrets.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-external-id: ${{ secrets.AWS_EXTERNAL_ID }}
-          role-duration-seconds: 900
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Import the PGP key
         env:

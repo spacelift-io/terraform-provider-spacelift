@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
@@ -129,7 +129,7 @@ func buildClientFromToken(token string) (interface{}, error) {
 		return nil, errors.Wrap(err, "could not parse the API token")
 	}
 
-	return &internal.Client{Endpoint: claims.Audience, Token: token}, nil
+	return &internal.Client{Endpoint: claims.Audience[0], Token: token}, nil
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (interface{}, error) {

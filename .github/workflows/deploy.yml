@@ -6,7 +6,7 @@ on: [push]
 jobs:
   deployment:
     name: Build and deploy the image
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container: docker
     env:
       DOCKER_IMAGE: ${{ secrets.PUBLIC_RUNNER_TERRAFORM_ECR_REPOSITORY_URL }}:${{ github.ref == 'refs/heads/master' && 'latest' || 'future' }}
@@ -19,9 +19,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: us-east-1
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          role-external-id: ${{ secrets.AWS_EXTERNAL_ID }}
-          role-duration-seconds: 900
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Install the latest AWS CLI
         run: |
