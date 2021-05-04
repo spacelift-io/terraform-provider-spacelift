@@ -125,8 +125,14 @@ func validateProviderConfig(d *schema.ResourceData) (bool, error) {
 
 func buildClientFromToken(token string) (interface{}, error) {
 	var claims jwt.StandardClaims
-	if jwt, err := jwt.ParseWithClaims(token, &claims, nil); jwt == nil && err != nil {
-		return nil, errors.Wrap(err, "could not parse the API token")
+
+	_, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
+	if unverifiable := new(jwt.UnverfiableTokenError); err != nil && !errors.As(err, &unverifiable) {
+		return nil, errors.Wrap(err, "could not parse client token")
+	}
+
+	if len(claims.Audience) != 1 {
+		return nil, fmt.Errorf("invalid audience in token: %v", claims.Audience)
 	}
 
 	return &internal.Client{Endpoint: claims.Audience[0], Token: token}, nil
