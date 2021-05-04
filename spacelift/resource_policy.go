@@ -55,6 +55,11 @@ func resourcePolicy() *schema.Resource {
 				Description: "Body of the policy",
 				Required:    true,
 			},
+			"labels": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+			},
 			"type": {
 				Type:        schema.TypeString,
 				Description: "Body of the policy",
@@ -80,13 +85,24 @@ func resourcePolicy() *schema.Resource {
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type)"`
+		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type, labels: $labels)"`
 	}
 
 	variables := map[string]interface{}{
-		"name": toString(d.Get("name")),
-		"body": toString(d.Get("body")),
-		"type": structs.PolicyType(d.Get("type").(string)),
+		"name":   toString(d.Get("name")),
+		"body":   toString(d.Get("body")),
+		"type":   structs.PolicyType(d.Get("type").(string)),
+		"labels": (*[]graphql.String)(nil),
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+
+		variables["labels"] = &labels
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
@@ -118,18 +134,35 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("body", policy.Body)
 	d.Set("type", policy.Type)
 
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range policy.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
 	return nil
 }
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body)"`
+		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body, labels: $labels)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":   toID(d.Id()),
-		"name": toString(d.Get("name")),
-		"body": toString(d.Get("body")),
+		"id":     toID(d.Id()),
+		"name":   toString(d.Get("name")),
+		"body":   toString(d.Get("body")),
+		"labels": (*[]graphql.String)(nil),
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+
+		variables["labels"] = &labels
 	}
 
 	var ret diag.Diagnostics
