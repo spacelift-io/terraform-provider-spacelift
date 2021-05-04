@@ -66,4 +66,4 @@ jobs:
         run: >-
           aws cloudfront create-invalidation
           --distribution-id ${{ secrets.DISTRIBUTION }}
-          --paths "/*"
+          --paths "/v1/providers/spacelift-io/spacelift/*"

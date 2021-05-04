@@ -60,11 +60,10 @@ jobs:
           build s3://${{ secrets.PREPROD_AWS_S3_BUCKET }}/v1/providers/spacelift-io/spacelift
           --no-progress
           --delete
-          --dryrun
 
       - name: Invalidate cache
         if: github.ref == 'refs/heads/future'
         run: >-
           aws cloudfront create-invalidation
           --distribution-id ${{ secrets.PREPROD_DISTRIBUTION }}
-          --paths "/*"
+          --paths "/v1/providers/spacelift-io/spacelift/*"
