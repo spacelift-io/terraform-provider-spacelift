@@ -4,7 +4,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 
@@ -22,7 +22,8 @@ func dataCurrentStackRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		// Don't care about validation errors, we don't actually validate those
 		// tokens, we only parse them.
-		if _, isValidation := err.(*jwt.ValidationError); !isValidation {
+		var unverifiable *jwt.UnverfiableTokenError
+		if !errors.As(err, &unverifiable) {
 			return errors.Wrap(err, "could not parse client token")
 		}
 	}

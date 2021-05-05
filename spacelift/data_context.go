@@ -25,6 +25,11 @@ func dataContext() *schema.Resource {
 				Description: "free-form context description for users",
 				Computed:    true,
 			},
+			"labels": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the context",
@@ -57,6 +62,12 @@ func dataContextRead(ctx context.Context, d *schema.ResourceData, meta interface
 	} else {
 		d.Set("description", nil)
 	}
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range context.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
 
 	return nil
 }
