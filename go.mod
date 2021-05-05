@@ -9,3 +9,5 @@ require (
 )
 
 go 1.13
+
+replace github.com/shurcooL/graphql => github.com/marcinwyszynski/graphql v0.0.0-20210505073322-ed22d920d37d

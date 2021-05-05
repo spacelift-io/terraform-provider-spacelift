@@ -45,7 +45,7 @@ func dataContextRead(ctx context.Context, d *schema.ResourceData, meta interface
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Get("context_id"))}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ContextRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for context: %v", err)
 	}
 

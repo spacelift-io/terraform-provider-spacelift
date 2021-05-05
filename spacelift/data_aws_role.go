@@ -69,7 +69,7 @@ func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta int
 	moduleID := d.Get("module_id")
 	variables := map[string]interface{}{"id": toID(moduleID)}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 
@@ -99,7 +99,7 @@ func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta inte
 	stackID := d.Get("stack_id")
 	variables := map[string]interface{}{"id": toID(stackID)}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 

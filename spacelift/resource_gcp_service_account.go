@@ -83,7 +83,7 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 		"tokenScopes": tokenScopes,
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "GCPServiceAccountCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not generate dedicated GCP role account for the stack: %v", err)
 	}
 
@@ -121,7 +121,7 @@ func resourceGCPServiceAccountDelete(ctx context.Context, d *schema.ResourceData
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "GCPServiceAccountDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack GCP service account: %v", err)
 	}
 
@@ -141,7 +141,7 @@ func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleGCPServiceAccountRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 
@@ -174,7 +174,7 @@ func resourceStackGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackGCPServiceAccountRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 

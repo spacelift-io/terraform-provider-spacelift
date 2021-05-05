@@ -30,7 +30,7 @@ func ipsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag
 		IPs []string `graphql:"outgoingIPAddresses"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, nil); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ReadIPs", &query, nil); err != nil {
 		d.SetId("")
 		return diag.Errorf("could not query for outgoing IP addresses: %v", err)
 	}

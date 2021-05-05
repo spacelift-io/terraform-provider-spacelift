@@ -103,7 +103,7 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 		variables["stack"] = toID(d.Get("module_id"))
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "WebhookCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create webhook: %v", err)
 	}
 
@@ -133,7 +133,7 @@ func resourceModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta
 		"id": toID(d.Get("module_id")),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleWebhookRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 
@@ -174,7 +174,7 @@ func resourceStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 		"id": toID(d.Get("stack_id")),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackWebhookRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
@@ -236,7 +236,7 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "WebhookUpdate", &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update webhook: %v", err)
 	}
 
@@ -260,7 +260,7 @@ func resourceWebhookDelete(ctx context.Context, d *schema.ResourceData, meta int
 		variables["stack"] = toID(d.Get("module_id"))
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "WebhookDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete webhook: %v", err)
 	}
 

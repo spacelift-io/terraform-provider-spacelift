@@ -17,7 +17,7 @@ func testProvider() *schema.Provider {
 	providerLock.Lock()
 	defer providerLock.Unlock()
 	if provider == nil {
-		provider = Provider()
+		provider = Provider("commit", "version")()
 	}
 
 	return provider

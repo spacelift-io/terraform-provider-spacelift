@@ -86,7 +86,7 @@ func dataMountedFileReadContext(ctx context.Context, d *schema.ResourceData, met
 		"id":      toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "MountedFileReadContext", &query, variables); err != nil {
 		return diag.Errorf("could not query for context mounted file: %v", err)
 	}
 
@@ -125,7 +125,7 @@ func dataMountedFileReadModule(ctx context.Context, d *schema.ResourceData, meta
 		"id":     toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "MountedFileReadModule", &query, variables); err != nil {
 		return diag.Errorf("could not query for module mounted file: %v", err)
 	}
 
@@ -159,7 +159,7 @@ func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta 
 		"id":    toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "MountedFileReadStack", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack mounted file: %v", err)
 	}
 

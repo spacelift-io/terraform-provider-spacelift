@@ -54,7 +54,7 @@ func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, me
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Get("stack_id").(string))}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackDestructorRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
@@ -85,7 +85,7 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 
 	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string))}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack: %v", err)
 	}
 
@@ -116,7 +116,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 
 		variables := map[string]interface{}{"id": graphql.ID(id)}
 
-		if err := client.Query(ctx, &query, variables); err != nil {
+		if err := client.Query(ctx, "StackCheckState", &query, variables); err != nil {
 			return diag.Errorf("could not query for stack: %v", err)
 		}
 

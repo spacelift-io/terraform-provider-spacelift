@@ -50,7 +50,7 @@ func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Get("policy_id"))}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "PolicyRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for policy: %v", err)
 	}
 

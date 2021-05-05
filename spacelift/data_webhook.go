@@ -66,7 +66,7 @@ func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta int
 	webhookID := d.Get("webhook_id").(string)
 	variables := map[string]interface{}{"id": toID(moduleID)}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleWebhookRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 
@@ -102,7 +102,7 @@ func dataStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 	webhookID := d.Get("webhook_id").(string)
 	variables := map[string]interface{}{"id": toID(stackID)}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackWebhookRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 

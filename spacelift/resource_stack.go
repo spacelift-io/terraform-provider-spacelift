@@ -222,7 +222,7 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		variables["stackObjectID"] = toOptionalString(objectID)
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "StackCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create stack: %v", err)
 	}
 
@@ -238,7 +238,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
@@ -321,7 +321,7 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "StackUpdate", &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update stack: %v", err)
 	}
 
@@ -335,7 +335,7 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack: %v", err)
 	}
 
@@ -454,7 +454,7 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 		} `graphql:"stateUploadUrl"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, nil); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "StateUploadUrl", &mutation, nil); err != nil {
 		return "", errors.Wrap(err, "could not generate state upload URL")
 	}
 
