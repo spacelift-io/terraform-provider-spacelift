@@ -106,7 +106,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), err)
+		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), internal.WrapUnauthorized(err))
 	}
 
 	d.SetId(mutation.CreatePolicy.ID)
@@ -168,7 +168,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyUpdate", &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update policy: %v", err)
+		ret = diag.Errorf("could not update policy: %v", internal.WrapUnauthorized(err))
 	}
 
 	return append(ret, resourcePolicyRead(ctx, d, meta)...)
@@ -182,7 +182,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete policy: %v", err)
+		return diag.Errorf("could not delete policy: %v", internal.WrapUnauthorized(err))
 	}
 
 	d.SetId("")

@@ -104,7 +104,7 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "WebhookCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create webhook: %v", err)
+		return diag.Errorf("could not create webhook: %v", internal.WrapUnauthorized(err))
 	}
 
 	if !mutation.WebhooksIntegration.Enabled {
@@ -237,7 +237,7 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, "WebhookUpdate", &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update webhook: %v", err)
+		ret = diag.Errorf("could not update webhook: %v", internal.WrapUnauthorized(err))
 	}
 
 	return append(ret, resourceWebhookRead(ctx, d, meta)...)
@@ -261,7 +261,7 @@ func resourceWebhookDelete(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "WebhookDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete webhook: %v", err)
+		return diag.Errorf("could not delete webhook: %v", internal.WrapUnauthorized(err))
 	}
 
 	d.SetId("")

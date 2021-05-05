@@ -86,7 +86,7 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string))}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack: %v", err)
+		return diag.Errorf("could not delete stack: %v", internal.WrapUnauthorized(err))
 	}
 
 	if mutation.DeleteStack.Deleting {
