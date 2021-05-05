@@ -28,6 +28,11 @@ func resourceContext() *schema.Resource {
 				Description: "Free-form context description for users",
 				Optional:    true,
 			},
+			"labels": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the context - should be unique in one account",
@@ -40,16 +45,27 @@ func resourceContext() *schema.Resource {
 
 func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateContext structs.Context `graphql:"contextCreate(name: $name, description: $description)"`
+		CreateContext structs.Context `graphql:"contextCreate(name: $name, description: $description, labels: $labels)"`
 	}
 
 	variables := map[string]interface{}{
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
+		"labels":      (*[]graphql.String)(nil),
 	}
 
 	if description, ok := d.GetOk("description"); ok {
 		variables["description"] = toOptionalString(description)
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+
+		variables["labels"] = &labels
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
@@ -83,22 +99,39 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta inter
 		d.Set("description", *description)
 	}
 
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range context.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
 	return nil
 }
 
 func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateContext structs.Context `graphql:"contextUpdate(id: $id, name: $name, description: $description)"`
+		UpdateContext structs.Context `graphql:"contextUpdate(id: $id, name: $name, description: $description, labels: $labels)"`
 	}
 
 	variables := map[string]interface{}{
 		"id":          toID(d.Id()),
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
+		"labels":      (*[]graphql.String)(nil),
 	}
 
 	if description, ok := d.GetOk("description"); ok {
 		variables["description"] = toOptionalString(description)
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+
+		variables["labels"] = &labels
 	}
 
 	var ret diag.Diagnostics
