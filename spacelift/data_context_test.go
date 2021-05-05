@@ -21,7 +21,6 @@ func TestContextData(t *testing.T) {
 				resource "spacelift_context" "test" {
 					name        = "Provider test context %s"
 					description = "description"
-					labels      = ["one", "two"]
 				}
 
 				data "spacelift_context" "test" {
@@ -33,7 +32,6 @@ func TestContextData(t *testing.T) {
 				Attribute("id", StartsWith("provider-test-context-")),
 				Attribute("name", StartsWith("Provider test context")),
 				Attribute("description", Equals("description")),
-				SetEquals("labels", "one", "two"),
 			),
 		}})
 	})
