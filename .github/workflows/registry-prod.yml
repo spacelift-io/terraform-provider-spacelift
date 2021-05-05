@@ -41,7 +41,7 @@ jobs:
 
       - name: Build the package
         env:
-          DOMAIN: spacelift.dev
+          DOMAIN: spacelift.io
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: ./registry/package.sh
 
