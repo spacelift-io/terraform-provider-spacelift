@@ -57,7 +57,7 @@ func dataContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ContextAttachmentRead", &query, variables); err != nil {
 		d.SetId("")
 		return diag.Errorf("could not query for context attachment: %v", err)
 	}

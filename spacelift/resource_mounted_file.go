@@ -103,7 +103,7 @@ func resourceMountedFileCreateContext(ctx context.Context, d *schema.ResourceDat
 		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
 
-	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "MountedFileCreateContext", &mutation, variables); err != nil {
 		return diag.Errorf("could not create context mounted file: %v", err)
 	}
 
@@ -117,7 +117,7 @@ func resourceMountedFileCreateModule(ctx context.Context, d *schema.ResourceData
 		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
-	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "MountedFileCreateModule", &mutation, variables); err != nil {
 		return diag.Errorf("could not module mounted file: %v", err)
 	}
 
@@ -131,7 +131,7 @@ func resourceMountedFileCreateStack(ctx context.Context, d *schema.ResourceData,
 		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
 
-	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "MountedFileCreateStack", &mutation, variables); err != nil {
 		return diag.Errorf("could not create stack mounted file: %v", err)
 	}
 
@@ -192,7 +192,9 @@ func resourceMountedFileReadContext(ctx context.Context, d *schema.ResourceData,
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"context": toID(contextID), "id": toID(relativePath)}); err != nil {
+	variables := map[string]interface{}{"context": toID(contextID), "id": toID(relativePath)}
+
+	if err := client.Query(ctx, "MountedFileReadContext", &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for context mounted file")
 	}
 
@@ -212,7 +214,9 @@ func resourceMountedFileReadModule(ctx context.Context, d *schema.ResourceData, 
 		} `graphql:"module(id: $module)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"module": toID(moduleID), "id": toID(relativePath)}); err != nil {
+	variables := map[string]interface{}{"module": toID(moduleID), "id": toID(relativePath)}
+
+	if err := client.Query(ctx, "MountedFileReadModule", &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for module mounted file")
 	}
 
@@ -232,7 +236,9 @@ func resourceMountedFileReadStack(ctx context.Context, d *schema.ResourceData, c
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := client.Query(ctx, &query, map[string]interface{}{"stack": toID(stackID), "id": toID(relativePath)}); err != nil {
+	variables := map[string]interface{}{"stack": toID(stackID), "id": toID(relativePath)}
+
+	if err := client.Query(ctx, "MountedFileReadStack", &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack mounted file")
 	}
 
@@ -277,7 +283,7 @@ func resourceMountedFileDeleteContext(ctx context.Context, d *schema.ResourceDat
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
 
-	return client.Mutate(ctx, &mutation, map[string]interface{}{"context": context, "id": ID})
+	return client.Mutate(ctx, "MountedFileDeleteContext", &mutation, map[string]interface{}{"context": context, "id": ID})
 }
 
 func resourceMountedFileDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
@@ -285,5 +291,5 @@ func resourceMountedFileDeleteStack(ctx context.Context, d *schema.ResourceData,
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}
 
-	return client.Mutate(ctx, &mutation, map[string]interface{}{"stack": stack, "id": ID})
+	return client.Mutate(ctx, "MountedFileDeleteStack", &mutation, map[string]interface{}{"stack": stack, "id": ID})
 }

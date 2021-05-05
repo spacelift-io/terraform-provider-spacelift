@@ -74,7 +74,7 @@ func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData
 		variables["stack"] = toID(d.Get("module_id"))
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "ContextAttachmentCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not attach context: %v", err)
 	}
 
@@ -116,7 +116,7 @@ func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData
 
 	variables := map[string]interface{}{"id": toID(idParts[1])}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "ContextAttachmentDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not detach context: %v", err)
 	}
 
@@ -166,7 +166,7 @@ func resourceContextAttachmentFetch(ctx context.Context, contextID, projectID st
 		"project": toID(projectID),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ContextAttachmentFetch", &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for context attachment")
 	}
 

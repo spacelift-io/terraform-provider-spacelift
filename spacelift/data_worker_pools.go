@@ -54,7 +54,7 @@ func dataWorkerPoolsRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 	variables := map[string]interface{}{}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "WorkerPoolsRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for worker pools: %v", err)
 	}
 

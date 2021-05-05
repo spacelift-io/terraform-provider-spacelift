@@ -180,7 +180,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 
 	stackID := d.Get("stack_id")
 	variables := map[string]interface{}{"id": toID(stackID)}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 

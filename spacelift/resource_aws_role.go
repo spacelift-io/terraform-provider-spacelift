@@ -110,7 +110,7 @@ func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 
@@ -131,7 +131,7 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
@@ -178,7 +178,7 @@ func resourceAWSRoleDelete(ctx context.Context, d *schema.ResourceData, meta int
 		variables["id"] = d.Get("module_id").(string)
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "AWSRoleDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete AWS role delegation: %v", err)
 	}
 
@@ -209,7 +209,7 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 		variables["externalID"] = (*graphql.String)(nil)
 	}
 
-	if err := client.Mutate(ctx, &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "AWSRoleSet", &mutation, variables); err != nil {
 		return errors.Wrap(err, "could not set AWS role delegation")
 	}
 

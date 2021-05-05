@@ -86,7 +86,7 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 
 	moduleID := d.Get("module_id")
 	variables := map[string]interface{}{"id": toID(moduleID)}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 

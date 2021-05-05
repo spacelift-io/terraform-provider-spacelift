@@ -122,7 +122,7 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 		variables["csr"] = graphql.String(cert)
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "WorkerPoolCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create worker pool: %v", err)
 	}
 
@@ -143,7 +143,7 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "WorkerPoolRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for worker pool: %v", err)
 	}
 
@@ -182,7 +182,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "WorkerPoolUpdate", &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update worker pool: %v", err)
 	}
 
@@ -196,7 +196,7 @@ func resourceWorkerPoolDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "WorkerPoolDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete worker pool: %v", err)
 	}
 
