@@ -18,7 +18,6 @@ func TestPolicyData(t *testing.T) {
 			Config: fmt.Sprintf(`
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
-					labels = ["one", "two"]
 					body = <<EOF
 					package spacelift
 
@@ -36,7 +35,6 @@ func TestPolicyData(t *testing.T) {
 				Attribute("id", StartsWith("my-first-policy")),
 				Attribute("body", Contains("boom")),
 				Attribute("type", Equals("PLAN")),
-				SetEquals("labels", "one", "two"),
 			),
 		}})
 	})

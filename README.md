@@ -190,7 +190,6 @@ The following arguments are supported:
 
 - `name` - (Required) - Name of the context meant to be unique within one account;
 - `description` - (Optional) - Free-form context description for GUI users;
-- `labels` - (Optional) - List of labels to set on the Context;
 
 #### Attributes reference
 
@@ -743,7 +742,6 @@ The following arguments are supported:
   - `PLAN` - validates the outcome of Terraform plans;
   - `TASK` - controls whether Spacelift tasks can be started;
   - `TRIGGER` - controls what happens when blocking runs terminate;
-- `labels` - (Optional) - List of labels to set on the Policy;
 
 #### Attributes reference
 

@@ -25,11 +25,6 @@ func dataPolicy() *schema.Resource {
 				Description: "body of the policy",
 				Computed:    true,
 			},
-			"labels": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
-				Computed: true,
-			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "name of the policy",
@@ -63,12 +58,6 @@ func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("name", policy.Name)
 	d.Set("body", policy.Body)
 	d.Set("type", policy.Type)
-
-	labels := schema.NewSet(schema.HashString, []interface{}{})
-	for _, label := range policy.Labels {
-		labels.Add(label)
-	}
-	d.Set("labels", labels)
 
 	return nil
 }
