@@ -75,7 +75,7 @@ func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextAttachmentCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not attach context: %v", err)
+		return diag.Errorf("could not attach context: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(path.Join(contextID, mutation.AttachContext.ID))
@@ -117,7 +117,7 @@ func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData
 	variables := map[string]interface{}{"id": toID(idParts[1])}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextAttachmentDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not detach context: %v", err)
+		return diag.Errorf("could not detach context: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

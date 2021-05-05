@@ -223,7 +223,7 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create stack: %v", err)
+		return diag.Errorf("could not create stack: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreateStack.ID)
@@ -322,7 +322,7 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackUpdate", &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update stack: %v", err)
+		ret = diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err))
 	}
 
 	return append(ret, resourceStackRead(ctx, d, meta)...)
@@ -336,7 +336,7 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack: %v", err)
+		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

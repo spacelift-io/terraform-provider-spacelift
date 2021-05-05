@@ -104,7 +104,7 @@ func resourceMountedFileCreateContext(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if err := client.Mutate(ctx, "MountedFileCreateContext", &mutation, variables); err != nil {
-		return diag.Errorf("could not create context mounted file: %v", err)
+		return diag.Errorf("could not create context mounted file: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("relative_path")))
@@ -118,7 +118,7 @@ func resourceMountedFileCreateModule(ctx context.Context, d *schema.ResourceData
 	}
 
 	if err := client.Mutate(ctx, "MountedFileCreateModule", &mutation, variables); err != nil {
-		return diag.Errorf("could not module mounted file: %v", err)
+		return diag.Errorf("could not module mounted file: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("relative_path")))
@@ -132,7 +132,7 @@ func resourceMountedFileCreateStack(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if err := client.Mutate(ctx, "MountedFileCreateStack", &mutation, variables); err != nil {
-		return diag.Errorf("could not create stack mounted file: %v", err)
+		return diag.Errorf("could not create stack mounted file: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("relative_path")))
@@ -270,7 +270,7 @@ func resourceMountedFileDelete(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if err != nil {
-		return diag.Errorf("could not delete mounted file: %v", err)
+		return diag.Errorf("could not delete mounted file: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")
