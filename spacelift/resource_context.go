@@ -69,7 +69,7 @@ func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create context: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not create context: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreateContext.ID)
@@ -137,7 +137,7 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextUpdate", &mutation, variables); err != nil {
-		ret = append(ret, diag.Errorf("could not update context: %v", internal.WrapUnauthorized(err))...)
+		ret = append(ret, diag.Errorf("could not update context: %v", internal.FromSpaceliftError(err))...)
 	}
 
 	ret = append(ret, resourceContextRead(ctx, d, meta)...)
@@ -153,7 +153,7 @@ func resourceContextDelete(ctx context.Context, d *schema.ResourceData, meta int
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete context: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not delete context: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

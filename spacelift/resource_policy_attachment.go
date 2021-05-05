@@ -64,7 +64,7 @@ func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyAttachmentCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not attach policy: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not attach policy: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(path.Join(policyID, mutation.AttachPolicy.ID))
@@ -103,7 +103,7 @@ func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyAttachmentDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not detach policy: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not detach policy: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

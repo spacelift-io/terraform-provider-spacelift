@@ -108,7 +108,7 @@ func resourceEnvironmentVariableCreateContext(ctx context.Context, d *schema.Res
 	}
 
 	if err := client.Mutate(ctx, "EnvironmentVariableCreateContext", &mutation, variables); err != nil {
-		return diag.Errorf("could not create context environment variable: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not create context environment variable: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(fmt.Sprintf("context/%s/%s", d.Get("context_id"), d.Get("name")))
@@ -122,7 +122,7 @@ func resourceEnvironmentVariableCreateModule(ctx context.Context, d *schema.Reso
 	}
 
 	if err := client.Mutate(ctx, "EnvironmentVariableCreateModule", &mutation, variables); err != nil {
-		return diag.Errorf("could not create module environment variable: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not create module environment variable: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(fmt.Sprintf("module/%s/%s", d.Get("module_id"), d.Get("name")))
@@ -136,7 +136,7 @@ func resourceEnvironmentVariableCreateStack(ctx context.Context, d *schema.Resou
 	}
 
 	if err := client.Mutate(ctx, "EnvironmentVariableCreateStack", &mutation, variables); err != nil {
-		return diag.Errorf("could not create stack environment variable: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not create stack environment variable: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(fmt.Sprintf("stack/%s/%s", d.Get("stack_id"), d.Get("name")))
@@ -268,7 +268,7 @@ func resourceEnvironmentVariableDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if err != nil {
-		return diag.Errorf("could not delete environment variable: %v", internal.WrapUnauthorized(err))
+		return diag.Errorf("could not delete environment variable: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")
