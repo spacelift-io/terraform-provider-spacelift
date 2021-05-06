@@ -105,6 +105,11 @@ func dataStack() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
+			"enable_local_preview": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether local preview runs can be triggered on this Stack.",
+				Computed:    true,
+			},
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -198,6 +203,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
+	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
