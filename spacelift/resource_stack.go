@@ -104,6 +104,12 @@ func resourceStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Optional:    true,
 			},
+			"enable_local_preview": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether local preview runs can be triggered on this Stack",
+				Optional:    true,
+				Default:     false,
+			},
 			"gitlab": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -256,6 +262,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
+	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
@@ -346,12 +353,13 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret := structs.StackInput{
-		Administrative: graphql.Boolean(d.Get("administrative").(bool)),
-		Autodeploy:     graphql.Boolean(d.Get("autodeploy").(bool)),
-		Autoretry:      graphql.Boolean(d.Get("autoretry").(bool)),
-		Branch:         toString(d.Get("branch")),
-		Name:           toString(d.Get("name")),
-		Repository:     toString(d.Get("repository")),
+		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
+		Autodeploy:          graphql.Boolean(d.Get("autodeploy").(bool)),
+		Autoretry:           graphql.Boolean(d.Get("autoretry").(bool)),
+		Branch:              toString(d.Get("branch")),
+		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
+		Name:                toString(d.Get("name")),
+		Repository:          toString(d.Get("repository")),
 	}
 
 	beforeApplies := []graphql.String{}
