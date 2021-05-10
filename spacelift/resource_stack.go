@@ -104,6 +104,12 @@ func resourceStack() *schema.Resource {
 				Description: "Free-form stack description for users",
 				Optional:    true,
 			},
+			"enable_local_preview": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether local preview runs can be triggered on this Stack",
+				Optional:    true,
+				Default:     false,
+			},
 			"gitlab": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -222,8 +228,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		variables["stackObjectID"] = toOptionalString(objectID)
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not create stack: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "StackCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create stack: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreateStack.ID)
@@ -238,7 +244,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
@@ -256,6 +262,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("before_init", stack.BeforeInit)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
+	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
@@ -321,8 +328,8 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update stack: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "StackUpdate", &mutation, variables); err != nil {
+		ret = diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err))
 	}
 
 	return append(ret, resourceStackRead(ctx, d, meta)...)
@@ -335,8 +342,8 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
+		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")
@@ -346,12 +353,13 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret := structs.StackInput{
-		Administrative: graphql.Boolean(d.Get("administrative").(bool)),
-		Autodeploy:     graphql.Boolean(d.Get("autodeploy").(bool)),
-		Autoretry:      graphql.Boolean(d.Get("autoretry").(bool)),
-		Branch:         toString(d.Get("branch")),
-		Name:           toString(d.Get("name")),
-		Repository:     toString(d.Get("repository")),
+		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
+		Autodeploy:          graphql.Boolean(d.Get("autodeploy").(bool)),
+		Autoretry:           graphql.Boolean(d.Get("autoretry").(bool)),
+		Branch:              toString(d.Get("branch")),
+		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
+		Name:                toString(d.Get("name")),
+		Repository:          toString(d.Get("repository")),
 	}
 
 	beforeApplies := []graphql.String{}
@@ -454,7 +462,7 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 		} `graphql:"stateUploadUrl"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, nil); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "StateUploadUrl", &mutation, nil); err != nil {
 		return "", errors.Wrap(err, "could not generate state upload URL")
 	}
 

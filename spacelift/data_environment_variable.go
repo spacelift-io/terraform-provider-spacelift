@@ -84,7 +84,7 @@ func dataEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceD
 		"id":      toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "EnvironmentVariableReadContext", &query, variables); err != nil {
 		return diag.Errorf("could not query for context environment variable: %v", err)
 	}
 
@@ -123,7 +123,7 @@ func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceDa
 		"id":     toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "EnvironmentVariableReadModule", &query, variables); err != nil {
 		return diag.Errorf("could not query for module environment variable: %v", err)
 	}
 
@@ -157,7 +157,7 @@ func dataEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceDat
 		"id":    toID(variableName),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "EnvironmentVariableReadStack", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack environment variable: %v", err)
 	}
 

@@ -91,8 +91,8 @@ func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		"input": moduleCreateInput(d),
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not create module: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "ModuleCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create module: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreateModule.ID)
@@ -107,7 +107,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ModuleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
 
@@ -169,8 +169,8 @@ func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = diag.FromErr(err)
+	if err := meta.(*internal.Client).Mutate(ctx, "ModuleUpdate", &mutation, variables); err != nil {
+		ret = diag.FromErr(internal.FromSpaceliftError(err))
 	}
 
 	return append(ret, resourceModuleRead(ctx, d, meta)...)
@@ -183,8 +183,8 @@ func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not delete module: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "ModuleDelete", &mutation, variables); err != nil {
+		return diag.Errorf("could not delete module: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

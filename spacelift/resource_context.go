@@ -68,8 +68,8 @@ func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta int
 		variables["labels"] = &labels
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not create context: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "ContextCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create context: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreateContext.ID)
@@ -83,7 +83,7 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ContextRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for context: %v", err)
 	}
 
@@ -136,8 +136,8 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = append(ret, diag.Errorf("could not update context: %v", err)...)
+	if err := meta.(*internal.Client).Mutate(ctx, "ContextUpdate", &mutation, variables); err != nil {
+		ret = append(ret, diag.Errorf("could not update context: %v", internal.FromSpaceliftError(err))...)
 	}
 
 	ret = append(ret, resourceContextRead(ctx, d, meta)...)
@@ -152,8 +152,8 @@ func resourceContextDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not delete context: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "ContextDelete", &mutation, variables); err != nil {
+		return diag.Errorf("could not delete context: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

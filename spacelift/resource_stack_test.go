@@ -81,19 +81,20 @@ func TestStackResource(t *testing.T) {
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
-					administrative   = true
-					autodeploy       = true
-					autoretry        = true
-					before_init      = ["terraform fmt -check", "tflint"]
-					before_apply     = ["ls -la", "rm -rf /"]
-					branch           = "master"
-					description      = "%s"
-					labels           = ["one", "two"]
-					name             = "Provider test stack %s"
-					project_root     = "root"
-					repository       = "demo"
-					runner_image     = "custom_image:runner"
-					worker_pool_id   = spacelift_worker_pool.test.id
+					administrative       = true
+					autodeploy           = true
+					autoretry            = true
+					before_init          = ["terraform fmt -check", "tflint"]
+					before_apply         = ["ls -la", "rm -rf /"]
+					branch               = "master"
+					description          = "%s"
+					enable_local_preview = true
+					labels               = ["one", "two"]
+					name                 = "Provider test stack %s"
+					project_root         = "root"
+					repository           = "demo"
+					runner_image         = "custom_image:runner"
+					worker_pool_id       = spacelift_worker_pool.test.id
 				}
 
 				resource "spacelift_worker_pool" "test" {
@@ -120,6 +121,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_apply.1", Equals("rm -rf /")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
+					Attribute("enable_local_preview", Equals("true")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),

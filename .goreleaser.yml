@@ -3,9 +3,7 @@ builds:
       - CGO_ENABLED=0
       - GOPRIVATE="github.com/spacelift-io"
     mod_timestamp: '{{ .CommitTimestamp }}'
-    flags:
-      - -trimpath
-    ldflags: ['-s -w']
+    flags: [-trimpath, -v]
     goos:
       - windows
       - linux

@@ -105,8 +105,8 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		variables["labels"] = &labels
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), err)
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreatePolicy.ID)
@@ -120,7 +120,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "PolicyRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for policy: %v", err)
 	}
 
@@ -167,8 +167,8 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	var ret diag.Diagnostics
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update policy: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyUpdate", &mutation, variables); err != nil {
+		ret = diag.Errorf("could not update policy: %v", internal.FromSpaceliftError(err))
 	}
 
 	return append(ret, resourcePolicyRead(ctx, d, meta)...)
@@ -181,8 +181,8 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not delete policy: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyDelete", &mutation, variables); err != nil {
+		return diag.Errorf("could not delete policy: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

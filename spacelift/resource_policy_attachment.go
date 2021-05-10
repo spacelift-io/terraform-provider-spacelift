@@ -63,8 +63,8 @@ func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 		variables["stack"] = toID(d.Get("module_id"))
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not attach policy: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyAttachmentCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not attach policy: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(path.Join(policyID, mutation.AttachPolicy.ID))
@@ -102,8 +102,8 @@ func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 		DetachPolicy *structs.PolicyAttachment `graphql:"policyDetach(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, &mutation, variables); err != nil {
-		return diag.Errorf("could not detach policy: %v", err)
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyAttachmentDelete", &mutation, variables); err != nil {
+		return diag.Errorf("could not detach policy: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")
@@ -161,7 +161,7 @@ func resourcePolicyAttachmentFetch(ctx context.Context, policyID, projectID stri
 		"id":     toID(projectID),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "PolicyAttachmentFetch", &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for policy attachment")
 	}
 
