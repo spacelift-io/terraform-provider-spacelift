@@ -15,6 +15,7 @@ import (
 )
 
 const vcsProviderGitlab = "GITLAB"
+const vcsProviderShowcases = "SHOWCASES"
 
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
@@ -184,6 +185,19 @@ func resourceStack() *schema.Resource {
 				Description: "Name of the Docker image used to process Runs",
 				Optional:    true,
 			},
+			"showcases": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"terraform_version": {
 				Type:             schema.TypeString,
 				Description:      "Terraform version to use",
@@ -276,6 +290,16 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
 			return diag.Errorf("error setting gitlab (resource): %v", err)
+		}
+	}
+
+	if stack.Provider == "SHOWCASES" {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("showcases", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting showcases (resource): %v", err)
 		}
 	}
 
@@ -383,15 +407,22 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Description = toOptionalString(description)
 	}
 
-	foundGitlab := false
+	foundSomethingElseThanGitHub := false
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
 		if len(gitlab) > 0 {
-			foundGitlab = true
+			foundSomethingElseThanGitHub = true
 			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
 			ret.Provider = graphql.NewString(vcsProviderGitlab)
 		}
 	}
-	if !foundGitlab {
+	if showcases, ok := d.Get("showcases").([]interface{}); ok {
+		if len(showcases) > 0 {
+			foundSomethingElseThanGitHub = true
+			ret.Namespace = toOptionalString(showcases[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderShowcases)
+		}
+	}
+	if !foundSomethingElseThanGitHub {
 		ret.Provider = graphql.NewString("GITHUB")
 	}
 

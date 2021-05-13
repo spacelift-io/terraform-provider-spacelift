@@ -154,6 +154,20 @@ func dataStack() *schema.Resource {
 				Description: "Name of the Docker image used to process Runs",
 				Computed:    true,
 			},
+			"showcases": {
+				Type:        schema.TypeList,
+				Description: "Showcase-related attributes",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "GitHub namespace of the stack's repository",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID (slug) of the stack",
@@ -218,6 +232,15 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {
 			return diag.Errorf("error setting gitlab (resource): %v", err)
+		}
+	}
+	if stack.Provider == "SHOWCASES" {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("showcases", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting showcases (resource): %v", err)
 		}
 	}
 
