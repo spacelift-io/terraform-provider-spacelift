@@ -407,23 +407,18 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Description = toOptionalString(description)
 	}
 
-	foundSomethingElseThanGitHub := false
+	ret.Provider = graphql.NewString("GITHUB")
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
 		if len(gitlab) > 0 {
-			foundSomethingElseThanGitHub = true
 			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
 			ret.Provider = graphql.NewString(vcsProviderGitlab)
 		}
 	}
 	if showcase, ok := d.Get("showcase").([]interface{}); ok {
 		if len(showcase) > 0 {
-			foundSomethingElseThanGitHub = true
 			ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
 			ret.Provider = graphql.NewString(vcsProviderShowcases)
 		}
-	}
-	if !foundSomethingElseThanGitHub {
-		ret.Provider = graphql.NewString("GITHUB")
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
