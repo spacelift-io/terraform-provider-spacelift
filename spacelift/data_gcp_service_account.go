@@ -17,6 +17,15 @@ func dataStackGCPServiceAccount() *schema.Resource {
 
 func dataGCPServiceAccount() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_gcp_service_account` represents a Google Cloud Platform " +
+			"service account that's linked to a particular Stack or Module. " +
+			"These accounts are created by Spacelift on per-stack basis, and can " +
+			"be added as members to as many organizations and projects as needed. " +
+			"During a Run or a Task, temporary credentials for those service " +
+			"accounts are injected into the environment, which allows " +
+			"credential-less GCP Terraform provider setup.",
+
 		ReadContext: dataGCPServiceAccountRead,
 
 		Schema: map[string]*schema.Schema{

@@ -15,6 +15,10 @@ import (
 
 func resourceWebhook() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_webhook` represents a webhook endpoint to which Spacelift " +
+			"sends the POST request about run state changes.",
+
 		CreateContext: resourceWebhookCreate,
 		ReadContext:   resourceWebhookRead,
 		UpdateContext: resourceWebhookUpdate,

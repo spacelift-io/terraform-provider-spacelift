@@ -12,7 +12,12 @@ import (
 
 func dataWorkerPool() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_worker_pool` represents a worker pool assigned to the " +
+			"Spacelift account.",
+
 		ReadContext: dataWorkerPoolRead,
+
 		Schema: map[string]*schema.Schema{
 			"config": {
 				Type:        schema.TypeString,

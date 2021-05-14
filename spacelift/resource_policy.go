@@ -34,6 +34,11 @@ var typeNameReplacements = map[string]string{
 
 func resourcePolicy() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_policy` represents a Spacelift **policy** - a collection of " +
+			"customer-defined rules that are applied by Spacelift at one of the " +
+			"decision points within the application.",
+
 		CreateContext: resourcePolicyCreate,
 		ReadContext:   resourcePolicyRead,
 		UpdateContext: resourcePolicyUpdate,

@@ -18,6 +18,12 @@ const vcsProviderGitlab = "GITLAB"
 
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_stack` combines source code and configuration to create a " +
+			"runtime environment where resources are managed. In this way it's " +
+			"similar to a stack in AWS CloudFormation, or a project on generic " +
+			"CI/CD platforms.",
+
 		CreateContext: resourceStackCreate,
 		ReadContext:   resourceStackRead,
 		UpdateContext: resourceStackUpdate,

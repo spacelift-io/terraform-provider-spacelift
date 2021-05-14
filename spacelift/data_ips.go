@@ -11,6 +11,10 @@ import (
 
 func dataIPs() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_ips` returns the list of Spacelift's outgoing IP addresses, " +
+			"which you can use to whitelist connections coming from the " +
+			"Spacelift's \"mothership\".",
 		ReadContext: ipsRead,
 		Schema: map[string]*schema.Schema{
 			"ips": {

@@ -12,6 +12,13 @@ import (
 
 func dataContext() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_context` represents a Spacelift **context** - " +
+			"a collection of configuration elements (either environment variables or " +
+			"mounted files) that can be administratively attached to multiple " +
+			"stacks (`spacelift_stack`) or modules (`spacelift_module`) using " +
+			"a context attachment (`spacelift_context_attachment`)`",
+
 		ReadContext: dataContextRead,
 
 		Schema: map[string]*schema.Schema{
