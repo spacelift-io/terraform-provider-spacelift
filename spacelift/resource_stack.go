@@ -15,7 +15,7 @@ import (
 )
 
 const vcsProviderGitlab = "GITLAB"
-const vcsProviderShowcases = "SHOWCASES"
+const vcsProviderShowcases = "SHOWCASE"
 
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
@@ -185,7 +185,7 @@ func resourceStack() *schema.Resource {
 				Description: "Name of the Docker image used to process Runs",
 				Optional:    true,
 			},
-			"showcases": {
+			"showcase": {
 				Type:     schema.TypeList,
 				Optional: true,
 				MaxItems: 1,
@@ -293,13 +293,13 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		}
 	}
 
-	if stack.Provider == "SHOWCASES" {
+	if stack.Provider == "SHOWCASE" {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
 
-		if err := d.Set("showcases", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting showcases (resource): %v", err)
+		if err := d.Set("showcase", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting showcase (resource): %v", err)
 		}
 	}
 
@@ -415,10 +415,10 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			ret.Provider = graphql.NewString(vcsProviderGitlab)
 		}
 	}
-	if showcases, ok := d.Get("showcases").([]interface{}); ok {
-		if len(showcases) > 0 {
+	if showcase, ok := d.Get("showcase").([]interface{}); ok {
+		if len(showcase) > 0 {
 			foundSomethingElseThanGitHub = true
-			ret.Namespace = toOptionalString(showcases[0].(map[string]interface{})["namespace"])
+			ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
 			ret.Provider = graphql.NewString(vcsProviderShowcases)
 		}
 	}
