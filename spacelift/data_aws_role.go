@@ -20,6 +20,19 @@ func dataStackAWSRole() *schema.Resource {
 
 func dataAWSRole() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) " +
+			"between the Spacelift worker and an individual stack or module. " +
+			"If this is set, Spacelift will use AWS STS to assume the supplied IAM role and " +
+			"put its temporary credentials in the runtime environment." +
+			"\n\n" +
+			"If you use private workers, you can also assume IAM role on the worker side using " +
+			"your own AWS credentials (e.g. from EC2 instance profile)." +
+			"\n\n" +
+			"Note: when assuming credentials for **shared worker**, Spacelift will use `$accountName@$stackID` " +
+			"or `$accountName@$moduleID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) " +
+			"and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).",
+
 		ReadContext: dataAWSRoleRead,
 
 		Schema: map[string]*schema.Schema{

@@ -13,6 +13,12 @@ import (
 
 func dataEnvironmentVariable() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_environment_variable` defines an environment variable on " +
+			"the context (`spacelift_context`), stack (`spacelift_stack`) or a " +
+			"module (`spacelift_module`), thereby allowing to pass and share " +
+			"various secrets and configuration with Spacelift stacks.",
+
 		ReadContext: dataEnvironmentVariableRead,
 
 		Schema: map[string]*schema.Schema{

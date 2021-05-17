@@ -14,6 +14,13 @@ import (
 
 func resourceStackDestructor() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_stack_destructor` is used to destroy the resources of a " +
+			"Stack before deleting it. `depends_on` should be used to make sure " +
+			"that all necessery resources (environment variables, roles, " +
+			"integrations, etc.) are still in place when the destruction run is " +
+			"executed.",
+
 		CreateContext: resourceStackDestructorCreate,
 		ReadContext:   resourceStackDestructorRead,
 		UpdateContext: resourceStackDestructorUpdate,
