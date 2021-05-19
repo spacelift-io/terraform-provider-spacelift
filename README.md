@@ -28,7 +28,7 @@ With Terraform 0.13.x you also have to add the following:
 terraform {
   required_providers {
     spacelift = {
-      source = "spacelift.io/spacelift-io/spacelift"
+      source = "spacelift-io/spacelift"
     }
   }
 }
