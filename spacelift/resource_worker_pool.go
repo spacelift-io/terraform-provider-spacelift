@@ -20,6 +20,10 @@ import (
 
 func resourceWorkerPool() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_worker_pool` represents a worker pool assigned to the " +
+			"Spacelift account.",
+
 		CreateContext: resourceWorkerPoolCreate,
 		ReadContext:   resourceWorkerPoolRead,
 		UpdateContext: resourceWorkerPoolUpdate,

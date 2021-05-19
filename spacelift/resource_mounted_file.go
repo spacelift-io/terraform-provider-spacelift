@@ -16,6 +16,14 @@ import (
 
 func resourceMountedFile() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_mounted_file` represents a file mounted in each Run's " +
+			"workspace that is part of a configuration of a context (`spacelift_context`), " +
+			"stack (`spacelift_stack`) or a module (`spacelift_module`). In principle, " +
+			"it's very similar to an environment variable (`spacelift_environment_variable`) " +
+			"except that the value is written to the filesystem rather than passed to " +
+			"the environment.",
+
 		CreateContext: resourceMountedFileCreate,
 		ReadContext:   resourceMountedFileRead,
 		DeleteContext: resourceMountedFileDelete,

@@ -13,6 +13,10 @@ import (
 
 func resourceModule() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_module` is a special type of a stack used to test and " +
+			"version Terraform modules.",
+
 		CreateContext: resourceModuleCreate,
 		ReadContext:   resourceModuleRead,
 		UpdateContext: resourceModuleUpdate,

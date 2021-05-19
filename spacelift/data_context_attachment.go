@@ -12,6 +12,10 @@ import (
 
 func dataContextAttachment() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_context_attachment` represents a Spacelift attachment of a " +
+			"single context to a single stack or module, with a predefined priority.",
+
 		ReadContext: dataContextAttachmentRead,
 
 		Schema: map[string]*schema.Schema{

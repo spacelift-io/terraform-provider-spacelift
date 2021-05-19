@@ -16,6 +16,14 @@ import (
 
 func resourcePolicyAttachment() *schema.Resource {
 	return &schema.Resource{
+		Description: "" +
+			"`spacelift_policy_attachment` represents a relationship between a " +
+			"policy (`spacelift_policy`) and a stack (`spacelift_stack`) or " +
+			"module (`spacelift_module`). Each policy can only be attached to a " +
+			"stack/module once. `LOGIN` policies are the exception because they " +
+			"apply globally and not to individual stacks/modules. An attempt to " +
+			"attach one will fail.",
+
 		CreateContext: resourcePolicyAttachmentCreate,
 		ReadContext:   resourcePolicyAttachmentRead,
 		DeleteContext: resourcePolicyAttachmentDelete,
