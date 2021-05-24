@@ -268,7 +268,7 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.Name = toOptionalString(name)
 	}
 
-	projectRoot, ok := d.GetOk("projectRoot")
+	projectRoot, ok := d.GetOk("project_root")
 	if ok {
 		ret.ProjectRoot = toOptionalString(projectRoot)
 	}
@@ -281,7 +281,7 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.SharedAccounts = &sharedAccounts
 	}
 
-	terraformProvider, ok := d.GetOk("terraformProvider")
+	terraformProvider, ok := d.GetOk("terraform_provider")
 	if ok {
 		ret.TerraformProvider = toOptionalString(terraformProvider)
 	}
