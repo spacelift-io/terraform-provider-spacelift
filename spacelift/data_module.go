@@ -62,12 +62,11 @@ func dataModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.",
 				Computed:    true,
-				Optional:    true,
 			},
 			"project_root": {
 				Type:        schema.TypeString,
 				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
-				Optional:    true,
+				Computed:    true,
 			},
 			"repository": {
 				Type:        schema.TypeString,
@@ -89,7 +88,6 @@ func dataModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",
 				Computed:    true,
-				Optional:    true,
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
