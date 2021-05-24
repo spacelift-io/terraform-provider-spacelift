@@ -12,10 +12,13 @@ type ModuleCreateInput struct {
 
 // ModuleUpdateInput represents the input required to update a Module.
 type ModuleUpdateInput struct {
-	Administrative graphql.Boolean   `json:"administrative"`
-	Branch         graphql.String    `json:"branch"`
-	Description    *graphql.String   `json:"description"`
-	Labels         *[]graphql.String `json:"labels"`
-	SharedAccounts *[]graphql.String `json:"sharedAccounts"`
-	WorkerPool     *graphql.ID       `json:"workerPool"`
+	Administrative    graphql.Boolean   `json:"administrative"`
+	Branch            graphql.String    `json:"branch"`
+	Description       *graphql.String   `json:"description"`
+	Labels            *[]graphql.String `json:"labels"`
+	Name              *graphql.String   `json:"name"`
+	ProjectRoot       *graphql.String   `json:"projectRoot"`
+	SharedAccounts    *[]graphql.String `json:"sharedAccounts"`
+	TerraformProvider *graphql.String   `json:"terraformProvider"`
+	WorkerPool        *graphql.ID       `json:"workerPool"`
 }

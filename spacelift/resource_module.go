@@ -66,6 +66,17 @@ func resourceModule() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"project_root": {
+				Type:        schema.TypeString,
+				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
+				Optional:    true,
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -75,6 +86,12 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "List of the accounts (subdomains) which should have access to the Module",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"terraform_provider": {
+				Type:        schema.TypeString,
+				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",
+				Computed:    true,
 				Optional:    true,
 			},
 			"worker_pool_id": {
@@ -124,10 +141,16 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("administrative", module.Administrative)
 	d.Set("branch", module.Branch)
+	d.Set("name", module.Name)
 	d.Set("repository", module.Repository)
+	d.Set("terraform_provider", module.TerraformProvider)
 
 	if description := module.Description; description != nil {
 		d.Set("description", *description)
+	}
+
+	if projectRoot := module.ProjectRoot; projectRoot != nil {
+		d.Set("project_root", *projectRoot)
 	}
 
 	if module.Provider == "GITLAB" {
@@ -240,12 +263,27 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.Labels = &labels
 	}
 
+	name, ok := d.GetOk("name")
+	if ok {
+		ret.Name = toOptionalString(name)
+	}
+
+	projectRoot, ok := d.GetOk("projectRoot")
+	if ok {
+		ret.ProjectRoot = toOptionalString(projectRoot)
+	}
+
 	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
 		var sharedAccounts []graphql.String
 		for _, account := range sharedAccountsSet.List() {
 			sharedAccounts = append(sharedAccounts, graphql.String(account.(string)))
 		}
 		ret.SharedAccounts = &sharedAccounts
+	}
+
+	terraformProvider, ok := d.GetOk("terraformProvider")
+	if ok {
+		ret.TerraformProvider = toOptionalString(terraformProvider)
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
