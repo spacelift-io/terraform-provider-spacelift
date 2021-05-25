@@ -541,7 +541,7 @@ The following arguments are supported:
 - `administrative` - (Optional) - Indicates whether this stack can manage others. Default: `false`;
 - `description` - (Optional) - Free-form stack description for GUI users;
 - `name` - (Optional) - Custom name for the module, will be inferred from the repository name if not provided;
-- `project_root` - (Optional) - Subdirectory of repository containing the module source code;
+- `project_root` - (Optional) - Subdirectory of the repository containing the module source code;
 - `terraform_provider` - (Optional) - Custom terraform provider for the module, will be inferred from the repository name if not provided;
 - `shared_accounts` - (Optional) - List of the accounts (subdomains) which should have access to the Module;
 - `worker_pool_id` - (Optional) - ID of the worker pool to use;
