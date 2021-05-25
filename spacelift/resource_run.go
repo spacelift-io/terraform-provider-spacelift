@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/shurcooL/graphql"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
