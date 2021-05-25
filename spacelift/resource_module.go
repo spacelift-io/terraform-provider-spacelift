@@ -70,6 +70,7 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.",
 				Computed:    true,
+				ForceNew:    true,
 				Optional:    true,
 			},
 			"project_root": {
@@ -92,6 +93,7 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",
 				Computed:    true,
+				ForceNew:    true,
 				Optional:    true,
 			},
 			"worker_pool_id": {
@@ -237,8 +239,18 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		ret.Provider = graphql.NewString("GITHUB")
 	}
 
+	name, ok := d.GetOk("name")
+	if ok {
+		ret.Name = toOptionalString(name)
+	}
+
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
 		ret.UpdateInput.WorkerPool = graphql.NewID(workerPoolID)
+	}
+
+	terraformProvider, ok := d.GetOk("terraform_provider")
+	if ok {
+		ret.TerraformProvider = toOptionalString(terraformProvider)
 	}
 
 	return ret
@@ -263,11 +275,6 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.Labels = &labels
 	}
 
-	name, ok := d.GetOk("name")
-	if ok {
-		ret.Name = toOptionalString(name)
-	}
-
 	projectRoot, ok := d.GetOk("project_root")
 	if ok {
 		ret.ProjectRoot = toOptionalString(projectRoot)
@@ -279,11 +286,6 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 			sharedAccounts = append(sharedAccounts, graphql.String(account.(string)))
 		}
 		ret.SharedAccounts = &sharedAccounts
-	}
-
-	terraformProvider, ok := d.GetOk("terraform_provider")
-	if ok {
-		ret.TerraformProvider = toOptionalString(terraformProvider)
 	}
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
