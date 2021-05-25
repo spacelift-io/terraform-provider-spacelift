@@ -19,10 +19,15 @@ func TestRunResource(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
+				resource "spacelift_worker_pool" "test" {
+					name        = "Let's create a dummy worker pool to avoid running the job"
+				}
+
 				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
+					name           = "Test stack %s"
+					repository     = "demo"
+					branch         = "master"
+					worker_pool_id = spacelift_worker_pool.test.id
 				}
 
 				resource "spacelift_run" "test" {
