@@ -58,6 +58,16 @@ func dataModule() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.",
+				Computed:    true,
+			},
+			"project_root": {
+				Type:        schema.TypeString,
+				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
+				Computed:    true,
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -72,6 +82,11 @@ func dataModule() *schema.Resource {
 				Type:        schema.TypeSet,
 				Description: "List of the accounts (subdomains) which should have access to the Module",
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
+			"terraform_provider": {
+				Type:        schema.TypeString,
+				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",
 				Computed:    true,
 			},
 			"worker_pool_id": {
@@ -103,6 +118,8 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("administrative", module.Administrative)
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", module.Branch)
+	d.Set("name", module.Name)
+	d.Set("terraform_provider", module.TerraformProvider)
 
 	if module.Provider == "GITLAB" {
 		m := map[string]interface{}{"namespace": module.Namespace}
@@ -130,6 +147,12 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		d.Set("description", *module.Description)
 	} else {
 		d.Set("description", nil)
+	}
+
+	if module.ProjectRoot != nil {
+		d.Set("project_root", *module.ProjectRoot)
+	} else {
+		d.Set("project_root", nil)
 	}
 
 	if workerPool := module.WorkerPool; workerPool != nil {
