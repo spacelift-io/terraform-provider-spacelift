@@ -32,7 +32,7 @@ func TestModuleData(t *testing.T) {
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),
 			Attribute("name", Equals("tasty")),
-			AttributeNotPresent("project_root"),
+			Attribute("project_root", Equals("")),
 			Attribute("repository", Equals("terraform-bacon-tasty")),
 			SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 			Attribute("terraform_provider", Equals("bacon")),

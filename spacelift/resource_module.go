@@ -275,8 +275,7 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.Labels = &labels
 	}
 
-	projectRoot, ok := d.GetOk("project_root")
-	if ok {
+	if projectRoot := d.Get("project_root"); projectRoot != "" {
 		ret.ProjectRoot = toOptionalString(projectRoot)
 	}
 
