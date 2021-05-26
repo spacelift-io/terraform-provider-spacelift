@@ -77,6 +77,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_mounted_file":              resourceMountedFile(),
 				"spacelift_policy_attachment":         resourcePolicyAttachment(),
 				"spacelift_policy":                    resourcePolicy(),
+				"spacelift_run":                       resourceRun(),
 				"spacelift_stack":                     resourceStack(),
 				"spacelift_stack_destructor":          resourceStackDestructor(),
 				"spacelift_stack_aws_role":            resourceStackAWSRole(),           // deprecated
