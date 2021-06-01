@@ -124,7 +124,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 		variables := map[string]interface{}{"id": graphql.ID(id)}
 
 		if err := client.Query(ctx, "StackCheckState", &query, variables); err != nil {
-			return diag.Errorf("could not query for stack: %v", err)
+			return diag.Errorf("could not query for stack %v: %v", graphql.ID(id), err)
 		}
 
 		stack := query.Stack
@@ -133,7 +133,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 		}
 
 		if !stack.Deleting {
-			return diag.Errorf("destruction of Stack unsuccessful, please check the destruction run logs")
+			return diag.Errorf("destruction of stack %v unsuccessful, please check the destruction run logs", graphql.ID(id))
 		}
 	}
 }
