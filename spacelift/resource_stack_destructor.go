@@ -25,7 +25,7 @@ func resourceStackDestructor() *schema.Resource {
 
 		CreateContext: resourceStackDestructorCreate,
 		ReadContext:   resourceStackDestructorRead,
-		UpdateContext: resourceStackDestructorUpdate,
+		UpdateContext: schema.NoopContext,
 		DeleteContext: resourceStackDestructorDelete,
 
 		Importer: &schema.ResourceImporter{
@@ -54,9 +54,6 @@ func resourceStackDestructor() *schema.Resource {
 
 func resourceStackDestructorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	d.SetId(d.Get("stack_id").(string))
-	d.Set("deactivated", d.Get("deactivated"))
-	d.Set("stack_id", d.Get("stack_id"))
-
 	return resourceStackDestructorRead(ctx, d, meta)
 }
 
@@ -65,25 +62,17 @@ func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, me
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Get("stack_id").(string))}
+	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackDestructorRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
-	stack := query.Stack
-	if stack == nil {
+	if query.Stack == nil {
 		d.SetId("")
-		return nil
 	}
 
 	return nil
-}
-
-func resourceStackDestructorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	d.Set("deactivated", d.Get("deactivated"))
-
-	return resourceStackRead(ctx, d, meta)
 }
 
 func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -96,14 +85,14 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroyResources: true)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("stack_id").(string))}
+	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
+		return diag.Errorf("could not delete stack %s: %v", d.Id(), internal.FromSpaceliftError(err))
 	}
 
 	if mutation.DeleteStack != nil && mutation.DeleteStack.Deleting {
-		if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), d.Get("stack_id").(string)); diagnostics.HasError() {
+		if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), d.Id()); diagnostics.HasError() {
 			return diagnostics
 		}
 	}
@@ -130,7 +119,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 		variables := map[string]interface{}{"id": graphql.ID(id)}
 
 		if err := client.Query(ctx, "StackCheckState", &query, variables); err != nil {
-			return diag.Errorf("could not query for stack %v: %v", graphql.ID(id), err)
+			return diag.Errorf("could not query for stack %s: %v", id, err)
 		}
 
 		stack := query.Stack
@@ -139,7 +128,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 		}
 
 		if !stack.Deleting {
-			return diag.Errorf("destruction of stack %v unsuccessful, please check the destruction run logs", graphql.ID(id))
+			return diag.Errorf("destruction of stack %s unsuccessful, please check the destruction run logs", id)
 		}
 	}
 }
