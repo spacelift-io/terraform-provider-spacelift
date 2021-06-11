@@ -34,10 +34,52 @@ func dataModule() *schema.Resource {
 				Description: "GitHub branch to apply changes to",
 				Computed:    true,
 			},
+			"bitbucket_cloud": {
+				Type:        schema.TypeList,
+				Description: "Bitbucket Cloud configuration",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "Bitbucket Cloud namespace of the stack's repository",
+							Required:    true,
+						},
+					},
+				},
+			},
+			"bitbucket_datacenter": {
+				Type:        schema.TypeList,
+				Description: "Bitbucket Datacenter configuration",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "Bitbucket Datacenter namespace of the stack's repository",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Description: "free-form module description for human users (supports Markdown)",
 				Computed:    true,
+			},
+			"github_enterprise": {
+				Type:        schema.TypeList,
+				Description: "GitHub Enterprise configuration",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "GitHub Enterprise namespace of the stack's repository",
+							Required:    true,
+						},
+					},
+				},
 			},
 			"gitlab": {
 				Type:        schema.TypeList,
@@ -121,7 +163,28 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("name", module.Name)
 	d.Set("terraform_provider", module.TerraformProvider)
 
-	if module.Provider == "GITLAB" {
+	if module.Provider == vcsProviderBitbucketCloud {
+		m := map[string]interface{}{"namespace": module.Namespace}
+
+		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
+		}
+	}
+	if module.Provider == vcsProviderBitbucketDatacenter {
+		m := map[string]interface{}{"namespace": module.Namespace}
+
+		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
+		}
+	}
+	if module.Provider == vcsProviderGitHubEnterprise {
+		m := map[string]interface{}{"namespace": module.Namespace}
+
+		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting github_enterprise (resource): %v", err)
+		}
+	}
+	if module.Provider == vcsProviderGitlab {
 		m := map[string]interface{}{"namespace": module.Namespace}
 
 		if err := d.Set("gitlab", []interface{}{m}); err != nil {

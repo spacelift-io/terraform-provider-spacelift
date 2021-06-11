@@ -14,9 +14,6 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-const vcsProviderGitlab = "GITLAB"
-const vcsProviderShowcases = "SHOWCASE"
-
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
@@ -75,6 +72,32 @@ func resourceStack() *schema.Resource {
 				Description: "GitHub branch to apply changes to",
 				Required:    true,
 			},
+			"bitbucket_cloud": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"bitbucket_datacenter": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"cloudformation": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"pulumi", "terraform_version", "terraform_workspace"},
@@ -116,6 +139,19 @@ func resourceStack() *schema.Resource {
 				Description: "Indicates whether local preview runs can be triggered on this Stack",
 				Optional:    true,
 				Default:     false,
+			},
+			"github_enterprise": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
 			},
 			"gitlab": {
 				Type:     schema.TypeList,
@@ -289,7 +325,37 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 
-	if stack.Provider == "GITLAB" {
+	if stack.Provider == vcsProviderBitbucketCloud {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
+		}
+	}
+
+	if stack.Provider == vcsProviderBitbucketDatacenter {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
+		}
+	}
+
+	if stack.Provider == vcsProviderGitHubEnterprise {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting github_enterprise (resource): %v", err)
+		}
+	}
+
+	if stack.Provider == vcsProviderGitlab {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
@@ -299,7 +365,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		}
 	}
 
-	if stack.Provider == "SHOWCASE" {
+	if stack.Provider == vcsProviderShowcases {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
@@ -414,6 +480,24 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	ret.Provider = graphql.NewString("GITHUB")
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok {
+		if len(bitbucketCloud) > 0 {
+			ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderBitbucketCloud)
+		}
+	}
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok {
+		if len(bitbucketDatacenter) > 0 {
+			ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderBitbucketDatacenter)
+		}
+	}
+	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok {
+		if len(githubEnterprise) > 0 {
+			ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderGitHubEnterprise)
+		}
+	}
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
 		if len(gitlab) > 0 {
 			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
