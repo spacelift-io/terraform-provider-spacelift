@@ -1,7 +1,7 @@
 FROM golang:1.16-alpine as builder
 
 # 3rd party soft dependency versions
-ARG INFRACOST_VERSION=0.8.7
+ARG INFRACOST_VERSION=0.9.1
 ARG TERRAGRUNT_VERSION=0.28.15
 
 RUN apk add --no-cache curl git
@@ -25,7 +25,7 @@ RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o
 FROM alpine:3.13.5
 
 RUN apk -U upgrade
-RUN apk add --no-cache ca-certificates curl git openssh
+RUN apk add --no-cache ca-certificates curl git openssh jq
 
 COPY --from=builder /bin/infracost /bin/infracost
 COPY --from=builder /bin/terragrunt /bin/terragrunt
