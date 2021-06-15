@@ -33,7 +33,7 @@ func TestDriftDetectionResource(t *testing.T) {
 				resource "spacelift_drift_detection" "test" {
 					stack_id     = spacelift_stack.test.id
                     reconcile    = %t
-					schedule     = ["%s"]
+					schedule     = [%s]
 				}
 			`, randomID, reconcile, strings.Join(scheduleStrs, ", "))
 		}
