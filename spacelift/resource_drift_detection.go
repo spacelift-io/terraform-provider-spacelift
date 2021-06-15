@@ -76,9 +76,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("could not create drift detection integration for the stack: %v", err)
 	}
 
-	if d.Id() == "" {
-		d.SetId(stackID)
-	}
+	d.SetId(stackID)
 
 	return resourceDriftDetectionRead(ctx, d, meta)
 }
@@ -108,10 +106,6 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not update drift detection integration for the stack: %v", err)
-	}
-
-	if d.Id() == "" {
-		d.SetId(stackID)
 	}
 
 	return resourceDriftDetectionRead(ctx, d, meta)
@@ -165,7 +159,9 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 	for i, expr := range integration.Schedule {
 		schedule[i] = expr
 	}
-	d.Set("schedule", schedule)
+	if err := d.Set("schedule", schedule); err != nil {
+		return diag.Errorf("error setting schedule (resource): %v", err)
+	}
 
 	return nil
 }
