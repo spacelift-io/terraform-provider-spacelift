@@ -31,7 +31,6 @@ func dataDriftDetection() *schema.Resource {
 			"schedule": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				MinItems:    1,
 				Description: "List of cron schedule expressions based on which drift detection should be triggered.",
 				Computed:    true,
 			},
