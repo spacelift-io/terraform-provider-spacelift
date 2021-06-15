@@ -57,9 +57,9 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		} `graphql:"stackIntegrationDriftDetectionCreate(stack: $stack, input: $input)"`
 	}
 
-	var scheduleExpression []graphql.String
+	var scheduleExpressions []graphql.String
 	for _, expr := range d.Get("schedule").([]interface{}) {
-		scheduleExpression = append(scheduleExpression, graphql.String(expr.(string)))
+		scheduleExpressions = append(scheduleExpressions, graphql.String(expr.(string)))
 	}
 
 	stackID := d.Get("stack_id").(string)
@@ -68,7 +68,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		"stack": toID(stackID),
 		"input": structs.DriftDetectionIntegrationInput{
 			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
-			Schedule:  scheduleExpression,
+			Schedule:  scheduleExpressions,
 		},
 	}
 
@@ -91,9 +91,9 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		} `graphql:"stackIntegrationDriftDetectionUpdate(stack: $stack, input: $input)"`
 	}
 
-	var scheduleExpression []graphql.String
+	var scheduleExpressions []graphql.String
 	for _, expr := range d.Get("schedule").([]interface{}) {
-		scheduleExpression = append(scheduleExpression, graphql.String(expr.(string)))
+		scheduleExpressions = append(scheduleExpressions, graphql.String(expr.(string)))
 	}
 
 	stackID := d.Get("stack_id").(string)
@@ -102,7 +102,7 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		"stack": toID(stackID),
 		"input": structs.DriftDetectionIntegrationInput{
 			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
-			Schedule:  scheduleExpression,
+			Schedule:  scheduleExpressions,
 		},
 	}
 
@@ -162,8 +162,8 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 	d.Set("reconcile", integration.Reconcile)
 
 	schedule := make([]interface{}, len(integration.Schedule))
-	for _, expr := range integration.Schedule {
-		schedule = append(schedule, expr)
+	for i, expr := range integration.Schedule {
+		schedule[i] = expr
 	}
 	d.Set("schedule", schedule)
 
