@@ -54,7 +54,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		CreateDriftDetectionIntegration struct {
 			Reconcile bool     `graphql:"reconcile"`
 			Schedule  []string `graphql:"schedule"`
-		} `graphql:"stackIntegrationDriftDetectionUpdate(stack: $stack, input: $input)"`
+		} `graphql:"stackIntegrationDriftDetectionCreate(stack: $stack, input: $input)"`
 	}
 
 	var scheduleExpression []graphql.String
@@ -88,7 +88,7 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		CreateDriftDetectionIntegration struct {
 			Reconcile bool     `graphql:"reconcile"`
 			Schedule  []string `graphql:"schedule"`
-		} `graphql:"stackIntegrationDriftDetectionCreate(stack: $stack, input: $input)"`
+		} `graphql:"stackIntegrationDriftDetectionUpdate(stack: $stack, input: $input)"`
 	}
 
 	var scheduleExpression []graphql.String
