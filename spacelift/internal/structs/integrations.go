@@ -8,6 +8,10 @@ type Integrations struct {
 		ExternalID                  *string `graphql:"externalID"`
 		GenerateCredentialsInWorker bool    `graphql:"generateCredentialsInWorker"`
 	} `graphql:"aws"`
+	DriftDetection struct {
+		Reconcile bool     `graphql:"reconcile"`
+		Schedule  []string `graphql:"schedule"`
+	} `graphql:"driftDetection"`
 	GCP struct {
 		ServiceAccountEmail *string  `graphql:"serviceAccountEmail"`
 		TokenScopes         []string `graphql:"tokenScopes"`
