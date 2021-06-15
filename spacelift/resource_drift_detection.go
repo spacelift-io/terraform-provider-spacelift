@@ -21,7 +21,7 @@ func resourceDriftDetection() *schema.Resource {
 
 		CreateContext: resourceDriftDetectionCreate,
 		ReadContext:   resourceDriftDetectionRead,
-		UpdateContext: resourceDriftDetectionCreate,
+		UpdateContext: resourceDriftDetectionUpdate,
 		DeleteContext: resourceDriftDetectionDelete,
 
 		Importer: &schema.ResourceImporter{StateContext: importIntegration},
@@ -54,6 +54,40 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		CreateDriftDetectionIntegration struct {
 			Reconcile bool     `graphql:"reconcile"`
 			Schedule  []string `graphql:"schedule"`
+		} `graphql:"stackIntegrationDriftDetectionUpdate(stack: $stack, input: $input)"`
+	}
+
+	var scheduleExpression []graphql.String
+	for _, expr := range d.Get("schedule").([]interface{}) {
+		scheduleExpression = append(scheduleExpression, graphql.String(expr.(string)))
+	}
+
+	stackID := d.Get("stack_id").(string)
+
+	variables := map[string]interface{}{
+		"stack": toID(stackID),
+		"input": structs.DriftDetectionIntegrationInput{
+			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
+			Schedule:  scheduleExpression,
+		},
+	}
+
+	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionUpdate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create drift detection integration for the stack: %v", err)
+	}
+
+	if d.Id() == "" {
+		d.SetId(stackID)
+	}
+
+	return resourceDriftDetectionRead(ctx, d, meta)
+}
+
+func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var mutation struct {
+		CreateDriftDetectionIntegration struct {
+			Reconcile bool     `graphql:"reconcile"`
+			Schedule  []string `graphql:"schedule"`
 		} `graphql:"stackIntegrationDriftDetectionCreate(stack: $stack, input: $input)"`
 	}
 
@@ -66,13 +100,14 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 
 	variables := map[string]interface{}{
 		"stack": toID(stackID),
-		"input": map[string]interface{}{
-			"schedule": scheduleExpression,
+		"input": structs.DriftDetectionIntegrationInput{
+			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
+			Schedule:  scheduleExpression,
 		},
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not generate dedicated DriftDetection integration for the stack: %v", err)
+		return diag.Errorf("could not update drift detection integration for the stack: %v", err)
 	}
 
 	if d.Id() == "" {
@@ -99,7 +134,7 @@ func resourceDriftDetectionDelete(ctx context.Context, d *schema.ResourceData, m
 	variables := map[string]interface{}{"stack": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack DriftDetection service account: %v", err)
+		return diag.Errorf("could not delete drift detection integration for stack: %v", err)
 	}
 
 	d.SetId("")
