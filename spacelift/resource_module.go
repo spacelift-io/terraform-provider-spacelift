@@ -38,6 +38,32 @@ func resourceModule() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"bitbucket_cloud": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
+			"bitbucket_datacenter": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"branch": {
 				Type:        schema.TypeString,
 				Description: "GitHub branch to apply changes to",
@@ -47,6 +73,19 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Free-form module description for users",
 				Optional:    true,
+			},
+			"github_enterprise": {
+				Type:     schema.TypeList,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
 			},
 			"gitlab": {
 				Type:     schema.TypeList,
@@ -155,7 +194,37 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 		d.Set("project_root", *projectRoot)
 	}
 
-	if module.Provider == "GITLAB" {
+	if module.Provider == vcsProviderBitbucketCloud {
+		m := map[string]interface{}{
+			"namespace": module.Namespace,
+		}
+
+		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
+		}
+	}
+
+	if module.Provider == vcsProviderBitbucketDatacenter {
+		m := map[string]interface{}{
+			"namespace": module.Namespace,
+		}
+
+		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
+		}
+	}
+
+	if module.Provider == vcsProviderGitHubEnterprise {
+		m := map[string]interface{}{
+			"namespace": module.Namespace,
+		}
+
+		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting github_enterprise (resource): %v", err)
+		}
+	}
+
+	if module.Provider == vcsProviderGitlab {
 		m := map[string]interface{}{
 			"namespace": module.Namespace,
 		}
@@ -227,16 +296,31 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		Repository:  toString(d.Get("repository")),
 	}
 
-	foundGitlab := false
+	ret.Provider = graphql.NewString("GITHUB")
+
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok {
+		if len(bitbucketCloud) > 0 {
+			ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderBitbucketCloud)
+		}
+	}
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok {
+		if len(bitbucketDatacenter) > 0 {
+			ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderBitbucketDatacenter)
+		}
+	}
+	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok {
+		if len(githubEnterprise) > 0 {
+			ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
+			ret.Provider = graphql.NewString(vcsProviderGitHubEnterprise)
+		}
+	}
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
 		if len(gitlab) > 0 {
-			foundGitlab = true
 			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
 			ret.Provider = graphql.NewString(vcsProviderGitlab)
 		}
-	}
-	if !foundGitlab {
-		ret.Provider = graphql.NewString("GITHUB")
 	}
 
 	name, ok := d.GetOk("name")
