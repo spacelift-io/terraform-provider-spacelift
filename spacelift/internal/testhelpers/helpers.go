@@ -107,8 +107,8 @@ func Attribute(name string, check ValueCheck) AttributeCheck {
 // AttributeNotPresent ensures that an attribute is not set on the resource.
 func AttributeNotPresent(name string) AttributeCheck {
 	return func(attributes map[string]string) error {
-		if _, ok := attributes[name]; ok {
-			return errors.Errorf("attribute %s is unexpectedly present", name)
+		if value, ok := attributes[name]; ok {
+			return errors.Errorf("attribute %s is unexpectedly present and equal to '%s'", name, value)
 		}
 
 		return nil

@@ -53,6 +53,34 @@ func dataStack() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
+			"bitbucket_cloud": {
+				Type:        schema.TypeList,
+				Description: "Bitbucket Cloud configuration",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "Bitbucket Cloud namespace of the stack's repository",
+							Required:    true,
+						},
+					},
+				},
+			},
+			"bitbucket_datacenter": {
+				Type:        schema.TypeList,
+				Description: "Bitbucket Datacenter configuration",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "Bitbucket Datacenter namespace of the stack's repository",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"branch": {
 				Type:        schema.TypeString,
 				Description: "Repository branch to treat as the default 'main' branch",
@@ -92,9 +120,23 @@ func dataStack() *schema.Resource {
 				Description: "free-form stack description for users",
 				Computed:    true,
 			},
+			"github_enterprise": {
+				Type:        schema.TypeList,
+				Description: "GitHub Enterprise configuration",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "GitHub Enterprise namespace of the stack's repository",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"gitlab": {
 				Type:        schema.TypeList,
-				Description: "GitLab-related attributes",
+				Description: "GitLab configuration",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -231,7 +273,34 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("terraform_version", stack.TerraformVersion)
 
-	if stack.Provider == "GITLAB" {
+	if stack.Provider == vcsProviderBitbucketCloud {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
+		}
+	}
+	if stack.Provider == vcsProviderBitbucketDatacenter {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
+		}
+	}
+	if stack.Provider == vcsProviderGitHubEnterprise {
+		m := map[string]interface{}{
+			"namespace": stack.Namespace,
+		}
+
+		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
+			return diag.Errorf("error setting github_enterprise (resource): %v", err)
+		}
+	}
+	if stack.Provider == vcsProviderGitlab {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
@@ -240,7 +309,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 			return diag.Errorf("error setting gitlab (resource): %v", err)
 		}
 	}
-	if stack.Provider == "SHOWCASE" {
+	if stack.Provider == vcsProviderShowcases {
 		m := map[string]interface{}{
 			"namespace": stack.Namespace,
 		}
