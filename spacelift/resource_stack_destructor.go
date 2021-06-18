@@ -13,6 +13,8 @@ import (
 )
 
 func resourceStackDestructor() *schema.Resource {
+	deleteTimeout := time.Hour * 2
+
 	return &schema.Resource{
 		Description: "" +
 			"`spacelift_stack_destructor` is used to destroy the resources of a " +
@@ -42,6 +44,10 @@ func resourceStackDestructor() *schema.Resource {
 				Description: "If set to true, destruction won't delete the stack",
 				Optional:    true,
 			},
+		},
+
+		Timeouts: &schema.ResourceTimeout{
+			Delete: &deleteTimeout,
 		},
 	}
 }
