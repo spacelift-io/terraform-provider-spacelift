@@ -65,8 +65,9 @@ func TestAWSRoleResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -75,11 +76,11 @@ func TestAWSRoleResource(t *testing.T) {
 					module_id = spacelift_module.test.id
 					role_arn  = "arn:aws:iam::039653571618:role/empty-test-role"
 				}
-			`,
+			`, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 					Attribute("generate_credentials_in_worker", Equals("false")),
 					AttributeNotPresent("external_id"),
 					AttributeNotPresent("stack_id"),
@@ -88,7 +89,7 @@ func TestAWSRoleResource(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     "module/terraform-bacon-tasty",
+				ImportStateId:     fmt.Sprintf("module/test-module-%s", randomID),
 				ImportStateVerify: true,
 			},
 		})
@@ -139,7 +140,7 @@ func TestAWSRoleResource(t *testing.T) {
 			Check: Resource(
 				"spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("generate_credentials_in_worker", Equals("true")),
 				AttributeNotPresent("external_id"),
 				AttributeNotPresent("stack_id"),

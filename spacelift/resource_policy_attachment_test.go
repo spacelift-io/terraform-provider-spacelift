@@ -65,6 +65,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 				}
 	
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -73,12 +74,12 @@ func TestPolicyAttachmentResource(t *testing.T) {
 					policy_id = spacelift_policy.test.id
 					module_id = spacelift_module.test.id
 				}
-			`, randomID),
+			`, randomID, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("policy_id", Contains(randomID)),
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				),
 			},
 			{

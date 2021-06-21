@@ -46,8 +46,9 @@ func TestMountedFileData(t *testing.T) {
 
 	t.Run("with a module", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
-			Config: `
+			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name           = "test-module-%s"
 					branch         = "master"
 					repository     = "terraform-bacon-tasty"
 				}
@@ -63,10 +64,10 @@ func TestMountedFileData(t *testing.T) {
 					module_id    = spacelift_mounted_file.test.module_id
 					relative_path = spacelift_mounted_file.test.relative_path
 				}
-			`,
+			`, randomID),
 			Check: Resource(
 				"data.spacelift_mounted_file.test",
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("content", Equals("YmFjb24gaXMgdGFzdHk=")),
 				Attribute("write_only", Equals("false")),
 				AttributeNotPresent("context_id"),

@@ -67,8 +67,9 @@ func TestEnvironmentVariableResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name           = "test-module-%s"
 					branch         = "master"
 					repository     = "terraform-bacon-tasty"
 				}
@@ -78,10 +79,10 @@ func TestEnvironmentVariableResource(t *testing.T) {
 					name      = "BACON"
 					value     = "is tasty"
 				}
-			`,
+			`, randomID),
 				Check: Resource(
 					resourceName,
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
 					Attribute("write_only", Equals("true")),
 					AttributeNotPresent("context_id"),

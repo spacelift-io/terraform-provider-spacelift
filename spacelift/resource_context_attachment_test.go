@@ -71,6 +71,7 @@ func TestContextAttachmentResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -84,11 +85,11 @@ func TestContextAttachmentResource(t *testing.T) {
 					module_id  = spacelift_module.test.id
 					priority   = 1
 				}
-			`, randomID),
+			`, randomID, randomID),
 				Check: Resource(
 					"spacelift_context_attachment.test",
 					Attribute("id", IsNotEmpty()),
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 					AttributeNotPresent("stack_id"),
 				),
 			},

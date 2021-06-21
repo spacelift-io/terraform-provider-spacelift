@@ -46,8 +46,9 @@ func TestAWSRoleData(t *testing.T) {
 
 	t.Run("with a module", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
-			Config: `
+			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -59,11 +60,11 @@ func TestAWSRoleData(t *testing.T) {
 				data "spacelift_aws_role" "test" {
 					module_id = spacelift_aws_role.test.module_id
 				}
-			`,
+			`, randomID),
 			Check: Resource(
 				"data.spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				Attribute("generate_credentials_in_worker", Equals("false")),
 				AttributeNotPresent("stack_id"),
@@ -106,8 +107,9 @@ func TestAWSRoleData(t *testing.T) {
 
 	t.Run("with generating AWS creds in the worker for module", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
-			Config: `
+			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+					name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -121,11 +123,11 @@ func TestAWSRoleData(t *testing.T) {
 				data "spacelift_aws_role" "test" {
 					module_id = spacelift_aws_role.test.module_id
 				}
-			`,
+			`, randomID),
 			Check: Resource(
 				"data.spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("role_arn", Equals("custom_role_arn")),
 				Attribute("generate_credentials_in_worker", Equals("true")),
 				Attribute("external_id", Equals("external@id")),
