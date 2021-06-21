@@ -1,6 +1,8 @@
 package spacelift
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -10,12 +12,11 @@ import (
 
 func TestIPsData(t *testing.T) {
 	t.Parallel()
-
 	testSteps(t, []resource.TestStep{{
 		Config: `data "spacelift_ips" "test" {}`,
 		Check: Resource(
 			"data.spacelift_ips.test",
-			SetEquals("ips", "34.241.63.88", "46.137.43.168", "54.73.240.9"),
+			SetEquals("ips", strings.Split(os.Getenv("SPACELIFT_PROVIDER_TEST_IPS"), ";")...),
 		),
 	}})
 }
