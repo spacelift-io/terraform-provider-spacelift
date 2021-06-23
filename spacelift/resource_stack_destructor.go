@@ -102,7 +102,7 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
 	}
 
-	if mutation.DeleteStack.Deleting {
+	if mutation.DeleteStack != nil && mutation.DeleteStack.Deleting {
 		if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), d.Get("stack_id").(string)); diagnostics.HasError() {
 			return diagnostics
 		}
