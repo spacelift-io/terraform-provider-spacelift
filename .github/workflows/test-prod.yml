@@ -1,0 +1,23 @@
+name: Test with Prod
+
+on:
+  push:
+    branches: [master, future]
+
+jobs:
+  deployment:
+    name: Test the code
+    runs-on: ubuntu-latest
+    container: golang:1.15
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@master
+
+      - name: Test with coverage
+        run: go test -coverprofile=coverage.txt -coverpkg=./... ./...
+        env:
+          SPACELIFT_API_KEY_ENDPOINT: ${{ secrets.PROD_SPACELIFT_API_KEY_ENDPOINT }}
+          SPACELIFT_API_KEY_ID: ${{ secrets.PROD_SPACELIFT_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.PROD_SPACELIFT_API_KEY_SECRET }}
+          SPACELIFT_PROVIDER_TEST_IPS: ${{ secrets.PROD_SPACELIFT_PROVIDER_TEST_IPS }}
