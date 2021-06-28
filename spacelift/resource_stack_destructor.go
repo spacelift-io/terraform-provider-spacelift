@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -37,7 +38,6 @@ func resourceStackDestructor() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "ID of the stack to delete and destroy on destruction",
 				Required:    true,
-				ForceNew:    true,
 			},
 			"deactivated": {
 				Type:        schema.TypeBool,
@@ -53,7 +53,7 @@ func resourceStackDestructor() *schema.Resource {
 }
 
 func resourceStackDestructorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	d.SetId(d.Get("stack_id").(string))
+	d.SetId(fmt.Sprintf("destructor-%d", time.Now().Unix()))
 	return resourceStackDestructorRead(ctx, d, meta)
 }
 
@@ -62,7 +62,7 @@ func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, me
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]interface{}{"id": graphql.ID(d.Get("stack_id"))}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackDestructorRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
@@ -85,14 +85,15 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroyResources: true)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	stackID := d.Get("stack_id").(string)
+	variables := map[string]interface{}{"id": toID(stackID)}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack %s: %v", d.Id(), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not delete stack %s: %v", stackID, internal.FromSpaceliftError(err))
 	}
 
 	if mutation.DeleteStack != nil && mutation.DeleteStack.Deleting {
-		if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), d.Id()); diagnostics.HasError() {
+		if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), stackID); diagnostics.HasError() {
 			return diagnostics
 		}
 	}
