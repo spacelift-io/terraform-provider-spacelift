@@ -1,7 +1,7 @@
 FROM golang:1.16-alpine as builder
 
 # 3rd party soft dependency versions
-ARG INFRACOST_VERSION=0.9.1
+ARG INFRACOST_VERSION=0.9.2
 ARG TERRAGRUNT_VERSION=0.28.15
 
 RUN apk add --no-cache curl git
