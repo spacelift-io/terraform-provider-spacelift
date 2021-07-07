@@ -22,10 +22,18 @@ func TestStackResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					administrative = true
+					after_apply    = ["ls -la", "rm -rf /"]
+					after_destroy  = ["echo 'after_destroy'"]
+					after_init     = ["terraform fmt -check", "tflint"]
+					after_perform  = ["echo 'after_perform'"]
+					after_plan     = ["echo 'after_plan'"]
 					autodeploy     = true
 					autoretry      = false
-					before_init    = ["terraform fmt -check", "tflint"]
 					before_apply   = ["ls -la", "rm -rf /"]
+					before_destroy = ["echo 'before_destroy'"]
+					before_init    = ["terraform fmt -check", "tflint"]
+					before_perform = ["echo 'before_perform'"]
+					before_plan    = ["echo 'before_plan'"]
 					branch         = "master"
 					description    = "%s"
 					labels         = ["one", "two"]
@@ -45,15 +53,33 @@ func TestStackResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_apply.0", Equals("ls -la")),
+					Attribute("after_apply.1", Equals("rm -rf /")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_init.0", Equals("terraform fmt -check")),
+					Attribute("after_init.1", Equals("tflint")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_perform.0", Equals("echo 'after_perform'")),
+					Attribute("after_plan.#", Equals("1")),
+					Attribute("after_plan.0", Equals("echo 'after_plan'")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
-					Attribute("before_init.#", Equals("2")),
-					Attribute("before_init.0", Equals("terraform fmt -check")),
-					Attribute("before_init.1", Equals("tflint")),
 					Attribute("before_apply.#", Equals("2")),
 					Attribute("before_apply.0", Equals("ls -la")),
 					Attribute("before_apply.1", Equals("rm -rf /")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_init.0", Equals("terraform fmt -check")),
+					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_perform.0", Equals("echo 'before_perform'")),
+					Attribute("before_plan.#", Equals("1")),
+					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -82,10 +108,18 @@ func TestStackResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					administrative       = true
+					after_apply          = ["ls -la", "rm -rf /"]
+					after_destroy        = ["echo 'after_destroy'"]
+					after_init           = ["terraform fmt -check", "tflint"]
+					after_perform        = ["echo 'after_perform'"]
+					after_plan           = ["echo 'after_plan'"]
 					autodeploy           = true
 					autoretry            = true
-					before_init          = ["terraform fmt -check", "tflint"]
 					before_apply         = ["ls -la", "rm -rf /"]
+					before_destroy       = ["echo 'before_destroy'"]
+					before_init          = ["terraform fmt -check", "tflint"]
+					before_perform       = ["echo 'before_perform'"]
+					before_plan          = ["echo 'before_plan'"]
 					branch               = "master"
 					description          = "%s"
 					enable_local_preview = true
@@ -111,14 +145,32 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
 					Attribute("administrative", Equals("true")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_apply.0", Equals("ls -la")),
+					Attribute("after_apply.1", Equals("rm -rf /")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_init.0", Equals("terraform fmt -check")),
+					Attribute("after_init.1", Equals("tflint")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_perform.0", Equals("echo 'after_perform'")),
+					Attribute("after_plan.#", Equals("1")),
+					Attribute("after_plan.0", Equals("echo 'after_plan'")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("true")),
-					Attribute("before_init.#", Equals("2")),
-					Attribute("before_init.0", Equals("terraform fmt -check")),
-					Attribute("before_init.1", Equals("tflint")),
 					Attribute("before_apply.#", Equals("2")),
 					Attribute("before_apply.0", Equals("ls -la")),
 					Attribute("before_apply.1", Equals("rm -rf /")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_init.0", Equals("terraform fmt -check")),
+					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_perform.0", Equals("echo 'before_perform'")),
+					Attribute("before_plan.#", Equals("1")),
+					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					Attribute("enable_local_preview", Equals("true")),
@@ -148,10 +200,18 @@ func TestStackResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					administrative = true
+					after_apply    = ["ls -la", "rm -rf /"]
+					after_destroy  = ["echo 'after_destroy'"]
+					after_init     = ["terraform fmt -check", "tflint"]
+					after_perform  = ["echo 'after_perform'"]
+					after_plan     = ["echo 'after_plan'"]
 					autodeploy     = true
 					autoretry      = false
-					before_init    = ["terraform fmt -check", "tflint"]
 					before_apply   = ["ls -la", "rm -rf /"]
+					before_destroy = ["echo 'before_destroy'"]
+					before_init    = ["terraform fmt -check", "tflint"]
+					before_perform = ["echo 'before_perform'"]
+					before_plan    = ["echo 'before_plan'"]
 					branch         = "master"
 					labels         = ["one", "two"]
 					name           = "Provider test stack %s"
@@ -170,14 +230,32 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_apply.0", Equals("ls -la")),
+					Attribute("after_apply.1", Equals("rm -rf /")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_init.0", Equals("terraform fmt -check")),
+					Attribute("after_init.1", Equals("tflint")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_perform.0", Equals("echo 'after_perform'")),
+					Attribute("after_plan.#", Equals("1")),
+					Attribute("after_plan.0", Equals("echo 'after_plan'")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
-					Attribute("before_init.#", Equals("2")),
-					Attribute("before_init.0", Equals("terraform fmt -check")),
-					Attribute("before_init.1", Equals("tflint")),
 					Attribute("before_apply.#", Equals("2")),
 					Attribute("before_apply.0", Equals("ls -la")),
 					Attribute("before_apply.1", Equals("rm -rf /")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_init.0", Equals("terraform fmt -check")),
+					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_perform.0", Equals("echo 'before_perform'")),
+					Attribute("before_plan.#", Equals("1")),
+					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -200,14 +278,32 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_apply.0", Equals("ls -la")),
+					Attribute("after_apply.1", Equals("rm -rf /")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_init.0", Equals("terraform fmt -check")),
+					Attribute("after_init.1", Equals("tflint")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_perform.0", Equals("echo 'after_perform'")),
+					Attribute("after_plan.#", Equals("1")),
+					Attribute("after_plan.0", Equals("echo 'after_plan'")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
-					Attribute("before_init.#", Equals("2")),
-					Attribute("before_init.0", Equals("terraform fmt -check")),
-					Attribute("before_init.1", Equals("tflint")),
 					Attribute("before_apply.#", Equals("2")),
 					Attribute("before_apply.0", Equals("ls -la")),
 					Attribute("before_apply.1", Equals("rm -rf /")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_init.0", Equals("terraform fmt -check")),
+					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_perform.0", Equals("echo 'before_perform'")),
+					Attribute("before_plan.#", Equals("1")),
+					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -229,15 +325,33 @@ func TestStackResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_apply.0", Equals("ls -la")),
+					Attribute("after_apply.1", Equals("rm -rf /")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_init.0", Equals("terraform fmt -check")),
+					Attribute("after_init.1", Equals("tflint")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_perform.0", Equals("echo 'after_perform'")),
+					Attribute("after_plan.#", Equals("1")),
+					Attribute("after_plan.0", Equals("echo 'after_plan'")),
 					Attribute("administrative", Equals("true")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
-					Attribute("before_init.#", Equals("2")),
-					Attribute("before_init.0", Equals("terraform fmt -check")),
-					Attribute("before_init.1", Equals("tflint")),
 					Attribute("before_apply.#", Equals("2")),
 					Attribute("before_apply.0", Equals("ls -la")),
 					Attribute("before_apply.1", Equals("rm -rf /")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_init.0", Equals("terraform fmt -check")),
+					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_perform.0", Equals("echo 'before_perform'")),
+					Attribute("before_plan.#", Equals("1")),
+					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -257,14 +371,32 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("administrative", Equals("true")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_apply.0", Equals("ls -la")),
+					Attribute("after_apply.1", Equals("rm -rf /")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_init.0", Equals("terraform fmt -check")),
+					Attribute("after_init.1", Equals("tflint")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_perform.0", Equals("echo 'after_perform'")),
+					Attribute("after_plan.#", Equals("1")),
+					Attribute("after_plan.0", Equals("echo 'after_plan'")),
 					Attribute("autodeploy", Equals("true")),
 					Attribute("autoretry", Equals("false")),
-					Attribute("before_init.#", Equals("2")),
-					Attribute("before_init.0", Equals("terraform fmt -check")),
-					Attribute("before_init.1", Equals("tflint")),
 					Attribute("before_apply.#", Equals("2")),
 					Attribute("before_apply.0", Equals("ls -la")),
 					Attribute("before_apply.1", Equals("rm -rf /")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_init.0", Equals("terraform fmt -check")),
+					Attribute("before_init.1", Equals("tflint")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_perform.0", Equals("echo 'before_perform'")),
+					Attribute("before_plan.#", Equals("1")),
+					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
@@ -284,9 +416,17 @@ func TestStackResource(t *testing.T) {
 		before := fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
 				administrative      = true
+				after_apply         = ["ls -la", "rm -rf /"]
+				after_destroy       = ["echo 'after_destroy'"]
+				after_init          = ["terraform fmt -check", "tflint"]
+				after_perform       = ["echo 'after_perform'"]
+				after_plan          = ["echo 'after_plan'"]
 				autodeploy          = true
-				before_init         = ["terraform fmt -check", "tflint"]
 				before_apply        = ["ls -la", "rm -rf /"]
+				before_destroy      = ["echo 'before_destroy'"]
+				before_init         = ["terraform fmt -check", "tflint"]
+				before_perform      = ["echo 'before_perform'"]
+				before_plan         = ["echo 'before_plan'"]
 				branch              = "master"
 				description         = "bacon"
 				labels              = ["one", "two"]
@@ -313,9 +453,17 @@ func TestStackResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("administrative", Equals("true")),
+					Attribute("after_apply.#", Equals("2")),
+					Attribute("after_destroy.#", Equals("1")),
+					Attribute("after_init.#", Equals("2")),
+					Attribute("after_perform.#", Equals("1")),
+					Attribute("after_plan.#", Equals("1")),
 					Attribute("autodeploy", Equals("true")),
-					Attribute("before_init.#", Equals("2")),
 					Attribute("before_apply.#", Equals("2")),
+					Attribute("before_destroy.#", Equals("1")),
+					Attribute("before_init.#", Equals("2")),
+					Attribute("before_perform.#", Equals("1")),
+					Attribute("before_plan.#", Equals("1")),
 					Attribute("description", Equals("bacon")),
 					SetEquals("labels", "one", "two"),
 					Attribute("project_root", Equals("root")),
@@ -334,9 +482,17 @@ func TestStackResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("administrative", Equals("false")),
+					Attribute("after_apply.#", Equals("0")),
+					Attribute("after_destroy.#", Equals("0")),
+					Attribute("after_init.#", Equals("0")),
+					Attribute("after_perform.#", Equals("0")),
+					Attribute("after_plan.#", Equals("0")),
 					Attribute("autodeploy", Equals("false")),
-					Attribute("before_init.#", Equals("0")),
 					Attribute("before_apply.#", Equals("0")),
+					Attribute("before_destroy.#", Equals("0")),
+					Attribute("before_init.#", Equals("0")),
+					Attribute("before_perform.#", Equals("0")),
+					Attribute("before_plan.#", Equals("0")),
 					Attribute("description", IsEmpty()),
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),

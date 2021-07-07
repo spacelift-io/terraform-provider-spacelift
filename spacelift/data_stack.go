@@ -26,6 +26,36 @@ func dataStack() *schema.Resource {
 				Description: "indicates whether this stack can administer others",
 				Computed:    true,
 			},
+			"after_apply": {
+				Type:        schema.TypeList,
+				Description: "List of after-apply scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_destroy": {
+				Type:        schema.TypeList,
+				Description: "List of after-destroy scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_init": {
+				Type:        schema.TypeList,
+				Description: "List of after-init scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_perform": {
+				Type:        schema.TypeList,
+				Description: "List of after-perform scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_plan": {
+				Type:        schema.TypeList,
+				Description: "List of after-plan scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
 				Description: "indicates whether changes to this stack can be automatically deployed",
@@ -45,13 +75,31 @@ func dataStack() *schema.Resource {
 				Type:        schema.TypeList,
 				Description: "List of before-apply scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Computed:    true,
+				Optional:    true,
+			},
+			"before_destroy": {
+				Type:        schema.TypeList,
+				Description: "List of before-destroy scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
 			},
 			"before_init": {
 				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
-				Computed:    true,
+				Optional:    true,
+			},
+			"before_perform": {
+				Type:        schema.TypeList,
+				Description: "List of before-perform scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"before_plan": {
+				Type:        schema.TypeList,
+				Description: "List of before-plan scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
 			},
 			"bitbucket_cloud": {
 				Type:        schema.TypeList,
@@ -258,11 +306,19 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 
 	d.SetId(stackID.(string))
 	d.Set("administrative", stack.Administrative)
+	d.Set("after_apply", stack.AfterApply)
+	d.Set("after_destroy", stack.AfterDestroy)
+	d.Set("after_init", stack.AfterInit)
+	d.Set("after_perform", stack.AfterPerform)
+	d.Set("after_plan", stack.AfterPlan)
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("before_apply", stack.BeforeApply)
+	d.Set("before_destroy", stack.BeforeDestroy)
 	d.Set("before_init", stack.BeforeInit)
+	d.Set("before_perform", stack.BeforePerform)
+	d.Set("before_plan", stack.BeforePlan)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)

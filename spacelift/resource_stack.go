@@ -38,6 +38,36 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"after_apply": {
+				Type:        schema.TypeList,
+				Description: "List of after-apply scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_destroy": {
+				Type:        schema.TypeList,
+				Description: "List of after-destroy scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_init": {
+				Type:        schema.TypeList,
+				Description: "List of after-init scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_perform": {
+				Type:        schema.TypeList,
+				Description: "List of after-perform scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"after_plan": {
+				Type:        schema.TypeList,
+				Description: "List of after-plan scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether changes to this stack can be automatically deployed",
@@ -61,9 +91,27 @@ func resourceStack() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
+			"before_destroy": {
+				Type:        schema.TypeList,
+				Description: "List of before-destroy scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"before_init": {
 				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"before_perform": {
+				Type:        schema.TypeList,
+				Description: "List of before-perform scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
+			"before_plan": {
+				Type:        schema.TypeList,
+				Description: "List of before-plan scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
@@ -311,11 +359,19 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	d.Set("administrative", stack.Administrative)
+	d.Set("after_apply", stack.AfterApply)
+	d.Set("after_destroy", stack.AfterDestroy)
+	d.Set("after_init", stack.AfterInit)
+	d.Set("after_perform", stack.AfterPerform)
+	d.Set("after_plan", stack.AfterPlan)
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("before_apply", stack.BeforeApply)
+	d.Set("before_destroy", stack.BeforeDestroy)
 	d.Set("before_init", stack.BeforeInit)
+	d.Set("before_perform", stack.BeforePerform)
+	d.Set("before_plan", stack.BeforePlan)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
@@ -458,6 +514,46 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Repository:          toString(d.Get("repository")),
 	}
 
+	afterApplies := []graphql.String{}
+	if commands, ok := d.GetOk("after_apply"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			afterApplies = append(afterApplies, graphql.String(cmd.(string)))
+		}
+	}
+	ret.AfterApply = &afterApplies
+
+	afterDestroys := []graphql.String{}
+	if commands, ok := d.GetOk("after_destroy"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			afterDestroys = append(afterDestroys, graphql.String(cmd.(string)))
+		}
+	}
+	ret.AfterDestroy = &afterDestroys
+
+	afterInits := []graphql.String{}
+	if commands, ok := d.GetOk("after_init"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			afterInits = append(afterInits, graphql.String(cmd.(string)))
+		}
+	}
+	ret.AfterInit = &afterInits
+
+	afterPerforms := []graphql.String{}
+	if commands, ok := d.GetOk("after_perform"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			afterPerforms = append(afterPerforms, graphql.String(cmd.(string)))
+		}
+	}
+	ret.AfterPerform = &afterPerforms
+
+	afterPlans := []graphql.String{}
+	if commands, ok := d.GetOk("after_plan"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			afterPlans = append(afterPlans, graphql.String(cmd.(string)))
+		}
+	}
+	ret.AfterPlan = &afterPlans
+
 	beforeApplies := []graphql.String{}
 	if commands, ok := d.GetOk("before_apply"); ok {
 		for _, cmd := range commands.([]interface{}) {
@@ -466,6 +562,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 	ret.BeforeApply = &beforeApplies
 
+	beforeDestroys := []graphql.String{}
+	if commands, ok := d.GetOk("before_destroy"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			beforeDestroys = append(beforeDestroys, graphql.String(cmd.(string)))
+		}
+	}
+	ret.BeforeDestroy = &beforeDestroys
+
 	beforeInits := []graphql.String{}
 	if commands, ok := d.GetOk("before_init"); ok {
 		for _, cmd := range commands.([]interface{}) {
@@ -473,6 +577,22 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		}
 	}
 	ret.BeforeInit = &beforeInits
+
+	beforePerforms := []graphql.String{}
+	if commands, ok := d.GetOk("before_perform"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			beforePerforms = append(beforePerforms, graphql.String(cmd.(string)))
+		}
+	}
+	ret.BeforePerform = &beforePerforms
+
+	beforePlans := []graphql.String{}
+	if commands, ok := d.GetOk("before_plan"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			beforePlans = append(beforePlans, graphql.String(cmd.(string)))
+		}
+	}
+	ret.BeforePlan = &beforePlans
 
 	description, ok := d.GetOk("description")
 	if ok {
