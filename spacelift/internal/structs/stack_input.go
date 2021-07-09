@@ -5,10 +5,18 @@ import "github.com/shurcooL/graphql"
 // StackInput represents the input required to create or update a Stack.
 type StackInput struct {
 	Administrative      graphql.Boolean    `json:"administrative"`
+	AfterApply          *[]graphql.String  `json:"afterApply"`
+	AfterDestroy        *[]graphql.String  `json:"afterDestroy"`
+	AfterInit           *[]graphql.String  `json:"afterInit"`
+	AfterPerform        *[]graphql.String  `json:"afterPerform"`
+	AfterPlan           *[]graphql.String  `json:"afterPlan"`
 	Autodeploy          graphql.Boolean    `json:"autodeploy"`
 	Autoretry           graphql.Boolean    `json:"autoretry"`
-	BeforeInit          *[]graphql.String  `json:"beforeInit"`
 	BeforeApply         *[]graphql.String  `json:"beforeApply"`
+	BeforeDestroy       *[]graphql.String  `json:"beforeDestroy"`
+	BeforeInit          *[]graphql.String  `json:"beforeInit"`
+	BeforePerform       *[]graphql.String  `json:"beforePerform"`
+	BeforePlan          *[]graphql.String  `json:"beforePlan"`
 	Branch              graphql.String     `json:"branch"`
 	Description         *graphql.String    `json:"description"`
 	Labels              *[]graphql.String  `json:"labels"`

@@ -13,10 +13,18 @@ const StackConfigVendorTerraform = "StackConfigVendorTerraform"
 type Stack struct {
 	ID                  string        `graphql:"id"`
 	Administrative      bool          `graphql:"administrative"`
+	AfterApply          []string      `graphql:"afterApply"`
+	AfterDestroy        []string      `graphql:"afterDestroy"`
+	AfterInit           []string      `graphql:"afterInit"`
+	AfterPerform        []string      `graphql:"afterPerform"`
+	AfterPlan           []string      `graphql:"afterPlan"`
 	Autodeploy          bool          `graphql:"autodeploy"`
 	Autoretry           bool          `graphql:"autoretry"`
 	BeforeApply         []string      `graphql:"beforeApply"`
+	BeforeDestroy       []string      `graphql:"beforeDestroy"`
 	BeforeInit          []string      `graphql:"beforeInit"`
+	BeforePerform       []string      `graphql:"beforePerform"`
+	BeforePlan          []string      `graphql:"beforePlan"`
 	Branch              string        `graphql:"branch"`
 	Deleting            bool          `graphql:"deleting"`
 	Description         *string       `graphql:"description"`
