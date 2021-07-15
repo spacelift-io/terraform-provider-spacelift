@@ -51,12 +51,16 @@ func Provider(commit, version string) plugin.ProviderFunc {
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"spacelift_aws_role":                         dataAWSRole(),
+				"spacelift_bitbucket_cloud_integration":      dataBitbucketCloudIntegration(),
+				"spacelift_bitbucket_datacenter_integration": dataBitbucketDatacenterIntegration(),
 				"spacelift_context_attachment":               dataContextAttachment(),
 				"spacelift_context":                          dataContext(),
 				"spacelift_current_stack":                    dataCurrentStack(),
 				"spacelift_drift_detection":                  dataDriftDetection(),
 				"spacelift_environment_variable":             dataEnvironmentVariable(),
 				"spacelift_gcp_service_account":              dataGCPServiceAccount(),
+				"spacelift_github_enterprise_integration":    dataGithubEnterpriseIntegration(),
+				"spacelift_gitlab_integration":               dataGitlabIntegration(),
 				"spacelift_ips":                              dataIPs(),
 				"spacelift_module":                           dataModule(),
 				"spacelift_mounted_file":                     dataMountedFile(),
@@ -67,10 +71,6 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack_gcp_service_account":        dataStackGCPServiceAccount(), // deprecated
 				"spacelift_worker_pool":                      dataWorkerPool(),
 				"spacelift_worker_pools":                     dataWorkerPools(),
-				"spacelift_gitlab_integration":               dataGitlabIntegration(),
-				"spacelift_github_enterprise_integration":    dataGithubEnterpriseIntegration(),
-				"spacelift_bitbucket_datacenter_integration": dataBitbucketDatacenterIntegration(),
-				"spacelift_bitbucket_cloud_integration":      dataBitbucketCloudIntegration(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"spacelift_aws_role":                  resourceAWSRole(),

@@ -7,13 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 var bitbucketCloudFields = struct {
-	USERNAME string
+	Username string
 }{
-	USERNAME: "username",
+	Username: "username",
 }
 
 func dataBitbucketCloudIntegration() *schema.Resource {
@@ -23,7 +22,7 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 		ReadContext: dataBitbucketCloudIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			bitbucketCloudFields.USERNAME: {
+			bitbucketCloudFields.Username: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Cloud username",
 				Computed:    true,
@@ -34,7 +33,9 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 
 func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		BitbucketCloudIntegration *structs.BitbucketCloudIntegration `graphql:"bitbucketCloudIntegration"`
+		BitbucketCloudIntegration *struct {
+			Username string `graphql:"username"`
+		} `graphql:"bitbucketCloudIntegration"`
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "BitbucketCloudIntegrationRead", &query, map[string]interface{}{}); err != nil {
@@ -47,7 +48,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId("spacelift_bitbucket_cloud_integration_id") // TF expects id to be set otherwise it will fail
-	d.Set(bitbucketCloudFields.USERNAME, bitbucketCloudIntegration.Username)
+	d.Set(bitbucketCloudFields.Username, bitbucketCloudIntegration.Username)
 
 	return nil
 }

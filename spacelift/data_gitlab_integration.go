@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 var gitlabIntegrationFields = struct {
@@ -42,7 +41,10 @@ func dataGitlabIntegration() *schema.Resource {
 func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 
 	var query struct {
-		GitlabIntegration *structs.GitlabIntegration `graphql:"gitlabIntegration"`
+		GitlabIntegration *struct {
+			APIHost       string `graphql:"apiHost"`
+			WebhookSecret string `graphql:"webhookSecret"`
+		} `graphql:"gitlabIntegration"`
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "GitlabIntegrationRead", &query, map[string]interface{}{}); err != nil {

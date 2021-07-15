@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 var bitbucketDatacenterFields = struct {
@@ -48,7 +47,11 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 
 func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		BitbucketDataCenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegration"`
+		BitbucketDataCenterIntegration *struct {
+			APIHost        string `graphql:"apiHost"`
+			WebhookSecret  string `graphql:"webhookSecret"`
+			UserFacingHost string `graphql:"userFacingHost"`
+		} `graphql:"bitbucketDatacenterIntegration"`
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "BitbucketDatacenterIntegrationRead", &query, map[string]interface{}{}); err != nil {

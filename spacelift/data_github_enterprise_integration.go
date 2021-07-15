@@ -7,10 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-var githubErpIntegrationFields = struct {
+var githubEnterpriseIntegrationFields = struct {
 	AppID         string
 	APIHost       string
 	WebhookSecret string
@@ -27,17 +26,17 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 		ReadContext: dataGithubEnterpriseIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			githubErpIntegrationFields.APIHost: {
+			githubEnterpriseIntegrationFields.APIHost: {
 				Type:        schema.TypeString,
 				Description: "Github integration api host",
 				Computed:    true,
 			},
-			githubErpIntegrationFields.WebhookSecret: {
+			githubEnterpriseIntegrationFields.WebhookSecret: {
 				Type:        schema.TypeString,
 				Description: "Github integration webhook secret",
 				Computed:    true,
 			},
-			githubErpIntegrationFields.AppID: {
+			githubEnterpriseIntegrationFields.AppID: {
 				Type:        schema.TypeString,
 				Description: "Github integration app id",
 				Computed:    true,
@@ -48,7 +47,11 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 
 func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		GithubEnterpriseIntegration *structs.GithubEnterpriseIntegration `graphql:"githubEnterpriseIntegration"`
+		GithubEnterpriseIntegration *struct {
+			AppID         string `graphql:"appID"`
+			APIHost       string `graphql:"apiHost"`
+			WebhookSecret string `graphql:"webhookSecret"`
+		} `graphql:"githubEnterpriseIntegration"`
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "GithubEnterpriseIntegrationRead", &query, map[string]interface{}{}); err != nil {
@@ -61,9 +64,9 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 	}
 
 	d.SetId("spacelift_github_enterprise_integration_id") // TF expects id to be set otherwise it will fail
-	d.Set(githubErpIntegrationFields.APIHost, githubEnterpriseIntegration.APIHost)
-	d.Set(githubErpIntegrationFields.WebhookSecret, githubEnterpriseIntegration.WebhookSecret)
-	d.Set(githubErpIntegrationFields.AppID, githubEnterpriseIntegration.AppID)
+	d.Set(githubEnterpriseIntegrationFields.APIHost, githubEnterpriseIntegration.APIHost)
+	d.Set(githubEnterpriseIntegrationFields.WebhookSecret, githubEnterpriseIntegration.WebhookSecret)
+	d.Set(githubEnterpriseIntegrationFields.AppID, githubEnterpriseIntegration.AppID)
 
 	return nil
 }
