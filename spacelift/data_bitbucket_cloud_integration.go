@@ -18,8 +18,7 @@ var bitbucketCloudFields = struct {
 
 func dataBitbucketCloudIntegration() *schema.Resource {
 	return &schema.Resource{
-		Description: "" +
-			"`spacelift_bitbucket_cloud_integration`",
+		Description: "`spacelift_bitbucket_cloud_integration` returns details about Bitbucket Cloud integration",
 
 		ReadContext: dataBitbucketCloudIntegrationRead,
 

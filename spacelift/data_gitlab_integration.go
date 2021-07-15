@@ -20,8 +20,7 @@ var gitlabIntegrationFields = struct {
 
 func dataGitlabIntegration() *schema.Resource {
 	return &schema.Resource{
-		Description: "" +
-			"`spacelift_gitlab_integration`",
+		Description: "`spacelift_gitlab_integration` returns details about Gitlab integration",
 
 		ReadContext: dataGitlabIntegrationRead,
 

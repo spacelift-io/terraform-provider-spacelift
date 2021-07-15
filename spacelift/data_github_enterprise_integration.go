@@ -22,8 +22,7 @@ var githubErpIntegrationFields = struct {
 
 func dataGithubEnterpriseIntegration() *schema.Resource {
 	return &schema.Resource{
-		Description: "" +
-			"`spacelift_github_enterprise_integration`",
+		Description: "`spacelift_github_enterprise_integration` returns details about Github Enterprise integration",
 
 		ReadContext: dataGithubEnterpriseIntegrationRead,
 

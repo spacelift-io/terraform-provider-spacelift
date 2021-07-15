@@ -22,8 +22,7 @@ var bitbucketDatacenterFields = struct {
 
 func dataBitbucketDatacenterIntegration() *schema.Resource {
 	return &schema.Resource{
-		Description: "" +
-			"`spacelift_bitbucket_datacenter_integration`",
+		Description: "`spacelift_bitbucket_datacenter_integration` returns details about Bitbucket Datacenter integration",
 
 		ReadContext: dataBitbucketDatacenterIntegrationRead,
 
