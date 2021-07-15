@@ -18,9 +18,9 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 		`,
 		Check: Resource(
 			"data.spacelift_github_enterprise_integration.test",
-			Attribute("app_id", Equals("6")),
-			Attribute("api_host", Equals("https://github.liftspace.net")),
+			Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST"))),
 			Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET"))),
+			Attribute("app_id", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID"))),
 		),
 	}})
 }

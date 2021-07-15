@@ -18,9 +18,9 @@ func TestBitbucketDataCenterIntegrationData(t *testing.T) {
 		`,
 		Check: Resource(
 			"data.spacelift_bitbucket_datacenter_integration.test",
-			Attribute("api_host", Equals("private://bitbucket-datacenter-agent-pool")),
+			Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_API_HOST"))),
 			Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_SECRET"))),
-			Attribute("user_facing_host", Equals("http://localhost:7990")),
+			Attribute("user_facing_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_USER_FACING_HOST"))),
 		),
 	}})
 }

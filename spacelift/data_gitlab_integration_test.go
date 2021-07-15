@@ -18,7 +18,7 @@ func TestGitlabIntegrationData(t *testing.T) {
 		`,
 		Check: Resource(
 			"data.spacelift_gitlab_integration.test",
-			Attribute("api_host", Equals("https://gitlab.com")),
+			Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_API_HOST"))),
 			Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_SECRET"))),
 		),
 	}})
