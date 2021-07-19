@@ -32,11 +32,19 @@ data "spacelift_stack" "k8s-core" {
 ### Read-Only
 
 - **administrative** (Boolean) indicates whether this stack can administer others
+- **after_apply** (List of String) List of after-apply scripts
+- **after_destroy** (List of String) List of after-destroy scripts
+- **after_init** (List of String) List of after-init scripts
+- **after_perform** (List of String) List of after-perform scripts
+- **after_plan** (List of String) List of after-plan scripts
 - **autodeploy** (Boolean) indicates whether changes to this stack can be automatically deployed
 - **autoretry** (Boolean) indicates whether obsolete proposed changes should automatically be retried
 - **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
 - **before_apply** (List of String) List of before-apply scripts
+- **before_destroy** (List of String) List of before-destroy scripts
 - **before_init** (List of String) List of before-init scripts
+- **before_perform** (List of String) List of before-perform scripts
+- **before_plan** (List of String) List of before-plan scripts
 - **branch** (String) Repository branch to treat as the default 'main' branch
 - **cloudformation** (List of Object) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedatt--cloudformation))
 - **description** (String) free-form stack description for users
