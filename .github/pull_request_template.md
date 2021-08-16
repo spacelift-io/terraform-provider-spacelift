@@ -3,6 +3,7 @@
 > Description here
 
 ## Type of change
+
 - [ ] Bug fix (non-breaking change that fixes an issue)
 - [ ] New feature (non-breaking change that adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
@@ -26,3 +27,4 @@
 - [ ] Pull Request is no longer marked as "draft"
 - [ ] Reviewers have been assigned
 - [ ] Changes have been reviewed by at least one other engineer
+- [ ] The target branch is `future` unless the change is going directly into production
