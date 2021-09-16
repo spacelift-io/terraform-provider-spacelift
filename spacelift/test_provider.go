@@ -24,6 +24,8 @@ func testProvider() *schema.Provider {
 }
 
 func testSteps(t *testing.T, steps []resource.TestStep) {
+	t.Parallel()
+
 	resource.Test(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers: map[string]*schema.Provider{

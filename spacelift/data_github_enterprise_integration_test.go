@@ -10,8 +10,6 @@ import (
 )
 
 func TestGithubEnterpriseIntegrationData(t *testing.T) {
-	t.Parallel()
-
 	testSteps(t, []resource.TestStep{{
 		Config: `
 			data "spacelift_github_enterprise_integration" "test" {}

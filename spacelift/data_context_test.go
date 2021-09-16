@@ -11,11 +11,9 @@ import (
 )
 
 func TestContextData(t *testing.T) {
-	t.Parallel()
-
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("retrieves context data without an error", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 				resource "spacelift_context" "test" {

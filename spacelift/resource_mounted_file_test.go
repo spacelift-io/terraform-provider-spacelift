@@ -13,9 +13,9 @@ import (
 func TestMountedFileResource(t *testing.T) {
 	const resourceName = "spacelift_mounted_file.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a context", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(writeOnly bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_context" "test" {
@@ -56,10 +56,13 @@ func TestMountedFileResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name           = "test-module-%s"
 					branch         = "master"
 					repository     = "terraform-bacon-tasty"
 				}
@@ -69,10 +72,10 @@ func TestMountedFileResource(t *testing.T) {
 					content       = base64encode("bacon is tasty")
 					relative_path = "bacon.txt"
 				}
-			`,
+			`, randomID),
 				Check: Resource(
 					resourceName,
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 					Attribute("write_only", Equals("true")),
 				),
 			},
@@ -85,6 +88,8 @@ func TestMountedFileResource(t *testing.T) {
 	})
 
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

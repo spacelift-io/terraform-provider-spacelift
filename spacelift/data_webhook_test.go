@@ -12,8 +12,6 @@ import (
 
 func TestWebhookData(t *testing.T) {
 	t.Run("with a stack", func(t *testing.T) {
-		t.Parallel()
-
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{{
@@ -48,9 +46,12 @@ func TestWebhookData(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{{
-			Config: `
+			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -65,14 +66,14 @@ func TestWebhookData(t *testing.T) {
 					module_id  = spacelift_webhook.test.module_id
 					webhook_id = spacelift_webhook.test.id
 				}
-			`,
+			`, randomID),
 			Check: Resource(
 				"data.spacelift_webhook.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("endpoint", Equals("https://bacon.org")),
 				Attribute("enabled", Equals("true")),
 				Attribute("secret", Equals("very-very-secret")),
-				Attribute("module_id", Equals("terraform-bacon-tasty")),
+				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
