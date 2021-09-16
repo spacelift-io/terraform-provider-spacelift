@@ -10,8 +10,6 @@ import (
 )
 
 func TestBitbucketDataCenterIntegrationData(t *testing.T) {
-	t.Parallel()
-
 	testSteps(t, []resource.TestStep{{
 		Config: `
 			data "spacelift_bitbucket_datacenter_integration" "test" {}

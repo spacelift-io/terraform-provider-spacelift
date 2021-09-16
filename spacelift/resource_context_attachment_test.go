@@ -96,7 +96,7 @@ func TestContextAttachmentResource(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("test-context-%s/terraform-bacon-tasty", randomID),
+				ImportStateId:     fmt.Sprintf("test-module-%s/terraform-bacon-tasty", randomID),
 				ImportStateVerify: true,
 			}})
 	})

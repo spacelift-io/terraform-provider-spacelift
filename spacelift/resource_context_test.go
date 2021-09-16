@@ -11,8 +11,6 @@ import (
 )
 
 func TestContextResource(t *testing.T) {
-	t.Parallel()
-
 	const resourceName = "spacelift_context.test"
 
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)

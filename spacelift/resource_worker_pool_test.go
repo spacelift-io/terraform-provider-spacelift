@@ -12,11 +12,7 @@ import (
 func TestWorkerPoolResource(t *testing.T) {
 	const resourceName = "spacelift_worker_pool.test"
 
-	t.Parallel()
-
 	t.Run("without a CSR", func(t *testing.T) {
-		t.Parallel()
-
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_worker_pool" "test" {
@@ -55,8 +51,6 @@ func TestWorkerPoolResource(t *testing.T) {
 	})
 
 	t.Run("with a CSR", func(t *testing.T) {
-		t.Parallel()
-
 		testSteps(t, []resource.TestStep{
 			{
 				Config: `

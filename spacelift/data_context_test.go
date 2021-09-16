@@ -11,8 +11,6 @@ import (
 )
 
 func TestContextData(t *testing.T) {
-	t.Parallel()
-
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("retrieves context data without an error", func(t *testing.T) {

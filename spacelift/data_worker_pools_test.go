@@ -11,8 +11,6 @@ import (
 )
 
 func TestWorkerPoolsData(t *testing.T) {
-	t.Parallel()
-
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	resourceName := "spacelift_worker_pool.test"

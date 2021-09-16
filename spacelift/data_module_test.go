@@ -36,7 +36,7 @@ func TestModuleData(t *testing.T) {
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),
-			Attribute("name", Equals("tasty")),
+			Attribute("name", Equals(fmt.Sprintf("test-module-%s", randomID))),
 			Attribute("project_root", Equals("")),
 			Attribute("repository", Equals("terraform-bacon-tasty")),
 			SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),

@@ -10,8 +10,6 @@ import (
 )
 
 func TestAzureDevOpsIntegrationData(t *testing.T) {
-	t.Parallel()
-
 	testSteps(t, []resource.TestStep{{
 		Config: `
 			data "spacelift_azure_devops_integration" "test" {}

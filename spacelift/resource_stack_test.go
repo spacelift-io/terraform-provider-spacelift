@@ -13,8 +13,6 @@ import (
 func TestStackResource(t *testing.T) {
 	const resourceName = "spacelift_stack.test"
 
-	t.Parallel()
-
 	t.Run("with GitHub and no state import", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

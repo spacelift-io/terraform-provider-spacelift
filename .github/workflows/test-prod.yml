@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@master
 
       - name: Test with coverage
-        run: go test -coverprofile=coverage.txt -coverpkg=./... ./...
+        run: go test -parallel 20 -coverprofile=coverage.txt -coverpkg=./... ./...
         env:
           SPACELIFT_API_KEY_ENDPOINT: ${{ secrets.PROD_SPACELIFT_API_KEY_ENDPOINT }}
           SPACELIFT_API_KEY_ID: ${{ secrets.PROD_SPACELIFT_API_KEY_ID }}
