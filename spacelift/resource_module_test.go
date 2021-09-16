@@ -11,9 +11,9 @@ import (
 )
 
 func TestModuleResource(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with GitHub", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
@@ -60,6 +60,8 @@ func TestModuleResource(t *testing.T) {
 	})
 
 	t.Run("project root and custom name", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(projectRoot string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {

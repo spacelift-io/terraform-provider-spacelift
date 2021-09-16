@@ -11,9 +11,9 @@ import (
 )
 
 func TestContextAttachmentData(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -49,6 +49,8 @@ func TestContextAttachmentData(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {

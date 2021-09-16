@@ -13,9 +13,9 @@ import (
 func TestMountedFileResource(t *testing.T) {
 	const resourceName = "spacelift_mounted_file.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a context", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(writeOnly bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_context" "test" {
@@ -56,6 +56,8 @@ func TestMountedFileResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -86,6 +88,8 @@ func TestMountedFileResource(t *testing.T) {
 	})
 
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

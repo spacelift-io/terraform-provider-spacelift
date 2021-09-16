@@ -11,9 +11,9 @@ import (
 )
 
 func TestAWSRoleData(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -45,6 +45,8 @@ func TestAWSRoleData(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
@@ -73,6 +75,8 @@ func TestAWSRoleData(t *testing.T) {
 	})
 
 	t.Run("with generating AWS creds in the worker for stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -106,6 +110,8 @@ func TestAWSRoleData(t *testing.T) {
 	})
 
 	t.Run("with generating AWS creds in the worker for module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {

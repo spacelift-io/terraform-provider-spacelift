@@ -11,9 +11,9 @@ import (
 )
 
 func TestEnvironmentVariableResource(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a context", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(writeOnly bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_context" "test" {
@@ -63,6 +63,8 @@ func TestEnvironmentVariableResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		const resourceName = "spacelift_environment_variable.test"
 
 		testSteps(t, []resource.TestStep{
@@ -99,6 +101,8 @@ func TestEnvironmentVariableResource(t *testing.T) {
 
 	t.Run("with a stack", func(t *testing.T) {
 		const resourceName = "spacelift_environment_variable.test"
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
 			{

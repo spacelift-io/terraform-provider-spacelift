@@ -11,10 +11,11 @@ import (
 )
 
 func TestRunResource(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	t.Run("on a new stack", func(t *testing.T) {
 		const resourceName = "spacelift_run.test"
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
 			{

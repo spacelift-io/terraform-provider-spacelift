@@ -13,9 +13,9 @@ import (
 func TestGCPServiceAccountResource(t *testing.T) {
 	const resourceName = "spacelift_gcp_service_account.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(scope string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -59,6 +59,8 @@ func TestGCPServiceAccountResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

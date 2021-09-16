@@ -13,9 +13,9 @@ import (
 func TestPolicyAttachmentResource(t *testing.T) {
 	const resourceName = "spacelift_policy_attachment.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := fmt.Sprintf(`
 			resource "spacelift_policy" "test" {
 				name = "My first policy %s"
@@ -55,6 +55,8 @@ func TestPolicyAttachmentResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`

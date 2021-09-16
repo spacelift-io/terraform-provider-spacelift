@@ -11,9 +11,9 @@ import (
 )
 
 func TestContextAttachmentResource(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(priority int) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -66,6 +66,8 @@ func TestContextAttachmentResource(t *testing.T) {
 
 	t.Run("with a module", func(t *testing.T) {
 		const resourceName = "spacelift_context_attachment.test"
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
 			{

@@ -13,9 +13,9 @@ import (
 func TestPolicyResource(t *testing.T) {
 	const resourceName = "spacelift_policy.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("creates and updates a policy", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(message string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_policy" "test" {
