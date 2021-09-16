@@ -64,7 +64,7 @@ func TestModuleData(t *testing.T) {
 		`, randomID),
 		Check: Resource(
 			"data.spacelift_module.test",
-			Attribute("id", Equals("my-module")),
+			Attribute("id", Equals(fmt.Sprintf("my-module-%s", randomID))),
 			Attribute("administrative", Equals("true")),
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),

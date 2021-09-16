@@ -125,8 +125,9 @@ func TestAWSRoleResource(t *testing.T) {
 
 	t.Run("with generating AWS creds in the worker for module", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
-			Config: `
+			Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+					name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -136,7 +137,7 @@ func TestAWSRoleResource(t *testing.T) {
 					role_arn                       = "custom_role_arn"
 					generate_credentials_in_worker = true
 				}
-			`,
+			`, randomID),
 			Check: Resource(
 				"spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),

@@ -4,16 +4,20 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
 func TestModuleResource(t *testing.T) {
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 	t.Run("with GitHub", func(t *testing.T) {
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+					name            = "github-module-%s"
 					administrative  = true
 					branch          = "master"
 					description     = "%s"
@@ -21,7 +25,7 @@ func TestModuleResource(t *testing.T) {
 					repository      = "terraform-bacon-tasty"
 					shared_accounts = ["foo-subdomain", "bar-subdomain"]
 				}
-			`, description)
+			`, randomID, description)
 		}
 
 		const resourceName = "spacelift_module.test"
@@ -31,7 +35,7 @@ func TestModuleResource(t *testing.T) {
 				Config: config("old description"),
 				Check: Resource(
 					"spacelift_module.test",
-					Attribute("id", Equals("terraform-bacon-tasty")),
+					Attribute("id", Equals(fmt.Sprintf("github-module-%s", randomID))),
 					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
@@ -59,17 +63,17 @@ func TestModuleResource(t *testing.T) {
 		config := func(projectRoot string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name               = "project-root-%s"
 					administrative     = true
 					branch             = "master"
 					description        = "description"
 					labels             = ["one", "two"]
-                    name               = "my-module"
                     project_root       = "%s"
 					repository         = "terraform-bacon-tasty"
 					shared_accounts    = ["foo-subdomain", "bar-subdomain"]
                     terraform_provider = "papaya"
 				}
-			`, projectRoot)
+			`, randomID, projectRoot)
 		}
 
 		const resourceName = "spacelift_module.test"
@@ -79,7 +83,7 @@ func TestModuleResource(t *testing.T) {
 				Config: config("test-root/ab"),
 				Check: Resource(
 					"spacelift_module.test",
-					Attribute("id", Equals("my-module")),
+					Attribute("id", Equals(fmt.Sprintf("project-root-%s", randomID))),
 					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("description")),
