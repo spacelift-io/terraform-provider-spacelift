@@ -44,7 +44,7 @@ func TestModuleResource(t *testing.T) {
 					AttributeNotPresent("project_root"),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
 					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
-					Attribute("terraform_provider", Equals("bacon")),
+					Attribute("terraform_provider", Equals("default")),
 				),
 			},
 			{
@@ -90,7 +90,7 @@ func TestModuleResource(t *testing.T) {
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("description")),
 					SetEquals("labels", "one", "two"),
-					Attribute("name", Equals("my-module")),
+					Attribute("name", Equals(fmt.Sprintf("project-root-%s", randomID))),
 					Attribute("project_root", Equals("test-root/ab")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
 					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
