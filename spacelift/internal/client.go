@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/shurcooL/graphql"
 	"golang.org/x/oauth2"
 )
@@ -53,9 +54,15 @@ func (c *Client) Query(ctx context.Context, queryName string, q interface{}, var
 }
 
 func (c *Client) client(ctx context.Context) *graphql.Client {
+	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}))
+
+	retryableClient := retryablehttp.NewClient()
+	retryableClient.HTTPClient = oauthClient
+	retryableClient.Logger = nil
+
 	return graphql.NewClient(
 		c.url(),
-		oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token})),
+		retryableClient.StandardClient(),
 		graphql.WithHeader("Spacelift-Client-Type", "provider"),
 		graphql.WithHeader("Spacelift-Provider-Commit", c.Commit),
 		graphql.WithHeader("Spacelift-Provider-Version", c.Version),

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go/v4"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -175,7 +176,10 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 	apiKeyID := d.Get("api_key_id").(string)
 	apiKeySecret := d.Get("api_key_secret").(string)
 
-	rawClient := graphql.NewClient(endpoint, nil)
+	retryableClient := retryablehttp.NewClient()
+	retryableClient.Logger = nil
+
+	rawClient := graphql.NewClient(endpoint, retryableClient.StandardClient())
 
 	var mutation struct {
 		User *struct {
