@@ -3,7 +3,6 @@ package internal
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/shurcooL/graphql"
@@ -39,7 +38,6 @@ func (c *Client) client(ctx context.Context) *graphql.Client {
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.HTTPClient = oauthClient
 	retryableClient.Logger = nil
-	retryableClient.CheckRetry = retryPolicy
 
 	return graphql.NewClient(
 		c.url(),
@@ -52,12 +50,4 @@ func (c *Client) client(ctx context.Context) *graphql.Client {
 
 func (c *Client) url() string {
 	return fmt.Sprintf("%s/graphql", c.Endpoint)
-}
-
-func retryPolicy(ctx context.Context, resp *http.Response, err error) (bool, error) {
-	if _, ok := err.(*graphql.ResponseError); ok {
-		return true, nil
-	}
-
-	return retryablehttp.DefaultRetryPolicy(ctx, resp, err)
 }
