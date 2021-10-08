@@ -3,10 +3,18 @@ package internal
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/shurcooL/graphql"
 	"golang.org/x/oauth2"
+	"golang.org/x/time/rate"
+)
+
+const (
+	maxRequestsPerSecond = 30
+	maxRequestBurst      = 10
 )
 
 // Client represents a Spacelift client - in practice a thin wrapper over its
@@ -16,6 +24,16 @@ type Client struct {
 	Token    string
 	Version  string
 	Commit   string
+	limiter  *rate.Limiter
+}
+
+// NewClient returns a new Spacelift client for the specified endpoint and token.
+func NewClient(endpoint string, token string) *Client {
+	return &Client{
+		Endpoint: endpoint,
+		Token:    token,
+		limiter:  rate.NewLimiter(rate.Every(time.Second/maxRequestsPerSecond), maxRequestBurst),
+	}
 }
 
 // Mutate runs a GraphQL mutation.
@@ -35,8 +53,12 @@ func (c *Client) Query(ctx context.Context, queryName string, q interface{}, var
 func (c *Client) client(ctx context.Context) *graphql.Client {
 	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}))
 
+	rateLimitingClient := &http.Client{
+		Transport: newRateLimitingRoundTripper(oauthClient, c.limiter),
+	}
+
 	retryableClient := retryablehttp.NewClient()
-	retryableClient.HTTPClient = oauthClient
+	retryableClient.HTTPClient = rateLimitingClient
 	retryableClient.Logger = nil
 
 	return graphql.NewClient(

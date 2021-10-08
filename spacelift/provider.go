@@ -167,7 +167,7 @@ func buildClientFromToken(token string) (*internal.Client, error) {
 		return nil, fmt.Errorf("invalid audience in token: %v", claims.Audience)
 	}
 
-	return &internal.Client{Endpoint: claims.Audience[0], Token: token}, nil
+	return internal.NewClient(claims.Audience[0], token), nil
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error) {
