@@ -3,7 +3,10 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/hashicorp/go-retryablehttp"
@@ -12,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
+	"golang.org/x/time/rate"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
@@ -167,7 +171,12 @@ func buildClientFromToken(token string) (*internal.Client, error) {
 		return nil, fmt.Errorf("invalid audience in token: %v", claims.Audience)
 	}
 
-	return internal.NewClient(claims.Audience[0], token), nil
+	limiter, err := createRateLimiter()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create rate limiter for client")
+	}
+
+	return internal.NewClient(claims.Audience[0], token, limiter), nil
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error) {
@@ -201,4 +210,26 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 	}
 
 	return buildClientFromToken(mutation.User.Token)
+}
+
+func createRateLimiter() (*rate.Limiter, error) {
+	maxRequestsPerSecondString := os.Getenv("SPACELIFT_MAX_REQUESTS_PER_SECOND")
+	maxRequestBurstString := os.Getenv("SPACELIFT_MAX_REQUESTS_BURST")
+
+	// If the env vars aren't supplied, just default to no limit being applied
+	if maxRequestsPerSecondString == "" || maxRequestBurstString == "" {
+		return nil, nil
+	}
+
+	parsedRate, err := strconv.Atoi(maxRequestsPerSecondString)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse 'SPACELIFT_MAX_REQUESTS_PER_SECOND'")
+	}
+
+	parsedBurst, err := strconv.Atoi(maxRequestBurstString)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse 'SPACELIFT_MAX_REQUESTS_BURST'")
+	}
+
+	return rate.NewLimiter(rate.Every(time.Second/time.Duration(parsedRate)), parsedBurst), nil
 }
