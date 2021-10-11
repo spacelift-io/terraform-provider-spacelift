@@ -2,6 +2,9 @@ name: Production registry
 
 on: [push]
 
+concurrency:
+  group: ${{ github.ref }}-registry-prod
+
 jobs:
   registry:
     name: Publish the provider to the registry
