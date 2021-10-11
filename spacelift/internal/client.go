@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/shurcooL/graphql"
@@ -14,20 +15,29 @@ import (
 // Client represents a Spacelift client - in practice a thin wrapper over its
 // (administrative) GraphQL API.
 type Client struct {
-	Endpoint string
-	Token    string
-	Version  string
-	Commit   string
-	limiter  *rate.Limiter
+	Endpoint          string
+	Token             string
+	Version           string
+	Commit            string
+	limiter           *rate.Limiter
+	requestsPerSecond *int
+	maxBurst          *int
 }
 
 // NewClient returns a new Spacelift client for the specified endpoint, token and limiter.
 // If limiter is nil, no rate limit is imposed.
-func NewClient(endpoint string, token string, limiter *rate.Limiter) *Client {
+func NewClient(endpoint string, token string, requestsPerSecond, maxBurst *int) *Client {
+	var limiter *rate.Limiter
+	if requestsPerSecond != nil && maxBurst != nil {
+		limiter = rate.NewLimiter(rate.Every(time.Second/time.Duration(*requestsPerSecond)), *maxBurst)
+	}
+
 	return &Client{
-		Endpoint: endpoint,
-		Token:    token,
-		limiter:  limiter,
+		Endpoint:          endpoint,
+		Token:             token,
+		limiter:           limiter,
+		requestsPerSecond: requestsPerSecond,
+		maxBurst:          maxBurst,
 	}
 }
 
@@ -58,15 +68,29 @@ func (c *Client) client(ctx context.Context) *graphql.Client {
 	retryableClient.HTTPClient = client
 	retryableClient.Logger = nil
 
+	requestOptions := c.getRequestOptions()
+
 	return graphql.NewClient(
 		c.url(),
 		retryableClient.StandardClient(),
-		graphql.WithHeader("Spacelift-Client-Type", "provider"),
-		graphql.WithHeader("Spacelift-Provider-Commit", c.Commit),
-		graphql.WithHeader("Spacelift-Provider-Version", c.Version),
+		requestOptions...,
 	)
 }
 
 func (c *Client) url() string {
 	return fmt.Sprintf("%s/graphql", c.Endpoint)
+}
+
+func (c *Client) getRequestOptions() []graphql.RequestOption {
+	options := []graphql.RequestOption{
+		graphql.WithHeader("Spacelift-Client-Type", "provider"),
+		graphql.WithHeader("Spacelift-Provider-Commit", c.Commit),
+		graphql.WithHeader("Spacelift-Provider-Version", c.Version)}
+
+	if c.requestsPerSecond != nil && c.maxBurst != nil {
+		options = append(options, graphql.WithHeader("Spacelift-Provider-Max-RPS", fmt.Sprint(*c.requestsPerSecond)))
+		options = append(options, graphql.WithHeader("Spacelift-Provider-Max-Request-Burst", fmt.Sprint(*c.maxBurst)))
+	}
+
+	return options
 }
