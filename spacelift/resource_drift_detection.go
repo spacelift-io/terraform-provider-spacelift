@@ -72,7 +72,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		},
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionUpdate", &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create drift detection integration for the stack: %v", err)
 	}
 
@@ -104,7 +104,7 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		},
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionCreate", &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionUpdate", &mutation, variables); err != nil {
 		return diag.Errorf("could not update drift detection integration for the stack: %v", err)
 	}
 
