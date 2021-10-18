@@ -41,5 +41,13 @@ resource "spacelift_stack_destructor" "k8s-core" {
 
 - **deactivated** (Boolean) If set to true, destruction won't delete the stack
 - **id** (String) The ID of this resource.
+- **timeouts** (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- **delete** (String)
 
 
