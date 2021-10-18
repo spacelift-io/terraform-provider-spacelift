@@ -13,8 +13,6 @@ import (
 func TestStackDestructorResource(t *testing.T) {
 	const resourceName = "spacelift_stack_destructor.test"
 
-	t.Parallel()
-
 	t.Run("test destructor", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

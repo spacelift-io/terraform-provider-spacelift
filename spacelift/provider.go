@@ -3,9 +3,12 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dgrijalva/jwt-go/v4"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
@@ -166,7 +169,12 @@ func buildClientFromToken(token string) (*internal.Client, error) {
 		return nil, fmt.Errorf("invalid audience in token: %v", claims.Audience)
 	}
 
-	return &internal.Client{Endpoint: claims.Audience[0], Token: token}, nil
+	requestsPerSecond, maxBurst, err := getRateLimit()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not create rate limiter for client")
+	}
+
+	return internal.NewClient(claims.Audience[0], token, requestsPerSecond, maxBurst), nil
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error) {
@@ -175,7 +183,10 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 	apiKeyID := d.Get("api_key_id").(string)
 	apiKeySecret := d.Get("api_key_secret").(string)
 
-	rawClient := graphql.NewClient(endpoint, nil)
+	retryableClient := retryablehttp.NewClient()
+	retryableClient.Logger = nil
+
+	rawClient := graphql.NewClient(endpoint, retryableClient.StandardClient())
 
 	var mutation struct {
 		User *struct {
@@ -197,4 +208,26 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 	}
 
 	return buildClientFromToken(mutation.User.Token)
+}
+
+func getRateLimit() (*int, *int, error) {
+	maxRequestsPerSecondString := os.Getenv("SPACELIFT_MAX_REQUESTS_PER_SECOND")
+	maxRequestBurstString := os.Getenv("SPACELIFT_MAX_REQUESTS_BURST")
+
+	// If the env vars aren't supplied, just default to no limit being applied
+	if maxRequestsPerSecondString == "" || maxRequestBurstString == "" {
+		return nil, nil, nil
+	}
+
+	parsedRate, err := strconv.Atoi(maxRequestsPerSecondString)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to parse 'SPACELIFT_MAX_REQUESTS_PER_SECOND'")
+	}
+
+	parsedBurst, err := strconv.Atoi(maxRequestBurstString)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to parse 'SPACELIFT_MAX_REQUESTS_BURST'")
+	}
+
+	return &parsedRate, &parsedBurst, nil
 }

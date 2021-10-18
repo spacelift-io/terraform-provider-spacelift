@@ -20,12 +20,12 @@ jobs:
 
       - name: Lint the code using "golint"
         run: go get -u golang.org/x/lint/golint && golint -set_exit_status ./...
-      
+
       - name: Run staticcheck
         run: go get -u honnef.co/go/tools/cmd/staticcheck && staticcheck ./...
 
       - name: Test with coverage
-        run: go test -coverprofile=coverage.txt -coverpkg=./... ./...
+        run: go test -parallel 20 -coverprofile=coverage.txt -coverpkg=./... ./...
         env:
           SPACELIFT_API_KEY_ENDPOINT: ${{ secrets.SPACELIFT_API_KEY_ENDPOINT }}
           SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_API_KEY_ID }}
@@ -33,9 +33,9 @@ jobs:
           SPACELIFT_PROVIDER_TEST_IPS: ${{ secrets.SPACELIFT_PROVIDER_TEST_IPS }}
           SPACELIFT_PROVIDER_TEST_GITLAB_API_HOST: https://gitlab.com
           SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_SECRET: ${{ secrets.SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_SECRET }}
-          SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST: https://github.liftspace.net
+          SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST: https://api.github.com
           SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET: ${{ secrets.SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET }}
-          SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID: 6
+          SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID: 135337
           SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_API_HOST: private://bitbucket-datacenter-agent-pool
           SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_SECRET: ${{ secrets.SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_SECRET }}
           SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_USER_FACING_HOST: http://localhost:7990

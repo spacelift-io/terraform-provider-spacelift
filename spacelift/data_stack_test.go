@@ -11,8 +11,6 @@ import (
 )
 
 func TestStackData(t *testing.T) {
-	t.Parallel()
-
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	testSteps(t, []resource.TestStep{{

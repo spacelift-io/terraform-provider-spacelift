@@ -15,8 +15,8 @@ func resourceDriftDetection() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
 			"`spacelift_drift_detection` represents a Drift Detection configuration " +
-			"for a Stack. It will run a proposed run on the given schedule, which you can " +
-			"listen on using run state webhooks. If reconcile is true, then a tracked run " +
+			"for a Stack. It will trigger a proposed run on the given schedule, which you can " +
+			"listen for using run state webhooks. If reconcile is true, then a tracked run " +
 			"will be triggered when drift is detected.",
 
 		CreateContext: resourceDriftDetectionCreate,
@@ -72,7 +72,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		},
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionUpdate", &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create drift detection integration for the stack: %v", err)
 	}
 
@@ -104,7 +104,7 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		},
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionCreate", &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionUpdate", &mutation, variables); err != nil {
 		return diag.Errorf("could not update drift detection integration for the stack: %v", err)
 	}
 

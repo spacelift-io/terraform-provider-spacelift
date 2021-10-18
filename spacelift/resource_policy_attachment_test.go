@@ -13,9 +13,9 @@ import (
 func TestPolicyAttachmentResource(t *testing.T) {
 	const resourceName = "spacelift_policy_attachment.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := fmt.Sprintf(`
 			resource "spacelift_policy" "test" {
 				name = "My first policy %s"
@@ -55,6 +55,8 @@ func TestPolicyAttachmentResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -65,6 +67,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 				}
 	
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -73,18 +76,18 @@ func TestPolicyAttachmentResource(t *testing.T) {
 					policy_id = spacelift_policy.test.id
 					module_id = spacelift_module.test.id
 				}
-			`, randomID),
+			`, randomID, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("policy_id", Contains(randomID)),
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("my-first-policy-%s/terraform-bacon-tasty", randomID),
+				ImportStateId:     fmt.Sprintf("my-first-policy-%s/test-module-%s", randomID, randomID),
 				ImportStateVerify: true,
 			},
 		})

@@ -14,9 +14,9 @@ import (
 func TestDriftDetectionResource(t *testing.T) {
 	const resourceName = "spacelift_drift_detection.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(reconcile bool, schedule []string) string {
 			scheduleStrs := make([]string, len(schedule))
 			for i := range schedule {

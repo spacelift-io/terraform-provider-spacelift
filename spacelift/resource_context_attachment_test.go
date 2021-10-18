@@ -11,9 +11,9 @@ import (
 )
 
 func TestContextAttachmentResource(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(priority int) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -67,10 +67,13 @@ func TestContextAttachmentResource(t *testing.T) {
 	t.Run("with a module", func(t *testing.T) {
 		const resourceName = "spacelift_context_attachment.test"
 
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -84,18 +87,18 @@ func TestContextAttachmentResource(t *testing.T) {
 					module_id  = spacelift_module.test.id
 					priority   = 1
 				}
-			`, randomID),
+			`, randomID, randomID),
 				Check: Resource(
 					"spacelift_context_attachment.test",
 					Attribute("id", IsNotEmpty()),
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 					AttributeNotPresent("stack_id"),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("test-context-%s/terraform-bacon-tasty", randomID),
+				ImportStateId:     fmt.Sprintf("test-context-%s/test-module-%s", randomID, randomID),
 				ImportStateVerify: true,
 			}})
 	})

@@ -11,13 +11,11 @@ import (
 )
 
 func TestContextResource(t *testing.T) {
-	t.Parallel()
-
 	const resourceName = "spacelift_context.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("creates and updates contexts without an error", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_context" "test" {

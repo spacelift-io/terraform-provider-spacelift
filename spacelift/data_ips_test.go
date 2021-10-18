@@ -11,7 +11,6 @@ import (
 )
 
 func TestIPsData(t *testing.T) {
-	t.Parallel()
 	testSteps(t, []resource.TestStep{{
 		Config: `data "spacelift_ips" "test" {}`,
 		Check: Resource(

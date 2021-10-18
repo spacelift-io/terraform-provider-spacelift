@@ -13,9 +13,9 @@ import (
 func TestGCPServiceAccountResource(t *testing.T) {
 	const resourceName = "spacelift_gcp_service_account.test"
 
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
 	t.Run("with a stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		config := func(scope string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
@@ -59,10 +59,13 @@ func TestGCPServiceAccountResource(t *testing.T) {
 	})
 
 	t.Run("with a module", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
+                    name       = "test-module-%s"
 					branch     = "master"
 					repository = "terraform-bacon-tasty"
 				}
@@ -70,17 +73,17 @@ func TestGCPServiceAccountResource(t *testing.T) {
 					module_id    = spacelift_module.test.id
 					token_scopes = ["https://www.googleapis.com/auth/compute"]
 				}
-			`,
+			`, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
-					Attribute("module_id", Equals("terraform-bacon-tasty")),
+					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     "module/terraform-bacon-tasty",
+				ImportStateId:     fmt.Sprintf("module/test-module-%s", randomID),
 				ImportStateVerify: true,
 			},
 		})
