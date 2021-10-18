@@ -127,8 +127,9 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The Bitbucket project containing the repository",
 						},
 					},
 				},
@@ -140,8 +141,9 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The Bitbucket project containing the repository",
 						},
 					},
 				},
@@ -195,8 +197,9 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The GitHub organization / user the repository belongs to",
 						},
 					},
 				},
@@ -208,8 +211,9 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The GitLab namespace containing the repository",
 						},
 					},
 				},
