@@ -3,6 +3,7 @@
 set -e
 
 VERSION="1.0.0"
+COMMIT=$(git rev-parse HEAD)
 
 echo "Preparing the build directory..." 1>&2
 BUILD_PATH=build
@@ -36,7 +37,7 @@ build () {
     CGO_ENABLED=0 \
     GOOS=$OS \
     GOARCH=$ARCH \
-    go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o $BINARY_NAME
+    go build -a -tags netgo -ldflags "-w -extldflags '-static' -X main.version=${VERSION} -X main.commit=${COMMIT}" -o $BINARY_NAME
 
     # Step 2: zip and remove source binary
     zip $ZIP_NAME $BINARY_NAME

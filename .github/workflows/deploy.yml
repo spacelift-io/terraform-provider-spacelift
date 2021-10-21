@@ -42,3 +42,6 @@ jobs:
         with:
           push: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/future' }}
           tags: ${{ env.DOCKER_IMAGE }}
+          build-args: |
+            "VERSION=1.0.0"
+            "COMMIT=${{ github.sha }}"

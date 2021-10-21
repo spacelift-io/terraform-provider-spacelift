@@ -1,5 +1,8 @@
 FROM golang:1.16-alpine as builder
 
+ARG VERSION=dev
+ARG COMMIT=dev
+
 # 3rd party soft dependency versions
 ARG INFRACOST_VERSION=0.9.7
 ARG TERRAGRUNT_VERSION=0.28.15
@@ -20,7 +23,8 @@ COPY go.* $DIR/
 WORKDIR $DIR
 RUN go mod download
 COPY . $DIR/
-RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o /terraform-provider-spacelift
+
+RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags "-w -extldflags '-static' -X main.version=${VERSION} -X main.commit=${COMMIT}" -o /terraform-provider-spacelift
 
 FROM alpine:3.14.0
 
