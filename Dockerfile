@@ -5,7 +5,7 @@ ARG COMMIT=dev
 
 # 3rd party soft dependency versions
 ARG INFRACOST_VERSION=0.9.7
-ARG TERRAGRUNT_VERSION=0.28.15
+ARG TERRAGRUNT_VERSION=0.35.4
 
 RUN apk add --no-cache curl git
 
