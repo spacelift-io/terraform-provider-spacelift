@@ -29,7 +29,7 @@ RUN CGO_ENABLED=0 go build -a -tags netgo -ldflags "-w -extldflags '-static' -X 
 FROM alpine:3.14.0
 
 RUN apk -U upgrade
-RUN apk add --no-cache ca-certificates curl git openssh jq aws-cli
+RUN apk add --no-cache ca-certificates curl git openssh openssh-keygen jq aws-cli
 
 COPY --from=builder /bin/infracost /bin/infracost
 COPY --from=builder /bin/terragrunt /bin/terragrunt
