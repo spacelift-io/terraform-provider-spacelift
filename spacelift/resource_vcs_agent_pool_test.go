@@ -19,7 +19,7 @@ func TestVCSAgentPoolResource(t *testing.T) {
 		config := func(description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_vcs_agent_pool" "test" {
-					name        = "Provider test VCS Agent Pool %s"
+					name        = "provider-test-vcs-agent-pool-%s"
 					description = "%s"
 				}
 			`, randomID, description)
@@ -31,7 +31,7 @@ func TestVCSAgentPoolResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
-					Attribute("name", StartsWith("Provider test VCS Agent Pool")),
+					Attribute("name", StartsWith("provider-test-vcs-agent-pool-")),
 					Attribute("description", Equals("old description")),
 					Attribute("config", IsNotEmpty()),
 				),

@@ -18,17 +18,13 @@ Note: when assuming credentials for **shared worker**, Spacelift will use `$acco
 
 ## Example Usage
 
-### With a module
-
-```hcl
+```terraform
+# With a module
 data "spacelift_aws_role" "k8s-module" {
   module_id = "k8s-module"
 }
-```
 
-### With a stack
-
-```hcl
+# With a stack
 data "spacelift_aws_role" "k8s-core" {
   stack_id = "k8s-core"
 }

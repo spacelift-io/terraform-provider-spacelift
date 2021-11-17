@@ -17,18 +17,18 @@ func TestVCSAgentPoolData(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 				resource "spacelift_vcs_agent_pool" "test" {
-					name        = "Provider test VCS agent pool %s"
-					description = "description"
+					name        = "provider-test-vcs-agent-%s"
+					description = "Provider test VCS agent pool"
 				}
 
-				data "spacelift_context" "test" {
+				data "spacelift_vcs_agent_pool" "test" {
 					vcs_agent_pool_id = spacelift_vcs_agent_pool.test.id
 				}
 			`, randomID),
 			Check: Resource(
 				"data.spacelift_vcs_agent_pool.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("name", StartsWith("Provider test context")),
+				Attribute("name", StartsWith("provider-test-vcs-agent-")),
 				Attribute("description", Equals("Provider test VCS agent pool")),
 			),
 		}})
