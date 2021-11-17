@@ -14,7 +14,7 @@ description: |-
 
 ```hcl
 resource "spacelift_policy" "no-weekend-deploys" {
-  name = "Let's not deploy any changes over the weekend
+  name = "Let's not deploy any changes over the weekend"
   body = file("policies/no-weekend-deploys.rego")
   type = "PLAN"
 }
