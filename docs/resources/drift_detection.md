@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "spacelift_stack" "core-infra-production" {
   name       = "Core Infrastructure (production)"
   branch     = "master"

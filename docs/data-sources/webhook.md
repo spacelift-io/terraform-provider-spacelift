@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 data "spacelift_webhook" "webhook" {
   webhook_id = spacelift_webhook.webhook.id
 }
