@@ -135,6 +135,7 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **cloudformation** (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
 - **description** (String) Free-form stack description for users
 - **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack
+- **github_action_deploy** (Boolean) Indicates whether GitHub users can deploy from the Checks API
 - **github_enterprise** (Block List, Max: 1) (see [below for nested schema](#nestedblock--github_enterprise))
 - **gitlab** (Block List, Max: 1) (see [below for nested schema](#nestedblock--gitlab))
 - **id** (String) The ID of this resource.

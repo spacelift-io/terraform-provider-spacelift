@@ -28,6 +28,7 @@ type Stack struct {
 	Branch              string        `graphql:"branch"`
 	Deleting            bool          `graphql:"deleting"`
 	Description         *string       `graphql:"description"`
+	GitHubActionDeploy  bool          `graphql:"githubActionDeploy"`
 	Integrations        *Integrations `graphql:"integrations"`
 	Labels              []string      `graphql:"labels"`
 	LocalPreviewEnabled bool          `graphql:"localPreviewEnabled"`
