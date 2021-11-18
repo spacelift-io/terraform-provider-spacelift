@@ -73,6 +73,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_webhook":                          dataWebhook(),
 				"spacelift_stack_aws_role":                   dataStackAWSRole(),           // deprecated
 				"spacelift_stack_gcp_service_account":        dataStackGCPServiceAccount(), // deprecated
+				"spacelift_vcs_agent_pool":                   dataVCSAgentPool(),
 				"spacelift_worker_pool":                      dataWorkerPool(),
 				"spacelift_worker_pools":                     dataWorkerPools(),
 			},
@@ -92,6 +93,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack_destructor":          resourceStackDestructor(),
 				"spacelift_stack_aws_role":            resourceStackAWSRole(),           // deprecated
 				"spacelift_stack_gcp_service_account": resourceStackGCPServiceAccount(), // deprecated
+				"spacelift_vcs_agent_pool":            resourceVCSAgentPool(),
 				"spacelift_webhook":                   resourceWebhook(),
 				"spacelift_worker_pool":               resourceWorkerPool(),
 			},
