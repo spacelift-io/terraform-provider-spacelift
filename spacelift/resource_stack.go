@@ -190,6 +190,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"github_action_deploy": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether GitHub users can deploy from the Checks API",
+				Optional:    true,
+				Default:     true,
+			},
 			"github_enterprise": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -379,6 +385,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
+	d.Set("github_action_deploy", stack.GitHubActionDeploy)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
@@ -513,6 +520,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Autodeploy:          graphql.Boolean(d.Get("autodeploy").(bool)),
 		Autoretry:           graphql.Boolean(d.Get("autoretry").(bool)),
 		Branch:              toString(d.Get("branch")),
+		GitHubActionDeploy:  graphql.Boolean(d.Get("github_action_deploy").(bool)),
 		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		Name:                toString(d.Get("name")),
 		Repository:          toString(d.Get("repository")),

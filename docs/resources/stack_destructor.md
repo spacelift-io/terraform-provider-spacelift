@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "spacelift_stack" "k8s-core" {
   // ...
 }

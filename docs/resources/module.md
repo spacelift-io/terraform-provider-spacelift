@@ -12,74 +12,12 @@ description: |-
 
 ## Example Usage
 
-### Using github.com (default)
-
-```hcl
+```terraform
 resource "spacelift_module" "k8s-module" {
-  administrative    = true
-  branch            = "master"
-  description       = "Infra terraform module"
-  repository        = "terraform-super-module"
-}
-```
-
-### Using Bitbucket Cloud
-
-```hcl
-resource "spacelift_module" "k8s-module-bitbucket-cloud" {
-  bitbucket_cloud {
-    namespace = "SPACELIFT" # The Bitbucket project containing the repository
-  }
-
-  administrative    = true
-  branch            = "master"
-  description       = "Infra terraform module"
-  repository        = "terraform-super-module"
-}
-```
-
-### Using Bitbucket Data Center
-
-```hcl
-resource "spacelift_module" "k8s-module-bitbucket-datacenter" {
-  bitbucket_datacenter {
-    namespace = "SPACELIFT" # The Bitbucket project containing the repository
-  }
-
-  administrative    = true
-  branch            = "master"
-  description       = "Infra terraform module"
-  repository        = "terraform-super-module"
-}
-```
-
-### Using GitHub Enterprise
-
-```hcl
-resource "spacelift_module" "k8s-module-github-enterprise" {
-  github_enterprise {
-    namespace = "spacelift" # The GitHub organization / user the repository belongs to
-  }
-
-  administrative    = true
-  branch            = "master"
-  description       = "Infra terraform module"
-  repository        = "terraform-super-module"
-}
-```
-
-### Using GitLab
-
-```hcl
-resource "spacelift_module" "k8s-module-gitlab" {
-  gitlab {
-    namespace = "spacelift" # The GitLab namespace containing the repository
-  }
-
-  administrative    = true
-  branch            = "master"
-  description       = "Infra terraform module"
-  repository        = "terraform-super-module"
+  administrative = true
+  branch         = "master"
+  description    = "Infra terraform module"
+  repository     = "terraform-super-module"
 }
 ```
 

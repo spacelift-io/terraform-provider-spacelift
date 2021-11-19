@@ -12,14 +12,14 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "spacelift_stack" "k8s-core" {
-  branch            = "master"
-  name              = "Kubernetes core services"
-  repository        = "core-infra"
+  branch     = "master"
+  name       = "Kubernetes core services"
+  repository = "core-infra"
 }
 
-resource "spacelift_gcp_service_account" "k8s-core" {
+resource "spacelift_stack_gcp_service_account" "k8s-core" {
   stack_id = spacelift_stack.k8s-core.id
 
   token_scopes = [
@@ -38,7 +38,7 @@ resource "google_project" "k8s-core" {
 resource "google_project_iam_member" "k8s-core" {
   project = google_project.k8s-core.id
   role    = "roles/owner"
-  member  = spacelift_gcp_service_account.k8s-core.service_account_email
+  member  = spacelift_stack_gcp_service_account.k8s-core.service_account_email
 }
 ```
 

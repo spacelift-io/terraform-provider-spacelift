@@ -12,11 +12,11 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "spacelift_stack" "this" {
-  name           = "Test stack"
-  repository     = "test"
-  branch         = "main"
+  name       = "Test stack"
+  repository = "test"
+  branch     = "main"
 }
 
 resource "spacelift_run" "this" {
@@ -39,7 +39,7 @@ resource "spacelift_run" "this" {
 
 - **commit_sha** (String) The commit SHA for which to trigger a run.
 - **keepers** (Map of String) Arbitrary map of values that, when changed, will trigger recreation of the resource.
-- **proposed** (Boolean) Whether the run is a proposed run. Defaults to false meaning that by default, a tracked run is created.
+- **proposed** (Boolean) Whether the run is a proposed run.
 
 ### Read-Only
 

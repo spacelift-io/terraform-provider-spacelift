@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 data "spacelift_stack" "k8s-core" {
   stack_id = "k8s-core"
 }
@@ -27,29 +27,32 @@ data "spacelift_stack" "k8s-core" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-
-### Read-Only
-
-- **administrative** (Boolean) indicates whether this stack can administer others
 - **after_apply** (List of String) List of after-apply scripts
 - **after_destroy** (List of String) List of after-destroy scripts
 - **after_init** (List of String) List of after-init scripts
 - **after_perform** (List of String) List of after-perform scripts
 - **after_plan** (List of String) List of after-plan scripts
-- **autodeploy** (Boolean) indicates whether changes to this stack can be automatically deployed
-- **autoretry** (Boolean) indicates whether obsolete proposed changes should automatically be retried
-- **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
 - **before_apply** (List of String) List of before-apply scripts
 - **before_destroy** (List of String) List of before-destroy scripts
 - **before_init** (List of String) List of before-init scripts
 - **before_perform** (List of String) List of before-perform scripts
 - **before_plan** (List of String) List of before-plan scripts
+- **id** (String) The ID of this resource.
+
+### Read-Only
+
+- **administrative** (Boolean) indicates whether this stack can administer others
+- **autodeploy** (Boolean) indicates whether changes to this stack can be automatically deployed
+- **autoretry** (Boolean) indicates whether obsolete proposed changes should automatically be retried
+- **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
+- **bitbucket_cloud** (List of Object) Bitbucket Cloud configuration (see [below for nested schema](#nestedatt--bitbucket_cloud))
+- **bitbucket_datacenter** (List of Object) Bitbucket Datacenter configuration (see [below for nested schema](#nestedatt--bitbucket_datacenter))
 - **branch** (String) Repository branch to treat as the default 'main' branch
 - **cloudformation** (List of Object) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedatt--cloudformation))
 - **description** (String) free-form stack description for users
 - **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack.
-- **gitlab** (List of Object) GitLab-related attributes (see [below for nested schema](#nestedatt--gitlab))
+- **github_enterprise** (List of Object) GitHub Enterprise configuration (see [below for nested schema](#nestedatt--github_enterprise))
+- **gitlab** (List of Object) GitLab configuration (see [below for nested schema](#nestedatt--gitlab))
 - **labels** (Set of String)
 - **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
 - **name** (String) Name of the stack - should be unique in one account
@@ -62,6 +65,22 @@ data "spacelift_stack" "k8s-core" {
 - **terraform_workspace** (String) Terraform workspace to select
 - **worker_pool_id** (String) ID of the worker pool to use
 
+<a id="nestedatt--bitbucket_cloud"></a>
+### Nested Schema for `bitbucket_cloud`
+
+Read-Only:
+
+- **namespace** (String)
+
+
+<a id="nestedatt--bitbucket_datacenter"></a>
+### Nested Schema for `bitbucket_datacenter`
+
+Read-Only:
+
+- **namespace** (String)
+
+
 <a id="nestedatt--cloudformation"></a>
 ### Nested Schema for `cloudformation`
 
@@ -71,6 +90,14 @@ Read-Only:
 - **region** (String)
 - **stack_name** (String)
 - **template_bucket** (String)
+
+
+<a id="nestedatt--github_enterprise"></a>
+### Nested Schema for `github_enterprise`
+
+Read-Only:
+
+- **namespace** (String)
 
 
 <a id="nestedatt--gitlab"></a>

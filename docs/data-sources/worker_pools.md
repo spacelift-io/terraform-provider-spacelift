@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 data "spacelift_worker_pools" "worker-pools" {}
 ```
 
