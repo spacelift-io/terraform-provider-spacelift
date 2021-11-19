@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 data "spacelift_module" "k8s-module" {
   module_id = "k8s-module"
 }
@@ -33,8 +33,11 @@ data "spacelift_module" "k8s-module" {
 
 - **administrative** (Boolean) indicates whether this module can administer others
 - **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
+- **bitbucket_cloud** (List of Object) Bitbucket Cloud configuration (see [below for nested schema](#nestedatt--bitbucket_cloud))
+- **bitbucket_datacenter** (List of Object) Bitbucket Datacenter configuration (see [below for nested schema](#nestedatt--bitbucket_datacenter))
 - **branch** (String) GitHub branch to apply changes to
 - **description** (String) free-form module description for human users (supports Markdown)
+- **github_enterprise** (List of Object) GitHub Enterprise configuration (see [below for nested schema](#nestedatt--github_enterprise))
 - **gitlab** (List of Object) GitLab configuration (see [below for nested schema](#nestedatt--gitlab))
 - **labels** (Set of String)
 - **name** (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
@@ -43,6 +46,30 @@ data "spacelift_module" "k8s-module" {
 - **shared_accounts** (Set of String) List of the accounts (subdomains) which should have access to the Module
 - **terraform_provider** (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
 - **worker_pool_id** (String) ID of the worker pool to use
+
+<a id="nestedatt--bitbucket_cloud"></a>
+### Nested Schema for `bitbucket_cloud`
+
+Read-Only:
+
+- **namespace** (String)
+
+
+<a id="nestedatt--bitbucket_datacenter"></a>
+### Nested Schema for `bitbucket_datacenter`
+
+Read-Only:
+
+- **namespace** (String)
+
+
+<a id="nestedatt--github_enterprise"></a>
+### Nested Schema for `github_enterprise`
+
+Read-Only:
+
+- **namespace** (String)
+
 
 <a id="nestedatt--gitlab"></a>
 ### Nested Schema for `gitlab`

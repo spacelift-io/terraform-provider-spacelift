@@ -12,11 +12,11 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "spacelift_stack" "k8s-core" {
-  branch            = "master"
-  name              = "Kubernetes core services"
-  repository        = "core-infra"
+  branch     = "master"
+  name       = "Kubernetes core services"
+  repository = "core-infra"
 }
 
 resource "spacelift_gcp_service_account" "k8s-core" {

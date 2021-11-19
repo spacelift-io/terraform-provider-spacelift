@@ -19,6 +19,7 @@ type StackInput struct {
 	BeforePlan          *[]graphql.String  `json:"beforePlan"`
 	Branch              graphql.String     `json:"branch"`
 	Description         *graphql.String    `json:"description"`
+	GitHubActionDeploy  graphql.Boolean    `json:"githubActionDeploy"`
 	Labels              *[]graphql.String  `json:"labels"`
 	LocalPreviewEnabled graphql.Boolean    `json:"localPreviewEnabled"`
 	Name                graphql.String     `json:"name"`

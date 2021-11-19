@@ -80,6 +80,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("before_plan.0", Equals("echo 'before_plan'")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
+					Attribute("github_action_deploy", Equals("true")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
@@ -121,6 +122,7 @@ func TestStackResource(t *testing.T) {
 					branch               = "master"
 					description          = "%s"
 					enable_local_preview = true
+					github_action_deploy = false
 					labels               = ["one", "two"]
 					name                 = "Provider test stack %s"
 					project_root         = "root"
@@ -172,6 +174,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					Attribute("enable_local_preview", Equals("true")),
+					Attribute("github_action_deploy", Equals("false")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),

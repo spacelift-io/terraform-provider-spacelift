@@ -12,27 +12,20 @@ description: |-
 
 ## Example Usage
 
-### For a context
-
-```hcl
+```terraform
+# For a context
 data "spacelift_environment_variable" "ireland-kubeconfig" {
   context_id = "prod-k8s-ie"
   name       = "KUBECONFIG"
 }
-```
 
-### For a module
-
-```hcl
+# For a module
 data "spacelift_environment_variable" "module-kubeconfig" {
   module_id = "k8s-module"
-  name     = "KUBECONFIG"
+  name      = "KUBECONFIG"
 }
-```
 
-### For a stack
-
-```hcl
+# For a stack
 data "spacelift_environment_variable" "core-kubeconfig" {
   stack_id = "k8s-core"
   name     = "KUBECONFIG"

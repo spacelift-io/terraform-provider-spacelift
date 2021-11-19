@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 data "spacelift_policy" "policy" {
   policy_id = spacelift_policy.policy.id
 }

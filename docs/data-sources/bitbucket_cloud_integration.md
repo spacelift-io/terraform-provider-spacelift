@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 data "spacelift_bitbucket_cloud_integration" "bitbucket_cloud_integration" {}
 ```
 

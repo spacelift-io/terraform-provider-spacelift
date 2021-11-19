@@ -12,9 +12,8 @@ description: |-
 
 ## Example Usage
 
-### Terraform stack using github.com as VCS
-
-```hcl
+```terraform
+# Terraform stack using github.com as VCS
 resource "spacelift_stack" "k8s-core" {
   administrative    = true
   autodeploy        = true
@@ -25,11 +24,8 @@ resource "spacelift_stack" "k8s-core" {
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
-```
 
-### Terraform stack using Bitbucket Cloud as VCS
-
-```hcl
+# Terraform stack using Bitbucket Cloud as VCS
 resource "spacelift_stack" "k8s-core-bitbucket-cloud" {
   bitbucket_cloud {
     namespace = "SPACELIFT" # The Bitbucket project containing the repository
@@ -44,11 +40,8 @@ resource "spacelift_stack" "k8s-core-bitbucket-cloud" {
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
-```
 
-### Terraform stack using Bitbucket Data Center as VCS
-
-```hcl
+# Terraform stack using Bitbucket Data Center as VCS
 resource "spacelift_stack" "k8s-core-bitbucket-datacenter" {
   bitbucket_datacenter {
     namespace = "SPACELIFT" # The Bitbucket project containing the repository
@@ -63,11 +56,8 @@ resource "spacelift_stack" "k8s-core-bitbucket-datacenter" {
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
-```
 
-### Terraform stack using GitHub Enterprise as VCS
-
-```hcl
+# Terraform stack using GitHub Enterprise as VCS
 resource "spacelift_stack" "k8s-core-github-enterprise" {
   github_enterprise {
     namespace = "spacelift" # The GitHub organization / user the repository belongs to
@@ -82,11 +72,8 @@ resource "spacelift_stack" "k8s-core-github-enterprise" {
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
-```
 
-### Terraform stack using GitLab as VCS
-
-```hcl
+# Terraform stack using GitLab as VCS
 resource "spacelift_stack" "k8s-core-gitlab" {
   gitlab {
     namespace = "spacelift" # The GitLab namespace containing the repository
@@ -101,24 +88,21 @@ resource "spacelift_stack" "k8s-core-gitlab" {
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
-```
 
-### Pulumi stack using github.com as VCS
-
-```hcl
+# Pulumi stack using github.com as VCS
 resource "spacelift_stack" "k8s-core-pulumi" {
   pulumi {
     login_url  = "s3://pulumi-state-bucket"
     stack_name = "kubernetes-core-services"
   }
 
-  autodeploy        = true
-  branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
-  repository        = "core-infra"
-  runner_image      = "public.ecr.aws/t0p9w2l5/runner-pulumi-javascript:latest"
+  autodeploy   = true
+  branch       = "master"
+  description  = "Shared cluster services (Datadog, Istio etc.)"
+  name         = "Kubernetes core services"
+  project_root = "/project"
+  repository   = "core-infra"
+  runner_image = "public.ecr.aws/t0p9w2l5/runner-pulumi-javascript:latest"
 }
 ```
 
@@ -151,6 +135,7 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **cloudformation** (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
 - **description** (String) Free-form stack description for users
 - **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack
+- **github_action_deploy** (Boolean) Indicates whether GitHub users can deploy from the Checks API
 - **github_enterprise** (Block List, Max: 1) (see [below for nested schema](#nestedblock--github_enterprise))
 - **gitlab** (Block List, Max: 1) (see [below for nested schema](#nestedblock--gitlab))
 - **id** (String) The ID of this resource.

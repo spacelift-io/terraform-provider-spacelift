@@ -12,7 +12,7 @@ description: |-
 
 ## Example Usage
 
-```hcl
+```terraform
 resource "spacelift_worker_pool" "k8s-core" {
   name        = "Main worker"
   csr         = filebase64("/path/to/csr")
