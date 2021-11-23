@@ -1,7 +1,0 @@
-.dockerignore
-.git
-.gitignore
-.circleci
-Dockerfile
-LICENSE
-README.md
