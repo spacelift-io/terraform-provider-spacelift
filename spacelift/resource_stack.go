@@ -513,7 +513,7 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 	deletionProtection := d.Get("deletion_protection").(bool) 
 	if deletionProtection {
-		return diag.Errorf("Due to deletion_protection, could not delete stack: %v", internal.FromSpaceliftError(err))
+		return diag.Errorf("Due to deletion_protection, could not delete stack: %v", toID(d.Id()))
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
