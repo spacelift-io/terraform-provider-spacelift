@@ -179,6 +179,12 @@ func resourceStack() *schema.Resource {
 					},
 				},
 			},
+			"deletion_protection": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether to protect stack from deletion",
+				Optional:    true,
+				Default:     false,
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form stack description for users",
@@ -504,6 +510,11 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
+
+	deletionProtection := d.Get("deletion_protection").(bool) 
+	if deletionProtection {
+		return diag.Errorf("Due to deletion_protection, could not delete stack: %v", internal.FromSpaceliftError(err))
+	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
