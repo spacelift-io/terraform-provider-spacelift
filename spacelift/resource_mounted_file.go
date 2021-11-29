@@ -98,11 +98,20 @@ func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
+		if err := verifyStack(ctx, stackID.(string), meta); err != nil {
+			return diag.FromErr(err)
+		}
+
 		variables["stack"] = toID(stackID)
 		return resourceMountedFileCreateStack(ctx, d, meta.(*internal.Client), variables)
 	}
 
-	variables["stack"] = toID(d.Get("module_id"))
+	moduleID := d.Get("module_id").(string)
+	if err := verifyModule(ctx, moduleID, meta); err != nil {
+		return diag.FromErr(err)
+	}
+
+	variables["stack"] = toID(moduleID)
 	return resourceMountedFileCreateModule(ctx, d, meta.(*internal.Client), variables)
 }
 
