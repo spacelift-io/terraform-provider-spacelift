@@ -73,8 +73,16 @@ func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
+		if err := verifyStack(ctx, stackID.(string), meta); err != nil {
+			return diag.FromErr(err)
+		}
+
 		variables["stack"] = toID(stackID)
 	} else {
+		if err := verifyModule(ctx, d.Get("module_id").(string), meta); err != nil {
+			return diag.FromErr(err)
+		}
+
 		variables["stack"] = toID(d.Get("module_id"))
 	}
 

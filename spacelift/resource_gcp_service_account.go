@@ -82,9 +82,18 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 
 	var ID string
 	if stackID, ok := d.GetOk("stack_id"); ok {
+		if err := verifyStack(ctx, stackID.(string), meta); err != nil {
+			return diag.FromErr(err)
+		}
+
 		ID = stackID.(string)
 	} else {
-		ID = d.Get("module_id").(string)
+		moduleID := d.Get("module_id").(string)
+		if err := verifyModule(ctx, moduleID, meta); err != nil {
+			return diag.FromErr(err)
+		}
+
+		ID = moduleID
 	}
 
 	variables := map[string]interface{}{

@@ -83,8 +83,16 @@ func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		ID = stackID.(string)
+
+		if err := verifyStack(ctx, ID, meta); err != nil {
+			return diag.FromErr(err)
+		}
 	} else {
 		ID = d.Get("module_id").(string)
+
+		if err := verifyModule(ctx, ID, meta); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	var err error

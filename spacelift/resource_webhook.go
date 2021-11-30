@@ -102,9 +102,18 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
+		if err := verifyStack(ctx, stackID.(string), meta); err != nil {
+			return diag.FromErr(err)
+		}
+
 		variables["stack"] = toID(stackID)
 	} else {
-		variables["stack"] = toID(d.Get("module_id"))
+		moduleID := d.Get("module_id").(string)
+		if err := verifyModule(ctx, moduleID, meta); err != nil {
+			return diag.FromErr(err)
+		}
+
+		variables["stack"] = toID(moduleID)
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "WebhookCreate", &mutation, variables); err != nil {
