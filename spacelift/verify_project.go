@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
@@ -34,8 +35,8 @@ func verifyStack(ctx context.Context, stackID string, meta interface{}) error {
 
 	variables := map[string]interface{}{"id": graphql.ID(stackID)}
 
-	if err := meta.(*internal.Client).Query(ctx, "ModuleVerifyExistence", &query, variables); err != nil {
-		return errors.Wrap(err, "could not query for module")
+	if err := meta.(*internal.Client).Query(ctx, "StackVerifyExistence", &query, variables); err != nil {
+		return errors.Wrap(err, "could not query for stack")
 	}
 
 	if query.Stack == nil {
