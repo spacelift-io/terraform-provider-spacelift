@@ -143,6 +143,7 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **labels** (Set of String)
 - **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
 - **project_root** (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
+- **protect_from_deletion** (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
 - **pulumi** (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
 - **runner_image** (String) Name of the Docker image used to process Runs
 - **showcase** (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))

@@ -110,6 +110,11 @@ func dataModule() *schema.Resource {
 				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
 				Computed:    true,
 			},
+			"protect_from_deletion": {
+				Type:        schema.TypeBool,
+				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail.",
+				Computed:    true,
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -161,6 +166,7 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", module.Branch)
 	d.Set("name", module.Name)
+	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("terraform_provider", module.TerraformProvider)
 
 	if module.Provider == vcsProviderBitbucketCloud {

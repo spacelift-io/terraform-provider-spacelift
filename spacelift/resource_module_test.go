@@ -14,25 +14,26 @@ func TestModuleResource(t *testing.T) {
 	t.Run("with GitHub", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(description string) string {
+		config := func(description string, protectFromDeletion bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
-					name            = "github-module-%s"
-					administrative  = true
-					branch          = "master"
-					description     = "%s"
-					labels          = ["one", "two"]
-					repository      = "terraform-bacon-tasty"
-					shared_accounts = ["foo-subdomain", "bar-subdomain"]
+					name                  = "github-module-%s"
+					administrative        = true
+					branch                = "master"
+					description           = "%s"
+					labels                = ["one", "two"]
+					protect_from_deletion = %t
+					repository            = "terraform-bacon-tasty"
+					shared_accounts       = ["foo-subdomain", "bar-subdomain"]
 				}
-			`, randomID, description)
+			`, randomID, description, protectFromDeletion)
 		}
 
 		const resourceName = "spacelift_module.test"
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("old description"),
+				Config: config("old description", true),
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("github-module-%s", randomID))),
@@ -42,6 +43,7 @@ func TestModuleResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("name", Equals(fmt.Sprintf("github-module-%s", randomID))),
 					AttributeNotPresent("project_root"),
+					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
 					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 					Attribute("terraform_provider", Equals("default")),
@@ -53,8 +55,12 @@ func TestModuleResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config("new description"),
-				Check:  Resource("spacelift_module.test", Attribute("description", Equals("new description"))),
+				Config: config("new description", false),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("description", Equals("new description")),
+					Attribute("protect_from_deletion", Equals("false")),
+				),
 			},
 		})
 	})
