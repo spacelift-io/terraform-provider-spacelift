@@ -16,38 +16,39 @@ func TestStackResource(t *testing.T) {
 	t.Run("with GitHub and no state import", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(description string) string {
+		config := func(description string, protectFromDeletion bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
-					administrative = true
-					after_apply    = ["ls -la", "rm -rf /"]
-					after_destroy  = ["echo 'after_destroy'"]
-					after_init     = ["terraform fmt -check", "tflint"]
-					after_perform  = ["echo 'after_perform'"]
-					after_plan     = ["echo 'after_plan'"]
-					autodeploy     = true
-					autoretry      = false
-					before_apply   = ["ls -la", "rm -rf /"]
-					before_destroy = ["echo 'before_destroy'"]
-					before_init    = ["terraform fmt -check", "tflint"]
-					before_perform = ["echo 'before_perform'"]
-					before_plan    = ["echo 'before_plan'"]
-					branch         = "master"
-					description    = "%s"
-					labels         = ["one", "two"]
-					name           = "Provider test stack %s"
-					project_root   = "root"
-					repository     = "demo"
-					runner_image   = "custom_image:runner"
+					administrative        = true
+					after_apply           = ["ls -la", "rm -rf /"]
+					after_destroy         = ["echo 'after_destroy'"]
+					after_init            = ["terraform fmt -check", "tflint"]
+					after_perform         = ["echo 'after_perform'"]
+					after_plan            = ["echo 'after_plan'"]
+					autodeploy            = true
+					autoretry             = false
+					before_apply          = ["ls -la", "rm -rf /"]
+					before_destroy        = ["echo 'before_destroy'"]
+					before_init           = ["terraform fmt -check", "tflint"]
+					before_perform        = ["echo 'before_perform'"]
+					before_plan           = ["echo 'before_plan'"]
+					branch                = "master"
+					description           = "%s"
+					labels                = ["one", "two"]
+					name                  = "Provider test stack %s"
+					project_root          = "root"
+					protect_from_deletion = %t
+					repository            = "demo"
+					runner_image          = "custom_image:runner"
 				}
-			`, description, randomID)
+			`, description, randomID, protectFromDeletion)
 		}
 
 		const resourceName = "spacelift_stack.test"
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("old description"),
+				Config: config("old description", true),
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
@@ -84,6 +85,7 @@ func TestStackResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
+					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 				),
@@ -94,8 +96,12 @@ func TestStackResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config("new description"),
-				Check:  Resource(resourceName, Attribute("description", Equals("new description"))),
+				Config: config("new description", false),
+				Check: Resource(
+					resourceName,
+					Attribute("description", Equals("new description")),
+					Attribute("protect_from_deletion", Equals("false")),
+				),
 			},
 		})
 	})
