@@ -254,6 +254,12 @@ func resourceStack() *schema.Resource {
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Optional:    true,
 			},
+			"protect_from_deletion": {
+				Type:        schema.TypeBool,
+				Description: "Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.",
+				Optional:    true,
+				Default:     false,
+			},
 			"pulumi": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"cloudformation", "terraform_version", "terraform_workspace"},
@@ -389,6 +395,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
+	d.Set("protect_from_deletion", stack.ProtectFromDeletion)
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 
@@ -523,6 +530,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		GitHubActionDeploy:  graphql.Boolean(d.Get("github_action_deploy").(bool)),
 		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		Name:                toString(d.Get("name")),
+		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 		Repository:          toString(d.Get("repository")),
 	}
 

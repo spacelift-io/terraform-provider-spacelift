@@ -121,6 +121,12 @@ func resourceModule() *schema.Resource {
 				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
 				Optional:    true,
 			},
+			"protect_from_deletion": {
+				Type:        schema.TypeBool,
+				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail.",
+				Optional:    true,
+				Default:     false,
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -187,6 +193,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("administrative", module.Administrative)
 	d.Set("branch", module.Branch)
 	d.Set("name", module.Name)
+	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("repository", module.Repository)
 	d.Set("terraform_provider", module.TerraformProvider)
 
@@ -346,8 +353,9 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 
 func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 	ret := structs.ModuleUpdateInput{
-		Administrative: graphql.Boolean(d.Get("administrative").(bool)),
-		Branch:         toString(d.Get("branch")),
+		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
+		Branch:              toString(d.Get("branch")),
+		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 	}
 
 	description, ok := d.GetOk("description")

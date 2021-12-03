@@ -25,6 +25,7 @@ type StackInput struct {
 	Name                graphql.String     `json:"name"`
 	Namespace           *graphql.String    `json:"namespace"`
 	ProjectRoot         *graphql.String    `json:"projectRoot"`
+	ProtectFromDeletion graphql.Boolean    `json:"protectFromDeletion"`
 	Provider            *graphql.String    `json:"provider"`
 	Repository          graphql.String     `json:"repository"`
 	RunnerImage         *graphql.String    `json:"runnerImage"`

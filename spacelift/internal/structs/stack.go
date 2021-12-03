@@ -36,6 +36,7 @@ type Stack struct {
 	Name                string        `graphql:"name"`
 	Namespace           string        `graphql:"namespace"`
 	ProjectRoot         *string       `graphql:"projectRoot"`
+	ProtectFromDeletion bool          `graphql:"protectFromDeletion"`
 	Provider            string        `graphql:"provider"`
 	Repository          string        `graphql:"repository"`
 	RunnerImage         *string       `graphql:"runnerImage"`

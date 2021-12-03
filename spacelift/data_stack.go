@@ -221,6 +221,11 @@ func dataStack() *schema.Resource {
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Computed:    true,
 			},
+			"protect_from_deletion": {
+				Type:        schema.TypeBool,
+				Description: "Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.",
+				Computed:    true,
+			},
 			"pulumi": {
 				Type:        schema.TypeList,
 				Description: "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
@@ -325,6 +330,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
+	d.Set("protect_from_deletion", stack.ProtectFromDeletion)
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("terraform_version", stack.TerraformVersion)

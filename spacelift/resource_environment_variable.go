@@ -99,11 +99,20 @@ func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceDa
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
+		if err := verifyStack(ctx, stackID.(string), meta); err != nil {
+			return diag.FromErr(err)
+		}
+
 		variables["stack"] = toID(stackID)
 		return resourceEnvironmentVariableCreateStack(ctx, d, meta.(*internal.Client), variables)
 	}
 
-	variables["stack"] = toID(d.Get("module_id"))
+	moduleID := d.Get("module_id").(string)
+	if err := verifyModule(ctx, moduleID, meta); err != nil {
+		return diag.FromErr(err)
+	}
+
+	variables["stack"] = toID(moduleID)
 
 	return resourceEnvironmentVariableCreateModule(ctx, d, meta.(*internal.Client), variables)
 }
