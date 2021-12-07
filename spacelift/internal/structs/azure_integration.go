@@ -7,7 +7,7 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 type AzureIntegration struct {
 	ID                    string   `graphql:"id"`
 	AdminConsentProvided  bool     `graphql:"adminConsentProvided"`
-	AdminConsentURL       string   `grapqhl:"adminConsentURL"`
+	AdminConsentURL       string   `graphql:"adminConsentURL"`
 	ApplicationID         string   `graphql:"applicationId"`
 	DefaultSubscriptionID *string  `graphql:"defaultSubscriptionId"`
 	DisplayName           string   `graphql:"displayName"`
@@ -16,6 +16,8 @@ type AzureIntegration struct {
 	TenantID              string   `graphql:"tenantId"`
 }
 
+// PopulateResourceData populates Terraform resource data with the contents of
+// the AzureIntegration.
 func (i *AzureIntegration) PopulateResourceData(d *schema.ResourceData) {
 	d.Set("admin_consent_provided", i.AdminConsentProvided)
 	d.Set("admin_consent_url", i.AdminConsentURL)
@@ -26,8 +28,6 @@ func (i *AzureIntegration) PopulateResourceData(d *schema.ResourceData) {
 
 	if subID := i.DefaultSubscriptionID; subID != nil {
 		d.Set("default_subscription_id", *subID)
-	} else {
-		d.Set("default_subscription_id", nil)
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})

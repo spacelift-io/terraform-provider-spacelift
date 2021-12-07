@@ -95,8 +95,10 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	variables := map[string]interface{}{
-		"name":     d.Get("name").(string),
-		"tenantID": d.Get("tenant_id").(string),
+		"name":                  toString(d.Get("name")),
+		"tenantID":              toString(d.Get("tenant_id")),
+		"labels":                ([]graphql.String)(nil),
+		"defaultSubscriptionId": (*graphql.String)(nil),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -106,15 +108,15 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		variables["labels"] = &labels
+		variables["labels"] = labels
 	}
 
 	if defaultSubscriptionID, ok := d.GetOk("default_subscription_id"); ok {
-		variables["defaultSubscriptionId"] = graphql.String(defaultSubscriptionID.(string))
+		variables["defaultSubscriptionId"] = toOptionalString(defaultSubscriptionID)
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "AzureIntegrationCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create AzureIntegration %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not create Azure integration %v: %v", d.Get("name"), internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(mutation.CreateAzureIntegration.ID)
@@ -148,8 +150,8 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 
 	variables := map[string]interface{}{
 		"id":                    graphql.ID(d.Id()),
-		"name":                  graphql.String(d.Get("name").(string)),
-		"labels":                (*[]graphql.String)(nil),
+		"name":                  toString(d.Get("name")),
+		"labels":                ([]graphql.String)(nil),
 		"defaultSubscriptionId": (*graphql.String)(nil),
 	}
 
@@ -160,11 +162,11 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		variables["labels"] = &labels
+		variables["labels"] = labels
 	}
 
 	if subID, ok := d.GetOk("default_subscription_id"); ok {
-		variables["defaultSubscriptionId"] = graphql.NewString(graphql.String(subID.(string)))
+		variables["defaultSubscriptionId"] = toOptionalString(subID)
 	}
 
 	var ret diag.Diagnostics

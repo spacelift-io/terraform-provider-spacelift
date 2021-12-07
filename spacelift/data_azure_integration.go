@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/shurcooL/graphql"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
@@ -18,9 +19,14 @@ func dataAzureIntegration() *schema.Resource {
 			"attached to individual stacks in order to take effect. Note that you will " +
 			"need to provide admin consent manually for the integration to work",
 
-		ReadContext: dataPolicyRead,
+		ReadContext: dataAzureIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
+			"integration_id": {
+				Type:        schema.TypeString,
+				Description: "immutable ID of the integration",
+				Required:    true,
+			},
 			"admin_consent_provided": {
 				Type: schema.TypeBool,
 				Description: "" +
@@ -83,16 +89,18 @@ func dataAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, meta 
 		AzureIntegration *structs.AzureIntegration `graphql:"azureIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]interface{}{"id": graphql.ID(d.Get("integration_id").(string))}
 	if err := meta.(*internal.Client).Query(ctx, "AzureIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the Azure integration: %v", err)
 	}
 
-	if integration := query.AzureIntegration; integration == nil {
+	integration := query.AzureIntegration
+	if integration == nil {
 		return diag.Errorf("Azure integration not found: %s", d.Id())
-	} else {
-		integration.PopulateResourceData(d)
 	}
+
+	d.SetId(integration.ID)
+	integration.PopulateResourceData(d)
 
 	return nil
 }
