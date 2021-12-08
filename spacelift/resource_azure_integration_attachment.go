@@ -88,8 +88,8 @@ func resourceAzureIntegrationAttachmentCreate(ctx context.Context, d *schema.Res
 	variables := map[string]interface{}{
 		"id":             toID(d.Get("integration_id")),
 		"projectId":      projectID,
-		"read":           d.Get("read").(bool),
-		"write":          d.Get("write").(bool),
+		"read":           graphql.Boolean(d.Get("read").(bool)),
+		"write":          graphql.Boolean(d.Get("write").(bool)),
 		"subscriptionId": (*graphql.String)(nil),
 	}
 
@@ -144,8 +144,8 @@ func resourceAzureIntegrationAttachmentUpdate(ctx context.Context, d *schema.Res
 
 	variables := map[string]interface{}{
 		"id":             toID(d.Get("attachment_id")),
-		"read":           d.Get("read").(bool),
-		"write":          d.Get("write").(bool),
+		"read":           graphql.Boolean(d.Get("read").(bool)),
+		"write":          graphql.Boolean(d.Get("write").(bool)),
 		"subscriptionId": (*graphql.String)(nil),
 	}
 
