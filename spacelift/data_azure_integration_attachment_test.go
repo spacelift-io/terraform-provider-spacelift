@@ -35,8 +35,10 @@ func TestAzureIntegrationAttachmentData(t *testing.T) {
 			}
 
 			data "spacelift_azure_integration_attachment" "test" {
-				stack_id       = spacelift_azure_integration_attachment.test.stack_id
-				integration_id = spacelift_azure_integration_attachment.test.integration_id
+				depends_on = [spacelift_azure_integration_attachment.test]
+
+				stack_id       = spacelift_stack.test.id
+				integration_id = spacelift_azure_integration.test.id
 			}
 			`, randomID, randomID),
 			Check: Resource(
@@ -69,13 +71,15 @@ func TestAzureIntegrationAttachmentData(t *testing.T) {
 				}
 
 				resource "spacelift_azure_integration_attachment" "test" {
-					stack_id = spacelift_module.test.id
+					module_id      = spacelift_module.test.id
 					integration_id = spacelift_azure_integration.test.id
 				}
 
 				data "spacelift_azure_integration_attachment" "test" {
-					module_id       = spacelift_azure_integration_attachment.test.module_id
-					integration_id = spacelift_azure_integration_attachment.test.integration_id
+					depends_on = [spacelift_azure_integration_attachment.test]
+
+					module_id      = spacelift_module.test.id
+					integration_id = spacelift_azure_integration.test.id
 				}
 			`, randomID, randomID),
 			Check: Resource(

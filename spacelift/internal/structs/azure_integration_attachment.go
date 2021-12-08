@@ -8,9 +8,9 @@ type AzureIntegrationAttachment struct {
 	ID             string  `graphql:"id"`
 	StackID        string  `graphql:"stackId"`
 	IsModule       bool    `graphql:"isModule"`
-	Read           int     `graphql:"read"`
+	Read           bool    `graphql:"read"`
 	SubscriptionID *string `graphql:"subscriptionId"`
-	Write          int     `graphql:"write"`
+	Write          bool    `graphql:"write"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
