@@ -75,8 +75,8 @@ func dataAzureIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceD
 	projectID := toID(projectID(d))
 
 	variables := map[string]interface{}{
-		"integration_id": integrationID,
-		"project_id":     projectID,
+		"integrationId": integrationID,
+		"projectId":     projectID,
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "AzureIntegrationAttachmentRead", &query, variables); err != nil {

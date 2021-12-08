@@ -119,8 +119,8 @@ func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.Resou
 	}
 
 	variables := map[string]interface{}{
-		"integration_id": toID(idComponents[0]),
-		"project_id":     toID(idComponents[1]),
+		"integrationId": toID(idComponents[0]),
+		"projectId":     toID(idComponents[1]),
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "AzureIntegrationAttachmentRead", &query, variables); err != nil {
@@ -162,7 +162,7 @@ func resourceAzureIntegrationAttachmentUpdate(ctx context.Context, d *schema.Res
 
 func resourceAzureIntegrationAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		AzureIntegrationAttachmentDelete struct{} `graphql:"azureIntegrationDetach(id: $id)"`
+		AzureIntegrationAttachmentDelete *structs.AzureIntegrationAttachment `graphql:"azureIntegrationDetach(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Get("attachment_id"))}
