@@ -117,10 +117,11 @@ func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.Resou
 	if len(idComponents) != 2 {
 		return diag.Errorf("invalid ID: %s", d.Id())
 	}
+	integrationID, projectID := idComponents[0], idComponents[1]
 
 	variables := map[string]interface{}{
-		"integrationId": toID(idComponents[0]),
-		"projectId":     toID(idComponents[1]),
+		"integrationId": toID(integrationID),
+		"projectId":     toID(projectID),
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "AzureIntegrationAttachmentRead", &query, variables); err != nil {
@@ -133,6 +134,9 @@ func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.Resou
 	}
 
 	query.AzureIntegration.Attachment.PopulateResourceData(d)
+
+	// This is to allow importing.
+	d.Set("integration_id", integrationID)
 
 	return nil
 }

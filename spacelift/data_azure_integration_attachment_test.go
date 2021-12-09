@@ -83,7 +83,7 @@ func TestAzureIntegrationAttachmentData(t *testing.T) {
 				}
 			`, randomID, randomID),
 			Check: Resource(
-				"data.spacelift_context_attachment.test",
+				resourceName,
 				Attribute("id", IsNotEmpty()),
 				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("priority", Equals("1")),

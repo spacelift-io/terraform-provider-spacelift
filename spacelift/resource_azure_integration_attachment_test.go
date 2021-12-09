@@ -98,7 +98,7 @@ func TestAzureIntegrationAttachmentResource(t *testing.T) {
 					}
 
 					resource "spacelift_azure_integration_attachment" "test" {
-						stack_id = spacelift_module.test.id
+						module_id = spacelift_module.test.id
 						integration_id = spacelift_azure_integration.test.id
 					}
 				`, randomID, randomID),
