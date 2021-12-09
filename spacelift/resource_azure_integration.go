@@ -94,21 +94,19 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 		CreateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationCreate(name: $name, tenantID: $tenantID, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId)"`
 	}
 
-	variables := map[string]interface{}{
-		"name":                  toString(d.Get("name")),
-		"tenantID":              toString(d.Get("tenant_id")),
-		"labels":                ([]graphql.String)(nil),
-		"defaultSubscriptionId": (*graphql.String)(nil),
-	}
+	labels := []graphql.String{}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		var labels []graphql.String
-
 		for _, label := range labelSet.List() {
 			labels = append(labels, graphql.String(label.(string)))
 		}
+	}
 
-		variables["labels"] = labels
+	variables := map[string]interface{}{
+		"name":                  toString(d.Get("name")),
+		"tenantID":              toString(d.Get("tenant_id")),
+		"labels":                labels,
+		"defaultSubscriptionId": (*graphql.String)(nil),
 	}
 
 	if defaultSubscriptionID, ok := d.GetOk("default_subscription_id"); ok {
@@ -148,21 +146,19 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 		UpdateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationUpdate(id: $id, name: $name, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId)"`
 	}
 
-	variables := map[string]interface{}{
-		"id":                    graphql.ID(d.Id()),
-		"name":                  toString(d.Get("name")),
-		"labels":                ([]graphql.String)(nil),
-		"defaultSubscriptionId": (*graphql.String)(nil),
-	}
+	labels := []graphql.String{}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		var labels []graphql.String
-
 		for _, label := range labelSet.List() {
 			labels = append(labels, graphql.String(label.(string)))
 		}
+	}
 
-		variables["labels"] = labels
+	variables := map[string]interface{}{
+		"id":                    graphql.ID(d.Id()),
+		"name":                  toString(d.Get("name")),
+		"labels":                labels,
+		"defaultSubscriptionId": (*graphql.String)(nil),
 	}
 
 	if subID, ok := d.GetOk("default_subscription_id"); ok {
