@@ -86,7 +86,6 @@ func TestAzureIntegrationAttachmentData(t *testing.T) {
 				resourceName,
 				Attribute("id", IsNotEmpty()),
 				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
-				Attribute("priority", Equals("1")),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
