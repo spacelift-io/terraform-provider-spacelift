@@ -63,6 +63,11 @@ func resourceWorkerPool() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"labels": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Optional: true,
+			},
 		},
 	}
 }
@@ -71,12 +76,21 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 	name := d.Get("name").(string)
 
 	var mutation struct {
-		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description)"`
+		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description, labels: $labels)"`
 	}
 
 	variables := map[string]interface{}{
 		"name":        graphql.String(name),
 		"description": (*graphql.String)(nil),
+		"labels":      []graphql.String(nil),
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+		variables["labels"] = &labels
 	}
 
 	if desc, ok := d.GetOk("description"); ok {
@@ -164,6 +178,12 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 		d.Set("description", *description)
 	}
 
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range query.WorkerPool.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
 	return nil
 }
 
@@ -171,13 +191,22 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	name := d.Get("name").(string)
 
 	var mutation struct {
-		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description)"`
+		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels)"`
 	}
 
 	variables := map[string]interface{}{
 		"id":          toID(d.Id()),
 		"name":        graphql.String(name),
 		"description": (*graphql.String)(nil),
+		"labels":      []graphql.String(nil),
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+		variables["labels"] = &labels
 	}
 
 	if desc, ok := d.GetOk("description"); ok {

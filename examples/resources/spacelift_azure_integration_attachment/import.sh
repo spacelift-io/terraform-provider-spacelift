@@ -1,0 +1,1 @@
+terraform import spacelift_azure_integration_attachment.readonly $INTEGRATION_ID/$STACK_ID

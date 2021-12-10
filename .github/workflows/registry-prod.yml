@@ -9,7 +9,7 @@ jobs:
   registry:
     name: Publish the provider to the registry
     runs-on: ubuntu-latest
-    container: golang:1.16
+    container: golang:1.17
 
     steps:
       - name: Check out repository code

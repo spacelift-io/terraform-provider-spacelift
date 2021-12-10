@@ -6,7 +6,7 @@ jobs:
   deployment:
     name: Test the code
     runs-on: ubuntu-latest
-    container: golang:1.15
+    container: golang:1.17
 
     steps:
       - name: Check out repository code

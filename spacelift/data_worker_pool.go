@@ -40,6 +40,11 @@ func dataWorkerPool() *schema.Resource {
 				Description: "ID of the worker pool",
 				Required:    true,
 			},
+			"labels": {
+				Type:     schema.TypeSet,
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
+			},
 		},
 	}
 }
@@ -70,6 +75,12 @@ func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interf
 	} else {
 		d.Set("description", nil)
 	}
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range workerPool.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
 
 	return nil
 }
