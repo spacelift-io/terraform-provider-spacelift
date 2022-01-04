@@ -75,7 +75,7 @@ func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
 
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
-		vcsSettings["organization"] = s.Namespace
+		vcsSettings["project"] = s.Namespace
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
 		vcsSettings["namespace"] = s.Namespace

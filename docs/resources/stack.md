@@ -161,7 +161,7 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 
 Required:
 
-- **organization** (String) The unique name of the Azure DevOps organization
+- **project** (String) The name of the Azure DevOps project
 
 
 <a id="nestedblock--bitbucket_cloud"></a>

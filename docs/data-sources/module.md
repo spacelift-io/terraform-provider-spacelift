@@ -54,7 +54,7 @@ data "spacelift_module" "k8s-module" {
 
 Read-Only:
 
-- **organization** (String)
+- **project** (String)
 
 
 <a id="nestedatt--bitbucket_cloud"></a>

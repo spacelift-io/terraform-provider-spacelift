@@ -33,7 +33,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 
 	switch m.Provider {
 	case VCSProviderAzureDevOps:
-		vcsSettings["organization"] = m.Namespace
+		vcsSettings["project"] = m.Namespace
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
 		vcsSettings["namespace"] = m.Namespace

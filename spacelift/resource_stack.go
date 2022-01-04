@@ -93,10 +93,10 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"organization": {
+						"project": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The unique name of the Azure DevOps organization",
+							Description: "The name of the Azure DevOps project",
 						},
 					},
 				},
@@ -600,7 +600,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret.Provider = graphql.NewString("GITHUB")
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
-		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["organization"])
+		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
 		ret.Provider = graphql.NewString(structs.VCSProviderAzureDevOps)
 	}
 

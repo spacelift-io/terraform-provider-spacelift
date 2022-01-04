@@ -40,10 +40,10 @@ func dataModule() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"organization": {
+						"project": {
 							Type:        schema.TypeString,
 							Required:    true,
-							Description: "The unique name of the Azure DevOps organization",
+							Description: "The name of the Azure DevOps project",
 						},
 					},
 				},
