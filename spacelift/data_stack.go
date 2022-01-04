@@ -71,6 +71,20 @@ func dataStack() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"azure_devops": {
+				Type:        schema.TypeList,
+				Description: "Azure DevOps VCS settings",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the Azure DevOps project",
+						},
+					},
+				},
+			},
 			"before_apply": {
 				Type:        schema.TypeList,
 				Description: "List of before-apply scripts",
@@ -103,7 +117,7 @@ func dataStack() *schema.Resource {
 			},
 			"bitbucket_cloud": {
 				Type:        schema.TypeList,
-				Description: "Bitbucket Cloud configuration",
+				Description: "Bitbucket Cloud VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -117,7 +131,7 @@ func dataStack() *schema.Resource {
 			},
 			"bitbucket_datacenter": {
 				Type:        schema.TypeList,
-				Description: "Bitbucket Datacenter configuration",
+				Description: "Bitbucket Datacenter VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -170,7 +184,7 @@ func dataStack() *schema.Resource {
 			},
 			"github_enterprise": {
 				Type:        schema.TypeList,
-				Description: "GitHub Enterprise configuration",
+				Description: "GitHub Enterprise (self-hosted) VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -184,7 +198,7 @@ func dataStack() *schema.Resource {
 			},
 			"gitlab": {
 				Type:        schema.TypeList,
-				Description: "GitLab configuration",
+				Description: "GitLab VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -335,50 +349,8 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("terraform_version", stack.TerraformVersion)
 
-	if stack.Provider == vcsProviderBitbucketCloud {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
-		}
-	}
-	if stack.Provider == vcsProviderBitbucketDatacenter {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
-		}
-	}
-	if stack.Provider == vcsProviderGitHubEnterprise {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting github_enterprise (resource): %v", err)
-		}
-	}
-	if stack.Provider == vcsProviderGitlab {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting gitlab (resource): %v", err)
-		}
-	}
-	if stack.Provider == vcsProviderShowcases {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("showcase", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting showcase (resource): %v", err)
-		}
+	if err := stack.ExportVCSSettings(d); err != nil {
+		return diag.FromErr(err)
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})

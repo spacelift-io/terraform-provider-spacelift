@@ -34,9 +34,23 @@ func dataModule() *schema.Resource {
 				Description: "GitHub branch to apply changes to",
 				Computed:    true,
 			},
+			"azure_devops": {
+				Type:        schema.TypeList,
+				Description: "Azure DevOps VCS settings",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the Azure DevOps project",
+						},
+					},
+				},
+			},
 			"bitbucket_cloud": {
 				Type:        schema.TypeList,
-				Description: "Bitbucket Cloud configuration",
+				Description: "Bitbucket Cloud VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -50,7 +64,7 @@ func dataModule() *schema.Resource {
 			},
 			"bitbucket_datacenter": {
 				Type:        schema.TypeList,
-				Description: "Bitbucket Datacenter configuration",
+				Description: "Bitbucket Datacenter VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -69,7 +83,7 @@ func dataModule() *schema.Resource {
 			},
 			"github_enterprise": {
 				Type:        schema.TypeList,
-				Description: "GitHub Enterprise configuration",
+				Description: "GitHub Enterprise (self-hosted) VCS settings",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -83,7 +97,7 @@ func dataModule() *schema.Resource {
 			},
 			"gitlab": {
 				Type:        schema.TypeList,
-				Description: "GitLab configuration",
+				Description: "GitLab VCS settings",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -169,33 +183,8 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("terraform_provider", module.TerraformProvider)
 
-	if module.Provider == vcsProviderBitbucketCloud {
-		m := map[string]interface{}{"namespace": module.Namespace}
-
-		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
-		}
-	}
-	if module.Provider == vcsProviderBitbucketDatacenter {
-		m := map[string]interface{}{"namespace": module.Namespace}
-
-		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
-		}
-	}
-	if module.Provider == vcsProviderGitHubEnterprise {
-		m := map[string]interface{}{"namespace": module.Namespace}
-
-		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting github_enterprise (resource): %v", err)
-		}
-	}
-	if module.Provider == vcsProviderGitlab {
-		m := map[string]interface{}{"namespace": module.Namespace}
-
-		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting gitlab (resource): %v", err)
-		}
+	if err := module.ExportVCSSettings(d); err != nil {
+		return diag.FromErr(err)
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})

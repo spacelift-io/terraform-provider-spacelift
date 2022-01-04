@@ -125,19 +125,20 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **after_plan** (List of String) List of after-plan scripts
 - **autodeploy** (Boolean) Indicates whether changes to this stack can be automatically deployed
 - **autoretry** (Boolean) Indicates whether obsolete proposed changes should automatically be retried
+- **azure_devops** (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
 - **before_apply** (List of String) List of before-apply scripts
 - **before_destroy** (List of String) List of before-destroy scripts
 - **before_init** (List of String) List of before-init scripts
 - **before_perform** (List of String) List of before-perform scripts
 - **before_plan** (List of String) List of before-plan scripts
-- **bitbucket_cloud** (Block List, Max: 1) (see [below for nested schema](#nestedblock--bitbucket_cloud))
-- **bitbucket_datacenter** (Block List, Max: 1) (see [below for nested schema](#nestedblock--bitbucket_datacenter))
+- **bitbucket_cloud** (Block List, Max: 1) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedblock--bitbucket_cloud))
+- **bitbucket_datacenter** (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
 - **cloudformation** (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
 - **description** (String) Free-form stack description for users
 - **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack
 - **github_action_deploy** (Boolean) Indicates whether GitHub users can deploy from the Checks API
-- **github_enterprise** (Block List, Max: 1) (see [below for nested schema](#nestedblock--github_enterprise))
-- **gitlab** (Block List, Max: 1) (see [below for nested schema](#nestedblock--gitlab))
+- **github_enterprise** (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
+- **gitlab** (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - **id** (String) The ID of this resource.
 - **import_state** (String) State file to upload when creating a new stack
 - **labels** (Set of String)
@@ -154,6 +155,14 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 ### Read-Only
 
 - **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
+
+<a id="nestedblock--azure_devops"></a>
+### Nested Schema for `azure_devops`
+
+Required:
+
+- **project** (String) The name of the Azure DevOps project
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`
