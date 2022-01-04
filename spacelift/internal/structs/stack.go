@@ -1,5 +1,10 @@
 package structs
 
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/pkg/errors"
+)
+
 // StackConfigVendorCloudFormation is a graphql union typename.
 const StackConfigVendorCloudFormation = "StackConfigVendorCloudFormation"
 
@@ -61,4 +66,39 @@ type Stack struct {
 	WorkerPool *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
+}
+
+// ExportVCSSettings exports VCS settings into Terraform schema.
+func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
+	var fieldName string
+	vcsSettings := make(map[string]interface{})
+
+	switch s.Provider {
+	case VCSProviderAzureDevOps:
+		vcsSettings["organization"] = s.Namespace
+		fieldName = "azure_devops"
+	case VCSProviderBitbucketCloud:
+		vcsSettings["namespace"] = s.Namespace
+		fieldName = "bitbucket_cloud"
+	case VCSProviderBitbucketDatacenter:
+		vcsSettings["namespace"] = s.Namespace
+		fieldName = "bitbucket_datacenter"
+	case VCSProviderGitHubEnterprise:
+		vcsSettings["namespace"] = s.Namespace
+		fieldName = "github_enterprise"
+	case VCSProviderGitlab:
+		vcsSettings["namespace"] = s.Namespace
+		fieldName = "gitlab"
+	case VCSProviderShowcases:
+		vcsSettings["namespace"] = s.Namespace
+		fieldName = "showcase"
+	}
+
+	if fieldName != "" {
+		if err := d.Set(fieldName, []interface{}{vcsSettings}); err != nil {
+			return errors.Wrapf(err, "error setting %s (resource)", fieldName)
+		}
+	}
+
+	return nil
 }

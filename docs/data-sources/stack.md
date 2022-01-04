@@ -45,14 +45,15 @@ data "spacelift_stack" "k8s-core" {
 - **autodeploy** (Boolean) indicates whether changes to this stack can be automatically deployed
 - **autoretry** (Boolean) indicates whether obsolete proposed changes should automatically be retried
 - **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
-- **bitbucket_cloud** (List of Object) Bitbucket Cloud configuration (see [below for nested schema](#nestedatt--bitbucket_cloud))
-- **bitbucket_datacenter** (List of Object) Bitbucket Datacenter configuration (see [below for nested schema](#nestedatt--bitbucket_datacenter))
+- **azure_devops** (List of Object) Azure DevOps VCS settings (see [below for nested schema](#nestedatt--azure_devops))
+- **bitbucket_cloud** (List of Object) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedatt--bitbucket_cloud))
+- **bitbucket_datacenter** (List of Object) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedatt--bitbucket_datacenter))
 - **branch** (String) Repository branch to treat as the default 'main' branch
 - **cloudformation** (List of Object) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedatt--cloudformation))
 - **description** (String) free-form stack description for users
 - **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack.
-- **github_enterprise** (List of Object) GitHub Enterprise configuration (see [below for nested schema](#nestedatt--github_enterprise))
-- **gitlab** (List of Object) GitLab configuration (see [below for nested schema](#nestedatt--gitlab))
+- **github_enterprise** (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
+- **gitlab** (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
 - **labels** (Set of String)
 - **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
 - **name** (String) Name of the stack - should be unique in one account
@@ -65,6 +66,14 @@ data "spacelift_stack" "k8s-core" {
 - **terraform_version** (String) Terraform version to use
 - **terraform_workspace** (String) Terraform workspace to select
 - **worker_pool_id** (String) ID of the worker pool to use
+
+<a id="nestedatt--azure_devops"></a>
+### Nested Schema for `azure_devops`
+
+Read-Only:
+
+- **organization** (String)
+
 
 <a id="nestedatt--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`

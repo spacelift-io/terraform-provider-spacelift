@@ -32,11 +32,12 @@ resource "spacelift_module" "k8s-module" {
 ### Optional
 
 - **administrative** (Boolean) Indicates whether this module can manage others
-- **bitbucket_cloud** (Block List, Max: 1) (see [below for nested schema](#nestedblock--bitbucket_cloud))
-- **bitbucket_datacenter** (Block List, Max: 1) (see [below for nested schema](#nestedblock--bitbucket_datacenter))
+- **azure_devops** (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
+- **bitbucket_cloud** (Block List, Max: 1) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedblock--bitbucket_cloud))
+- **bitbucket_datacenter** (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
 - **description** (String) Free-form module description for users
-- **github_enterprise** (Block List, Max: 1) (see [below for nested schema](#nestedblock--github_enterprise))
-- **gitlab** (Block List, Max: 1) (see [below for nested schema](#nestedblock--gitlab))
+- **github_enterprise** (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
+- **gitlab** (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - **id** (String) The ID of this resource.
 - **labels** (Set of String)
 - **name** (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
@@ -49,6 +50,14 @@ resource "spacelift_module" "k8s-module" {
 ### Read-Only
 
 - **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
+
+<a id="nestedblock--azure_devops"></a>
+### Nested Schema for `azure_devops`
+
+Required:
+
+- **organization** (String) The unique name of the Azure DevOps organization
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`

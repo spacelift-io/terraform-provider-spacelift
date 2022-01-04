@@ -38,10 +38,28 @@ func resourceModule() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"azure_devops": {
+				Type:          schema.TypeList,
+				Description:   "Azure DevOps VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"organization": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The unique name of the Azure DevOps organization",
+						},
+					},
+				},
+			},
 			"bitbucket_cloud": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "Bitbucket Cloud VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -53,9 +71,11 @@ func resourceModule() *schema.Resource {
 				},
 			},
 			"bitbucket_datacenter": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "Bitbucket Datacenter VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -77,9 +97,11 @@ func resourceModule() *schema.Resource {
 				Optional:    true,
 			},
 			"github_enterprise": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "GitHub Enterprise (self-hosted) VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -91,9 +113,11 @@ func resourceModule() *schema.Resource {
 				},
 			},
 			"gitlab": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "GitLab VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -205,44 +229,8 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 		d.Set("project_root", *projectRoot)
 	}
 
-	if module.Provider == vcsProviderBitbucketCloud {
-		m := map[string]interface{}{
-			"namespace": module.Namespace,
-		}
-
-		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
-		}
-	}
-
-	if module.Provider == vcsProviderBitbucketDatacenter {
-		m := map[string]interface{}{
-			"namespace": module.Namespace,
-		}
-
-		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
-		}
-	}
-
-	if module.Provider == vcsProviderGitHubEnterprise {
-		m := map[string]interface{}{
-			"namespace": module.Namespace,
-		}
-
-		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting github_enterprise (resource): %v", err)
-		}
-	}
-
-	if module.Provider == vcsProviderGitlab {
-		m := map[string]interface{}{
-			"namespace": module.Namespace,
-		}
-
-		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting gitlab (resource): %v", err)
-		}
+	if err := module.ExportVCSSettings(d); err != nil {
+		return diag.FromErr(err)
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
@@ -309,29 +297,29 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 
 	ret.Provider = graphql.NewString("GITHUB")
 
-	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok {
-		if len(bitbucketCloud) > 0 {
-			ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderBitbucketCloud)
-		}
+	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
+		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["organization"])
+		ret.Provider = graphql.NewString(structs.VCSProviderAzureDevOps)
 	}
-	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok {
-		if len(bitbucketDatacenter) > 0 {
-			ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderBitbucketDatacenter)
-		}
+
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
+		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketCloud)
 	}
-	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok {
-		if len(githubEnterprise) > 0 {
-			ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderGitHubEnterprise)
-		}
+
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
+		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
 	}
-	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
-		if len(gitlab) > 0 {
-			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderGitlab)
-		}
+
+	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
+		ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderGitHubEnterprise)
+	}
+
+	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
+		ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderGitlab)
 	}
 
 	name, ok := d.GetOk("name")

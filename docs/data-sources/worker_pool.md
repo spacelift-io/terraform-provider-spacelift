@@ -33,6 +33,7 @@ data "spacelift_worker_pool" "k8s-core" {
 
 - **config** (String, Sensitive) credentials necessary to connect WorkerPool's workers to the control plane
 - **description** (String) description of the worker pool
+- **labels** (Set of String)
 - **name** (String) name of the worker pool
 
 
