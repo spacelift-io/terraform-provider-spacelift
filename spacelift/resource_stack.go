@@ -255,6 +255,7 @@ func resourceStack() *schema.Resource {
 				ConflictsWith:    []string{"import_state_file"},
 				Optional:         true,
 				DiffSuppressFunc: ignoreOnceCreated,
+				Sensitive:        true,
 			},
 			"import_state_file": {
 				Type:             schema.TypeString,
