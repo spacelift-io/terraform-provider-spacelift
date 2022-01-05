@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -249,12 +250,19 @@ func resourceStack() *schema.Resource {
 				},
 			},
 			"import_state": {
-				Type:        schema.TypeString,
-				Description: "State file to upload when creating a new stack",
-				Optional:    true,
-				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
-					return d.Id() != ""
-				},
+				Type:             schema.TypeString,
+				Description:      "State file to upload when creating a new stack",
+				ConflictsWith:    []string{"import_state_file"},
+				Optional:         true,
+				DiffSuppressFunc: ignoreOnceCreated,
+				Sensitive:        true,
+			},
+			"import_state_file": {
+				Type:             schema.TypeString,
+				Description:      "Path to the state file to upload when creating a new stack",
+				ConflictsWith:    []string{"import_state"},
+				Optional:         true,
+				DiffSuppressFunc: ignoreOnceCreated,
 			},
 			"labels": {
 				Type:     schema.TypeSet,
@@ -361,11 +369,28 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		"stackObjectID": (*graphql.String)(nil),
 	}
 
+	var stateContent string
+
 	content, ok := d.GetOk("import_state")
 	if ok && !manageState {
 		return diag.Errorf(`"import_state" requires "manage_state" to be true`)
 	} else if ok {
-		objectID, err := uploadStateFile(ctx, content.(string), meta)
+		stateContent = content.(string)
+	}
+
+	path, ok := d.GetOk("import_state_file")
+	if ok && !manageState {
+		return diag.Errorf(`"import_state_file" requires "manage_state" to be true`)
+	} else if ok {
+		data, err := os.ReadFile(path.(string))
+		if err != nil {
+			return diag.Errorf("failed to read imported state file: %s", err)
+		}
+		stateContent = string(data)
+	}
+
+	if stateContent != "" {
+		objectID, err := uploadStateFile(ctx, stateContent, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -714,4 +739,8 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 
 func onceTheVersionIsSetDoNotUnset(_, _, new string, _ *schema.ResourceData) bool {
 	return new == ""
+}
+
+func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {
+	return d.Id() != ""
 }

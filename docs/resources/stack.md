@@ -140,7 +140,8 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **github_enterprise** (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
 - **gitlab** (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - **id** (String) The ID of this resource.
-- **import_state** (String) State file to upload when creating a new stack
+- **import_state** (String, Sensitive) State file to upload when creating a new stack
+- **import_state_file** (String) Path to the state file to upload when creating a new stack
 - **labels** (Set of String)
 - **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
 - **project_root** (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
