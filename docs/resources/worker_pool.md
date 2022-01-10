@@ -32,6 +32,7 @@ resource "spacelift_worker_pool" "k8s-core" {
 - **csr** (String, Sensitive) certificate signing request in base64
 - **description** (String) description of the worker pool
 - **id** (String) The ID of this resource.
+- **labels** (Set of String)
 
 ### Read-Only
 

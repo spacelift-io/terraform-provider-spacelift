@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -85,6 +86,22 @@ func resourceStack() *schema.Resource {
 				Description: "AWS IAM assume role policy statement setting up trust relationship",
 				Computed:    true,
 			},
+			"azure_devops": {
+				Type:          schema.TypeList,
+				Description:   "Azure DevOps VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project": {
+							Type:        schema.TypeString,
+							Required:    true,
+							Description: "The name of the Azure DevOps project",
+						},
+					},
+				},
+			},
 			"before_apply": {
 				Type:        schema.TypeList,
 				Description: "List of before-apply scripts",
@@ -121,9 +138,11 @@ func resourceStack() *schema.Resource {
 				Required:    true,
 			},
 			"bitbucket_cloud": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "Bitbucket Cloud VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -135,9 +154,11 @@ func resourceStack() *schema.Resource {
 				},
 			},
 			"bitbucket_datacenter": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "Bitbucket Datacenter VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -197,9 +218,11 @@ func resourceStack() *schema.Resource {
 				Default:     true,
 			},
 			"github_enterprise": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "GitHub Enterprise (self-hosted) VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -211,9 +234,11 @@ func resourceStack() *schema.Resource {
 				},
 			},
 			"gitlab": {
-				Type:     schema.TypeList,
-				Optional: true,
-				MaxItems: 1,
+				Type:          schema.TypeList,
+				Description:   "GitLab VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise"},
+				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
@@ -225,12 +250,19 @@ func resourceStack() *schema.Resource {
 				},
 			},
 			"import_state": {
-				Type:        schema.TypeString,
-				Description: "State file to upload when creating a new stack",
-				Optional:    true,
-				DiffSuppressFunc: func(_, _, _ string, d *schema.ResourceData) bool {
-					return d.Id() != ""
-				},
+				Type:             schema.TypeString,
+				Description:      "State file to upload when creating a new stack",
+				ConflictsWith:    []string{"import_state_file"},
+				Optional:         true,
+				DiffSuppressFunc: ignoreOnceCreated,
+				Sensitive:        true,
+			},
+			"import_state_file": {
+				Type:             schema.TypeString,
+				Description:      "Path to the state file to upload when creating a new stack",
+				ConflictsWith:    []string{"import_state"},
+				Optional:         true,
+				DiffSuppressFunc: ignoreOnceCreated,
 			},
 			"labels": {
 				Type:     schema.TypeSet,
@@ -337,11 +369,28 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		"stackObjectID": (*graphql.String)(nil),
 	}
 
+	var stateContent string
+
 	content, ok := d.GetOk("import_state")
 	if ok && !manageState {
 		return diag.Errorf(`"import_state" requires "manage_state" to be true`)
 	} else if ok {
-		objectID, err := uploadStateFile(ctx, content.(string), meta)
+		stateContent = content.(string)
+	}
+
+	path, ok := d.GetOk("import_state_file")
+	if ok && !manageState {
+		return diag.Errorf(`"import_state_file" requires "manage_state" to be true`)
+	} else if ok {
+		data, err := os.ReadFile(path.(string))
+		if err != nil {
+			return diag.Errorf("failed to read imported state file: %s", err)
+		}
+		stateContent = string(data)
+	}
+
+	if stateContent != "" {
+		objectID, err := uploadStateFile(ctx, stateContent, meta)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -399,54 +448,8 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 
-	if stack.Provider == vcsProviderBitbucketCloud {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("bitbucket_cloud", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_cloud (resource): %v", err)
-		}
-	}
-
-	if stack.Provider == vcsProviderBitbucketDatacenter {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("bitbucket_datacenter", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting bitbucket_datacenter (resource): %v", err)
-		}
-	}
-
-	if stack.Provider == vcsProviderGitHubEnterprise {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("github_enterprise", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting github_enterprise (resource): %v", err)
-		}
-	}
-
-	if stack.Provider == vcsProviderGitlab {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("gitlab", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting gitlab (resource): %v", err)
-		}
-	}
-
-	if stack.Provider == vcsProviderShowcases {
-		m := map[string]interface{}{
-			"namespace": stack.Namespace,
-		}
-
-		if err := d.Set("showcase", []interface{}{m}); err != nil {
-			return diag.Errorf("error setting showcase (resource): %v", err)
-		}
+	if err := stack.ExportVCSSettings(d); err != nil {
+		return diag.FromErr(err)
 	}
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
@@ -620,35 +623,35 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	ret.Provider = graphql.NewString("GITHUB")
-	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok {
-		if len(bitbucketCloud) > 0 {
-			ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderBitbucketCloud)
-		}
+
+	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
+		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
+		ret.Provider = graphql.NewString(structs.VCSProviderAzureDevOps)
 	}
-	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok {
-		if len(bitbucketDatacenter) > 0 {
-			ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderBitbucketDatacenter)
-		}
+
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
+		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketCloud)
 	}
-	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok {
-		if len(githubEnterprise) > 0 {
-			ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderGitHubEnterprise)
-		}
+
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
+		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
 	}
-	if gitlab, ok := d.Get("gitlab").([]interface{}); ok {
-		if len(gitlab) > 0 {
-			ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderGitlab)
-		}
+
+	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
+		ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderGitHubEnterprise)
 	}
-	if showcase, ok := d.Get("showcase").([]interface{}); ok {
-		if len(showcase) > 0 {
-			ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
-			ret.Provider = graphql.NewString(vcsProviderShowcases)
-		}
+
+	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
+		ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderGitlab)
+	}
+
+	if showcase, ok := d.Get("showcase").([]interface{}); ok && len(showcase) > 0 {
+		ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderShowcases)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -736,4 +739,8 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 
 func onceTheVersionIsSetDoNotUnset(_, _, new string, _ *schema.ResourceData) bool {
 	return new == ""
+}
+
+func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {
+	return d.Id() != ""
 }
