@@ -64,6 +64,8 @@ func (c *Client) client(ctx context.Context) *graphql.Client {
 		}
 	}
 
+	client.Timeout = time.Minute
+
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.HTTPClient = client
 	retryableClient.Logger = nil
