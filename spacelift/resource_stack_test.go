@@ -34,6 +34,7 @@ func TestStackResource(t *testing.T) {
 					before_plan           = ["echo 'before_plan'"]
 					branch                = "master"
 					description           = "%s"
+					import_state          = "{}"
 					labels                = ["one", "two"]
 					name                  = "Provider test stack %s"
 					project_root          = "root"
