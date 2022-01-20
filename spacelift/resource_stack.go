@@ -729,6 +729,7 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 	if err != nil {
 		return "", errors.Wrap(err, "could not create state upload request")
 	}
+	request.Header.Set("Content-Type", "application/json")
 
 	response, err := http.DefaultClient.Do(request)
 	if err != nil {
