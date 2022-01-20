@@ -34,6 +34,7 @@ func TestStackResource(t *testing.T) {
 					before_plan           = ["echo 'before_plan'"]
 					branch                = "master"
 					description           = "%s"
+					import_state          = "{}"
 					labels                = ["one", "two"]
 					name                  = "Provider test stack %s"
 					project_root          = "root"
@@ -91,9 +92,10 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"import_state"},
 			},
 			{
 				Config: config("new description", false),

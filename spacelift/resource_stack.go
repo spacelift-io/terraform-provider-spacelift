@@ -725,7 +725,13 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 		return "", errors.Wrap(err, "could not generate state upload URL")
 	}
 
-	response, err := http.Post(mutation.StateUploadURL.URL, "application/json", strings.NewReader(content))
+	request, err := http.NewRequestWithContext(ctx, http.MethodPut, mutation.StateUploadURL.URL, strings.NewReader(content))
+	if err != nil {
+		return "", errors.Wrap(err, "could not create state upload request")
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := http.DefaultClient.Do(request)
 	if err != nil {
 		return "", errors.Wrap(err, "could not upload the state to remote URL")
 	}

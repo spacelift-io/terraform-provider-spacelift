@@ -14,6 +14,7 @@ import (
 
 var policyTypes = []string{
 	"ACCESS",
+	"APPROVAL",
 	"GIT_PUSH",
 	"INITIALIZATION",
 	"LOGIN",
