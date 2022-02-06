@@ -38,7 +38,7 @@ resource "google_project" "k8s-core" {
 resource "google_project_iam_member" "k8s-core" {
   project = google_project.k8s-core.id
   role    = "roles/owner"
-  member  = spacelift_stack_gcp_service_account.k8s-core.service_account_email
+  member  = "serviceAccount:${spacelift_stack_gcp_service_account.k8s-core.service_account_email}"
 }
 ```
 
