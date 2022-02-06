@@ -24,7 +24,9 @@ func TestVCSAgentPoolsData(t *testing.T) {
 					description = "Provider test VCS agent pool"
 				}
 
-				data "spacelift_vcs_agent_pools" "test" {}
+				data "spacelift_vcs_agent_pools" "test" {
+					depends_on = [spacelift_vcs_agent_pool.test]
+				}
 			`, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(datasourceName, Attribute("id", IsNotEmpty())),

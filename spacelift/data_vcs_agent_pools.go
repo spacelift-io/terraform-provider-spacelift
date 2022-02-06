@@ -64,8 +64,8 @@ func dataVCSAgentPoolsRead(ctx context.Context, d *schema.ResourceData, meta int
 		return nil
 	}
 
-	wps := flattenDataVCSAgentPoolsList(vcsAgentPools)
-	if err := d.Set("vcs_agent_pools", wps); err != nil {
+	aps := flattenDataVCSAgentPoolsList(vcsAgentPools)
+	if err := d.Set("vcs_agent_pools", aps); err != nil {
 		d.SetId("")
 		return diag.Errorf("could not set VCS agent pools: %v", err)
 	}
