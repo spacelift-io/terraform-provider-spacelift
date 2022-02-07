@@ -22,7 +22,10 @@ func resourceStackDestructor() *schema.Resource {
 			"Stack before deleting it. `depends_on` should be used to make sure " +
 			"that all necessery resources (environment variables, roles, " +
 			"integrations, etc.) are still in place when the destruction run is " +
-			"executed.",
+			"executed. **Note:** Destroying this resource will delete the " +
+			"resources in the stack. If this resource needs to be deleted and " +
+			"the resources in the stacks are to be preserved, ensure that the " +
+			"`deactivated` attribute is set to `true`.",
 
 		CreateContext: resourceStackDestructorCreate,
 		ReadContext:   resourceStackDestructorRead,
