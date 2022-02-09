@@ -149,6 +149,7 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **pulumi** (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
 - **runner_image** (String) Name of the Docker image used to process Runs
 - **showcase** (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
+- **slug** (String) Allows setting the custom ID (slug) for the stack
 - **terraform_version** (String) Terraform version to use
 - **terraform_workspace** (String) Terraform workspace to select
 - **worker_pool_id** (String) ID of the worker pool to use

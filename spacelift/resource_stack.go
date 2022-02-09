@@ -313,6 +313,12 @@ func resourceStack() *schema.Resource {
 					},
 				},
 			},
+			"slug": {
+				Type:        schema.TypeString,
+				Description: "Allows setting the custom ID (slug) for the stack",
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",
@@ -358,7 +364,7 @@ func resourceStack() *schema.Resource {
 
 func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID)"`
+		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID, slug: $slug)"`
 	}
 
 	manageState := d.Get("manage_state").(bool)
@@ -367,6 +373,11 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		"input":         stackInput(d),
 		"manageState":   graphql.Boolean(manageState),
 		"stackObjectID": (*graphql.String)(nil),
+		"slug":          (*graphql.String)(nil),
+	}
+
+	if slug, ok := d.GetOk("slug"); ok {
+		variables["slug"] = toOptionalString(slug)
 	}
 
 	var stateContent string

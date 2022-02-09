@@ -108,7 +108,7 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
-	t.Run("with private worker pool and autoretry", func(t *testing.T) {
+	t.Run("with private worker pool, custom slug and autoretry", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		config := func(description string) string {
@@ -136,6 +136,7 @@ func TestStackResource(t *testing.T) {
 					project_root         = "root"
 					repository           = "demo"
 					runner_image         = "custom_image:runner"
+					slug                 = "custom-slug-%s"
 					worker_pool_id       = spacelift_worker_pool.test.id
 				}
 
@@ -143,7 +144,7 @@ func TestStackResource(t *testing.T) {
 					name        = "Autoretryable worker pool."
 					description = "test worker pool"
 				}
-			`, description, randomID)
+			`, description, randomID, randomID)
 		}
 
 		testSteps(t, []resource.TestStep{
@@ -151,7 +152,7 @@ func TestStackResource(t *testing.T) {
 				Config: config("old description"),
 				Check: Resource(
 					resourceName,
-					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("id", StartsWith("custom-slug-")),
 					Attribute("administrative", Equals("true")),
 					Attribute("after_apply.#", Equals("2")),
 					Attribute("after_apply.0", Equals("ls -la")),
@@ -191,9 +192,10 @@ func TestStackResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"slug"},
 			},
 			{
 				Config: config("new description"),
