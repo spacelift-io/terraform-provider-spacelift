@@ -31,6 +31,7 @@ resource "spacelift_module" "example-module" {
   branch             = "master"
   description        = "Example terraform module"
   repository         = "terraform-aws-example"
+  project_root       = "example"
 }
 ```
   * Note: When module name and provider are not specified, the Git repository name must follow the `terraform-${PROVIDER}-${NAME}` naming scheme.
