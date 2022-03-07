@@ -13,6 +13,9 @@ jobs:
     name: Publish the provider to the registry
     runs-on: ubuntu-latest
     container: golang:1.17
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Check out repository code
