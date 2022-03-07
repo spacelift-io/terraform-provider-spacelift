@@ -1,21 +1,12 @@
-name: Preprod registry
+name: Build package
 
-on:
-  push:
-    branches:
-      - future
-
-concurrency:
-  group: ${{ github.ref }}-registry-preprod
+on: { push: { branches-ignore: [future, master] } }
 
 jobs:
   registry:
-    name: Publish the provider to the registry
+    name: Build package
     runs-on: ubuntu-latest
     container: golang:1.17
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: Check out repository code
@@ -25,13 +16,6 @@ jobs:
         run: |
           apt-get update -y
           apt-get install -y awscli gettext-base zip
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-region: ${{ secrets.PREPROD_AWS_REGION }}
-          role-to-assume: ${{ secrets.PREPROD_AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 900
 
       - name: Import the PGP key
         env:
@@ -53,16 +37,3 @@ jobs:
           DOMAIN: spacelift.dev
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: ./registry/package.sh
-
-      - name: Upload the provider data to S3
-        run: >-
-          aws s3 sync
-          build s3://${{ secrets.PREPROD_AWS_S3_BUCKET }}/v1/providers/spacelift-io/spacelift
-          --no-progress
-          --delete
-
-      - name: Invalidate cache
-        run: >-
-          aws cloudfront create-invalidation
-          --distribution-id ${{ secrets.PREPROD_DISTRIBUTION }}
-          --paths "/v1/providers/spacelift-io/spacelift/*"
