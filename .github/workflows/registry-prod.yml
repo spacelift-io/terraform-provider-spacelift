@@ -1,6 +1,9 @@
 name: Production registry
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 concurrency:
   group: ${{ github.ref }}-registry-prod
@@ -24,8 +27,8 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: ${{ secrets.AWS_REGION }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 900
 
       - name: Import the PGP key
         env:
@@ -48,16 +51,7 @@ jobs:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: ./registry/package.sh
 
-      - name: Test uploading the provider data to S3
-        run: >-
-          aws s3 sync
-          build s3://${{ secrets.AWS_S3_BUCKET }}/v1/providers/spacelift-io/spacelift
-          --no-progress
-          --delete
-          --dryrun
-
       - name: Upload the provider data to S3
-        if: github.ref == 'refs/heads/master'
         run: >-
           aws s3 sync
           build s3://${{ secrets.AWS_S3_BUCKET }}/v1/providers/spacelift-io/spacelift
@@ -65,7 +59,6 @@ jobs:
           --delete
 
       - name: Invalidate cache
-        if: github.ref == 'refs/heads/master'
         run: >-
           aws cloudfront create-invalidation
           --distribution-id ${{ secrets.DISTRIBUTION }}
