@@ -376,7 +376,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	switch stack.VendorConfig.Typename {
 	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
-			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
 			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
 			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
