@@ -171,7 +171,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -264,6 +264,22 @@ func resourceStack() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: ignoreOnceCreated,
 			},
+			"kubernetes": {
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"cloudformation", "pulumi", "terraform_version", "terraform_workspace"},
+				Description:   "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "The Kubernetes namespace to deploy resources to. When not specified, resources with no explicit namespace specified will be deployed to the default namespace.",
+							Optional:    true,
+						},
+					},
+				},
+			},
 			"labels": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -294,7 +310,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"cloudformation", "kubernetes", "terraform_version", "terraform_workspace"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -479,6 +495,12 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		}
 
 		d.Set("cloudformation", []interface{}{m})
+	case structs.StackConfigVendorKubernetes:
+		m := map[string]interface{}{
+			"namespace": stack.VendorConfig.Kubernetes.Namespace,
+		}
+
+		d.Set("kubernetes", []interface{}{m})
 	case structs.StackConfigVendorPulumi:
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
@@ -695,6 +717,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 				StackName:         toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
 				TemplateBucket:    toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
 			},
+		}
+	} else if kubernetes, ok := d.Get("kubernetes").([]interface{}); ok && len(kubernetes) > 0 {
+		ret.VendorConfig = &structs.VendorConfigInput{
+			Kubernetes: &structs.KubernetesInput{},
+		}
+
+		if kubernetesSettings, ok := kubernetes[0].(map[string]interface{}); ok {
+			ret.VendorConfig.Kubernetes.Namespace = toString(kubernetesSettings["namespace"])
 		}
 	} else if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
 		ret.VendorConfig = &structs.VendorConfigInput{

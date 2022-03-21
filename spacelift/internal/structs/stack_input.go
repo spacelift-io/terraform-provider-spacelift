@@ -36,6 +36,7 @@ type StackInput struct {
 // VendorConfigInput represents vendor-specific configuration.
 type VendorConfigInput struct {
 	CloudFormationInput *CloudFormationInput `json:"cloudFormation"`
+	Kubernetes          *KubernetesInput     `json:"kubernetes"`
 	Pulumi              *PulumiInput         `json:"pulumi"`
 	Terraform           *TerraformInput      `json:"terraform"`
 }
@@ -46,6 +47,11 @@ type CloudFormationInput struct {
 	Region            graphql.String `json:"region"`
 	StackName         graphql.String `json:"stackName"`
 	TemplateBucket    graphql.String `json:"templateBucket"`
+}
+
+// KubernetesInput represents Kubernetes-specific configuration.
+type KubernetesInput struct {
+	Namespace graphql.String `json:"namespace"`
 }
 
 // PulumiInput represents Pulumi-specific configuration.

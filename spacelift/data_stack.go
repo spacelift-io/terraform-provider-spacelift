@@ -220,6 +220,20 @@ func dataStack() *schema.Resource {
 				Description: "Indicates whether local preview runs can be triggered on this Stack.",
 				Computed:    true,
 			},
+			"kubernetes": {
+				Type:        schema.TypeList,
+				Description: "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "The Kubernetes namespace to deploy resources to. When not specified, resources with no explicit namespace specified will be deployed to the default namespace.",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -369,6 +383,12 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		}
 
 		d.Set("cloudformation", []interface{}{m})
+	case structs.StackConfigVendorKubernetes:
+		m := map[string]interface{}{
+			"namespace": stack.VendorConfig.Kubernetes.Namespace,
+		}
+
+		d.Set("kubernetes", []interface{}{m})
 	case structs.StackConfigVendorPulumi:
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
