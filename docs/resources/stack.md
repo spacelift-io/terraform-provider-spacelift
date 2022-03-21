@@ -14,19 +14,19 @@ description: |-
 
 ```terraform
 # Terraform stack using github.com as VCS
-resource "spacelift_stack" "k8s-core" {
+resource "spacelift_stack" "k8s-cluster" {
   administrative    = true
   autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
+  description       = "Provisions a Kubernetes cluster"
+  name              = "Kubernetes Cluster"
+  project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
 
 # Terraform stack using Bitbucket Cloud as VCS
-resource "spacelift_stack" "k8s-core-bitbucket-cloud" {
+resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   bitbucket_cloud {
     namespace = "SPACELIFT" # The Bitbucket project containing the repository
   }
@@ -34,15 +34,15 @@ resource "spacelift_stack" "k8s-core-bitbucket-cloud" {
   administrative    = true
   autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
+  description       = "Provisions a Kubernetes cluster"
+  name              = "Kubernetes Cluster"
+  project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
 
 # Terraform stack using Bitbucket Data Center as VCS
-resource "spacelift_stack" "k8s-core-bitbucket-datacenter" {
+resource "spacelift_stack" "k8s-cluster-bitbucket-datacenter" {
   bitbucket_datacenter {
     namespace = "SPACELIFT" # The Bitbucket project containing the repository
   }
@@ -50,15 +50,15 @@ resource "spacelift_stack" "k8s-core-bitbucket-datacenter" {
   administrative    = true
   autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
+  description       = "Provisions a Kubernetes cluster"
+  name              = "Kubernetes Cluster"
+  project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
 
 # Terraform stack using GitHub Enterprise as VCS
-resource "spacelift_stack" "k8s-core-github-enterprise" {
+resource "spacelift_stack" "k8s-cluster-github-enterprise" {
   github_enterprise {
     namespace = "spacelift" # The GitHub organization / user the repository belongs to
   }
@@ -66,15 +66,15 @@ resource "spacelift_stack" "k8s-core-github-enterprise" {
   administrative    = true
   autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
+  description       = "Provisions a Kubernetes cluster"
+  name              = "Kubernetes Cluster"
+  project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
 
 # Terraform stack using GitLab as VCS
-resource "spacelift_stack" "k8s-core-gitlab" {
+resource "spacelift_stack" "k8s-cluster-gitlab" {
   gitlab {
     namespace = "spacelift" # The GitLab namespace containing the repository
   }
@@ -82,15 +82,32 @@ resource "spacelift_stack" "k8s-core-gitlab" {
   administrative    = true
   autodeploy        = true
   branch            = "master"
-  description       = "Shared cluster services (Datadog, Istio etc.)"
-  name              = "Kubernetes core services"
-  project_root      = "/project"
+  description       = "Provisions a Kubernetes cluster"
+  name              = "Kubernetes Cluster"
+  project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
 }
 
+# CloudFormation stack using github.com as VCS
+resource "spacelift_stack" "k8s-cluster-cloudformation" {
+  cloudformation {
+    entry_template_file = "main.yaml"
+    region              = "eu-central-1"
+    template_bucket     = "s3://bucket"
+    stack_name          = "k8s-cluster"
+  }
+
+  autodeploy   = true
+  branch       = "master"
+  description  = "Provisions a Kubernetes cluster"
+  name         = "Kubernetes Cluster"
+  project_root = "cluster"
+  repository   = "core-infra"
+}
+
 # Pulumi stack using github.com as VCS
-resource "spacelift_stack" "k8s-core-pulumi" {
+resource "spacelift_stack" "k8s-cluster-pulumi" {
   pulumi {
     login_url  = "s3://pulumi-state-bucket"
     stack_name = "kubernetes-core-services"
@@ -98,11 +115,28 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 
   autodeploy   = true
   branch       = "master"
-  description  = "Shared cluster services (Datadog, Istio etc.)"
-  name         = "Kubernetes core services"
-  project_root = "/project"
+  description  = "Provisions a Kubernetes cluster"
+  name         = "Kubernetes Cluster"
+  project_root = "cluster"
   repository   = "core-infra"
   runner_image = "public.ecr.aws/t0p9w2l5/runner-pulumi-javascript:latest"
+}
+
+# Kubernetes stack using github.com as VCS
+resource "spacelift_stack" "k8s-core-kubernetes" {
+  kubernetes {
+    namespace = "core"
+  }
+
+  autodeploy   = true
+  branch       = "master"
+  description  = "Shared cluster services (Datadog, Istio etc.)"
+  name         = "Kubernetes core services"
+  project_root = "core-services"
+  repository   = "core-infra"
+
+  # You can use hooks to authenticate with your cluster
+  before_init = ["aws eks update-kubeconfig --region us-east-2 --name k8s-cluster"]
 }
 ```
 
@@ -142,6 +176,7 @@ resource "spacelift_stack" "k8s-core-pulumi" {
 - **id** (String) The ID of this resource.
 - **import_state** (String, Sensitive) State file to upload when creating a new stack
 - **import_state_file** (String) Path to the state file to upload when creating a new stack
+- **kubernetes** (Block List, Max: 1) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedblock--kubernetes))
 - **labels** (Set of String)
 - **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
 - **project_root** (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
@@ -207,6 +242,14 @@ Required:
 Required:
 
 - **namespace** (String) The GitLab namespace containing the repository
+
+
+<a id="nestedblock--kubernetes"></a>
+### Nested Schema for `kubernetes`
+
+Optional:
+
+- **namespace** (String) The Kubernetes namespace to deploy resources to. When not specified, resources with no explicit namespace specified will be deployed to the default namespace.
 
 
 <a id="nestedblock--pulumi"></a>

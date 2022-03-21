@@ -54,6 +54,7 @@ data "spacelift_stack" "k8s-core" {
 - **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack.
 - **github_enterprise** (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
 - **gitlab** (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
+- **kubernetes** (List of Object) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedatt--kubernetes))
 - **labels** (Set of String)
 - **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
 - **name** (String) Name of the stack - should be unique in one account
@@ -112,6 +113,14 @@ Read-Only:
 
 <a id="nestedatt--gitlab"></a>
 ### Nested Schema for `gitlab`
+
+Read-Only:
+
+- **namespace** (String)
+
+
+<a id="nestedatt--kubernetes"></a>
+### Nested Schema for `kubernetes`
 
 Read-Only:
 
