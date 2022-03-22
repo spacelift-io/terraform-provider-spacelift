@@ -274,7 +274,7 @@ func resourceStack() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"namespace": {
 							Type:        schema.TypeString,
-							Description: "The Kubernetes namespace to deploy resources to. When not specified, resources with no explicit namespace specified will be deployed to the default namespace.",
+							Description: "Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.",
 							Optional:    true,
 						},
 					},
