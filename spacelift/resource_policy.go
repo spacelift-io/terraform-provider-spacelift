@@ -68,7 +68,7 @@ func resourcePolicy() *schema.Resource {
 			},
 			"type": {
 				Type:        schema.TypeString,
-				Description: "Body of the policy",
+				Description: "Type of the policy. Possible values are `ACCESS`, `APPROVAL`, `GIT_PUSH`, `INITIALIZATION`, `LOGIN`, `PLAN`, `TASK`, and `TRIGGER`. Deprecated values are `STACK_ACCESS` (use `ACCESS` instead), `TASK_RUN` (use `TASK` instead), and `TERRAFORM_PLAN` (use `PLAN` instead).",
 				Required:    true,
 				ForceNew:    true,
 				DiffSuppressFunc: func(_, old, new string, _ *schema.ResourceData) bool {
