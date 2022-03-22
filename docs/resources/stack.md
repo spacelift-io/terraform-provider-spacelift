@@ -249,7 +249,7 @@ Required:
 
 Optional:
 
-- **namespace** (String) The Kubernetes namespace to deploy resources to. When not specified, resources with no explicit namespace specified will be deployed to the default namespace.
+- **namespace** (String) Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.
 
 
 <a id="nestedblock--pulumi"></a>
