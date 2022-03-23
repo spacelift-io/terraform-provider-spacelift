@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -14,7 +15,10 @@ import (
 // Deprecated! Used for backwards compatibility.
 func resourceStackGCPServiceAccount() *schema.Resource {
 	schema := resourceGCPServiceAccount()
-	schema.DeprecationMessage = "use spacelift_gcp_service_account resource instead"
+	schema.Description = "" +
+		"~> **Note:** `spacelift_stack_gcp_service_account` is deprecated. Please use `spacelift_gcp_service_account` instead. The functionality is identical." +
+		"\n\n" +
+		strings.ReplaceAll(schema.Description, "spacelift_gcp_service_account", "spacelift_stack_gcp_service_account")
 
 	return schema
 }

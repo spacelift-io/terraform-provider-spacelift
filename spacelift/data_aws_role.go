@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -13,7 +14,10 @@ import (
 // Deprecated! Used for backwards compatibility.
 func dataStackAWSRole() *schema.Resource {
 	schema := dataAWSRole()
-	schema.DeprecationMessage = "use spacelift_aws_role data source instead"
+	schema.Description = "" +
+		"~> **Note:** `spacelift_stack_aws_role` is deprecated. Please use `spacelift_aws_role` instead. The functionality is identical." +
+		"\n\n" +
+		strings.ReplaceAll(schema.Description, "spacelift_aws_role", "spacelift_stack_aws_role")
 
 	return schema
 }
