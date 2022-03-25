@@ -1,0 +1,5 @@
+terraform import spacelift_environment_variable.ireland-kubeconfig context/$CONTEXT_ID/$ENVIRONMENT_VARIABLE_NAME
+
+terraform import spacelift_environment_variable.module-kubeconfig module/$MODULE_ID/$ENVIRONMENT_VARIABLE_NAME
+
+terraform import spacelift_environment_variable.core-kubeconfig stack/$STACK_ID/$ENVIRONMENT_VARIABLE_NAME
