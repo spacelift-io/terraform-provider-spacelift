@@ -3,12 +3,15 @@
 page_title: "spacelift_stack_gcp_service_account Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_gcp_service_account represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+  ~> Note: spacelift_stack_gcp_service_account is deprecated. Please use spacelift_gcp_service_account instead. The functionality is identical.
+  spacelift_stack_gcp_service_account represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
 ---
 
 # spacelift_stack_gcp_service_account (Resource)
 
-`spacelift_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
+~> **Note:** `spacelift_stack_gcp_service_account` is deprecated. Please use `spacelift_gcp_service_account` instead. The functionality is identical.
+
+`spacelift_stack_gcp_service_account` represents a Google Cloud Platform service account that's linked to a particular Stack or Module. These accounts are created by Spacelift on per-stack basis, and can be added as members to as many organizations and projects as needed. During a Run or a Task, temporary credentials for those service accounts are injected into the environment, which allows credential-less GCP Terraform provider setup.
 
 ## Example Usage
 

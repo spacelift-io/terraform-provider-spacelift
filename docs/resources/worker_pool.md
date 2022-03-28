@@ -39,4 +39,10 @@ resource "spacelift_worker_pool" "k8s-core" {
 - **config** (String, Sensitive) credentials necessary to connect WorkerPool's workers to the control plane
 - **private_key** (String, Sensitive) private key in base64
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_worker_pool.k8s-core $WORKER_POOL_ID
+```

@@ -76,4 +76,12 @@ resource "spacelift_aws_role" "k8s-core" {
 - **module_id** (String) ID of the module which assumes the AWS IAM role
 - **stack_id** (String) ID of the stack which assumes the AWS IAM role
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_aws_role.k8s-core stack/$STACK_ID
+
+terraform import spacelift_aws_role.k8s-core module/$MODULE_ID
+```

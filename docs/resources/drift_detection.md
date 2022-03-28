@@ -39,4 +39,12 @@ resource "spacelift_drift_detection" "core-infra-production-drift-detection" {
 - **id** (String) The ID of this resource.
 - **reconcile** (Boolean) Whether a tracked run should be triggered when drift is detected.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_drift_detection.core-infra-production-drift-detection stack/$STACK_ID
+
+terraform import spacelift_drift_detection.core-infra-production-drift-detection module/$MODULE_ID
+```

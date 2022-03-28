@@ -15,7 +15,7 @@ description: |-
 ```terraform
 resource "spacelift_policy" "no-weekend-deploys" {
   name = "Let's not deploy any changes over the weekend"
-  body = file("policies/no-weekend-deploys.rego")
+  body = file("${path.module}/policies/no-weekend-deploys.rego")
   type = "PLAN"
 }
 
@@ -38,11 +38,17 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 
 - **body** (String) Body of the policy
 - **name** (String) Name of the policy - should be unique in one account
-- **type** (String) Body of the policy
+- **type** (String) Type of the policy. Possible values are `ACCESS`, `APPROVAL`, `GIT_PUSH`, `INITIALIZATION`, `LOGIN`, `PLAN`, `TASK`, and `TRIGGER`. Deprecated values are `STACK_ACCESS` (use `ACCESS` instead), `TASK_RUN` (use `TASK` instead), and `TERRAFORM_PLAN` (use `PLAN` instead).
 
 ### Optional
 
 - **id** (String) The ID of this resource.
 - **labels** (Set of String)
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_policy.no-weekend-deploys $POLICY_ID
+```

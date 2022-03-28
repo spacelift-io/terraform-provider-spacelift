@@ -35,4 +35,10 @@ resource "spacelift_vcs_agent_pool" "ghe" {
 
 - **config** (String, Sensitive) VCS agent pool configuration, encoded using base64
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_vcs_agent_pool.ghe $VCS_AGENT_POOL_ID
+```
