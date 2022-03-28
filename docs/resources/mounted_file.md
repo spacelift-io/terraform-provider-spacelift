@@ -55,4 +55,14 @@ resource "spacelift_mounted_file" "core-kubeconfig" {
 
 - **checksum** (String) SHA-256 checksum of the value
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_mounted_file.ireland-kubeconfig context/$CONTEXT_ID/$MOUNTED_FILE_ID
+
+terraform import spacelift_mounted_file.module-kubeconfig module/$MODULE_ID/$MOUNTED_FILE_ID
+
+terraform import spacelift_mounted_file.core-kubeconfig stack/$STACK_ID/$MOUNTED_FILE_ID
+```

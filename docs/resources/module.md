@@ -25,11 +25,11 @@ resource "spacelift_module" "k8s-module" {
 
 # Unspecified module name and provider (repository naming scheme terraform-${provider}-${name})
 resource "spacelift_module" "example-module" {
-  administrative     = true
-  branch             = "master"
-  description        = "Example terraform module"
-  repository         = "terraform-aws-example"
-  project_root       = "example"
+  administrative = true
+  branch         = "master"
+  description    = "Example terraform module"
+  repository     = "terraform-aws-example"
+  project_root   = "example"
 }
 ```
 
@@ -102,4 +102,10 @@ Required:
 
 - **namespace** (String) The GitLab namespace containing the repository
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_module.k8s-module $MODULE_ID
+```

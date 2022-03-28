@@ -10,9 +10,9 @@ resource "spacelift_module" "k8s-module" {
 
 # Unspecified module name and provider (repository naming scheme terraform-${provider}-${name})
 resource "spacelift_module" "example-module" {
-  administrative     = true
-  branch             = "master"
-  description        = "Example terraform module"
-  repository         = "terraform-aws-example"
-  project_root       = "example"
+  administrative = true
+  branch         = "master"
+  description    = "Example terraform module"
+  repository     = "terraform-aws-example"
+  project_root   = "example"
 }

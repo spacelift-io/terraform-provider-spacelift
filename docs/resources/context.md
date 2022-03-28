@@ -32,4 +32,10 @@ resource "spacelift_context" "prod-k8s-ie" {
 - **id** (String) The ID of this resource.
 - **labels** (Set of String)
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_context.prod-k8s-ie $CONTEXT_ID
+```

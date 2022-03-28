@@ -42,4 +42,10 @@ resource "spacelift_context_attachment" "attachment" {
 - **priority** (Number) Priority of the context attachment, used in case of conflicts
 - **stack_id** (String) ID of the stack to attach the context to
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_context_attachment.test_stack $CONTEXT_ID/$STACK_ID
+```

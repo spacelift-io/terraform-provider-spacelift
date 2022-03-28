@@ -268,4 +268,10 @@ Required:
 
 - **namespace** (String)
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_stack.k8s_core $STACK_ID
+```
