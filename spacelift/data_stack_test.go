@@ -11,10 +11,11 @@ import (
 )
 
 func TestStackData(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+	t.Run("with Terraform stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-	testSteps(t, []resource.TestStep{{
-		Config: fmt.Sprintf(`
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
 				administrative      = true
 				after_apply         = ["ls -la", "rm -rf /"]
@@ -43,44 +44,151 @@ func TestStackData(t *testing.T) {
 				stack_id = spacelift_stack.test.id
 			}
 		`, randomID),
-		Check: Resource(
-			"data.spacelift_stack.test",
-			Attribute("id", StartsWith("test-stack-")),
-			Attribute("administrative", Equals("true")),
-			Attribute("after_apply.#", Equals("2")),
-			Attribute("after_apply.0", Equals("ls -la")),
-			Attribute("after_apply.1", Equals("rm -rf /")),
-			Attribute("after_destroy.#", Equals("1")),
-			Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
-			Attribute("after_init.#", Equals("2")),
-			Attribute("after_init.0", Equals("terraform fmt -check")),
-			Attribute("after_init.1", Equals("tflint")),
-			Attribute("after_perform.#", Equals("1")),
-			Attribute("after_perform.0", Equals("echo 'after_perform'")),
-			Attribute("after_plan.#", Equals("1")),
-			Attribute("after_plan.0", Equals("echo 'after_plan'")),
-			Attribute("autodeploy", Equals("true")),
-			Attribute("autoretry", Equals("false")),
-			Attribute("before_apply.#", Equals("2")),
-			Attribute("before_apply.0", Equals("ls -la")),
-			Attribute("before_apply.1", Equals("rm -rf /")),
-			Attribute("before_destroy.#", Equals("1")),
-			Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
-			Attribute("before_init.#", Equals("2")),
-			Attribute("before_init.0", Equals("terraform fmt -check")),
-			Attribute("before_init.1", Equals("tflint")),
-			Attribute("before_perform.#", Equals("1")),
-			Attribute("before_perform.0", Equals("echo 'before_perform'")),
-			Attribute("before_plan.#", Equals("1")),
-			Attribute("before_plan.0", Equals("echo 'before_plan'")),
-			Attribute("branch", Equals("master")),
-			Attribute("description", Equals("description")),
-			SetEquals("labels", "one", "two"),
-			Attribute("name", StartsWith("Test stack")),
-			Attribute("project_root", Equals("root")),
-			Attribute("repository", Equals("demo")),
-			Attribute("runner_image", Equals("custom_image:runner")),
-			Attribute("terraform_workspace", Equals("bacon")),
-		),
-	}})
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("id", StartsWith("test-stack-")),
+				Attribute("administrative", Equals("true")),
+				Attribute("after_apply.#", Equals("2")),
+				Attribute("after_apply.0", Equals("ls -la")),
+				Attribute("after_apply.1", Equals("rm -rf /")),
+				Attribute("after_destroy.#", Equals("1")),
+				Attribute("after_destroy.0", Equals("echo 'after_destroy'")),
+				Attribute("after_init.#", Equals("2")),
+				Attribute("after_init.0", Equals("terraform fmt -check")),
+				Attribute("after_init.1", Equals("tflint")),
+				Attribute("after_perform.#", Equals("1")),
+				Attribute("after_perform.0", Equals("echo 'after_perform'")),
+				Attribute("after_plan.#", Equals("1")),
+				Attribute("after_plan.0", Equals("echo 'after_plan'")),
+				Attribute("autodeploy", Equals("true")),
+				Attribute("autoretry", Equals("false")),
+				Attribute("before_apply.#", Equals("2")),
+				Attribute("before_apply.0", Equals("ls -la")),
+				Attribute("before_apply.1", Equals("rm -rf /")),
+				Attribute("before_destroy.#", Equals("1")),
+				Attribute("before_destroy.0", Equals("echo 'before_destroy'")),
+				Attribute("before_init.#", Equals("2")),
+				Attribute("before_init.0", Equals("terraform fmt -check")),
+				Attribute("before_init.1", Equals("tflint")),
+				Attribute("before_perform.#", Equals("1")),
+				Attribute("before_perform.0", Equals("echo 'before_perform'")),
+				Attribute("before_plan.#", Equals("1")),
+				Attribute("before_plan.0", Equals("echo 'before_plan'")),
+				Attribute("branch", Equals("master")),
+				Attribute("description", Equals("description")),
+				SetEquals("labels", "one", "two"),
+				Attribute("name", StartsWith("Test stack")),
+				Attribute("project_root", Equals("root")),
+				Attribute("repository", Equals("demo")),
+				Attribute("runner_image", Equals("custom_image:runner")),
+				Attribute("terraform_workspace", Equals("bacon")),
+			),
+		}})
+	})
+
+	t.Run("with CloudFormation stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				cloudformation {
+					entry_template_file = "main.yaml"
+					region = "eu-central-1"
+					template_bucket = "s3://bucket"
+					stack_name = "maincf"
+				}
+			}
+
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("cloudformation.0.entry_template_file", Equals("main.yaml")),
+				Attribute("cloudformation.0.region", Equals("eu-central-1")),
+				Attribute("cloudformation.0.template_bucket", Equals("s3://bucket")),
+				Attribute("cloudformation.0.stack_name", Equals("maincf")),
+			),
+		}})
+	})
+
+	t.Run("with Kubernetes stack with no namespace", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				kubernetes {}
+			}
+
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("kubernetes.0.namespace", Equals("")),
+			),
+		}})
+	})
+
+	t.Run("with Kubernetes stack with a namespace", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				kubernetes {
+					namespace = "app-prod"
+				}
+			}
+
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("kubernetes.0.namespace", Equals("app-prod")),
+			),
+		}})
+	})
+
+	t.Run("with Pulumi stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				pulumi {
+					login_url = "s3://bucket"
+					stack_name = "mainpl"
+				}
+			}
+
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("pulumi.0.login_url", Equals("s3://bucket")),
+				Attribute("pulumi.0.stack_name", Equals("mainpl")),
+			),
+		}})
+	})
 }

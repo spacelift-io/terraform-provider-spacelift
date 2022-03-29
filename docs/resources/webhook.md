@@ -34,4 +34,10 @@ resource "spacelift_webhook" "webhook" {
 - **secret** (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us
 - **stack_id** (String) ID of the stack which triggers the webhooks
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_webhook.webhook stack/$STACK_ID/$WEBHOOK_ID
+```

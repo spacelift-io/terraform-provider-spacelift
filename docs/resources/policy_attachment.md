@@ -44,4 +44,10 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 - **module_id** (String) ID of the module to attach the policy to
 - **stack_id** (String) ID of the stack to attach the policy to
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_policy_attachment.no-weekend-deploys $POLICY_ID/$STACK_ID
+```

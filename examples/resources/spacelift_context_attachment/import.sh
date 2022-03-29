@@ -1,0 +1,1 @@
+terraform import spacelift_context_attachment.test_stack $CONTEXT_ID/$STACK_ID

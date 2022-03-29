@@ -14,6 +14,9 @@ const StackConfigVendorPulumi = "StackConfigVendorPulumi"
 // StackConfigVendorTerraform is a graphql union typename.
 const StackConfigVendorTerraform = "StackConfigVendorTerraform"
 
+// StackConfigVendorKubernetes is a graphql union typename.
+const StackConfigVendorKubernetes = "StackConfigVendorKubernetes"
+
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
 	ID                  string        `graphql:"id"`
@@ -54,6 +57,9 @@ type Stack struct {
 			StackName         string `graphql:"stackName"`
 			TemplateBucket    string `graphql:"templateBucket"`
 		} `graphql:"... on StackConfigVendorCloudFormation"`
+		Kubernetes struct {
+			Namespace string `graphql:"namespace"`
+		} `graphql:"... on StackConfigVendorKubernetes"`
 		Pulumi struct {
 			LoginURL  string `graphql:"loginURL"`
 			StackName string `graphql:"stackName"`

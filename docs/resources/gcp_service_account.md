@@ -38,7 +38,7 @@ resource "google_project" "k8s-core" {
 resource "google_project_iam_member" "k8s-core" {
   project = google_project.k8s-core.id
   role    = "roles/owner"
-  member  = "serviceAccount:${spacelift_stack_gcp_service_account.k8s-core.service_account_email}"
+  member  = "serviceAccount:${spacelift_gcp_service_account.k8s-core.service_account_email}"
 }
 ```
 
@@ -59,4 +59,12 @@ resource "google_project_iam_member" "k8s-core" {
 
 - **service_account_email** (String) Email address of the GCP service account dedicated for this stack
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+terraform import spacelift_gcp_service_account.k8s-core stack/$STACK_ID
+
+terraform import spacelift_gcp_service_account.k8s-core module/$MODULE_ID
+```

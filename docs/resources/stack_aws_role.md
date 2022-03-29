@@ -3,14 +3,17 @@
 page_title: "spacelift_stack_aws_role Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_aws_role represents cross-account IAM role delegation https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html between the Spacelift worker and an individual stack or module. If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
+  ~> Note: spacelift_stack_aws_role is deprecated. Please use spacelift_aws_role instead. The functionality is identical.
+  spacelift_stack_aws_role represents cross-account IAM role delegation https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html between the Spacelift worker and an individual stack or module. If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
   If you use private workers, you can also assume IAM role on the worker side using your own AWS credentials (e.g. from EC2 instance profile).
   Note: when assuming credentials for shared worker, Spacelift will use $accountName@$stackID or $accountName@$moduleID as external ID https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html and Run ID as session ID https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole.
 ---
 
 # spacelift_stack_aws_role (Resource)
 
-`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual stack or module. If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
+~> **Note:** `spacelift_stack_aws_role` is deprecated. Please use `spacelift_aws_role` instead. The functionality is identical.
+
+`spacelift_stack_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) between the Spacelift worker and an individual stack or module. If this is set, Spacelift will use AWS STS to assume the supplied IAM role and put its temporary credentials in the runtime environment.
 
 If you use private workers, you can also assume IAM role on the worker side using your own AWS credentials (e.g. from EC2 instance profile).
 

@@ -220,6 +220,20 @@ func dataStack() *schema.Resource {
 				Description: "Indicates whether local preview runs can be triggered on this Stack.",
 				Computed:    true,
 			},
+			"kubernetes": {
+				Type:        schema.TypeList,
+				Description: "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -362,13 +376,19 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	switch stack.VendorConfig.Typename {
 	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
-			"entry_template_name": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
 			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
 			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
 		}
 
 		d.Set("cloudformation", []interface{}{m})
+	case structs.StackConfigVendorKubernetes:
+		m := map[string]interface{}{
+			"namespace": stack.VendorConfig.Kubernetes.Namespace,
+		}
+
+		d.Set("kubernetes", []interface{}{m})
 	case structs.StackConfigVendorPulumi:
 		m := map[string]interface{}{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,

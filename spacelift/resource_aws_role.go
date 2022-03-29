@@ -17,7 +17,10 @@ import (
 // Deprecated! Used for backwards compatibility.
 func resourceStackAWSRole() *schema.Resource {
 	schema := resourceAWSRole()
-	schema.DeprecationMessage = "use spacelift_aws_role resource instead"
+	schema.Description = "" +
+		"~> **Note:** `spacelift_stack_aws_role` is deprecated. Please use `spacelift_aws_role` instead. The functionality is identical." +
+		"\n\n" +
+		strings.ReplaceAll(schema.Description, "spacelift_aws_role", "spacelift_stack_aws_role")
 
 	return schema
 }
