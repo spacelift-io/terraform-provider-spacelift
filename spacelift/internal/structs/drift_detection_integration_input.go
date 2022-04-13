@@ -8,4 +8,5 @@ import (
 type DriftDetectionIntegrationInput struct {
 	Reconcile graphql.Boolean  `json:"reconcile"`
 	Schedule  []graphql.String `json:"schedule"`
+	Timezone  *graphql.String  `json:"timezone"`
 }

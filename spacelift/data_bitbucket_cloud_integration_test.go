@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,7 +15,7 @@ func TestBitbucketCloudIntegrationData(t *testing.T) {
 		`,
 		Check: Resource(
 			"data.spacelift_bitbucket_cloud_integration.test",
-			Attribute("username", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_CLOUD_USERNAME"))),
+			Attribute("username", IsNotEmpty()),
 		),
 	}})
 }
