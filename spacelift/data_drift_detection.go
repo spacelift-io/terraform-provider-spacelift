@@ -34,6 +34,11 @@ func dataDriftDetection() *schema.Resource {
 				Description: "List of cron schedule expressions based on which drift detection should be triggered.",
 				Computed:    true,
 			},
+			"timezone": {
+				Type:        schema.TypeString,
+				Description: "Timezone in which the schedule is expressed",
+				Computed:    true,
+			},
 		},
 	}
 }

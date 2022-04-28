@@ -38,6 +38,7 @@ resource "spacelift_drift_detection" "core-infra-production-drift-detection" {
 
 - **id** (String) The ID of this resource.
 - **reconcile** (Boolean) Whether a tracked run should be triggered when drift is detected.
+- **timezone** (String) Timezone in which the schedule is expressed
 
 ## Import
 

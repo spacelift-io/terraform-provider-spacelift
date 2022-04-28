@@ -11,6 +11,7 @@ type Integrations struct {
 	DriftDetection struct {
 		Reconcile bool     `graphql:"reconcile"`
 		Schedule  []string `graphql:"schedule"`
+		Timezone  string   `graphql:"timezone"`
 	} `graphql:"driftDetection"`
 	GCP struct {
 		ServiceAccountEmail *string  `graphql:"serviceAccountEmail"`
