@@ -46,6 +46,7 @@ func TestDriftDetectionResource(t *testing.T) {
 					Attribute("id", IsNotEmpty()),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("reconcile", Equals("true")),
+					Attribute("timezone", Equals("UTC")),
 					Attribute("schedule.#", Equals("2")),
 					Attribute("schedule.0", Equals("*/3 * * * *")),
 					Attribute("schedule.1", Equals("*/4 * * * *")),

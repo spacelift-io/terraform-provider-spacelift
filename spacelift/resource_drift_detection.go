@@ -45,6 +45,12 @@ func resourceDriftDetection() *schema.Resource {
 				Description: "List of cron schedule expressions based on which drift detection should be triggered.",
 				Required:    true,
 			},
+			"timezone": {
+				Type:        schema.TypeString,
+				Description: "Timezone in which the schedule is expressed",
+				Optional:    true,
+				Default:     "UTC",
+			},
 		},
 	}
 }
@@ -54,6 +60,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		CreateDriftDetectionIntegration struct {
 			Reconcile bool     `graphql:"reconcile"`
 			Schedule  []string `graphql:"schedule"`
+			Timezone  string   `graphql:"timezone"`
 		} `graphql:"stackIntegrationDriftDetectionCreate(stack: $stack, input: $input)"`
 	}
 
@@ -69,6 +76,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 		"input": structs.DriftDetectionIntegrationInput{
 			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
 			Schedule:  scheduleExpressions,
+			Timezone:  graphql.NewString(graphql.String(d.Get("timezone").(string))),
 		},
 	}
 
@@ -83,9 +91,10 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateDriftDetectionIntegration struct {
+		UpdateDriftDetectionIntegration struct {
 			Reconcile bool     `graphql:"reconcile"`
 			Schedule  []string `graphql:"schedule"`
+			Timezone  string   `graphql:"timezone"`
 		} `graphql:"stackIntegrationDriftDetectionUpdate(stack: $stack, input: $input)"`
 	}
 
@@ -101,6 +110,7 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 		"input": structs.DriftDetectionIntegrationInput{
 			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
 			Schedule:  scheduleExpressions,
+			Timezone:  graphql.NewString(graphql.String(d.Get("timezone").(string))),
 		},
 	}
 
@@ -154,6 +164,7 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 	integration := query.Stack.Integrations.DriftDetection
 
 	d.Set("reconcile", integration.Reconcile)
+	d.Set("timezone", integration.Timezone)
 
 	schedule := make([]interface{}, len(integration.Schedule))
 	for i, expr := range integration.Schedule {

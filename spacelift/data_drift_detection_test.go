@@ -39,6 +39,7 @@ func TestDriftDetectionData(t *testing.T) {
 				Attribute("schedule.#", Equals("2")),
 				Attribute("schedule.0", Equals("*/3 * * * *")),
 				Attribute("schedule.1", Equals("*/5 * * * *")),
+				Attribute("timezone", Equals("UTC")),
 			),
 		}})
 	})
