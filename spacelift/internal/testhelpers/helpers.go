@@ -207,3 +207,61 @@ func SetEquals(name string, values ...string) AttributeCheck {
 		return nil
 	}
 }
+
+// SetContains checks the set contains all specified values
+func SetContains(name string, values ...string) AttributeCheck {
+	return func(attributes map[string]string) error {
+		countPrefix := fmt.Sprintf("%s.#", name)
+
+		_, ok := attributes[countPrefix]
+		if !ok {
+			return errors.Errorf("%q does not appear to be a set", name)
+		}
+
+		attrValues := make(map[string]struct{})
+		for attrName, attrVal := range attributes {
+			if attrName == countPrefix || !strings.HasPrefix(attrName, fmt.Sprintf("%s.", name)) {
+				continue
+			}
+
+			attrValues[attrVal] = struct{}{}
+		}
+
+		for _, value := range values {
+			if _, ok := attrValues[value]; !ok {
+				return errors.Errorf("value %q not found in set %q", value, name)
+			}
+		}
+
+		return nil
+	}
+}
+
+// SetDoesNotContain checks the set does not contain any of the specified values
+func SetDoesNotContain(name string, values ...string) AttributeCheck {
+	return func(attributes map[string]string) error {
+		countPrefix := fmt.Sprintf("%s.#", name)
+
+		_, ok := attributes[countPrefix]
+		if !ok {
+			return errors.Errorf("%q does not appear to be a set", name)
+		}
+
+		attrValues := make(map[string]struct{})
+		for attrName, attrVal := range attributes {
+			if attrName == countPrefix || !strings.HasPrefix(attrName, fmt.Sprintf("%s.", name)) {
+				continue
+			}
+
+			attrValues[attrVal] = struct{}{}
+		}
+
+		for _, value := range values {
+			if _, ok := attrValues[value]; ok {
+				return errors.Errorf("value %q found in set %q", value, name)
+			}
+		}
+
+		return nil
+	}
+}
