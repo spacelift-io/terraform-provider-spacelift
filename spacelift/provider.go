@@ -55,6 +55,8 @@ func Provider(commit, version string) plugin.ProviderFunc {
 			DataSourcesMap: map[string]*schema.Resource{
 				"spacelift_account":                          dataAccount(),
 				"spacelift_aws_role":                         dataAWSRole(),
+				"spacelift_aws_integration":                  dataAWSIntegration(),
+				"spacelift_aws_integration_attachment":       dataAWSIntegrationAttachment(),
 				"spacelift_azure_devops_integration":         dataAzureDevopsIntegration(),
 				"spacelift_azure_integration":                dataAzureIntegration(),
 				"spacelift_azure_integration_attachment":     dataAzureIntegrationAttachment(),
@@ -84,6 +86,8 @@ func Provider(commit, version string) plugin.ProviderFunc {
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"spacelift_aws_role":                     resourceAWSRole(),
+				"spacelift_aws_integration":              resourceAWSIntegration(),
+				"spacelift_aws_integration_attachment":   resourceAWSIntegrationAttachment(),
 				"spacelift_azure_integration":            resourceAzureIntegration(),
 				"spacelift_azure_integration_attachment": resourceAzureIntegrationAttachment(),
 				"spacelift_context_attachment":           resourceContextAttachment(),
