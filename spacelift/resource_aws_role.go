@@ -102,7 +102,7 @@ func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	for i := 0; i < 5; i++ {
 		err = resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, d)
-		if err == nil || !strings.Contains(err.Error(), "AccessDenied") || i == 4 {
+		if err == nil || !strings.Contains(err.Error(), "could not assume") || i == 4 {
 			break
 		}
 
