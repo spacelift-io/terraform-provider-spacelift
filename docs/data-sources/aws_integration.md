@@ -4,14 +4,14 @@ page_title: "spacelift_aws_integration Data Source - terraform-provider-spacelif
 subcategory: ""
 description: |-
   spacelift_aws_integration represents an integration with an AWS account. This integration is account-level and needs to be explicitly attached to individual stacks in order to take effect.
-  Note: when assuming credentials for shared worker, Spacelift will use $accountName-$integrationID@$stackID-suffix or $accountName-$integrationID@$moduleID-suffix as external ID https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html and $runID@$stackID@$accountName truncated to 64 characters as session ID https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole,Suffix will be read or write.
+  Note: when assuming credentials for shared workers, Spacelift will use $accountName-$integrationID@$stackID-suffix or $accountName-$integrationID@$moduleID-$suffix as external ID https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html and $runID@$stackID@$accountName truncated to 64 characters as session ID https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole,$suffix will be read or write.
 ---
 
 # spacelift_aws_integration (Data Source)
 
 `spacelift_aws_integration` represents an integration with an AWS account. This integration is account-level and needs to be explicitly attached to individual stacks in order to take effect.
 
-Note: when assuming credentials for **shared worker**, Spacelift will use `$accountName-$integrationID@$stackID-suffix` or `$accountName-$integrationID@$moduleID-suffix` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and `$runID@$stackID@$accountName` truncated to 64 characters as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole),Suffix will be read or write.
+Note: when assuming credentials for **shared workers**, Spacelift will use `$accountName-$integrationID@$stackID-suffix` or `$accountName-$integrationID@$moduleID-$suffix` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) and `$runID@$stackID@$accountName` truncated to 64 characters as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole),$suffix will be `read` or `write`.
 
 
 
@@ -32,7 +32,6 @@ Note: when assuming credentials for **shared worker**, Spacelift will use `$acco
 - **external_id** (String) Custom external ID (works only for private workers).
 - **generate_credentials_in_worker** (Boolean) Generate AWS credentials in the private worker
 - **labels** (Set of String)
-- **legacy** (Boolean) Indicates if the integration was created via the legacy AWS stack integration functionality
 - **name** (String) Name of the AWS integration
 - **role_arn** (String) ARN of the AWS IAM role to attach
 

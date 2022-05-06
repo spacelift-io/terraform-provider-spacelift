@@ -25,7 +25,6 @@ description: |-
 - **module_id** (String) ID of the module to attach the integration to
 - **read** (Boolean) Indicates whether this attachment is used for read operations
 - **stack_id** (String) ID of the stack to attach the integration to
-- **subscription_id** (String) Contains the aws subscription ID to use with this Stack.  Overrides the default subscription ID set at the integration level.
 - **write** (Boolean) Indicates whether this attachment is used for write operations
 
 ### Read-Only
