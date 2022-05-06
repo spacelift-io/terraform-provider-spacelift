@@ -29,7 +29,6 @@ func TestAWSIntegrationResource(t *testing.T) {
 				resourceName,
 				Attribute("id", IsNotEmpty()),
 				Attribute("duration_seconds", Equals("900")),
-				Attribute("legacy", Equals("false")),
 				Attribute("generate_credentials_in_worker", Equals("false")),
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),

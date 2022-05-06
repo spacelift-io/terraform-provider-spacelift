@@ -9,7 +9,6 @@ type AWSIntegration struct {
 	GenerateCredentialsInWorker bool     `graphql:"generateCredentialsInWorker"`
 	ExternalID                  string   `graphql:"externalId"`
 	Labels                      []string `graphql:"labels"`
-	Legacy                      bool     `graphql:"legacy"`
 	Name                        string   `graphql:"name"`
 	RoleARN                     string   `graphql:"roleArn"`
 }
@@ -20,7 +19,6 @@ func (i *AWSIntegration) PopulateResourceData(d *schema.ResourceData) {
 	d.Set("duration_seconds", i.DurationSeconds)
 	d.Set("generate_credentials_in_worker", i.GenerateCredentialsInWorker)
 	d.Set("external_id", i.ExternalID)
-	d.Set("legacy", i.Legacy)
 	d.Set("name", i.Name)
 	d.Set("role_arn", i.RoleARN)
 

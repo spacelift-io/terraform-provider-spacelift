@@ -68,11 +68,6 @@ func resourceAWSIntegration() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
-			"legacy": {
-				Type:        schema.TypeBool,
-				Description: "Indicates if the integration was created via the legacy AWS stack integration functionality",
-				Computed:    true,
-			},
 		},
 	}
 }
