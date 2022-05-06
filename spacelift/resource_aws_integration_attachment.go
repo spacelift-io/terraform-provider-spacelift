@@ -55,14 +55,6 @@ func resourceAWSIntegrationAttachment() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
-			"subscription_id": {
-				Type: schema.TypeString,
-				Description: "" +
-					"Contains the aws subscription ID to use with this Stack. " +
-					" Overrides the default subscription ID set at the integration " +
-					"level.",
-				Optional: true,
-			},
 			"write": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether this attachment is used for write operations",
@@ -145,10 +137,6 @@ func resourceAWSIntegrationAttachmentUpdate(ctx context.Context, d *schema.Resou
 		"id":    toID(d.Get("attachment_id")),
 		"read":  graphql.Boolean(d.Get("read").(bool)),
 		"write": graphql.Boolean(d.Get("write").(bool)),
-	}
-
-	if subscriptionID, ok := d.GetOk("subscription_id"); ok {
-		variables["subscriptionId"] = toOptionalString(subscriptionID)
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "awsIntegrationAttachmentUpdate", &mutation, variables); err != nil {
