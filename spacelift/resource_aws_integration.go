@@ -20,8 +20,8 @@ func resourceAWSIntegration() *schema.Resource {
 			"\n\n" +
 			"Note: when assuming credentials for **shared worker**, Spacelift will use `$accountName-$integrationID@$stackID-suffix` " +
 			"or `$accountName-$integrationID@$moduleID-suffix` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) " +
-			"and Run ID as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole)." +
-			"Suffix will be read or write",
+			"and `$runID@$stackID@$accountName` truncated to 64 characters as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole)," +
+			"Suffix will be read or write.",
 
 		CreateContext: resourceAWSIntegrationCreate,
 		ReadContext:   resourceAWSIntegrationRead,
