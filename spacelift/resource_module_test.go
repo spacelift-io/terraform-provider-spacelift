@@ -116,79 +116,29 @@ func TestModuleResource(t *testing.T) {
 		})
 	})
 
-	t.Run("invalid name", func(t *testing.T) {
-		config := func(description string, protectFromDeletion bool) string {
-			return fmt.Sprintf(`
+	for _, name := range []string{
+		"github-Module",
+		"github-module-",
+		"_github-module",
+		"0github-module",
+	} {
+		t.Run("invalid name", func(t *testing.T) {
+			config := func(description string, protectFromDeletion bool) string {
+				return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
-					name                  = "github-Module"
+					name                  = "%s"
 					branch                = "master"
 					repository            = "terraform-bacon-tasty"
 				}
-			`)
-		}
+			`, name)
+			}
 
-		testSteps(t, []resource.TestStep{
-			{
-				Config:      config("old description", true),
-				ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
-			},
+			testSteps(t, []resource.TestStep{
+				{
+					Config:      config("old description", true),
+					ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
+				},
+			})
 		})
-	})
-
-	t.Run("invalid name", func(t *testing.T) {
-		config := func(description string, protectFromDeletion bool) string {
-			return fmt.Sprintf(`
-				resource "spacelift_module" "test" {
-					name                  = "github-module-"
-					branch                = "master"
-					repository            = "terraform-bacon-tasty"
-				}
-			`)
-		}
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config:      config("old description", true),
-				ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
-			},
-		})
-	})
-
-	t.Run("invalid name", func(t *testing.T) {
-		config := func(description string, protectFromDeletion bool) string {
-			return fmt.Sprintf(`
-				resource "spacelift_module" "test" {
-					name                  = "_github-module"
-					branch                = "master"
-					repository            = "terraform-bacon-tasty"
-				}
-			`)
-		}
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config:      config("old description", true),
-				ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
-			},
-		})
-	})
-
-	t.Run("invalid name", func(t *testing.T) {
-		config := func(description string, protectFromDeletion bool) string {
-			return fmt.Sprintf(`
-				resource "spacelift_module" "test" {
-					name                  = "0github-module"
-					branch                = "master"
-					repository            = "terraform-bacon-tasty"
-				}
-			`)
-		}
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config:      config("old description", true),
-				ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
-			},
-		})
-	})
+	}
 }
