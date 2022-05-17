@@ -2,9 +2,11 @@ package spacelift
 
 import (
 	"context"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -139,6 +141,10 @@ func resourceModule() *schema.Resource {
 				Computed:    true,
 				ForceNew:    true,
 				Optional:    true,
+				ValidateFunc: validation.StringMatch(
+					regexp.MustCompile("^[a-z][a-z0-9-_]*[a-z0-9]$"),
+					"invalid name format: must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores",
+				),
 			},
 			"project_root": {
 				Type:        schema.TypeString,
