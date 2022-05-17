@@ -123,19 +123,15 @@ func TestModuleResource(t *testing.T) {
 		"0github-module",
 	} {
 		t.Run("invalid name", func(t *testing.T) {
-			config := func(description string, protectFromDeletion bool) string {
-				return fmt.Sprintf(`
-				resource "spacelift_module" "test" {
-					name                  = "%s"
-					branch                = "master"
-					repository            = "terraform-bacon-tasty"
-				}
-			`, name)
-			}
-
 			testSteps(t, []resource.TestStep{
 				{
-					Config:      config("old description", true),
+					Config: fmt.Sprintf(`
+						resource "spacelift_module" "test" {
+							name                  = "%s"
+							branch                = "master"
+							repository            = "terraform-bacon-tasty"
+						}
+			`, name),
 					ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
 				},
 			})
