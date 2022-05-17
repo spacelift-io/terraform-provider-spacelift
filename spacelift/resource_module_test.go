@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -114,4 +115,26 @@ func TestModuleResource(t *testing.T) {
 			},
 		})
 	})
+
+	for _, name := range []string{
+		"github-Module",
+		"github-module-",
+		"_github-module",
+		"0github-module",
+	} {
+		t.Run("invalid name", func(t *testing.T) {
+			testSteps(t, []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+						resource "spacelift_module" "test" {
+							name                  = "%s"
+							branch                = "master"
+							repository            = "terraform-bacon-tasty"
+						}
+			`, name),
+					ExpectError: regexp.MustCompile("must start and end with lowercase letter and may only contain lowercase letters, digits, dashes and underscores"),
+				},
+			})
+		})
+	}
 }
