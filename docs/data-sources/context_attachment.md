@@ -41,6 +41,6 @@ data "spacelift_context_attachment" "kafka-k8s-ie" {
 
 ### Read-Only
 
-- **priority** (Number) priority of the context attachment, used in case of conflicts
+- **priority** (Number) Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value.
 
 
