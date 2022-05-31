@@ -35,14 +35,14 @@ data "spacelift_aws_role" "k8s-core" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module which assumes the AWS IAM role
-- **stack_id** (String) ID of the stack which assumes the AWS IAM role
+- `module_id` (String) ID of the module which assumes the AWS IAM role
+- `stack_id` (String) ID of the stack which assumes the AWS IAM role
 
 ### Read-Only
 
-- **external_id** (String) Custom external ID (works only for private workers).
-- **generate_credentials_in_worker** (Boolean) Generate AWS credentials in the private worker
-- **role_arn** (String) ARN of the AWS IAM role to attach
+- `external_id` (String) Custom external ID (works only for private workers).
+- `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
+- `id` (String) The ID of this resource.
+- `role_arn` (String) ARN of the AWS IAM role to attach
 
 

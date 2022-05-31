@@ -27,17 +27,14 @@ output "policy_body" {
 
 ### Required
 
-- **policy_id** (String) immutable ID (slug) of the policy
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `policy_id` (String) immutable ID (slug) of the policy
 
 ### Read-Only
 
-- **body** (String) body of the policy
-- **labels** (Set of String)
-- **name** (String) name of the policy
-- **type** (String) type of the policy
+- `body` (String) body of the policy
+- `id` (String) The ID of this resource.
+- `labels` (Set of String)
+- `name` (String) name of the policy
+- `type` (String) type of the policy
 
 

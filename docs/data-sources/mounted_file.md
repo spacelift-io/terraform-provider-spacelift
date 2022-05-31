@@ -37,19 +37,19 @@ data "spacelift_mounted_file" "core-kubeconfig" {
 
 ### Required
 
-- **relative_path** (String) relative path to the mounted file
+- `relative_path` (String) relative path to the mounted file
 
 ### Optional
 
-- **context_id** (String) ID of the context where the mounted file is stored
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module where the mounted file is stored
-- **stack_id** (String) ID of the stack where the mounted file is stored
+- `context_id` (String) ID of the context where the mounted file is stored
+- `module_id` (String) ID of the module where the mounted file is stored
+- `stack_id` (String) ID of the stack where the mounted file is stored
 
 ### Read-Only
 
-- **checksum** (String) SHA-256 checksum of the value
-- **content** (String, Sensitive) content of the mounted file encoded using Base-64
-- **write_only** (Boolean) indicates whether the value can be read back outside a Run
+- `checksum` (String) SHA-256 checksum of the value
+- `content` (String, Sensitive) content of the mounted file encoded using Base-64
+- `id` (String) The ID of this resource.
+- `write_only` (Boolean) indicates whether the value can be read back outside a Run
 
 

@@ -43,20 +43,20 @@ resource "spacelift_environment_variable" "core-kubeconfig" {
 
 ### Required
 
-- **name** (String) Name of the environment variable
-- **value** (String, Sensitive) Value of the environment variable
+- `name` (String) Name of the environment variable
+- `value` (String, Sensitive) Value of the environment variable
 
 ### Optional
 
-- **context_id** (String) ID of the context on which the environment variable is defined
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module on which the environment variable is defined
-- **stack_id** (String) ID of the stack on which the environment variable is defined
-- **write_only** (Boolean) Indicates whether the value can be read back outside a Run
+- `context_id` (String) ID of the context on which the environment variable is defined
+- `module_id` (String) ID of the module on which the environment variable is defined
+- `stack_id` (String) ID of the stack on which the environment variable is defined
+- `write_only` (Boolean) Indicates whether the value can be read back outside a Run
 
 ### Read-Only
 
-- **checksum** (String) SHA-256 checksum of the value
+- `checksum` (String) SHA-256 checksum of the value
+- `id` (String) The ID of this resource.
 
 ## Import
 

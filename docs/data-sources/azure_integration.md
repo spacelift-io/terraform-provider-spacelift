@@ -23,21 +23,18 @@ data "spacelift_azure_integration" "example" {
 
 ### Required
 
-- **integration_id** (String) immutable ID of the integration
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `integration_id` (String) immutable ID of the integration
 
 ### Read-Only
 
-- **admin_consent_provided** (Boolean) Indicates whether admin consent has been performed for the AAD Application.
-- **admin_consent_url** (String) The URL to use to provide admin consent to the application in the customer's tenant
-- **application_id** (String) The applicationId of the Azure AD application used by the integration.
-- **default_subscription_id** (String) The default subscription ID to use, if one isn't specified at the stack/module level
-- **display_name** (String) The display name for the application in Azure. This is automatically generated when the integration is created, and cannot be changed without deleting and recreating the integration.
-- **labels** (Set of String) Labels to set on the integration
-- **name** (String) The friendly name of the integration
-- **tenant_id** (String) The Azure AD tenant ID
+- `admin_consent_provided` (Boolean) Indicates whether admin consent has been performed for the AAD Application.
+- `admin_consent_url` (String) The URL to use to provide admin consent to the application in the customer's tenant
+- `application_id` (String) The applicationId of the Azure AD application used by the integration.
+- `default_subscription_id` (String) The default subscription ID to use, if one isn't specified at the stack/module level
+- `display_name` (String) The display name for the application in Azure. This is automatically generated when the integration is created, and cannot be changed without deleting and recreating the integration.
+- `id` (String) The ID of this resource.
+- `labels` (Set of String) Labels to set on the integration
+- `name` (String) The friendly name of the integration
+- `tenant_id` (String) The Azure AD tenant ID
 
 

@@ -23,15 +23,12 @@ data "spacelift_context" "ghe" {
 
 ### Required
 
-- **vcs_agent_pool_id** (String) ID of the VCS agent pool to retrieve
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `vcs_agent_pool_id` (String) ID of the VCS agent pool to retrieve
 
 ### Read-Only
 
-- **description** (String) Free-form VCS agent pool description for users
-- **name** (String) Name of the VCS agent pool
+- `description` (String) Free-form VCS agent pool description for users
+- `id` (String) The ID of this resource.
+- `name` (String) Name of the VCS agent pool
 
 

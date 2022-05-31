@@ -25,19 +25,19 @@ resource "spacelift_worker_pool" "k8s-core" {
 
 ### Required
 
-- **name** (String) name of the worker pool
+- `name` (String) name of the worker pool
 
 ### Optional
 
-- **csr** (String, Sensitive) certificate signing request in base64
-- **description** (String) description of the worker pool
-- **id** (String) The ID of this resource.
-- **labels** (Set of String)
+- `csr` (String, Sensitive) certificate signing request in base64
+- `description` (String) description of the worker pool
+- `labels` (Set of String)
 
 ### Read-Only
 
-- **config** (String, Sensitive) credentials necessary to connect WorkerPool's workers to the control plane
-- **private_key** (String, Sensitive) private key in base64
+- `config` (String, Sensitive) credentials necessary to connect WorkerPool's workers to the control plane
+- `id` (String) The ID of this resource.
+- `private_key` (String, Sensitive) private key in base64
 
 ## Import
 
