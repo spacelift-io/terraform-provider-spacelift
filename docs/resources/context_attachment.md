@@ -33,14 +33,17 @@ resource "spacelift_context_attachment" "attachment" {
 
 ### Required
 
-- **context_id** (String) ID of the context to attach
+- `context_id` (String) ID of the context to attach
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module to attach the context to
-- **priority** (Number) Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value.
-- **stack_id** (String) ID of the stack to attach the context to
+- `module_id` (String) ID of the module to attach the context to
+- `priority` (Number) Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value.
+- `stack_id` (String) ID of the stack to attach the context to
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

@@ -23,38 +23,35 @@ data "spacelift_module" "k8s-module" {
 
 ### Required
 
-- **module_id** (String) ID (slug) of the module
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `module_id` (String) ID (slug) of the module
 
 ### Read-Only
 
-- **administrative** (Boolean) indicates whether this module can administer others
-- **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
-- **azure_devops** (List of Object) Azure DevOps VCS settings (see [below for nested schema](#nestedatt--azure_devops))
-- **bitbucket_cloud** (List of Object) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedatt--bitbucket_cloud))
-- **bitbucket_datacenter** (List of Object) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedatt--bitbucket_datacenter))
-- **branch** (String) GitHub branch to apply changes to
-- **description** (String) free-form module description for human users (supports Markdown)
-- **github_enterprise** (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
-- **gitlab** (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
-- **labels** (Set of String)
-- **name** (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
-- **project_root** (String) Project root is the optional directory relative to the repository root containing the module source code.
-- **protect_from_deletion** (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail.
-- **repository** (String) Name of the repository, without the owner part
-- **shared_accounts** (Set of String) List of the accounts (subdomains) which should have access to the Module
-- **terraform_provider** (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
-- **worker_pool_id** (String) ID of the worker pool to use
+- `administrative` (Boolean) indicates whether this module can administer others
+- `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
+- `azure_devops` (List of Object) Azure DevOps VCS settings (see [below for nested schema](#nestedatt--azure_devops))
+- `bitbucket_cloud` (List of Object) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedatt--bitbucket_cloud))
+- `bitbucket_datacenter` (List of Object) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedatt--bitbucket_datacenter))
+- `branch` (String) GitHub branch to apply changes to
+- `description` (String) free-form module description for human users (supports Markdown)
+- `github_enterprise` (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
+- `gitlab` (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
+- `id` (String) The ID of this resource.
+- `labels` (Set of String)
+- `name` (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
+- `project_root` (String) Project root is the optional directory relative to the repository root containing the module source code.
+- `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail.
+- `repository` (String) Name of the repository, without the owner part
+- `shared_accounts` (Set of String) List of the accounts (subdomains) which should have access to the Module
+- `terraform_provider` (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
+- `worker_pool_id` (String) ID of the worker pool to use
 
 <a id="nestedatt--azure_devops"></a>
 ### Nested Schema for `azure_devops`
 
 Read-Only:
 
-- **project** (String)
+- `project` (String)
 
 
 <a id="nestedatt--bitbucket_cloud"></a>
@@ -62,7 +59,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--bitbucket_datacenter"></a>
@@ -70,7 +67,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--github_enterprise"></a>
@@ -78,7 +75,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--gitlab"></a>
@@ -86,6 +83,6 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 

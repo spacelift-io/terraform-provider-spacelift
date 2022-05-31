@@ -23,17 +23,14 @@ data "spacelift_worker_pool" "k8s-core" {
 
 ### Required
 
-- **worker_pool_id** (String) ID of the worker pool
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `worker_pool_id` (String) ID of the worker pool
 
 ### Read-Only
 
-- **config** (String, Sensitive) credentials necessary to connect WorkerPool's workers to the control plane
-- **description** (String) description of the worker pool
-- **labels** (Set of String)
-- **name** (String) name of the worker pool
+- `config` (String, Sensitive) credentials necessary to connect WorkerPool's workers to the control plane
+- `description` (String) description of the worker pool
+- `id` (String) The ID of this resource.
+- `labels` (Set of String)
+- `name` (String) name of the worker pool
 
 

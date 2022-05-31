@@ -24,15 +24,18 @@ resource "spacelift_webhook" "webhook" {
 
 ### Required
 
-- **endpoint** (String) endpoint to send the POST request to
+- `endpoint` (String) endpoint to send the POST request to
 
 ### Optional
 
-- **enabled** (Boolean) enables or disables sending webhooks
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module which triggers the webhooks
-- **secret** (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us
-- **stack_id** (String) ID of the stack which triggers the webhooks
+- `enabled` (Boolean) enables or disables sending webhooks
+- `module_id` (String) ID of the module which triggers the webhooks
+- `secret` (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us
+- `stack_id` (String) ID of the stack which triggers the webhooks
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

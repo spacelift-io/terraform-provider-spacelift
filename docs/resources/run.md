@@ -33,16 +33,16 @@ resource "spacelift_run" "this" {
 
 ### Required
 
-- **stack_id** (String) ID of the stack on which the run is to be triggered.
+- `stack_id` (String) ID of the stack on which the run is to be triggered.
 
 ### Optional
 
-- **commit_sha** (String) The commit SHA for which to trigger a run.
-- **keepers** (Map of String) Arbitrary map of values that, when changed, will trigger recreation of the resource.
-- **proposed** (Boolean) Whether the run is a proposed run.
+- `commit_sha` (String) The commit SHA for which to trigger a run.
+- `keepers` (Map of String) Arbitrary map of values that, when changed, will trigger recreation of the resource.
+- `proposed` (Boolean) Whether the run is a proposed run.
 
 ### Read-Only
 
-- **id** (String) The ID of the triggered run.
+- `id` (String) The ID of the triggered run.
 
 

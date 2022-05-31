@@ -29,13 +29,13 @@ data "spacelift_gcp_service_account" "k8s-core" {
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the stack which uses GCP service account credentials
-- **stack_id** (String) ID of the stack which uses GCP service account credentials
+- `module_id` (String) ID of the stack which uses GCP service account credentials
+- `stack_id` (String) ID of the stack which uses GCP service account credentials
 
 ### Read-Only
 
-- **service_account_email** (String) email address of the GCP service account dedicated for this stack
-- **token_scopes** (Set of String) list of Google API scopes
+- `id` (String) The ID of this resource.
+- `service_account_email` (String) email address of the GCP service account dedicated for this stack
+- `token_scopes` (Set of String) list of Google API scopes
 
 

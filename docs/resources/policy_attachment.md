@@ -36,13 +36,16 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 
 ### Required
 
-- **policy_id** (String) ID of the policy to attach
+- `policy_id` (String) ID of the policy to attach
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module to attach the policy to
-- **stack_id** (String) ID of the stack to attach the policy to
+- `module_id` (String) ID of the module to attach the policy to
+- `stack_id` (String) ID of the stack to attach the policy to
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

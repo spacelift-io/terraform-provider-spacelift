@@ -47,17 +47,17 @@ resource "google_project_iam_member" "k8s-core" {
 
 ### Required
 
-- **token_scopes** (Set of String) List of scopes that will be requested when generating temporary GCP service account credentials
+- `token_scopes` (Set of String) List of scopes that will be requested when generating temporary GCP service account credentials
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module which uses GCP service account credentials
-- **stack_id** (String) ID of the stack which uses GCP service account credentials
+- `module_id` (String) ID of the module which uses GCP service account credentials
+- `stack_id` (String) ID of the stack which uses GCP service account credentials
 
 ### Read-Only
 
-- **service_account_email** (String) Email address of the GCP service account dedicated for this stack
+- `id` (String) The ID of this resource.
+- `service_account_email` (String) Email address of the GCP service account dedicated for this stack
 
 ## Import
 

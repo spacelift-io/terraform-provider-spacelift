@@ -24,19 +24,19 @@ data "spacelift_azure_integration_attachment" "example" {
 
 ### Required
 
-- **integration_id** (String) ID of the integration to attach
+- `integration_id` (String) ID of the integration to attach
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module to attach the integration to
-- **stack_id** (String) ID of the stack to attach the integration to
+- `module_id` (String) ID of the module to attach the integration to
+- `stack_id` (String) ID of the stack to attach the integration to
 
 ### Read-Only
 
-- **attachment_id** (String) Internal ID of the attachment entity
-- **read** (Boolean) Indicates whether this attachment is used for read operations
-- **subscription_id** (String) Contains the Azure subscription ID to use with this Stack.  Overrides the default subscription ID set at the integration level.
-- **write** (Boolean) Indicates whether this attachment is used for write operations
+- `attachment_id` (String) Internal ID of the attachment entity
+- `id` (String) The ID of this resource.
+- `read` (Boolean) Indicates whether this attachment is used for read operations
+- `subscription_id` (String) Contains the Azure subscription ID to use with this Stack.  Overrides the default subscription ID set at the integration level.
+- `write` (Boolean) Indicates whether this attachment is used for write operations
 
 
