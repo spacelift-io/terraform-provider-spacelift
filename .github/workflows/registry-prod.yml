@@ -3,7 +3,7 @@ name: Production registry
 on:
   push:
     branches:
-      - master
+      - main
 
 concurrency:
   group: ${{ github.ref }}-registry-prod
