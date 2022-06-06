@@ -77,6 +77,11 @@ func resourceAWSRole() *schema.Resource {
 				Description: "Custom external ID (works only for private workers).",
 				Optional:    true,
 			},
+			"duration_seconds": {
+				Type:        schema.TypeInt,
+				Description: "AWS IAM role session duration in seconds",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -116,7 +121,7 @@ func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.SetId(ID)
 
-	return nil
+	return resourceAWSRoleRead(ctx, d, meta)
 }
 
 func resourceAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -218,7 +223,7 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
-		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID)"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $duration_seconds)"`
 	}
 
 	variables := map[string]interface{}{
@@ -231,6 +236,12 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 		variables["externalID"] = toOptionalString(externalID)
 	} else {
 		variables["externalID"] = (*graphql.String)(nil)
+	}
+
+	if durationSeconds, ok := d.GetOk("duration_seconds"); ok {
+		variables["duration_seconds"] = toOptionalInt(durationSeconds)
+	} else {
+		variables["duration_seconds"] = (*graphql.Int)(nil)
 	}
 
 	if err := client.Mutate(ctx, "AWSRoleSet", &mutation, variables); err != nil {
@@ -253,4 +264,5 @@ func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs
 
 	d.Set("generate_credentials_in_worker", integrations.AWS.GenerateCredentialsInWorker)
 	d.Set("external_id", integrations.AWS.ExternalID)
+	d.Set("duration_seconds", integrations.AWS.DurationSeconds)
 }
