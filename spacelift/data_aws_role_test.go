@@ -24,8 +24,9 @@ func TestAWSRoleData(t *testing.T) {
 					}
 
 					resource "spacelift_aws_role" "test" {
-						stack_id = spacelift_stack.test.id
-						role_arn = "arn:aws:iam::039653571618:role/empty-test-role"
+						stack_id         = spacelift_stack.test.id
+						role_arn         = "arn:aws:iam::039653571618:role/empty-test-role"
+						duration_seconds = 42
 					}
 
 					data "spacelift_aws_role" "test" {
@@ -38,6 +39,7 @@ func TestAWSRoleData(t *testing.T) {
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 					Attribute("generate_credentials_in_worker", Equals("false")),
+					Attribute("duration_seconds", Equals("42")),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -55,8 +57,9 @@ func TestAWSRoleData(t *testing.T) {
 					repository = "terraform-bacon-tasty"
 				}
 				resource "spacelift_aws_role" "test" {
-					module_id = spacelift_module.test.id
-					role_arn  = "arn:aws:iam::039653571618:role/empty-test-role"
+					module_id        = spacelift_module.test.id
+					role_arn         = "arn:aws:iam::039653571618:role/empty-test-role"
+					duration_seconds = 31
 				}
 
 				data "spacelift_aws_role" "test" {
@@ -69,6 +72,7 @@ func TestAWSRoleData(t *testing.T) {
 				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("duration_seconds", Equals("31")),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
@@ -103,6 +107,7 @@ func TestAWSRoleData(t *testing.T) {
 					Attribute("role_arn", Equals("custom_role_arn")),
 					Attribute("generate_credentials_in_worker", Equals("true")),
 					Attribute("external_id", IsEmpty()),
+					Attribute("duration_seconds", IsNotEmpty()),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -137,6 +142,7 @@ func TestAWSRoleData(t *testing.T) {
 				Attribute("role_arn", Equals("custom_role_arn")),
 				Attribute("generate_credentials_in_worker", Equals("true")),
 				Attribute("external_id", Equals("external@id")),
+				Attribute("duration_seconds", IsNotEmpty()),
 				AttributeNotPresent("stack_id"),
 			),
 		}})
