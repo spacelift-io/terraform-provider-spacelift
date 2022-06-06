@@ -10,13 +10,6 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-type Policy struct {
-	Id     string
-	Labels []string
-	Name   string
-	Type   string
-}
-
 func dataPolicies() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
