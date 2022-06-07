@@ -24,13 +24,16 @@ resource "spacelift_context" "prod-k8s-ie" {
 
 ### Required
 
-- **name** (String) Name of the context - should be unique in one account
+- `name` (String) Name of the context - should be unique in one account
 
 ### Optional
 
-- **description** (String) Free-form context description for users
-- **id** (String) The ID of this resource.
-- **labels** (Set of String)
+- `description` (String) Free-form context description for users
+- `labels` (Set of String)
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

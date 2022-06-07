@@ -2,9 +2,9 @@ name: GoSec
 
 on:
   push:
-    branches: [master, future]
+    branches: [main, future]
   pull_request:
-    branches: [master, future]
+    branches: [main, future]
   schedule:
     - cron: "19 7 * * 0"
 

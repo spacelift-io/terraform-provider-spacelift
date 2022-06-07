@@ -36,14 +36,17 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 
 ### Required
 
-- **body** (String) Body of the policy
-- **name** (String) Name of the policy - should be unique in one account
-- **type** (String) Type of the policy. Possible values are `ACCESS`, `APPROVAL`, `GIT_PUSH`, `INITIALIZATION`, `LOGIN`, `PLAN`, `TASK`, and `TRIGGER`. Deprecated values are `STACK_ACCESS` (use `ACCESS` instead), `TASK_RUN` (use `TASK` instead), and `TERRAFORM_PLAN` (use `PLAN` instead).
+- `body` (String) Body of the policy
+- `name` (String) Name of the policy - should be unique in one account
+- `type` (String) Type of the policy. Possible values are `ACCESS`, `APPROVAL`, `GIT_PUSH`, `INITIALIZATION`, `LOGIN`, `PLAN`, `TASK`, and `TRIGGER`. Deprecated values are `STACK_ACCESS` (use `ACCESS` instead), `TASK_RUN` (use `TASK` instead), and `TERRAFORM_PLAN` (use `PLAN` instead).
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **labels** (Set of String)
+- `labels` (Set of String)
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

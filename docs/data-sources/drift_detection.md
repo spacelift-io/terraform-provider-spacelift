@@ -23,16 +23,13 @@ data "spacelift_drift_detection" "core-infra-production-drift-detection" {
 
 ### Required
 
-- **stack_id** (String) ID of the stack for which to set up drift detection
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `stack_id` (String) ID of the stack for which to set up drift detection
 
 ### Read-Only
 
-- **reconcile** (Boolean) Whether a tracked run should be triggered when drift is detected.
-- **schedule** (List of String) List of cron schedule expressions based on which drift detection should be triggered.
-- **timezone** (String) Timezone in which the schedule is expressed
+- `id` (String) The ID of this resource.
+- `reconcile` (Boolean) Whether a tracked run should be triggered when drift is detected.
+- `schedule` (List of String) List of cron schedule expressions based on which drift detection should be triggered.
+- `timezone` (String) Timezone in which the schedule is expressed
 
 

@@ -23,57 +23,57 @@ data "spacelift_stack" "k8s-core" {
 
 ### Required
 
-- **stack_id** (String) ID (slug) of the stack
+- `stack_id` (String) ID (slug) of the stack
 
 ### Optional
 
-- **after_apply** (List of String) List of after-apply scripts
-- **after_destroy** (List of String) List of after-destroy scripts
-- **after_init** (List of String) List of after-init scripts
-- **after_perform** (List of String) List of after-perform scripts
-- **after_plan** (List of String) List of after-plan scripts
-- **before_apply** (List of String) List of before-apply scripts
-- **before_destroy** (List of String) List of before-destroy scripts
-- **before_init** (List of String) List of before-init scripts
-- **before_perform** (List of String) List of before-perform scripts
-- **before_plan** (List of String) List of before-plan scripts
-- **id** (String) The ID of this resource.
+- `after_apply` (List of String) List of after-apply scripts
+- `after_destroy` (List of String) List of after-destroy scripts
+- `after_init` (List of String) List of after-init scripts
+- `after_perform` (List of String) List of after-perform scripts
+- `after_plan` (List of String) List of after-plan scripts
+- `before_apply` (List of String) List of before-apply scripts
+- `before_destroy` (List of String) List of before-destroy scripts
+- `before_init` (List of String) List of before-init scripts
+- `before_perform` (List of String) List of before-perform scripts
+- `before_plan` (List of String) List of before-plan scripts
 
 ### Read-Only
 
-- **administrative** (Boolean) indicates whether this stack can administer others
-- **autodeploy** (Boolean) indicates whether changes to this stack can be automatically deployed
-- **autoretry** (Boolean) indicates whether obsolete proposed changes should automatically be retried
-- **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
-- **azure_devops** (List of Object) Azure DevOps VCS settings (see [below for nested schema](#nestedatt--azure_devops))
-- **bitbucket_cloud** (List of Object) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedatt--bitbucket_cloud))
-- **bitbucket_datacenter** (List of Object) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedatt--bitbucket_datacenter))
-- **branch** (String) Repository branch to treat as the default 'main' branch
-- **cloudformation** (List of Object) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedatt--cloudformation))
-- **description** (String) free-form stack description for users
-- **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack.
-- **github_enterprise** (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
-- **gitlab** (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
-- **kubernetes** (List of Object) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedatt--kubernetes))
-- **labels** (Set of String)
-- **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
-- **name** (String) Name of the stack - should be unique in one account
-- **project_root** (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
-- **protect_from_deletion** (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
-- **pulumi** (List of Object) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedatt--pulumi))
-- **repository** (String) Name of the repository, without the owner part
-- **runner_image** (String) Name of the Docker image used to process Runs
-- **showcase** (List of Object) Showcase-related attributes (see [below for nested schema](#nestedatt--showcase))
-- **terraform_version** (String) Terraform version to use
-- **terraform_workspace** (String) Terraform workspace to select
-- **worker_pool_id** (String) ID of the worker pool to use
+- `administrative` (Boolean) indicates whether this stack can administer others
+- `autodeploy` (Boolean) indicates whether changes to this stack can be automatically deployed
+- `autoretry` (Boolean) indicates whether obsolete proposed changes should automatically be retried
+- `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
+- `azure_devops` (List of Object) Azure DevOps VCS settings (see [below for nested schema](#nestedatt--azure_devops))
+- `bitbucket_cloud` (List of Object) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedatt--bitbucket_cloud))
+- `bitbucket_datacenter` (List of Object) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedatt--bitbucket_datacenter))
+- `branch` (String) Repository branch to treat as the default 'main' branch
+- `cloudformation` (List of Object) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedatt--cloudformation))
+- `description` (String) free-form stack description for users
+- `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack.
+- `github_enterprise` (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
+- `gitlab` (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
+- `id` (String) The ID of this resource.
+- `kubernetes` (List of Object) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedatt--kubernetes))
+- `labels` (Set of String)
+- `manage_state` (Boolean) Determines if Spacelift should manage state for this stack
+- `name` (String) Name of the stack - should be unique in one account
+- `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
+- `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
+- `pulumi` (List of Object) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedatt--pulumi))
+- `repository` (String) Name of the repository, without the owner part
+- `runner_image` (String) Name of the Docker image used to process Runs
+- `showcase` (List of Object) Showcase-related attributes (see [below for nested schema](#nestedatt--showcase))
+- `terraform_version` (String) Terraform version to use
+- `terraform_workspace` (String) Terraform workspace to select
+- `worker_pool_id` (String) ID of the worker pool to use
 
 <a id="nestedatt--azure_devops"></a>
 ### Nested Schema for `azure_devops`
 
 Read-Only:
 
-- **project** (String)
+- `project` (String)
 
 
 <a id="nestedatt--bitbucket_cloud"></a>
@@ -81,7 +81,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--bitbucket_datacenter"></a>
@@ -89,7 +89,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--cloudformation"></a>
@@ -97,10 +97,10 @@ Read-Only:
 
 Read-Only:
 
-- **entry_template_file** (String)
-- **region** (String)
-- **stack_name** (String)
-- **template_bucket** (String)
+- `entry_template_file` (String)
+- `region` (String)
+- `stack_name` (String)
+- `template_bucket` (String)
 
 
 <a id="nestedatt--github_enterprise"></a>
@@ -108,7 +108,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--gitlab"></a>
@@ -116,7 +116,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--kubernetes"></a>
@@ -124,7 +124,7 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 
 <a id="nestedatt--pulumi"></a>
@@ -132,8 +132,8 @@ Read-Only:
 
 Read-Only:
 
-- **login_url** (String)
-- **stack_name** (String)
+- `login_url` (String)
+- `stack_name` (String)
 
 
 <a id="nestedatt--showcase"></a>
@@ -141,6 +141,6 @@ Read-Only:
 
 Read-Only:
 
-- **namespace** (String)
+- `namespace` (String)
 
 

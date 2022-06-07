@@ -23,16 +23,13 @@ data "spacelift_context" "prod-k8s-ie" {
 
 ### Required
 
-- **context_id** (String) immutable ID (slug) of the context
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `context_id` (String) immutable ID (slug) of the context
 
 ### Read-Only
 
-- **description** (String) free-form context description for users
-- **labels** (Set of String)
-- **name** (String) name of the context
+- `description` (String) free-form context description for users
+- `id` (String) The ID of this resource.
+- `labels` (Set of String)
+- `name` (String) name of the context
 
 

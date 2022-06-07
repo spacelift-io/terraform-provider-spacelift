@@ -1,6 +1,6 @@
 name: Build package
 
-on: { push: { branches-ignore: [future, master] } }
+on: { push: { branches-ignore: [future, main] } }
 
 jobs:
   registry:

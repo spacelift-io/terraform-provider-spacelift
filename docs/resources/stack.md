@@ -145,60 +145,60 @@ resource "spacelift_stack" "k8s-core-kubernetes" {
 
 ### Required
 
-- **branch** (String) GitHub branch to apply changes to
-- **name** (String) Name of the stack - should be unique in one account
-- **repository** (String) Name of the repository, without the owner part
+- `branch` (String) GitHub branch to apply changes to
+- `name` (String) Name of the stack - should be unique in one account
+- `repository` (String) Name of the repository, without the owner part
 
 ### Optional
 
-- **administrative** (Boolean) Indicates whether this stack can manage others
-- **after_apply** (List of String) List of after-apply scripts
-- **after_destroy** (List of String) List of after-destroy scripts
-- **after_init** (List of String) List of after-init scripts
-- **after_perform** (List of String) List of after-perform scripts
-- **after_plan** (List of String) List of after-plan scripts
-- **autodeploy** (Boolean) Indicates whether changes to this stack can be automatically deployed
-- **autoretry** (Boolean) Indicates whether obsolete proposed changes should automatically be retried
-- **azure_devops** (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
-- **before_apply** (List of String) List of before-apply scripts
-- **before_destroy** (List of String) List of before-destroy scripts
-- **before_init** (List of String) List of before-init scripts
-- **before_perform** (List of String) List of before-perform scripts
-- **before_plan** (List of String) List of before-plan scripts
-- **bitbucket_cloud** (Block List, Max: 1) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedblock--bitbucket_cloud))
-- **bitbucket_datacenter** (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
-- **cloudformation** (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
-- **description** (String) Free-form stack description for users
-- **enable_local_preview** (Boolean) Indicates whether local preview runs can be triggered on this Stack
-- **github_action_deploy** (Boolean) Indicates whether GitHub users can deploy from the Checks API
-- **github_enterprise** (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
-- **gitlab** (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
-- **id** (String) The ID of this resource.
-- **import_state** (String, Sensitive) State file to upload when creating a new stack
-- **import_state_file** (String) Path to the state file to upload when creating a new stack
-- **kubernetes** (Block List, Max: 1) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedblock--kubernetes))
-- **labels** (Set of String)
-- **manage_state** (Boolean) Determines if Spacelift should manage state for this stack
-- **project_root** (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
-- **protect_from_deletion** (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
-- **pulumi** (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
-- **runner_image** (String) Name of the Docker image used to process Runs
-- **showcase** (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
-- **slug** (String) Allows setting the custom ID (slug) for the stack
-- **terraform_version** (String) Terraform version to use
-- **terraform_workspace** (String) Terraform workspace to select
-- **worker_pool_id** (String) ID of the worker pool to use
+- `administrative` (Boolean) Indicates whether this stack can manage others
+- `after_apply` (List of String) List of after-apply scripts
+- `after_destroy` (List of String) List of after-destroy scripts
+- `after_init` (List of String) List of after-init scripts
+- `after_perform` (List of String) List of after-perform scripts
+- `after_plan` (List of String) List of after-plan scripts
+- `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed
+- `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried
+- `azure_devops` (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
+- `before_apply` (List of String) List of before-apply scripts
+- `before_destroy` (List of String) List of before-destroy scripts
+- `before_init` (List of String) List of before-init scripts
+- `before_perform` (List of String) List of before-perform scripts
+- `before_plan` (List of String) List of before-plan scripts
+- `bitbucket_cloud` (Block List, Max: 1) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedblock--bitbucket_cloud))
+- `bitbucket_datacenter` (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
+- `cloudformation` (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
+- `description` (String) Free-form stack description for users
+- `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack
+- `github_action_deploy` (Boolean) Indicates whether GitHub users can deploy from the Checks API
+- `github_enterprise` (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
+- `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
+- `import_state` (String, Sensitive) State file to upload when creating a new stack
+- `import_state_file` (String) Path to the state file to upload when creating a new stack
+- `kubernetes` (Block List, Max: 1) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedblock--kubernetes))
+- `labels` (Set of String)
+- `manage_state` (Boolean) Determines if Spacelift should manage state for this stack
+- `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
+- `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
+- `pulumi` (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
+- `runner_image` (String) Name of the Docker image used to process Runs
+- `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
+- `slug` (String) Allows setting the custom ID (slug) for the stack
+- `terraform_version` (String) Terraform version to use
+- `terraform_workspace` (String) Terraform workspace to select
+- `worker_pool_id` (String) ID of the worker pool to use
 
 ### Read-Only
 
-- **aws_assume_role_policy_statement** (String) AWS IAM assume role policy statement setting up trust relationship
+- `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
+- `id` (String) The ID of this resource.
 
 <a id="nestedblock--azure_devops"></a>
 ### Nested Schema for `azure_devops`
 
 Required:
 
-- **project** (String) The name of the Azure DevOps project
+- `project` (String) The name of the Azure DevOps project
 
 
 <a id="nestedblock--bitbucket_cloud"></a>
@@ -206,7 +206,7 @@ Required:
 
 Required:
 
-- **namespace** (String) The Bitbucket project containing the repository
+- `namespace` (String) The Bitbucket project containing the repository
 
 
 <a id="nestedblock--bitbucket_datacenter"></a>
@@ -214,7 +214,7 @@ Required:
 
 Required:
 
-- **namespace** (String) The Bitbucket project containing the repository
+- `namespace` (String) The Bitbucket project containing the repository
 
 
 <a id="nestedblock--cloudformation"></a>
@@ -222,10 +222,10 @@ Required:
 
 Required:
 
-- **entry_template_file** (String) Template file `cloudformation package` will be called on
-- **region** (String) AWS region to use
-- **stack_name** (String) CloudFormation stack name
-- **template_bucket** (String) S3 bucket to save CloudFormation templates to
+- `entry_template_file` (String) Template file `cloudformation package` will be called on
+- `region` (String) AWS region to use
+- `stack_name` (String) CloudFormation stack name
+- `template_bucket` (String) S3 bucket to save CloudFormation templates to
 
 
 <a id="nestedblock--github_enterprise"></a>
@@ -233,7 +233,7 @@ Required:
 
 Required:
 
-- **namespace** (String) The GitHub organization / user the repository belongs to
+- `namespace` (String) The GitHub organization / user the repository belongs to
 
 
 <a id="nestedblock--gitlab"></a>
@@ -241,7 +241,7 @@ Required:
 
 Required:
 
-- **namespace** (String) The GitLab namespace containing the repository
+- `namespace` (String) The GitLab namespace containing the repository
 
 
 <a id="nestedblock--kubernetes"></a>
@@ -249,7 +249,7 @@ Required:
 
 Optional:
 
-- **namespace** (String) Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.
+- `namespace` (String) Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.
 
 
 <a id="nestedblock--pulumi"></a>
@@ -257,8 +257,8 @@ Optional:
 
 Required:
 
-- **login_url** (String) State backend to log into on Run initialize.
-- **stack_name** (String) Pulumi stack name to use with the state backend.
+- `login_url` (String) State backend to log into on Run initialize.
+- `stack_name` (String) Pulumi stack name to use with the state backend.
 
 
 <a id="nestedblock--showcase"></a>
@@ -266,7 +266,7 @@ Required:
 
 Required:
 
-- **namespace** (String)
+- `namespace` (String)
 
 ## Import
 
