@@ -8,5 +8,5 @@ data "spacelift_policies" "plan_autoattach" {
 }
 
 output "policy_ids" {
-  value = data.spacelift_policies.this[*].id
+  value = data.spacelift_policies.this.policies[*].id
 }
