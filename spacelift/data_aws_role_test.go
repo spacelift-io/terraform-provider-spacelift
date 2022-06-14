@@ -26,7 +26,7 @@ func TestAWSRoleData(t *testing.T) {
 					resource "spacelift_aws_role" "test" {
 						stack_id         = spacelift_stack.test.id
 						role_arn         = "arn:aws:iam::039653571618:role/empty-test-role"
-						duration_seconds = 42
+						duration_seconds = 942
 					}
 
 					data "spacelift_aws_role" "test" {
@@ -39,7 +39,7 @@ func TestAWSRoleData(t *testing.T) {
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 					Attribute("generate_credentials_in_worker", Equals("false")),
-					Attribute("duration_seconds", Equals("42")),
+					Attribute("duration_seconds", Equals("942")),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -59,7 +59,7 @@ func TestAWSRoleData(t *testing.T) {
 				resource "spacelift_aws_role" "test" {
 					module_id        = spacelift_module.test.id
 					role_arn         = "arn:aws:iam::039653571618:role/empty-test-role"
-					duration_seconds = 31
+					duration_seconds = 931
 				}
 
 				data "spacelift_aws_role" "test" {
@@ -72,7 +72,7 @@ func TestAWSRoleData(t *testing.T) {
 				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				Attribute("generate_credentials_in_worker", Equals("false")),
-				Attribute("duration_seconds", Equals("31")),
+				Attribute("duration_seconds", Equals("931")),
 				AttributeNotPresent("stack_id"),
 			),
 		}})

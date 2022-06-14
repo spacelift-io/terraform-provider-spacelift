@@ -81,6 +81,7 @@ func resourceAWSRole() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "AWS IAM role session duration in seconds",
 				Computed:    true,
+				Optional:    true,
 			},
 		},
 	}
@@ -263,6 +264,8 @@ func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs
 	}
 
 	d.Set("generate_credentials_in_worker", integrations.AWS.GenerateCredentialsInWorker)
+
 	d.Set("external_id", integrations.AWS.ExternalID)
+
 	d.Set("duration_seconds", integrations.AWS.DurationSeconds)
 }
