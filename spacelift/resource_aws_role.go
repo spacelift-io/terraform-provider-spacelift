@@ -80,7 +80,7 @@ func resourceAWSRole() *schema.Resource {
 			"duration_seconds": {
 				Type:        schema.TypeInt,
 				Description: "AWS IAM role session duration in seconds",
-				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}
