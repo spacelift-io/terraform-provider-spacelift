@@ -66,6 +66,11 @@ func dataAWSRole() *schema.Resource {
 				Description: "Custom external ID (works only for private workers).",
 				Computed:    true,
 			},
+			"duration_seconds": {
+				Type:        schema.TypeInt,
+				Description: "AWS IAM role session duration in seconds",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -104,6 +109,7 @@ func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId(moduleID.(string))
 	d.Set("generate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
 	d.Set("external_id", module.Integrations.AWS.ExternalID)
+	d.Set("duration_seconds", module.Integrations.AWS.DurationSeconds)
 
 	return nil
 }
@@ -134,6 +140,6 @@ func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.SetId(stackID.(string))
 	d.Set("generate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
 	d.Set("external_id", stack.Integrations.AWS.ExternalID)
-
+	d.Set("duration_seconds", stack.Integrations.AWS.DurationSeconds)
 	return nil
 }

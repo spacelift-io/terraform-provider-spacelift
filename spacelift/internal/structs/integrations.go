@@ -7,6 +7,7 @@ type Integrations struct {
 		AssumeRolePolicyStatement   string  `graphql:"assumeRolePolicyStatement"`
 		ExternalID                  *string `graphql:"externalID"`
 		GenerateCredentialsInWorker bool    `graphql:"generateCredentialsInWorker"`
+		DurationSeconds             *int    `graphql:"durationSeconds"`
 	} `graphql:"aws"`
 	DriftDetection struct {
 		Reconcile bool     `graphql:"reconcile"`
