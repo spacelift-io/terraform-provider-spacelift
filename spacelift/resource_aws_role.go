@@ -224,7 +224,7 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
-		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $duration_seconds)"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds)"`
 	}
 
 	variables := map[string]interface{}{
@@ -240,9 +240,9 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 	}
 
 	if durationSeconds, ok := d.GetOk("duration_seconds"); ok {
-		variables["duration_seconds"] = toOptionalInt(durationSeconds)
+		variables["durationSeconds"] = toOptionalInt(durationSeconds)
 	} else {
-		variables["duration_seconds"] = (*graphql.Int)(nil)
+		variables["durationSeconds"] = (*graphql.Int)(nil)
 	}
 
 	if err := client.Mutate(ctx, "AWSRoleSet", &mutation, variables); err != nil {
