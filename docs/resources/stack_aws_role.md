@@ -73,6 +73,7 @@ resource "spacelift_stack_aws_role" "k8s-core" {
 
 ### Optional
 
+- `duration_seconds` (Number) AWS IAM role session duration in seconds
 - `external_id` (String) Custom external ID (works only for private workers).
 - `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
 - `module_id` (String) ID of the module which assumes the AWS IAM role
