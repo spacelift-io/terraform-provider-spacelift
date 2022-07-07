@@ -5,6 +5,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// StackConfigVendorAnsible is a graphql union typename.
+const StackConfigVendorAnsible = "StackConfigVendorAnsible"
+
 // StackConfigVendorCloudFormation is a graphql union typename.
 const StackConfigVendorCloudFormation = "StackConfigVendorCloudFormation"
 
@@ -50,7 +53,10 @@ type Stack struct {
 	RunnerImage         *string       `graphql:"runnerImage"`
 	TerraformVersion    *string       `graphql:"terraformVersion"`
 	VendorConfig        struct {
-		Typename       string `graphql:"__typename"`
+		Typename string `graphql:"__typename"`
+		Ansible  struct {
+			Playbook string `graphql:"playbook"`
+		} `graphql:"... on StackConfigVendorAnsible"`
 		CloudFormation struct {
 			EntryTemplateName string `graphql:"entryTemplateFile"`
 			Region            string `graphql:"region"`

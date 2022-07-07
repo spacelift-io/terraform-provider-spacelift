@@ -41,6 +41,7 @@ data "spacelift_stack" "k8s-core" {
 ### Read-Only
 
 - `administrative` (Boolean) indicates whether this stack can administer others
+- `ansible` (List of Object) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedatt--ansible))
 - `autodeploy` (Boolean) indicates whether changes to this stack can be automatically deployed
 - `autoretry` (Boolean) indicates whether obsolete proposed changes should automatically be retried
 - `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
@@ -67,6 +68,14 @@ data "spacelift_stack" "k8s-core" {
 - `terraform_version` (String) Terraform version to use
 - `terraform_workspace` (String) Terraform workspace to select
 - `worker_pool_id` (String) ID of the worker pool to use
+
+<a id="nestedatt--ansible"></a>
+### Nested Schema for `ansible`
+
+Read-Only:
+
+- `playbook` (String)
+
 
 <a id="nestedatt--azure_devops"></a>
 ### Nested Schema for `azure_devops`

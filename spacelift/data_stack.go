@@ -26,6 +26,20 @@ func dataStack() *schema.Resource {
 				Description: "indicates whether this stack can administer others",
 				Computed:    true,
 			},
+			"ansible": {
+				Type:        schema.TypeList,
+				Description: "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"playbook": {
+							Type:        schema.TypeString,
+							Description: "The playbook the Ansible stack should run.",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"after_apply": {
 				Type:        schema.TypeList,
 				Description: "List of after-apply scripts",
@@ -374,6 +388,12 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("labels", labels)
 
 	switch stack.VendorConfig.Typename {
+	case structs.StackConfigVendorAnsible:
+		m := map[string]interface{}{
+			"playbook": stack.VendorConfig.Ansible.Playbook,
+		}
+
+		d.Set("ansible", []interface{}{m})
 	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
 			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,

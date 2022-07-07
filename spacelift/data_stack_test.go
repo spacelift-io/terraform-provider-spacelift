@@ -191,4 +191,29 @@ func TestStackData(t *testing.T) {
 			),
 		}})
 	})
+
+	t.Run("with Ansible stack", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				ansible {
+					playbook = "main.yml"
+				}
+			}
+
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("ansible.0.playbook", Equals("main.yml")),
+			),
+		}})
+	})
 }
