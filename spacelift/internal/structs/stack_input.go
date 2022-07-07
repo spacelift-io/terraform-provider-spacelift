@@ -35,10 +35,16 @@ type StackInput struct {
 
 // VendorConfigInput represents vendor-specific configuration.
 type VendorConfigInput struct {
+	AnsibleInput        *AnsibleInput        `json:"ansible"`
 	CloudFormationInput *CloudFormationInput `json:"cloudFormation"`
 	Kubernetes          *KubernetesInput     `json:"kubernetes"`
 	Pulumi              *PulumiInput         `json:"pulumi"`
 	Terraform           *TerraformInput      `json:"terraform"`
+}
+
+// AnsibleInput represents Ansible-specific configuration.
+type AnsibleInput struct {
+	Playbook graphql.String `json:"playbook"`
 }
 
 // CloudFormationInput represents CloudFormation-specific configuration.
