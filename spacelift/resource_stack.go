@@ -42,7 +42,7 @@ func resourceStack() *schema.Resource {
 			"ansible": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
-				Description:   "Ansible-specific configuration. Presence means this Stack is a Ansible Stack.",
+				Description:   "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{

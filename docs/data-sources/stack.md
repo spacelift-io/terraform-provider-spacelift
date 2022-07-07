@@ -69,7 +69,6 @@ data "spacelift_stack" "k8s-core" {
 - `terraform_workspace` (String) Terraform workspace to select
 - `worker_pool_id` (String) ID of the worker pool to use
 
-
 <a id="nestedatt--ansible"></a>
 ### Nested Schema for `ansible`
 

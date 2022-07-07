@@ -28,7 +28,7 @@ func dataStack() *schema.Resource {
 			},
 			"ansible": {
 				Type:        schema.TypeList,
-				Description: "Ansible-specific configuration. Presence means this Stack is a Ansible Stack.",
+				Description: "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{

@@ -139,7 +139,6 @@ resource "spacelift_stack" "k8s-core-kubernetes" {
   before_init = ["aws eks update-kubeconfig --region us-east-2 --name k8s-cluster"]
 }
 
-
 # Ansible stack using github.com as VCS
 resource "spacelift_stack" "ansible-stack" {
   ansible {
@@ -167,12 +166,12 @@ resource "spacelift_stack" "ansible-stack" {
 ### Optional
 
 - `administrative` (Boolean) Indicates whether this stack can manage others
-- `ansible` (Block List, Max: 1) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedblock--ansible))
 - `after_apply` (List of String) List of after-apply scripts
 - `after_destroy` (List of String) List of after-destroy scripts
 - `after_init` (List of String) List of after-init scripts
 - `after_perform` (List of String) List of after-perform scripts
 - `after_plan` (List of String) List of after-plan scripts
+- `ansible` (Block List, Max: 1) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedblock--ansible))
 - `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed
 - `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried
 - `azure_devops` (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
@@ -214,7 +213,7 @@ resource "spacelift_stack" "ansible-stack" {
 
 Required:
 
-- **playbook** (String) The playbook ansible should run.
+- `playbook` (String) The playbook ansible should run.
 
 
 <a id="nestedblock--azure_devops"></a>
