@@ -49,7 +49,7 @@ func resourceStack() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"playbook": {
 							Type:        schema.TypeString,
-							Description: "The playbook ansible should run.",
+							Description: "The playbook Ansible should run.",
 							Required:    true,
 						},
 					},
