@@ -34,7 +34,7 @@ func dataStack() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"playbook": {
 							Type:        schema.TypeString,
-							Description: "The playbook ansible stack should run.",
+							Description: "The playbook the Ansible stack should run.",
 							Computed:    true,
 						},
 					},
