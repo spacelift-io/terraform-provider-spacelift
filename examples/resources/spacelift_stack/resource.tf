@@ -123,3 +123,17 @@ resource "spacelift_stack" "k8s-core-kubernetes" {
   # You can use hooks to authenticate with your cluster
   before_init = ["aws eks update-kubeconfig --region us-east-2 --name k8s-cluster"]
 }
+
+# Ansible stack using github.com as VCS
+resource "spacelift_stack" "ansible-stack" {
+  ansible {
+    playbook = "main.yml"
+  }
+
+  autodeploy   = true
+  branch       = "master"
+  description  = "Provisioning EC2 machines"
+  name         = "Ansible EC2 playbooks"
+  repository   = "ansible-playbooks"
+  runner_image = "public.ecr.aws/spacelift/runner-ansible:latest"
+}

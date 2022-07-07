@@ -39,6 +39,22 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"ansible": {
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
+				Description:   "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"playbook": {
+							Type:        schema.TypeString,
+							Description: "The playbook Ansible should run.",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"after_apply": {
 				Type:        schema.TypeList,
 				Description: "List of after-apply scripts",
@@ -171,7 +187,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -266,7 +282,7 @@ func resourceStack() *schema.Resource {
 			},
 			"kubernetes": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "pulumi", "terraform_version", "terraform_workspace"},
 				Description:   "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -310,7 +326,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "kubernetes", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "terraform_version", "terraform_workspace"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -486,6 +502,12 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("labels", labels)
 
 	switch stack.VendorConfig.Typename {
+	case structs.StackConfigVendorAnsible:
+		m := map[string]interface{}{
+			"playbook": stack.VendorConfig.Ansible.Playbook,
+		}
+
+		d.Set("ansible", []interface{}{m})
 	case structs.StackConfigVendorCloudFormation:
 		m := map[string]interface{}{
 			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
@@ -731,6 +753,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			Pulumi: &structs.PulumiInput{
 				LoginURL:  toString(pulumi[0].(map[string]interface{})["login_url"]),
 				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
+			},
+		}
+	} else if ansible, ok := d.Get("ansible").([]interface{}); ok && len(ansible) > 0 {
+		ret.VendorConfig = &structs.VendorConfigInput{
+			AnsibleInput: &structs.AnsibleInput{
+				Playbook: toString(ansible[0].(map[string]interface{})["playbook"]),
 			},
 		}
 	} else {
