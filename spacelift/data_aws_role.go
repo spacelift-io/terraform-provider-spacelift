@@ -11,7 +11,7 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-// Deprecated! Used for backwards compatibility.
+// Deprecated: Used for backwards compatibility.
 func dataStackAWSRole() *schema.Resource {
 	schema := dataAWSRole()
 	schema.Description = "" +

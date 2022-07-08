@@ -12,7 +12,7 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-// Deprecated! Used for backwards compatibility.
+// Deprecated: Used for backwards compatibility.
 func resourceStackGCPServiceAccount() *schema.Resource {
 	schema := resourceGCPServiceAccount()
 	schema.Description = "" +

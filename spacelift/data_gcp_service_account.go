@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// Deprecated! Used for backwards compatibility.
+// Deprecated: Used for backwards compatibility.
 func dataStackGCPServiceAccount() *schema.Resource {
 	schema := dataGCPServiceAccount()
 	schema.Description = "" +
