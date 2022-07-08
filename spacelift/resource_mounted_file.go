@@ -295,18 +295,18 @@ func resourceMountedFileDelete(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceMountedFileDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context graphql.ID, ID graphql.ID) error {
+func resourceMountedFileDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context graphql.ID, id graphql.ID) error {
 	var mutation struct {
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
 
-	return client.Mutate(ctx, "MountedFileDeleteContext", &mutation, map[string]interface{}{"context": context, "id": ID})
+	return client.Mutate(ctx, "MountedFileDeleteContext", &mutation, map[string]interface{}{"context": context, "id": id})
 }
 
-func resourceMountedFileDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack graphql.ID, ID graphql.ID) error {
+func resourceMountedFileDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack graphql.ID, id graphql.ID) error {
 	var mutation struct {
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}
 
-	return client.Mutate(ctx, "MountedFileDeleteStack", &mutation, map[string]interface{}{"stack": stack, "id": ID})
+	return client.Mutate(ctx, "MountedFileDeleteStack", &mutation, map[string]interface{}{"stack": stack, "id": id})
 }

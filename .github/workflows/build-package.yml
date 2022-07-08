@@ -6,7 +6,7 @@ jobs:
   registry:
     name: Build package
     runs-on: ubuntu-latest
-    container: golang:1.17
+    container: golang:1.18
 
     steps:
       - name: Check out repository code

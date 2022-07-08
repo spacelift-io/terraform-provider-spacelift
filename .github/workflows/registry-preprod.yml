@@ -12,7 +12,7 @@ jobs:
   registry:
     name: Publish the provider to the registry
     runs-on: ubuntu-latest
-    container: golang:1.17
+    container: golang:1.18
     permissions:
       id-token: write
       contents: read
