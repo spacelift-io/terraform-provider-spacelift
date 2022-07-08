@@ -213,7 +213,7 @@ resource "spacelift_stack" "ansible-stack" {
 
 Required:
 
-- `playbook` (String) The playbook ansible should run.
+- `playbook` (String) The playbook Ansible should run.
 
 
 <a id="nestedblock--azure_devops"></a>

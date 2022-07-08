@@ -290,20 +290,20 @@ func resourceEnvironmentVariableDelete(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceEnvironmentVariableDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context, ID string) error {
+func resourceEnvironmentVariableDeleteContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, context, id string) error {
 	var mutation struct {
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
 
-	return client.Mutate(ctx, "EnvironmentVariableDeleteContext", &mutation, map[string]interface{}{"context": toID(context), "id": toID(ID)})
+	return client.Mutate(ctx, "EnvironmentVariableDeleteContext", &mutation, map[string]interface{}{"context": toID(context), "id": toID(id)})
 }
 
-func resourceEnvironmentVariableDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, ID string) error {
+func resourceEnvironmentVariableDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, id string) error {
 	var mutation struct {
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}
 
-	return client.Mutate(ctx, "EnvironmentVariableDeleteStack", &mutation, map[string]interface{}{"stack": toID(stack), "id": toID(ID)})
+	return client.Mutate(ctx, "EnvironmentVariableDeleteStack", &mutation, map[string]interface{}{"stack": toID(stack), "id": toID(id)})
 }
 
 func suppressValueChange(_, old, new string, d *schema.ResourceData) bool {
