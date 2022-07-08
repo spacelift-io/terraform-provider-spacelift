@@ -73,7 +73,7 @@ linters-settings:
       - sprintfQuotedString
       - preferFprint
   goimports:
-    local-prefixes: github.com/spacelift-io/backend
+    local-prefixes: github.com/spacelift-io/terraform-provider-spacelift
   govet:
     check-shadowing: false
   nolintlint:
