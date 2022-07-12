@@ -11,7 +11,6 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-// TODO(adamc): add examples usages
 func dataAWSIntegrationAttachmentExternalID() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +

@@ -21,6 +21,7 @@ data "spacelift_account" "this" {}
 
 ### Read-Only
 
+- `aws_account_id` (String) the ID of the AWS account used by Spacelift for role assumption
 - `id` (String) The ID of this resource.
 - `name` (String) name of the account
 - `tier` (String) account billing tier

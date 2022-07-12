@@ -1,0 +1,1 @@
+terraform import spacelift_aws_integration.read_write_integration $INTEGRATION_ID

@@ -20,19 +20,16 @@ Note: when assuming credentials for **shared workers**, Spacelift will use `$acc
 
 ### Required
 
-- **integration_id** (String) immutable ID of the integration
-
-### Optional
-
-- **id** (String) The ID of this resource.
+- `integration_id` (String) immutable ID of the integration
 
 ### Read-Only
 
-- **duration_seconds** (Number) Duration in seconds for which the assumed role credentials should be valid
-- **external_id** (String) Custom external ID (works only for private workers).
-- **generate_credentials_in_worker** (Boolean) Generate AWS credentials in the private worker
-- **labels** (Set of String)
-- **name** (String) Name of the AWS integration
-- **role_arn** (String) ARN of the AWS IAM role to attach
+- `duration_seconds` (Number) Duration in seconds for which the assumed role credentials should be valid
+- `external_id` (String) Custom external ID (works only for private workers).
+- `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
+- `id` (String) The ID of this resource.
+- `labels` (Set of String)
+- `name` (String) Name of the AWS integration
+- `role_arn` (String) ARN of the AWS IAM role to attach
 
 
