@@ -19,7 +19,7 @@ func TestAWSIntegrationData(t *testing.T) {
         name                           = "test-aws-integration-%s"
         role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
         labels                         = ["one", "two"]
-        duration_seconds               = 6000
+        duration_seconds               = 3600
         generate_credentials_in_worker = false
       }
 
@@ -31,7 +31,7 @@ func TestAWSIntegrationData(t *testing.T) {
 				"data.spacelift_aws_integration.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
-				Attribute("duration_seconds", Equals("6000")),
+				Attribute("duration_seconds", Equals("3600")),
 				Attribute("generate_credentials_in_worker", Equals("false")),
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
 				SetEquals("labels", "one", "two"),
