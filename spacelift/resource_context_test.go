@@ -51,4 +51,31 @@ func TestContextResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("can remove all labels", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`resource "spacelift_context" "test" {
+					name        = "Provider test context %s"
+					labels = ["one", "two"]
+				}`, randomID),
+				Check: Resource(
+					resourceName,
+					SetEquals("labels", "one", "two"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`resource "spacelift_context" "test" {
+					name        = "Provider test context %s"
+					labels = []
+				}`, randomID),
+				Check: Resource(
+					resourceName,
+					SetEquals("labels"),
+				),
+			},
+		})
+	})
 }
