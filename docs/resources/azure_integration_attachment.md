@@ -40,10 +40,10 @@ resource "spacelift_azure_integration_attachment" "writeonly" {
 ### Optional
 
 - `module_id` (String) ID of the module to attach the integration to
-- `read` (Boolean) Indicates whether this attachment is used for read operations
+- `read` (Boolean) Indicates whether this attachment is used for read operations. Defaults to `true`.
 - `stack_id` (String) ID of the stack to attach the integration to
 - `subscription_id` (String) Contains the Azure subscription ID to use with this Stack.  Overrides the default subscription ID set at the integration level.
-- `write` (Boolean) Indicates whether this attachment is used for write operations
+- `write` (Boolean) Indicates whether this attachment is used for write operations. Defaults to `true`.
 
 ### Read-Only
 

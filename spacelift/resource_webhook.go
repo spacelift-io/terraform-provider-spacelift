@@ -54,7 +54,7 @@ func resourceWebhook() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"enabled": {
 				Type:        schema.TypeBool,
-				Description: "enables or disables sending webhooks",
+				Description: "enables or disables sending webhooks. Defaults to `true`.",
 				Optional:    true,
 				Default:     true,
 			},
@@ -71,7 +71,7 @@ func resourceWebhook() *schema.Resource {
 			},
 			"secret": {
 				Type:        schema.TypeString,
-				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
+				Description: "secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value.",
 				Optional:    true,
 				Sensitive:   true,
 				Default:     "",

@@ -37,7 +37,7 @@ resource "spacelift_drift_detection" "core-infra-production-drift-detection" {
 ### Optional
 
 - `reconcile` (Boolean) Whether a tracked run should be triggered when drift is detected.
-- `timezone` (String) Timezone in which the schedule is expressed
+- `timezone` (String) Timezone in which the schedule is expressed. Defaults to `UTC`.
 
 ### Read-Only
 

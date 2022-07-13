@@ -38,7 +38,7 @@ resource "spacelift_context_attachment" "attachment" {
 ### Optional
 
 - `module_id` (String) ID of the module to attach the context to
-- `priority` (Number) Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value.
+- `priority` (Number) Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value. Defaults to `0`.
 - `stack_id` (String) ID of the stack to attach the context to
 
 ### Read-Only

@@ -43,7 +43,7 @@ resource "spacelift_module" "example-module" {
 
 ### Optional
 
-- `administrative` (Boolean) Indicates whether this module can manage others
+- `administrative` (Boolean) Indicates whether this module can manage others. Defaults to `false`.
 - `azure_devops` (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
 - `bitbucket_cloud` (Block List, Max: 1) Bitbucket Cloud VCS settings (see [below for nested schema](#nestedblock--bitbucket_cloud))
 - `bitbucket_datacenter` (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
@@ -53,7 +53,7 @@ resource "spacelift_module" "example-module" {
 - `labels` (Set of String)
 - `name` (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
 - `project_root` (String) Project root is the optional directory relative to the repository root containing the module source code.
-- `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail.
+- `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail. Defaults to `false`.
 - `shared_accounts` (Set of String) List of the accounts (subdomains) which should have access to the Module
 - `terraform_provider` (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
 - `worker_pool_id` (String) ID of the worker pool to use
