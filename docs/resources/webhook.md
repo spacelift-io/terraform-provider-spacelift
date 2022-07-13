@@ -28,9 +28,9 @@ resource "spacelift_webhook" "webhook" {
 
 ### Optional
 
-- `enabled` (Boolean) enables or disables sending webhooks
+- `enabled` (Boolean) enables or disables sending webhooks. Defaults to `true`.
 - `module_id` (String) ID of the module which triggers the webhooks
-- `secret` (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us
+- `secret` (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value.
 - `stack_id` (String) ID of the stack which triggers the webhooks
 
 ### Read-Only

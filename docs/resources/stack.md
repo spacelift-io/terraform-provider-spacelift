@@ -165,15 +165,15 @@ resource "spacelift_stack" "ansible-stack" {
 
 ### Optional
 
-- `administrative` (Boolean) Indicates whether this stack can manage others
+- `administrative` (Boolean) Indicates whether this stack can manage others. Defaults to `false`.
 - `after_apply` (List of String) List of after-apply scripts
 - `after_destroy` (List of String) List of after-destroy scripts
 - `after_init` (List of String) List of after-init scripts
 - `after_perform` (List of String) List of after-perform scripts
 - `after_plan` (List of String) List of after-plan scripts
 - `ansible` (Block List, Max: 1) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedblock--ansible))
-- `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed
-- `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried
+- `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed. Defaults to `false`.
+- `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried. Defaults to `false`.
 - `azure_devops` (Block List, Max: 1) Azure DevOps VCS settings (see [below for nested schema](#nestedblock--azure_devops))
 - `before_apply` (List of String) List of before-apply scripts
 - `before_destroy` (List of String) List of before-destroy scripts
@@ -184,17 +184,17 @@ resource "spacelift_stack" "ansible-stack" {
 - `bitbucket_datacenter` (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
 - `cloudformation` (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
 - `description` (String) Free-form stack description for users
-- `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack
-- `github_action_deploy` (Boolean) Indicates whether GitHub users can deploy from the Checks API
+- `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack. Defaults to `false`.
+- `github_action_deploy` (Boolean) Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`.
 - `github_enterprise` (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - `import_state` (String, Sensitive) State file to upload when creating a new stack
 - `import_state_file` (String) Path to the state file to upload when creating a new stack
 - `kubernetes` (Block List, Max: 1) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedblock--kubernetes))
 - `labels` (Set of String)
-- `manage_state` (Boolean) Determines if Spacelift should manage state for this stack
+- `manage_state` (Boolean) Determines if Spacelift should manage state for this stack. Defaults to `true`.
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
-- `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
+- `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.
 - `pulumi` (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
