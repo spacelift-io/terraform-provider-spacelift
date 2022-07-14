@@ -85,13 +85,19 @@ func resourceAzureIntegration() *schema.Resource {
 					"integration.",
 				Computed: true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the integration is in",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
 
 func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationCreate(name: $name, tenantID: $tenantID, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId)"`
+		CreateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationCreate(name: $name, tenantID: $tenantID, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space)"`
 	}
 
 	labels := []graphql.String{}
@@ -107,6 +113,11 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 		"tenantID":              toString(d.Get("tenant_id")),
 		"labels":                labels,
 		"defaultSubscriptionId": (*graphql.String)(nil),
+		"space":                 (*graphql.ID)(nil),
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	if defaultSubscriptionID, ok := d.GetOk("default_subscription_id"); ok {
@@ -143,7 +154,7 @@ func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, m
 
 func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationUpdate(id: $id, name: $name, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId)"`
+		UpdateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationUpdate(id: $id, name: $name, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space)"`
 	}
 
 	labels := []graphql.String{}
@@ -159,10 +170,15 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 		"name":                  toString(d.Get("name")),
 		"labels":                labels,
 		"defaultSubscriptionId": (*graphql.String)(nil),
+		"space":                 (*graphql.ID)(nil),
 	}
 
 	if subID, ok := d.GetOk("default_subscription_id"); ok {
 		variables["defaultSubscriptionId"] = toOptionalString(subID)
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	var ret diag.Diagnostics

@@ -23,6 +23,7 @@ func TestModuleData(t *testing.T) {
 				labels          = ["one", "two"]
 				repository      = "terraform-bacon-tasty"
 				shared_accounts = ["foo-subdomain", "bar-subdomain"]
+				space_id		= "root"
 			}
 
 			data "spacelift_module" "test" {
@@ -39,6 +40,7 @@ func TestModuleData(t *testing.T) {
 			Attribute("name", Equals(fmt.Sprintf("test-module-%s", randomID))),
 			Attribute("project_root", Equals("")),
 			Attribute("repository", Equals("terraform-bacon-tasty")),
+			Attribute("space_id", Equals("root")),
 			SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 			Attribute("terraform_provider", Equals("default")),
 		),

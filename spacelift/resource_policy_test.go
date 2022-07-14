@@ -21,6 +21,7 @@ func TestPolicyResource(t *testing.T) {
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
 					labels = ["one", "two"]
+					space_id = "root"
 					body = <<EOF
 					package spacelift
 
@@ -40,6 +41,7 @@ func TestPolicyResource(t *testing.T) {
 					Attribute("body", Contains("boom")),
 					Attribute("type", Equals("PLAN")),
 					SetEquals("labels", "one", "two"),
+					Attribute("space_id", Equals("root")),
 				),
 			},
 			{

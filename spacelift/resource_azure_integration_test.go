@@ -22,6 +22,7 @@ func TestAzureIntegrationResource(t *testing.T) {
 				name      = "test-integration-%s"
 				tenant_id = "tenant-id"
 				labels    = ["one", "two"]
+				space_id  = "root"
 			}
 		`, randomID),
 			Check: Resource(
@@ -34,6 +35,7 @@ func TestAzureIntegrationResource(t *testing.T) {
 				Attribute("admin_consent_provided", Equals("false")),
 				Attribute("admin_consent_url", IsNotEmpty()),
 				Attribute("application_id", IsNotEmpty()),
+				Attribute("space_id", Equals("root")),
 				Attribute("display_name", IsNotEmpty()),
 			),
 		},

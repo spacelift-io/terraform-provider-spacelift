@@ -75,6 +75,11 @@ func dataAzureIntegration() *schema.Resource {
 				Description: "The friendly name of the integration",
 				Computed:    true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the integration is in",
+				Computed:    true,
+			},
 			"tenant_id": {
 				Type:        schema.TypeString,
 				Description: "The Azure AD tenant ID",

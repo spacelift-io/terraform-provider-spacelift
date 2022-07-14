@@ -17,6 +17,7 @@ func TestWorkerPoolData(t *testing.T) {
 		Config: fmt.Sprintf(`
 			resource "spacelift_worker_pool" "test" {
 				name = "My first worker pool %s"
+				space_id = "root"
 				labels = ["label1", "label2"]
 			}
 
@@ -29,6 +30,7 @@ func TestWorkerPoolData(t *testing.T) {
 			Attribute("id", IsNotEmpty()),
 			Attribute("config", IsNotEmpty()),
 			Attribute("name", StartsWith("My first worker pool")),
+			Attribute("space_id", Equals("root")),
 			SetEquals("labels", "label1", "label2"),
 		),
 	}})

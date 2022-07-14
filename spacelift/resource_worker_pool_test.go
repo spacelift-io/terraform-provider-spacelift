@@ -18,6 +18,7 @@ func TestWorkerPoolResource(t *testing.T) {
 				resource "spacelift_worker_pool" "test" {
 					name        = "My first worker pool"
 					description = "%s"
+					space_id    = "root"
 				}
 			`, description)
 		}
@@ -32,6 +33,7 @@ func TestWorkerPoolResource(t *testing.T) {
 					Attribute("description", Equals("old description")),
 					Attribute("name", Equals("My first worker pool")),
 					Attribute("private_key", IsNotEmpty()),
+					Attribute("space_id", Equals("root")),
 				),
 			},
 			{

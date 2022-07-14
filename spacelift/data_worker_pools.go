@@ -45,6 +45,11 @@ func dataWorkerPools() *schema.Resource {
 							Description: "description of the worker pool",
 							Computed:    true,
 						},
+						"space_id": {
+							Type:        schema.TypeString,
+							Description: "ID (slug) of the space the worker pool is in",
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -97,6 +102,7 @@ func flattenDataWorkerPoolsList(workerPools []*structs.WorkerPool) []map[string]
 			"name":           wp.Name,
 			"config":         wp.Config,
 			"description":    description,
+			"space_id":       wp.Space,
 		}
 	}
 

@@ -46,23 +46,34 @@ func resourceContext() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the context is in",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
 
 func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateContext structs.Context `graphql:"contextCreate(name: $name, description: $description, labels: $labels)"`
+		CreateContext structs.Context `graphql:"contextCreate(name: $name, description: $description, labels: $labels, space: $space)"`
 	}
 
 	variables := map[string]interface{}{
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
 		"labels":      (*[]graphql.String)(nil),
+		"space":       (*graphql.ID)(nil),
 	}
 
 	if description, ok := d.GetOk("description"); ok {
 		variables["description"] = toOptionalString(description)
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -111,13 +122,14 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta inter
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+	d.Set("space_id", context.Space)
 
 	return nil
 }
 
 func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateContext structs.Context `graphql:"contextUpdate(id: $id, name: $name, description: $description, labels: $labels)"`
+		UpdateContext structs.Context `graphql:"contextUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space)"`
 	}
 
 	variables := map[string]interface{}{
@@ -125,10 +137,15 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
 		"labels":      (*[]graphql.String)(nil),
+		"space":       (*graphql.String)(nil),
 	}
 
 	if description, ok := d.GetOk("description"); ok {
 		variables["description"] = toOptionalString(description)
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
