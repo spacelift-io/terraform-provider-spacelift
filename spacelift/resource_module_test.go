@@ -137,4 +137,35 @@ func TestModuleResource(t *testing.T) {
 			})
 		})
 	}
+
+	t.Run("can remove all labels", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`resource "spacelift_module" "test" {
+					name                  = "labelled-module-%s"
+					branch                = "master"
+					labels                = ["one", "two"]
+					repository            = "terraform-bacon-tasty"
+				}`, randomID),
+				Check: Resource(
+					"spacelift_module.test",
+					SetEquals("labels", "one", "two"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`resource "spacelift_module" "test" {
+					name                  = "labelled-module-%s"
+					branch                = "master"
+					labels                = []
+					repository            = "terraform-bacon-tasty"
+				}`, randomID),
+				Check: Resource(
+					"spacelift_module.test",
+					SetEquals("labels"),
+				),
+			},
+		})
+	})
 }
