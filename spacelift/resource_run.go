@@ -43,7 +43,7 @@ func resourceRun() *schema.Resource {
 			},
 			"proposed": {
 				Type:        schema.TypeBool,
-				Description: "Whether the run is a proposed run.",
+				Description: "Whether the run is a proposed run. Defaults to `false`.",
 				Optional:    true,
 				ForceNew:    true,
 				Default:     false,

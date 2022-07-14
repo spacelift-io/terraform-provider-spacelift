@@ -47,7 +47,7 @@ func resourceDriftDetection() *schema.Resource {
 			},
 			"timezone": {
 				Type:        schema.TypeString,
-				Description: "Timezone in which the schedule is expressed",
+				Description: "Timezone in which the schedule is expressed. Defaults to `UTC`.",
 				Optional:    true,
 				Default:     "UTC",
 			},
