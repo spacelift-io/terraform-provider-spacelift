@@ -48,6 +48,7 @@ Read-Only:
 - `id` (String)
 - `labels` (Set of String)
 - `name` (String)
+- `space_id` (String)
 - `type` (String)
 
 
