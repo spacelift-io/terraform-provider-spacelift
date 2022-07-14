@@ -51,6 +51,7 @@ type Stack struct {
 	Provider            string        `graphql:"provider"`
 	Repository          string        `graphql:"repository"`
 	RunnerImage         *string       `graphql:"runnerImage"`
+	Space               string        `graphql:"space"`
 	TerraformVersion    *string       `graphql:"terraformVersion"`
 	VendorConfig        struct {
 		Typename string `graphql:"__typename"`

@@ -20,6 +20,7 @@ type Module struct {
 	Provider            string       `graphql:"provider"`
 	Repository          string       `graphql:"repository"`
 	SharedAccounts      []string     `graphql:"sharedAccounts"`
+	Space               string       `graphql:"space"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
 	WorkerPool          *struct {
 		ID string `graphql:"id"`

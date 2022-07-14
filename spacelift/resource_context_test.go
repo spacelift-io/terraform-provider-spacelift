@@ -21,6 +21,7 @@ func TestContextResource(t *testing.T) {
 				resource "spacelift_context" "test" {
 					name        = "Provider test context %s"
 					description = "%s"
+					space_id  = "root"
 					labels = ["one", "two"]
 				}
 			`, randomID, description)
@@ -34,6 +35,7 @@ func TestContextResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-context-")),
 					Attribute("name", StartsWith("Provider test context")),
 					Attribute("description", Equals("old description")),
+					Attribute("space_id", Equals("root")),
 					SetEquals("labels", "one", "two"),
 				),
 			},

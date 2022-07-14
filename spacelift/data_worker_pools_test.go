@@ -20,6 +20,7 @@ func TestWorkerPoolsData(t *testing.T) {
 		Config: fmt.Sprintf(`
 			resource "spacelift_worker_pool" "test" {
 				name = "My first worker pool %s"
+				space_id = "root"
 			}
 
 			data "spacelift_worker_pools" "test" {
@@ -30,6 +31,7 @@ func TestWorkerPoolsData(t *testing.T) {
 			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "worker_pool_id"}, resourceName, "id"),
 			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "name"}, resourceName, "name"),
 			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "config"}, resourceName, "config"),
+			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"worker_pools", "space_id"}, resourceName, "space_id"),
 		),
 	}})
 }
