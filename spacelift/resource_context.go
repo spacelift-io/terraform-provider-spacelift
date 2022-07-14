@@ -137,7 +137,7 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
 		"labels":      (*[]graphql.String)(nil),
-		"space":       (*graphql.String)(nil),
+		"space":       (*graphql.ID)(nil),
 	}
 
 	if description, ok := d.GetOk("description"); ok {

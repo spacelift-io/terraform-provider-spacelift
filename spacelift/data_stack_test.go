@@ -37,7 +37,7 @@ func TestStackData(t *testing.T) {
 				project_root        = "root"
 				repository          = "demo"
 				runner_image        = "custom_image:runner"
-				space_id			= "root"
+				space_id            = "root"
 				terraform_workspace = "bacon"
 			}
 

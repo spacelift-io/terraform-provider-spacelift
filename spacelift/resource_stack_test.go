@@ -41,7 +41,7 @@ func TestStackResource(t *testing.T) {
 					protect_from_deletion = %t
 					repository            = "demo"
 					runner_image          = "custom_image:runner"
-					space_id 			  = "root"
+					space_id              = "root"
 				}
 			`, description, randomID, protectFromDeletion)
 		}

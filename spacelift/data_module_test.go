@@ -23,7 +23,7 @@ func TestModuleData(t *testing.T) {
 				labels          = ["one", "two"]
 				repository      = "terraform-bacon-tasty"
 				shared_accounts = ["foo-subdomain", "bar-subdomain"]
-				space_id		= "root"
+				space_id        = "root"
 			}
 
 			data "spacelift_module" "test" {

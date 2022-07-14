@@ -21,7 +21,7 @@ func TestAzureIntegrationData(t *testing.T) {
 			tenant_id               = "tenant-id"
 			default_subscription_id = "subscription-id"
 			labels                  = ["one", "two"]
-			space_id				= "root"
+			space_id                = "root"
 		}
 
 		data "spacelift_azure_integration" "test" {

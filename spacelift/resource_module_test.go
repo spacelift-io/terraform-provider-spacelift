@@ -25,7 +25,7 @@ func TestModuleResource(t *testing.T) {
 					labels                = ["one", "two"]
 					protect_from_deletion = %t
 					repository            = "terraform-bacon-tasty"
-					space_id 			  = "root"
+					space_id              = "root"
 					shared_accounts       = ["foo-subdomain", "bar-subdomain"]
 				}
 			`, randomID, description, protectFromDeletion)
