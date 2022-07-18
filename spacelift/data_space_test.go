@@ -24,7 +24,7 @@ func TestSpaceData(t *testing.T) {
 				}
 
 				data "spacelift_space" "test" {
-					policy_id = spacelift_policy.test.id
+					space_id = spacelift_space.test.id
 				}
 			`, randomID),
 			Check: Resource(

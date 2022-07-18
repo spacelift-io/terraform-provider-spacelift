@@ -129,7 +129,7 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 
 func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		DeleteSpace *structs.Space `graphql:"spaceDelete(id: $id)"`
+		DeleteSpace *structs.Space `graphql:"spaceDelete(space: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(d.Id())}
