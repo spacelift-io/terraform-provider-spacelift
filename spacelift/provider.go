@@ -73,6 +73,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_mounted_file":                     dataMountedFile(),
 				"spacelift_policies":                         dataPolicies(),
 				"spacelift_policy":                           dataPolicy(),
+				"spacelift_space":                            dataSpace(),
 				"spacelift_stack":                            dataStack(),
 				"spacelift_webhook":                          dataWebhook(),
 				"spacelift_stack_aws_role":                   dataStackAWSRole(),           // deprecated
@@ -96,6 +97,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_policy_attachment":            resourcePolicyAttachment(),
 				"spacelift_policy":                       resourcePolicy(),
 				"spacelift_run":                          resourceRun(),
+				"spacelift_space":                        resourceSpace(),
 				"spacelift_stack":                        resourceStack(),
 				"spacelift_stack_destructor":             resourceStackDestructor(),
 				"spacelift_stack_aws_role":               resourceStackAWSRole(),           // deprecated
