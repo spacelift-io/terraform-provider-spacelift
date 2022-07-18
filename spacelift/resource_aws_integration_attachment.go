@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -71,11 +72,32 @@ func resourceAWSIntegrationAttachment() *schema.Resource {
 }
 
 func resourceAWSIntegrationAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	projectID := projectID(d)
+
+	var err error
+	for i := 0; i < 5; i++ {
+		err = resourceAWSIntegrationAttachmentAttach(ctx, meta.(*internal.Client), projectID, d)
+		if err == nil || !strings.Contains(err.Error(), "could not assume") || i == 4 {
+			break
+		}
+
+		// Yay for eventual consistency.
+		time.Sleep(10 * time.Second)
+	}
+
+	if err != nil {
+		return diag.Errorf("could not attach the aws integration: %v", internal.FromSpaceliftError(err))
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", d.Get("integration_id"), projectID))
+
+	return resourceAWSIntegrationAttachmentRead(ctx, d, meta)
+}
+
+func resourceAWSIntegrationAttachmentAttach(ctx context.Context, client *internal.Client, projectID graphql.ID, d *schema.ResourceData) error {
 	var mutation struct {
 		AWSIntegrationAttach structs.AWSIntegrationAttachment `graphql:"awsIntegrationAttach(id: $id, stack: $projectId, read: $read, write: $write)"`
 	}
-
-	projectID := projectID(d)
 
 	variables := map[string]interface{}{
 		"id":        toID(d.Get("integration_id")),
@@ -84,13 +106,11 @@ func resourceAWSIntegrationAttachmentCreate(ctx context.Context, d *schema.Resou
 		"write":     graphql.Boolean(d.Get("write").(bool)),
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "awsIntegrationAttach", &mutation, variables); err != nil {
-		return diag.Errorf("could not attach the aws integration: %v", internal.FromSpaceliftError(err))
+	if err := client.Mutate(ctx, "awsIntegrationAttach", &mutation, variables); err != nil {
+		return err
 	}
 
-	d.SetId(fmt.Sprintf("%s/%s", d.Get("integration_id"), projectID))
-
-	return resourceAWSIntegrationAttachmentRead(ctx, d, meta)
+	return nil
 }
 
 func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

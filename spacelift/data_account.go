@@ -25,14 +25,20 @@ func dataAccount() *schema.Resource {
 				Description: "account billing tier",
 				Computed:    true,
 			},
+			"aws_account_id": {
+				Type:        schema.TypeString,
+				Description: "the ID of the AWS account used by Spacelift for role assumption",
+				Computed:    true,
+			},
 		},
 	}
 }
 
 func dataAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		Name string `graphql:"name"`
-		Tier string `graphql:"tier"`
+		Name         string `graphql:"name"`
+		Tier         string `graphql:"tier"`
+		AWSAccountID string `graphql:"spaceliftAwsAccountId"`
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "AccountDetails", &query, nil); err != nil {
@@ -42,6 +48,7 @@ func dataAccountRead(ctx context.Context, d *schema.ResourceData, meta interface
 
 	d.Set("name", query.Name)
 	d.Set("tier", query.Tier)
+	d.Set("aws_account_id", query.AWSAccountID)
 	d.SetId("spacelift-account")
 
 	return nil

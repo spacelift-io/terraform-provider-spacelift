@@ -17,18 +17,18 @@ description: |-
 
 ### Required
 
-- **integration_id** (String) ID of the integration to attach
+- `integration_id` (String) ID of the integration to attach
 
 ### Optional
 
-- **id** (String) The ID of this resource.
-- **module_id** (String) ID of the module to attach the integration to
-- **stack_id** (String) ID of the stack to attach the integration to
+- `module_id` (String) ID of the module to attach the integration to
+- `stack_id` (String) ID of the stack to attach the integration to
 
 ### Read-Only
 
-- **attachment_id** (String) Internal ID of the attachment entity
-- **read** (Boolean) Indicates whether this attachment is used for read operations
-- **write** (Boolean) Indicates whether this attachment is used for write operations
+- `attachment_id` (String) Internal ID of the attachment entity
+- `id` (String) The ID of this resource.
+- `read` (Boolean) Indicates whether this attachment is used for read operations
+- `write` (Boolean) Indicates whether this attachment is used for write operations
 
 

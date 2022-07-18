@@ -16,9 +16,10 @@ func TestAccountData(t *testing.T) {
 			Attribute("id", Equals("spacelift-account")),
 			// We don't know in advance which account the test is going to run
 			// against so the only thing we can reliably assume about it is that
-			// the name and tier fields are not empty.
+			// the fields are not empty.
 			Attribute("name", IsNotEmpty()),
 			Attribute("tier", IsNotEmpty()),
+			Attribute("aws_account_id", IsNotEmpty()),
 		),
 	}})
 }
