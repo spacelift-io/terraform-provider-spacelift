@@ -12,7 +12,9 @@ import (
 
 func resourceSpace() *schema.Resource {
 	return &schema.Resource{
-		Description: "`spacelift_space` represents a Spacelift **space** -",
+		Description: "`spacelift_space` represents a Spacelift **space** - " +
+			"an inheritable entity holding a collection of customer-defined resources such as " +
+			"stacks, modules, policies, etc. Allows for more granular access control.",
 
 		CreateContext: resourceSpaceCreate,
 		ReadContext:   resourceSpaceRead,
