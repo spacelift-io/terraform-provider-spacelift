@@ -39,7 +39,7 @@ resource "spacelift_run" "this" {
 
 - `commit_sha` (String) The commit SHA for which to trigger a run.
 - `keepers` (Map of String) Arbitrary map of values that, when changed, will trigger recreation of the resource.
-- `proposed` (Boolean) Whether the run is a proposed run.
+- `proposed` (Boolean) Whether the run is a proposed run. Defaults to `false`.
 
 ### Read-Only
 
