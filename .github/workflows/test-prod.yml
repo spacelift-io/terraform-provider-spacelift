@@ -8,11 +8,20 @@ jobs:
   deployment:
     name: Test the code
     runs-on: ubuntu-latest
-    container: golang:1.18
 
     steps:
       - name: Check out repository code
         uses: actions/checkout@master
+      
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: "1.18"
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
 
       - name: Test with coverage
         run: go test -parallel 20 -coverprofile=coverage.txt -coverpkg=./... ./...
