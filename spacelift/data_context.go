@@ -42,6 +42,11 @@ func dataContext() *schema.Resource {
 				Description: "name of the context",
 				Computed:    true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the context is in",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -63,6 +68,7 @@ func dataContextRead(ctx context.Context, d *schema.ResourceData, meta interface
 
 	d.SetId(context.ID)
 	d.Set("name", context.Name)
+	d.Set("space_id", context.Space)
 
 	if context.Description != nil {
 		d.Set("description", *context.Description)

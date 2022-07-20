@@ -145,6 +145,11 @@ func dataModule() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the module is in",
+				Computed:    true,
+			},
 			"terraform_provider": {
 				Type:        schema.TypeString,
 				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",
@@ -182,6 +187,7 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("name", module.Name)
 	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("terraform_provider", module.TerraformProvider)
+	d.Set("space_id", module.Space)
 
 	if err := module.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)

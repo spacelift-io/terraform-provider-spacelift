@@ -45,6 +45,11 @@ func dataWorkerPool() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the worker pool is in",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -69,6 +74,7 @@ func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.SetId(workerPoolID)
 	d.Set("name", workerPool.Name)
 	d.Set("config", workerPool.Config)
+	d.Set("space_id", workerPool.Space)
 
 	if workerPool.Description != nil {
 		d.Set("description", *workerPool.Description)

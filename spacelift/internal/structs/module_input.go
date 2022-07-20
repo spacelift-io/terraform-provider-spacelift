@@ -10,6 +10,7 @@ type ModuleCreateInput struct {
 	Provider          *graphql.String   `json:"provider"`
 	Repository        graphql.String    `json:"repository"`
 	TerraformProvider *graphql.String   `json:"terraformProvider"`
+	Space             *graphql.String   `json:"space"`
 }
 
 // ModuleUpdateInput represents the input required to update a Module.
@@ -22,4 +23,5 @@ type ModuleUpdateInput struct {
 	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`
 	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
 	WorkerPool          *graphql.ID       `json:"workerPool"`
+	Space               *graphql.String   `json:"space"`
 }

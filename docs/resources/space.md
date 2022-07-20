@@ -3,12 +3,12 @@
 page_title: "spacelift_space Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_space represents a Spacelift space - an inheritable entity holding a collection of customer-defined resources such as stacks, modules, policies, etc. Allows for more granular access control.
+  spacelift_space represents a Spacelift space - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space.
 ---
 
 # spacelift_space (Resource)
 
-`spacelift_space` represents a Spacelift **space** - an inheritable entity holding a collection of customer-defined resources such as stacks, modules, policies, etc. Allows for more granular access control.
+`spacelift_space` represents a Spacelift **space** - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space.
 
 
 
@@ -17,13 +17,13 @@ description: |-
 
 ### Required
 
-- `inherit_entities` (Boolean) indication whether this space inherits entities from the parent space
 - `name` (String) name of the space
-- `parent_space_id` (String) immutable ID (slug) of parent space
 
 ### Optional
 
 - `description` (String) free-form space description for users
+- `inherit_entities` (Boolean) indication whether access to this space inherits read access to entities from the parent space
+- `parent_space_id` (String) immutable ID (slug) of parent space
 
 ### Read-Only
 

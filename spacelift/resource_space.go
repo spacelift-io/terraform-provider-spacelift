@@ -112,7 +112,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateSpace structs.Space `graphql:"spaceUpdate(space: $id, input: $input)"`
+		UpdateSpace structs.Space `graphql:"spaceUpdate(space: $space, input: $input)"`
 	}
 
 	variables := map[string]interface{}{

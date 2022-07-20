@@ -31,5 +31,6 @@ data "spacelift_context" "prod-k8s-ie" {
 - `id` (String) The ID of this resource.
 - `labels` (Set of String)
 - `name` (String) name of the context
+- `space_id` (String) ID (slug) of the space the context is in
 
 

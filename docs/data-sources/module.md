@@ -43,6 +43,7 @@ data "spacelift_module" "k8s-module" {
 - `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail.
 - `repository` (String) Name of the repository, without the owner part
 - `shared_accounts` (Set of String) List of the accounts (subdomains) which should have access to the Module
+- `space_id` (String) ID (slug) of the space the module is in
 - `terraform_provider` (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
 - `worker_pool_id` (String) ID of the worker pool to use
 

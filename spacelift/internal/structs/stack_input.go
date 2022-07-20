@@ -29,6 +29,7 @@ type StackInput struct {
 	Provider            *graphql.String    `json:"provider"`
 	Repository          graphql.String     `json:"repository"`
 	RunnerImage         *graphql.String    `json:"runnerImage"`
+	Space               *graphql.String    `json:"space"`
 	VendorConfig        *VendorConfigInput `json:"vendorConfig"`
 	WorkerPool          *graphql.ID        `json:"workerPool"`
 }
