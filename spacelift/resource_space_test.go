@@ -73,7 +73,6 @@ func TestSpaceResource(t *testing.T) {
 				Check: Resource(
 					"spacelift_space.test-child",
 					Attribute("id", StartsWith("my-second-space")),
-					Attribute("description", Contains("boom")),
 					Attribute("parent_space_id", StartsWith("my-first-space")),
 				),
 			},
