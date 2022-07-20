@@ -30,6 +30,7 @@ resource "spacelift_context" "prod-k8s-ie" {
 
 - `description` (String) Free-form context description for users
 - `labels` (Set of String)
+- `space_id` (String) ID (slug) of the space the context is in
 
 ### Read-Only
 

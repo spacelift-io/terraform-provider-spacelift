@@ -66,6 +66,12 @@ func resourcePolicy() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the policy is in",
+				Optional:    true,
+				Computed:    true,
+			},
 			"type": {
 				Type:        schema.TypeString,
 				Description: "Type of the policy. Possible values are `ACCESS`, `APPROVAL`, `GIT_PUSH`, `INITIALIZATION`, `LOGIN`, `PLAN`, `TASK`, and `TRIGGER`. Deprecated values are `STACK_ACCESS` (use `ACCESS` instead), `TASK_RUN` (use `TASK` instead), and `TERRAFORM_PLAN` (use `PLAN` instead).",
@@ -91,7 +97,7 @@ func resourcePolicy() *schema.Resource {
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type, labels: $labels)"`
+		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type, labels: $labels, space: $space)"`
 	}
 
 	variables := map[string]interface{}{
@@ -99,6 +105,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		"body":   toString(d.Get("body")),
 		"type":   structs.PolicyType(d.Get("type").(string)),
 		"labels": (*[]graphql.String)(nil),
+		"space":  (*graphql.ID)(nil),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -109,6 +116,10 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 
 		variables["labels"] = &labels
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyCreate", &mutation, variables); err != nil {
@@ -139,6 +150,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("name", policy.Name)
 	d.Set("body", policy.Body)
 	d.Set("type", policy.Type)
+	d.Set("space_id", policy.Space)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range policy.Labels {
@@ -151,7 +163,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body, labels: $labels)"`
+		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body, labels: $labels, space: $space)"`
 	}
 
 	variables := map[string]interface{}{
@@ -159,6 +171,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		"name":   toString(d.Get("name")),
 		"body":   toString(d.Get("body")),
 		"labels": (*[]graphql.String)(nil),
+		"space":  (*graphql.ID)(nil),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -169,6 +182,10 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 
 		variables["labels"] = &labels
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	var ret diag.Diagnostics

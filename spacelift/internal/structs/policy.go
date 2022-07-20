@@ -10,4 +10,5 @@ type Policy struct {
 	Name   string   `graphql:"name"`
 	Body   string   `graphql:"body"`
 	Type   string   `graphql:"type"`
+	Space  string   `graphql:"space"`
 }

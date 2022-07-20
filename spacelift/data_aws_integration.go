@@ -56,6 +56,11 @@ func dataAWSIntegration() *schema.Resource {
 				Description: "Custom external ID (works only for private workers).",
 				Computed:    true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the integration is in",
+				Computed:    true,
+			},
 			"labels": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},

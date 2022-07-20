@@ -11,6 +11,7 @@ type AWSIntegration struct {
 	Labels                      []string `graphql:"labels"`
 	Name                        string   `graphql:"name"`
 	RoleARN                     string   `graphql:"roleArn"`
+	Space                       string   `graphql:"space"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
@@ -21,6 +22,7 @@ func (i *AWSIntegration) PopulateResourceData(d *schema.ResourceData) {
 	d.Set("external_id", i.ExternalID)
 	d.Set("name", i.Name)
 	d.Set("role_arn", i.RoleARN)
+	d.Set("space_id", i.Space)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range i.Labels {

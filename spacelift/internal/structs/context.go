@@ -6,4 +6,5 @@ type Context struct {
 	Description *string  `graphql:"description"`
 	Labels      []string `graphql:"labels"`
 	Name        string   `graphql:"name"`
+	Space       string   `graphql:"space"`
 }

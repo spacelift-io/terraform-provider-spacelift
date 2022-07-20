@@ -63,6 +63,12 @@ func resourceWorkerPool() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the worker pool is in",
+				Optional:    true,
+				Computed:    true,
+			},
 			"labels": {
 				Type:     schema.TypeSet,
 				Elem:     &schema.Schema{Type: schema.TypeString},
@@ -76,13 +82,14 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 	name := d.Get("name").(string)
 
 	var mutation struct {
-		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description, labels: $labels)"`
+		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description, labels: $labels, space: $space)"`
 	}
 
 	variables := map[string]interface{}{
 		"name":        graphql.String(name),
 		"description": (*graphql.String)(nil),
 		"labels":      []graphql.String(nil),
+		"space":       (*graphql.ID)(nil),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -91,6 +98,10 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 			labels = append(labels, graphql.String(label.(string)))
 		}
 		variables["labels"] = &labels
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	if desc, ok := d.GetOk("description"); ok {
@@ -147,6 +158,7 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(mutation.WorkerPool.ID)
 	d.Set("config", mutation.WorkerPool.Config)
 	d.Set("name", mutation.WorkerPool.Name)
+	d.Set("space_id", mutation.WorkerPool.Space)
 
 	if description := mutation.WorkerPool.Description; description != nil {
 		d.Set("description", *description)
@@ -183,6 +195,7 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+	d.Set("space_id", workerPool.Space)
 
 	return nil
 }
@@ -191,7 +204,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	name := d.Get("name").(string)
 
 	var mutation struct {
-		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels)"`
+		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space)"`
 	}
 
 	variables := map[string]interface{}{
@@ -199,6 +212,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		"name":        graphql.String(name),
 		"description": (*graphql.String)(nil),
 		"labels":      []graphql.String(nil),
+		"space":       (*graphql.ID)(nil),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -211,6 +225,10 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	if desc, ok := d.GetOk("description"); ok {
 		variables["description"] = graphql.String(desc.(string))
+	}
+
+	if spaceID, ok := d.GetOk("space_id"); ok {
+		variables["space"] = graphql.NewID(spaceID)
 	}
 
 	var ret diag.Diagnostics

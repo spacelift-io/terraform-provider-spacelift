@@ -7,4 +7,5 @@ type WorkerPool struct {
 	Name        string   `graphql:"name"`
 	Description *string  `graphql:"description"`
 	Labels      []string `graphql:"labels"`
+	Space       string   `graphql:"space"`
 }

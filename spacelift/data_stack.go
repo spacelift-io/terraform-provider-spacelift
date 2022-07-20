@@ -311,6 +311,11 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the stack is in",
+				Computed:    true,
+			},
 			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID (slug) of the stack",
@@ -376,6 +381,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("terraform_version", stack.TerraformVersion)
+	d.Set("space_id", stack.Space)
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)

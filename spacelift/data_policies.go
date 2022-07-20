@@ -49,6 +49,11 @@ func dataPolicies() *schema.Resource {
 							Description: "Name of the policy",
 							Computed:    true,
 						},
+						"space_id": {
+							Type:        schema.TypeString,
+							Description: "ID (slug) of the space the policy is in",
+							Computed:    true,
+						},
 						"type": {
 							Type:        schema.TypeString,
 							Description: "Type of the policy",
@@ -69,6 +74,7 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			Labels []string `graphql:"labels"`
 			Name   string   `graphql:"name"`
 			Type   string   `graphql:"type"`
+			Space  string   `graphql:"space"`
 		} `graphql:"policies()"`
 	}
 
@@ -104,10 +110,11 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			}
 		}
 		policies = append(policies, map[string]interface{}{
-			"id":     policy.ID,
-			"labels": policy.Labels,
-			"name":   policy.Name,
-			"type":   policy.Type,
+			"id":       policy.ID,
+			"labels":   policy.Labels,
+			"name":     policy.Name,
+			"type":     policy.Type,
+			"space_id": policy.Space,
 		})
 	}
 

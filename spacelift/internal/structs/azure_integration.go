@@ -14,6 +14,7 @@ type AzureIntegration struct {
 	Labels                []string `graphql:"labels"`
 	Name                  string   `graphql:"name"`
 	TenantID              string   `graphql:"tenantId"`
+	Space                 string   `graphql:"space"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
@@ -25,6 +26,7 @@ func (i *AzureIntegration) PopulateResourceData(d *schema.ResourceData) {
 	d.Set("display_name", i.DisplayName)
 	d.Set("name", i.Name)
 	d.Set("tenant_id", i.TenantID)
+	d.Set("space_id", i.Space)
 
 	if subID := i.DefaultSubscriptionID; subID != nil {
 		d.Set("default_subscription_id", *subID)
