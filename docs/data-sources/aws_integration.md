@@ -31,5 +31,6 @@ Note: when assuming credentials for **shared workers**, Spacelift will use `$acc
 - `labels` (Set of String)
 - `name` (String) Name of the AWS integration
 - `role_arn` (String) ARN of the AWS IAM role to attach
+- `space_id` (String) ID (slug) of the space the integration is in
 
 
