@@ -139,5 +139,5 @@ In order to release a new version of the provider one should follow those simple
 - Create a new tag for the latest commit on tha main branch `git tag  vX.Y.Z -m "Release"`
 - Push the tag `git push origin vX.Y.Z`
 - Pushing a tag will start a new CI job that will create a new GitHub release draft. Wait until it completes.
-- Edit description of the release, GitHub can automatically generate most of the changelog, just make sure it makes sense and doesn't include merge commits.
-- Save & Publish the release. It might a few minutes for the registry to pick up the new version.
+- Edit description of the release - GitHub can automatically generate most of the changelog, just make sure it makes sense and doesn't include merge commits.
+- Save & Publish the release. It might take a few minutes for the registry to pick up the new version.
