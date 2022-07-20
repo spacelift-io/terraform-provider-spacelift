@@ -13,8 +13,7 @@ import (
 func dataSpace() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_space` represents a Spacelift **space** - " +
-			"an inheritable entity holding a collection of customer-defined resources such as " +
-			"stacks, modules, policies, etc. Allows for more granular access control.",
+			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space.",
 
 		ReadContext: dataSpaceRead,
 
@@ -41,7 +40,7 @@ func dataSpace() *schema.Resource {
 			},
 			"inherit_entities": {
 				Type:        schema.TypeBool,
-				Description: "indication whether this space inherits entities from the parent space",
+				Description: "indication whether access to this space inherits read access to entities from the parent space",
 				Computed:    true,
 			},
 		},

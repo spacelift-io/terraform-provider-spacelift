@@ -14,8 +14,7 @@ import (
 func resourceSpace() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_space` represents a Spacelift **space** - " +
-			"an inheritable entity holding a collection of customer-defined resources such as " +
-			"stacks, modules, policies, etc. Allows for more granular access control.",
+			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space.",
 
 		CreateContext: resourceSpaceCreate,
 		ReadContext:   resourceSpaceRead,
@@ -30,7 +29,7 @@ func resourceSpace() *schema.Resource {
 			"parent_space_id": {
 				Type:        schema.TypeString,
 				Description: "immutable ID (slug) of parent space",
-				Required:    true,
+				Optional:    true,
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -44,8 +43,9 @@ func resourceSpace() *schema.Resource {
 			},
 			"inherit_entities": {
 				Type:        schema.TypeBool,
-				Description: "indication whether this space inherits entities from the parent space",
-				Required:    true,
+				Description: "indication whether access to this space inherits read access to entities from the parent space",
+				Optional:    true,
+				Default:     false,
 			},
 		},
 	}
@@ -112,11 +112,11 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateSpace structs.Space `graphql:"spaceUpdate(id: $id, input: $input)"`
+		UpdateSpace structs.Space `graphql:"spaceUpdate(space: $id, input: $input)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":    toID(d.Id()),
+		"space": toID(d.Id()),
 		"input": spaceCreateInput(d),
 	}
 
