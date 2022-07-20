@@ -55,7 +55,12 @@ func spaceCreateInput(d *schema.ResourceData) structs.SpaceInput {
 	input := structs.SpaceInput{
 		Name:            toString(d.Get("name")),
 		InheritEntities: graphql.Boolean(d.Get("inherit_entities").(bool)),
-		ParentSpace:     toID(d.Get("parent_space_id")),
+		ParentSpace:     toID(""),
+	}
+
+	parentSpace, ok := d.GetOk("parent_space_id")
+	if ok {
+		input.ParentSpace = toID(parentSpace)
 	}
 
 	description, ok := d.GetOk("description")
