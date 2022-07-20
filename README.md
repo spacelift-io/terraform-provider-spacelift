@@ -135,6 +135,7 @@ Make sure to replace `<account-name>`, `<api-key-id>` and `<api-key-secret>` wit
 
 In order to release a new version of the provider one should follow those simple steps:
 
+- Merge the production deploy PR.
 - Create a new tag for the latest commit on tha main branch `git tag  vX.Y.Z -m "Release"`
 - Push the tag `git push origin vX.Y.Z`
 - Pushing a tag will start a new CI job that will create a new GitHub release draft. Wait until it completes.
