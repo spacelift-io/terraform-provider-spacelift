@@ -48,7 +48,7 @@ resource "spacelift_mounted_file" "core-kubeconfig" {
 - `context_id` (String) ID of the context on which the mounted file is defined
 - `module_id` (String) ID of the module on which the mounted file is defined
 - `stack_id` (String) ID of the stack on which the mounted file is defined
-- `write_only` (Boolean) Indicates whether the content can be read back outside a Run
+- `write_only` (Boolean) Indicates whether the content can be read back outside a Run. Defaults to `true`.
 
 ### Read-Only
 

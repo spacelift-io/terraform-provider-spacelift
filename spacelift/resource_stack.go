@@ -35,7 +35,7 @@ func resourceStack() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this stack can manage others",
+				Description: "Indicates whether this stack can manage others. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
@@ -87,13 +87,13 @@ func resourceStack() *schema.Resource {
 			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether changes to this stack can be automatically deployed",
+				Description: "Indicates whether changes to this stack can be automatically deployed. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
 			"autoretry": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether obsolete proposed changes should automatically be retried",
+				Description: "Indicates whether obsolete proposed changes should automatically be retried. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
@@ -223,13 +223,13 @@ func resourceStack() *schema.Resource {
 			},
 			"enable_local_preview": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether local preview runs can be triggered on this Stack",
+				Description: "Indicates whether local preview runs can be triggered on this Stack. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
 			"github_action_deploy": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether GitHub users can deploy from the Checks API",
+				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`.",
 				Optional:    true,
 				Default:     true,
 			},
@@ -303,7 +303,7 @@ func resourceStack() *schema.Resource {
 			},
 			"manage_state": {
 				Type:        schema.TypeBool,
-				Description: "Determines if Spacelift should manage state for this stack",
+				Description: "Determines if Spacelift should manage state for this stack. Defaults to `true`.",
 				Optional:    true,
 				Default:     true,
 				ForceNew:    true,
@@ -320,7 +320,7 @@ func resourceStack() *schema.Resource {
 			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
-				Description: "Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.",
+				Description: "Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},

@@ -73,7 +73,7 @@ func resourceMountedFile() *schema.Resource {
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether the content can be read back outside a Run",
+				Description: "Indicates whether the content can be read back outside a Run. Defaults to `true`.",
 				Optional:    true,
 				Default:     true,
 				ForceNew:    true,

@@ -31,7 +31,7 @@ func resourceModule() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this module can manage others",
+				Description: "Indicates whether this module can manage others. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
@@ -153,7 +153,7 @@ func resourceModule() *schema.Resource {
 			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
-				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail.",
+				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
