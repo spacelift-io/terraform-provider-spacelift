@@ -28,8 +28,9 @@ func resourceSpace() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"parent_space_id": {
 				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of parent space",
+				Description: "immutable ID (slug) of parent space. Defaults to `root`.",
 				Optional:    true,
+				Default:     "root",
 			},
 			"description": {
 				Type:        schema.TypeString,
