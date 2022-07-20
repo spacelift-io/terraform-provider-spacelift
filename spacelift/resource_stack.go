@@ -374,6 +374,12 @@ func resourceStack() *schema.Resource {
 					},
 				},
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the stack is in",
+				Optional:    true,
+				Computed:    true,
+			},
 			"terraform_version": {
 				Type:             schema.TypeString,
 				Description:      "Terraform version to use",
@@ -490,6 +496,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("protect_from_deletion", stack.ProtectFromDeletion)
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
+	d.Set("space_id", stack.Space)
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)
@@ -715,6 +722,10 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			labels = append(labels, graphql.String(label.(string)))
 		}
 		ret.Labels = &labels
+	}
+
+	if space, ok := d.GetOk("space_id"); ok {
+		ret.Space = toOptionalString(space)
 	}
 
 	if projectRoot, ok := d.GetOk("project_root"); ok {

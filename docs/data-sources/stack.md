@@ -65,6 +65,7 @@ data "spacelift_stack" "k8s-core" {
 - `repository` (String) Name of the repository, without the owner part
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (List of Object) Showcase-related attributes (see [below for nested schema](#nestedatt--showcase))
+- `space_id` (String) ID (slug) of the space the stack is in
 - `terraform_version` (String) Terraform version to use
 - `terraform_workspace` (String) Terraform workspace to select
 - `worker_pool_id` (String) ID of the worker pool to use

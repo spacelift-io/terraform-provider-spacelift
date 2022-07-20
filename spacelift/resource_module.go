@@ -168,6 +168,12 @@ func resourceModule() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
+			"space_id": {
+				Type:        schema.TypeString,
+				Description: "ID (slug) of the space the module is in",
+				Optional:    true,
+				Computed:    true,
+			},
 			"terraform_provider": {
 				Type:        schema.TypeString,
 				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",
@@ -226,6 +232,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("repository", module.Repository)
 	d.Set("terraform_provider", module.TerraformProvider)
+	d.Set("space_id", module.Space)
 
 	if description := module.Description; description != nil {
 		d.Set("description", *description)
@@ -337,6 +344,10 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		ret.UpdateInput.WorkerPool = graphql.NewID(workerPoolID)
 	}
 
+	if space, ok := d.GetOk("space_id"); ok {
+		ret.Space = toOptionalString(space)
+	}
+
 	terraformProvider, ok := d.GetOk("terraform_provider")
 	if ok {
 		ret.TerraformProvider = toOptionalString(terraformProvider)
@@ -379,6 +390,10 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
 		ret.WorkerPool = graphql.NewID(workerPoolID)
+	}
+
+	if space, ok := d.GetOk("space_id"); ok {
+		ret.Space = toOptionalString(space)
 	}
 
 	return ret

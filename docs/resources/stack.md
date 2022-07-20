@@ -199,6 +199,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
 - `slug` (String) Allows setting the custom ID (slug) for the stack
+- `space_id` (String) ID (slug) of the space the stack is in
 - `terraform_version` (String) Terraform version to use
 - `terraform_workspace` (String) Terraform workspace to select
 - `worker_pool_id` (String) ID of the worker pool to use

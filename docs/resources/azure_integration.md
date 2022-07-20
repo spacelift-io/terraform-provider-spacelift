@@ -33,6 +33,7 @@ resource "spacelift_azure_integration" "example" {
 
 - `default_subscription_id` (String) The default subscription ID to use, if one isn't specified at the stack/module level
 - `labels` (Set of String) Labels to set on the integration
+- `space_id` (String) ID (slug) of the space the integration is in
 
 ### Read-Only
 

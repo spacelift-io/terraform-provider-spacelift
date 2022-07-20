@@ -110,6 +110,7 @@ resource "spacelift_aws_integration_attachment" "my_module" {
 - `external_id` (String) Custom external ID (works only for private workers).
 - `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
 - `labels` (Set of String) Labels to set on the integration
+- `space_id` (String) ID (slug) of the space the integration is in
 
 ### Read-Only
 
