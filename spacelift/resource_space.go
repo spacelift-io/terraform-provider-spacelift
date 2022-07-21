@@ -44,7 +44,7 @@ func resourceSpace() *schema.Resource {
 			},
 			"inherit_entities": {
 				Type:        schema.TypeBool,
-				Description: "indication whether access to this space inherits read access to entities from the parent space",
+				Description: "indication whether access to this space inherits read access to entities from the parent space. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},

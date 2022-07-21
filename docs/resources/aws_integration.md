@@ -106,9 +106,9 @@ resource "spacelift_aws_integration_attachment" "my_module" {
 
 ### Optional
 
-- `duration_seconds` (Number) Duration in seconds for which the assumed role credentials should be valid
+- `duration_seconds` (Number) Duration in seconds for which the assumed role credentials should be valid. Defaults to `900`.
 - `external_id` (String) Custom external ID (works only for private workers).
-- `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
+- `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker. Defaults to `false`.
 - `labels` (Set of String) Labels to set on the integration
 - `space_id` (String) ID (slug) of the space the integration is in
 

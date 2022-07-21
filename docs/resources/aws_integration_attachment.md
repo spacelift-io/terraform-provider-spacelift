@@ -53,9 +53,9 @@ resource "spacelift_aws_integration_attachment" "this" {
 ### Optional
 
 - `module_id` (String) ID of the module to attach the integration to
-- `read` (Boolean) Indicates whether this attachment is used for read operations
+- `read` (Boolean) Indicates whether this attachment is used for read operations. Defaults to `true`.
 - `stack_id` (String) ID of the stack to attach the integration to
-- `write` (Boolean) Indicates whether this attachment is used for write operations
+- `write` (Boolean) Indicates whether this attachment is used for write operations. Defaults to `true`.
 
 ### Read-Only
 
