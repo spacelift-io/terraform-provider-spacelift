@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -29,7 +30,7 @@ func resourceStack() *schema.Resource {
 		DeleteContext: resourceStackDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceStackImport,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -350,6 +351,7 @@ func resourceStack() *schema.Resource {
 				Description: "Allows setting the custom ID (slug) for the stack",
 				Optional:    true,
 				ForceNew:    true,
+				Computed:    true,
 			},
 			"repository": {
 				Type:        schema.TypeString,
@@ -497,6 +499,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("space_id", stack.Space)
+	d.Set("slug", stack.ID)
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)
@@ -829,4 +832,17 @@ func onceTheVersionIsSetDoNotUnset(_, _, new string, _ *schema.ResourceData) boo
 
 func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {
 	return d.Id() != ""
+}
+
+func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	if d.Id() == "" {
+		return nil, errors.New("stack ID is required to import a stack")
+	}
+
+	diag := resourceStackRead(ctx, d, meta)
+	if diag.HasError() {
+		return nil, fmt.Errorf("could not import stack: %v", diag)
+	}
+
+	return []*schema.ResourceData{d}, nil
 }
