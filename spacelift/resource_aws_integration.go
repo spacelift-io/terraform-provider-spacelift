@@ -48,7 +48,7 @@ func resourceAWSIntegration() *schema.Resource {
 			},
 			"generate_credentials_in_worker": {
 				Type:        schema.TypeBool,
-				Description: "Generate AWS credentials in the private worker",
+				Description: "Generate AWS credentials in the private worker. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
@@ -60,7 +60,7 @@ func resourceAWSIntegration() *schema.Resource {
 			},
 			"duration_seconds": {
 				Type:        schema.TypeInt,
-				Description: "Duration in seconds for which the assumed role credentials should be valid",
+				Description: "Duration in seconds for which the assumed role credentials should be valid. Defaults to `900`.",
 				Default:     900,
 				Optional:    true,
 			},

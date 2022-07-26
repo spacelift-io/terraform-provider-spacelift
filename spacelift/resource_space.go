@@ -28,8 +28,9 @@ func resourceSpace() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"parent_space_id": {
 				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of parent space",
+				Description: "immutable ID (slug) of parent space. Defaults to `root`.",
 				Optional:    true,
+				Default:     "root",
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -43,7 +44,7 @@ func resourceSpace() *schema.Resource {
 			},
 			"inherit_entities": {
 				Type:        schema.TypeBool,
-				Description: "indication whether access to this space inherits read access to entities from the parent space",
+				Description: "indication whether access to this space inherits read access to entities from the parent space. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},

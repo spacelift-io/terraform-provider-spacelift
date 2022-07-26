@@ -163,6 +163,11 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 
 	integration := query.Stack.Integrations.DriftDetection
 
+	// Schedule(s) has/have to be set for the drift detection integration
+	if len(integration.Schedule) == 0 {
+		return onNil("drift detection integration not found")
+	}
+
 	d.Set("reconcile", integration.Reconcile)
 	d.Set("timezone", integration.Timezone)
 

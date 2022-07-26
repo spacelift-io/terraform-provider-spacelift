@@ -20,7 +20,9 @@
 - [ ] Lint rules pass locally
 - [ ] The code changed/added as part of this pull request has been covered with tests
 - [ ] All tests related to the changed code pass in development
-- [ ] `tfplugindocs` has been run to make sure the docs are up to date.
+- [ ] Examples for new resources and data sources have been added
+- [ ] Default values have been documented in the description (e.g., "Dummy: (Boolean) Blah blah. Defaults to `false`.)
+- [ ] `tfplugindocs` has been run to make sure the docs are up to date
 
 ### Code review
 

@@ -54,13 +54,13 @@ func resourceAWSIntegrationAttachment() *schema.Resource {
 			},
 			"read": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this attachment is used for read operations",
+				Description: "Indicates whether this attachment is used for read operations. Defaults to `true`.",
 				Optional:    true,
 				Default:     true,
 			},
 			"write": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this attachment is used for write operations",
+				Description: "Indicates whether this attachment is used for write operations. Defaults to `true`.",
 				Default:     true,
 				Optional:    true,
 			},
