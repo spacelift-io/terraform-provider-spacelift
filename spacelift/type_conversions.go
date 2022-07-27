@@ -2,6 +2,14 @@ package spacelift
 
 import "github.com/shurcooL/graphql"
 
+func toBool(input interface{}) graphql.Boolean {
+	return graphql.Boolean(input.(bool))
+}
+
+func toOptionalBool(input interface{}) *graphql.Boolean {
+	return graphql.NewBoolean(toBool(input))
+}
+
 func toID(input interface{}) graphql.ID {
 	return graphql.ID(input)
 }

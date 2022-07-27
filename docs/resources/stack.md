@@ -38,7 +38,7 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.2.6"
 }
 
 # Terraform stack using Bitbucket Data Center as VCS
@@ -87,6 +87,19 @@ resource "spacelift_stack" "k8s-cluster-gitlab" {
   project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
+}
+
+# Terraform stack using github.com as VCS and enabling smart sanitization
+resource "spacelift_stack" "k8s-cluster" {
+  administrative               = true
+  autodeploy                   = true
+  branch                       = "master"
+  description                  = "Provisions a Kubernetes cluster"
+  name                         = "Kubernetes Cluster"
+  project_root                 = "cluster"
+  repository                   = "core-infra"
+  terraform_version            = "1.2.6"
+  terraform_smart_sanitization = true
 }
 
 # CloudFormation stack using github.com as VCS
@@ -200,6 +213,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
 - `slug` (String) Allows setting the custom ID (slug) for the stack
 - `space_id` (String) ID (slug) of the space the stack is in
+- `terraform_smart_sanitization` (Boolean) Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.
 - `terraform_version` (String) Terraform version to use
 - `terraform_workspace` (String) Terraform workspace to select
 - `worker_pool_id` (String) ID of the worker pool to use

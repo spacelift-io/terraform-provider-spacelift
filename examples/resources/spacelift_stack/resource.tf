@@ -23,7 +23,7 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.2.6"
 }
 
 # Terraform stack using Bitbucket Data Center as VCS
@@ -72,6 +72,19 @@ resource "spacelift_stack" "k8s-cluster-gitlab" {
   project_root      = "cluster"
   repository        = "core-infra"
   terraform_version = "0.12.6"
+}
+
+# Terraform stack using github.com as VCS and enabling smart sanitization
+resource "spacelift_stack" "k8s-cluster" {
+  administrative               = true
+  autodeploy                   = true
+  branch                       = "master"
+  description                  = "Provisions a Kubernetes cluster"
+  name                         = "Kubernetes Cluster"
+  project_root                 = "cluster"
+  repository                   = "core-infra"
+  terraform_version            = "1.2.6"
+  terraform_smart_sanitization = true
 }
 
 # CloudFormation stack using github.com as VCS

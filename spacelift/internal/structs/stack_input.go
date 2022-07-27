@@ -69,6 +69,7 @@ type PulumiInput struct {
 
 // TerraformInput represents Terraform-specific configuration.
 type TerraformInput struct {
-	Version   *graphql.String `json:"version"`
-	Workspace *graphql.String `json:"workspace"`
+	UseSmartSanitization *graphql.Boolean `json:"useSmartSanitization"`
+	Version              *graphql.String  `json:"version"`
+	Workspace            *graphql.String  `json:"workspace"`
 }

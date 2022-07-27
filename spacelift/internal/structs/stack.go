@@ -72,8 +72,9 @@ type Stack struct {
 			StackName string `graphql:"stackName"`
 		} `graphql:"... on StackConfigVendorPulumi"`
 		Terraform struct {
-			Version   *string `graphql:"version"`
-			Workspace *string `graphql:"workspace"`
+			UseSmartSanitization bool    `graphql:"useSmartSanitization"`
+			Version              *string `graphql:"version"`
+			Workspace            *string `graphql:"workspace"`
 		} `graphql:"... on StackConfigVendorTerraform"`
 	} `graphql:"vendorConfig"`
 	WorkerPool *struct {
