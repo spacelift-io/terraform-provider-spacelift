@@ -384,7 +384,7 @@ func resourceStack() *schema.Resource {
 			},
 			"terraform_smart_sanitization": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.",
+				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},

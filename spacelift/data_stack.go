@@ -323,7 +323,7 @@ func dataStack() *schema.Resource {
 			},
 			"terraform_smart_sanitization": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift.",
+				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
 				Computed:    true,
 			},
 			"terraform_version": {
