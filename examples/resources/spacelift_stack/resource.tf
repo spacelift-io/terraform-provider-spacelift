@@ -23,7 +23,7 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "1.2.6"
+  terraform_version = "0.12.6"
 }
 
 # Terraform stack using Bitbucket Data Center as VCS
