@@ -22,7 +22,7 @@ jobs:
         with:
           go-version: "1.18"
 
-      - name: generate documentation
+      - name: Generate documentation
         run: go generate
 
       - name: Verify Changed files
@@ -32,7 +32,11 @@ jobs:
           files: |
              docs
 
-      - name: Run step only when files change.
+      - name: Ensure documentation is up to date
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
-          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}" && exit 1
+          echo "Changes have been detected in the docs folder."
+          echo "This can happen if you haven't run tfplugindocs after making a change."
+          echo "Please run go generate and commit the documentation changes to resolve this."
+          echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          exit 1
