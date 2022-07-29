@@ -36,7 +36,7 @@ jobs:
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         run: |
           echo "Changes have been detected in the docs folder."
-          echo "This can happen if you haven't run tfplugindocs after making a change."
+          echo "This can happen if you haven't run 'go generate' after making a change."
           echo "Please run go generate and commit the documentation changes to resolve this."
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
           exit 1
