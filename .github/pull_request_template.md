@@ -22,7 +22,7 @@
 - [ ] All tests related to the changed code pass in development
 - [ ] Examples for new resources and data sources have been added
 - [ ] Default values have been documented in the description (e.g., "Dummy: (Boolean) Blah blah. Defaults to `false`.)
-- [ ] `tfplugindocs` has been run to make sure the docs are up to date
+- [ ] `go generate` has been run to make sure the docs are up to date
 
 ### Code review
 
