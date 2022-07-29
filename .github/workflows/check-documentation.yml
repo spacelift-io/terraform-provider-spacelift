@@ -1,4 +1,4 @@
-name: GoSec
+name: Check Documentation
 
 on:
   push:
