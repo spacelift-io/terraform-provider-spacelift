@@ -1,4 +1,4 @@
-# Spacelift Terraform provider
+# Spacelift Terraform Provider
 
 The Spacelift Terraform provider is used to programmatically interact with its GraphQL API, allowing Spacelift to declaratively manage itself 🤯
 
@@ -8,11 +8,11 @@ You can browse documentation on the [Terraform provider registry](https://regist
 
 ## Using the Provider
 
-### Terraform 0.13 and above
+### Terraform 0.13 and Above
 
 You can use the provider via the [Terraform provider registry](https://registry.terraform.io/providers/spacelift-io/spacelift/latest).
 
-### Terraform 0.12 or manual installation
+### Terraform 0.12 or Manual Installation
 
 You can download a pre-built binary from the [releases](https://github.com/spacelift-io/terraform-provider-spacelift/releases/) page, these are built using [goreleaser](https://goreleaser.com/) (the [configuration](.goreleaser.yml) is in the repo). You can verify the signature using [this key](https://keys.openpgp.org/vks/v1/by-fingerprint/175FD97AD2358EFE02832978E302FB5AA29D88F7).
 
@@ -46,7 +46,7 @@ This involves the following steps:
 3. Generating an API key in Spacelift.
 4. Running Terraform locally.
 
-#### Building the provider using GoReleaser
+#### Building the Provider Using GoReleaser
 
 To build the provider, run the following command:
 
@@ -106,7 +106,7 @@ Follow the information in our [API documentation page](https://docs.spacelift.io
 Please make sure to generate an admin key since admin permissions are required for most operations
 you will be using the provider for.
 
-#### Running Terraform Locally
+#### Running Spacelift Terraform Provider Locally
 
 To test your local build, just create the relevant Terraform files needed to test your changes,
 and run `terraform plan`, `terraform apply`, etc as normal. The main difference when running
@@ -138,7 +138,7 @@ output "account_name" {
 
 Make sure to replace `<account-name>`, `<api-key-id>` and `<api-key-secret>` with the relevant values.
 
-### Releasing new versions of the provider
+### Releasing New Versions of the Provider
 
 In order to release a new version of the provider one should follow those simple steps:
 
@@ -148,3 +148,4 @@ In order to release a new version of the provider one should follow those simple
 - Pushing a tag will start a new CI job that will create a new GitHub release draft. Wait until it completes.
 - Edit description of the release - GitHub can automatically generate most of the changelog, just make sure it makes sense and doesn't include merge commits.
 - Save & Publish the release. It might take a few minutes for the registry to pick up the new version.
+
