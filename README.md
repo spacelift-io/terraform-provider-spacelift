@@ -25,7 +25,6 @@ If you want to build from source, you can simply use `go build` in the root of t
 To develop the provider locally you need the following tools:
 
 - [Go 1.18](https://go.dev/doc/install).
-- [terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs).
 - [GoReleaser](https://goreleaser.com/).
 - A Spacelift account to use for testing.
 
