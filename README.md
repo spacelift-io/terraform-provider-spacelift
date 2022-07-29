@@ -29,6 +29,13 @@ To develop the provider locally you need the following tools:
 - [GoReleaser](https://goreleaser.com/).
 - A Spacelift account to use for testing.
 
+### Generating the Documentation
+
+To generate the documentation, run the following command:
+```shell
+go generate
+```
+
 ### Using a Local Build of the Provider
 
 Sometimes as well as running unit tests, you want to be able to run a local build of the provider against Spacelift.
