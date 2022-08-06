@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceVCSAgentPool() *schema.Resource {
@@ -34,9 +35,10 @@ func resourceVCSAgentPool() *schema.Resource {
 				Optional:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the VCS agent pool, must be unique within an account",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Name of the VCS agent pool, must be unique within an account",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"config": {
 				Type:        schema.TypeString,

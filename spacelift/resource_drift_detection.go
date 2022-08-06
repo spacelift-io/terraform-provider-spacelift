@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceDriftDetection() *schema.Resource {
@@ -33,14 +34,18 @@ func resourceDriftDetection() *schema.Resource {
 				Optional:    true,
 			},
 			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the stack for which to set up drift detection",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the stack for which to set up drift detection",
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"schedule": {
-				Type:        schema.TypeList,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
 				MinItems:    1,
 				Description: "List of cron schedule expressions based on which drift detection should be triggered.",
 				Required:    true,

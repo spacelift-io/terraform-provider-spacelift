@@ -12,6 +12,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceMountedFile() *schema.Resource {
@@ -45,6 +46,7 @@ func resourceMountedFile() *schema.Resource {
 				Sensitive:        true,
 				Required:         true,
 				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"context_id": {
 				Type:         schema.TypeString,

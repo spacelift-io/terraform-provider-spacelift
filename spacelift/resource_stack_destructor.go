@@ -11,6 +11,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceStackDestructor() *schema.Resource {
@@ -38,9 +39,10 @@ func resourceStackDestructor() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the stack to delete and destroy on destruction",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the stack to delete and destroy on destruction",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"deactivated": {
 				Type:        schema.TypeBool,

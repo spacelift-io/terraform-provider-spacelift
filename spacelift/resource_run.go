@@ -8,6 +8,7 @@ import (
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceRun() *schema.Resource {
@@ -22,10 +23,11 @@ func resourceRun() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the stack on which the run is to be triggered.",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the stack on which the run is to be triggered.",
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"commit_sha": {
 				Description: "The commit SHA for which to trigger a run.",

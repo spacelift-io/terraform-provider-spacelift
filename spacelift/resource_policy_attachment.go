@@ -12,6 +12,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourcePolicyAttachment() *schema.Resource {
@@ -34,10 +35,11 @@ func resourcePolicyAttachment() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the policy to attach",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the policy to attach",
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"module_id": {
 				Type:         schema.TypeString,

@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceAWSIntegration() *schema.Resource {
@@ -37,9 +38,10 @@ func resourceAWSIntegration() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required.
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The friendly name of the integration",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "The friendly name of the integration",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"role_arn": {
 				Type:        schema.TypeString,

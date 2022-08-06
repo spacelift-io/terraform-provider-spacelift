@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataPolicy() *schema.Resource {
@@ -21,9 +22,10 @@ func dataPolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"policy_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of the policy",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "immutable ID (slug) of the policy",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"body": {
 				Type:        schema.TypeString,

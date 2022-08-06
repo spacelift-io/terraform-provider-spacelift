@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataStack() *schema.Resource {
@@ -317,9 +318,10 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 			},
 			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "ID (slug) of the stack",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID (slug) of the stack",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"terraform_smart_sanitization": {
 				Type:        schema.TypeBool,
