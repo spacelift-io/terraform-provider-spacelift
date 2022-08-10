@@ -15,7 +15,7 @@ description: |-
 ```terraform
 resource "spacelift_vcs_agent_pool" "ghe" {
   name        = "ghe"
-  description = "VCS agent pool for our internal GitHub Enterpris"
+  description = "VCS agent pool for our internal GitHub Enterprise"
 }
 ```
 

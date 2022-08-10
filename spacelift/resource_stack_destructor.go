@@ -20,7 +20,7 @@ func resourceStackDestructor() *schema.Resource {
 		Description: "" +
 			"`spacelift_stack_destructor` is used to destroy the resources of a " +
 			"Stack before deleting it. `depends_on` should be used to make sure " +
-			"that all necessery resources (environment variables, roles, " +
+			"that all necessary resources (environment variables, roles, " +
 			"integrations, etc.) are still in place when the destruction run is " +
 			"executed. **Note:** Destroying this resource will delete the " +
 			"resources in the stack. If this resource needs to be deleted and " +

@@ -382,6 +382,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"terraform_smart_sanitization": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+			},
 			"terraform_version": {
 				Type:             schema.TypeString,
 				Description:      "Terraform version to use",
@@ -541,6 +547,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 		d.Set("pulumi", []interface{}{m})
 	default:
+		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
 		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 	}
@@ -784,6 +791,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 		if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {
 			terraformConfig.Workspace = toOptionalString(terraformWorkspace)
+		}
+
+		if terraformSmartSanitization, ok := d.GetOk("terraform_smart_sanitization"); ok {
+			terraformConfig.UseSmartSanitization = toOptionalBool(terraformSmartSanitization)
+		} else {
+			terraformConfig.UseSmartSanitization = toOptionalBool(false)
 		}
 
 		ret.VendorConfig = &structs.VendorConfigInput{Terraform: terraformConfig}

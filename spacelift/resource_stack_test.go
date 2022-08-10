@@ -402,27 +402,28 @@ func TestStackResource(t *testing.T) {
 
 		before := fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
-				administrative      = true
-				after_apply         = ["ls -la", "rm -rf /"]
-				after_destroy       = ["echo 'after_destroy'"]
-				after_init          = ["terraform fmt -check", "tflint"]
-				after_perform       = ["echo 'after_perform'"]
-				after_plan          = ["echo 'after_plan'"]
-				autodeploy          = true
-				before_apply        = ["ls -la", "rm -rf /"]
-				before_destroy      = ["echo 'before_destroy'"]
-				before_init         = ["terraform fmt -check", "tflint"]
-				before_perform      = ["echo 'before_perform'"]
-				before_plan         = ["echo 'before_plan'"]
-				branch              = "master"
-				description         = "bacon"
-				labels              = ["one", "two"]
-				name                = "Provider test stack %s"
-				project_root        = "root"
-				repository          = "demo"
-				runner_image        = "custom_image:runner"
-				terraform_version   = "0.12.5"
-				terraform_workspace = "bacon"
+				administrative               = true
+				after_apply                  = ["ls -la", "rm -rf /"]
+				after_destroy                = ["echo 'after_destroy'"]
+				after_init                   = ["terraform fmt -check", "tflint"]
+				after_perform                = ["echo 'after_perform'"]
+				after_plan                   = ["echo 'after_plan'"]
+				autodeploy                   = true
+				before_apply                 = ["ls -la", "rm -rf /"]
+				before_destroy               = ["echo 'before_destroy'"]
+				before_init                  = ["terraform fmt -check", "tflint"]
+				before_perform               = ["echo 'before_perform'"]
+				before_plan                  = ["echo 'before_plan'"]
+				branch                       = "master"
+				description                  = "bacon"
+				labels                       = ["one", "two"]
+				name                         = "Provider test stack %s"
+				project_root                 = "root"
+				repository                   = "demo"
+				runner_image                 = "custom_image:runner"
+				terraform_version            = "1.0.1"
+				terraform_workspace          = "bacon"
+				terraform_smart_sanitization = true
 			}
 		`, randomID)
 
@@ -455,8 +456,9 @@ func TestStackResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("project_root", Equals("root")),
 					Attribute("runner_image", Equals("custom_image:runner")),
-					Attribute("terraform_version", Equals("0.12.5")),
+					Attribute("terraform_version", Equals("1.0.1")),
 					Attribute("terraform_workspace", Equals("bacon")),
+					Attribute("terraform_smart_sanitization", Equals("true")),
 				),
 			},
 			{
@@ -484,8 +486,9 @@ func TestStackResource(t *testing.T) {
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),
 					Attribute("runner_image", IsEmpty()),
-					Attribute("terraform_version", Equals("0.12.5")),
+					Attribute("terraform_version", Equals("1.0.1")),
 					Attribute("terraform_workspace", IsEmpty()),
+					Attribute("terraform_smart_sanitization", Equals("false")),
 				),
 			},
 		})

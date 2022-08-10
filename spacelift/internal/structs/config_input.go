@@ -12,6 +12,7 @@ type ConfigType string
 type ConfigInput struct {
 	ID        graphql.ID      `json:"id"`
 	Type      ConfigType      `json:"type"`
+	FileMode  *graphql.String `json:"fileMode"`
 	Value     graphql.String  `json:"value"`
 	WriteOnly graphql.Boolean `json:"writeOnly"`
 }

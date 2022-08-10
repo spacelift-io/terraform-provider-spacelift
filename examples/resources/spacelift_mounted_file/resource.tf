@@ -18,3 +18,11 @@ resource "spacelift_mounted_file" "core-kubeconfig" {
   relative_path = "kubeconfig"
   content       = filebase64("${path.module}/kubeconfig.json")
 }
+
+# For a stack with file_mode
+resource "spacelift_mounted_file" "core-kubeconfig" {
+  stack_id      = "k8s-core"
+  relative_path = "kubeconfig"
+  content       = filebase64("${path.module}/kubeconfig.json")
+  file_mode     = "755"
+}

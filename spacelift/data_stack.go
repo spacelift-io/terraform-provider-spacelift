@@ -321,6 +321,11 @@ func dataStack() *schema.Resource {
 				Description: "ID (slug) of the stack",
 				Required:    true,
 			},
+			"terraform_smart_sanitization": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
+				Computed:    true,
+			},
 			"terraform_version": {
 				Type:        schema.TypeString,
 				Description: "Terraform version to use",
@@ -425,6 +430,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	default:
 		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
+		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
