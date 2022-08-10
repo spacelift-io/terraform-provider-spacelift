@@ -24,6 +24,7 @@ func TestMountedFileData(t *testing.T) {
 					context_id    = spacelift_context.test.id
 					content       = base64encode("bacon is tasty")
 					relative_path = "bacon.txt"
+					file_mode     = "755"
 				}
 
 				data "spacelift_mounted_file" "test" {
@@ -38,6 +39,7 @@ func TestMountedFileData(t *testing.T) {
 				Attribute("context_id", Contains(randomID)),
 				Attribute("relative_path", Equals("bacon.txt")),
 				Attribute("write_only", Equals("true")),
+				Attribute("file_mode", Equals("755")),
 				AttributeNotPresent("module_id"),
 				AttributeNotPresent("stack_id"),
 			),

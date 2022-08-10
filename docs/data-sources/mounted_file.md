@@ -42,6 +42,7 @@ data "spacelift_mounted_file" "core-kubeconfig" {
 ### Optional
 
 - `context_id` (String) ID of the context where the mounted file is stored
+- `file_mode` (String) Permissions of the mounted file (user/group/public).
 - `module_id` (String) ID of the module where the mounted file is stored
 - `stack_id` (String) ID of the stack where the mounted file is stored
 
