@@ -1,0 +1,1 @@
+terraform import spacelift_scheduled_delete_stack.ireland-kubeconfig $STACK_ID/$SCHEDULED_DELETE_STACK_ID
