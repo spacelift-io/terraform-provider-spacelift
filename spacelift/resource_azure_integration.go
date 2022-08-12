@@ -37,10 +37,11 @@ func resourceAzureIntegration() *schema.Resource {
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"tenant_id": {
-				Type:        schema.TypeString,
-				Description: "The Azure AD tenant ID",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "The Azure AD tenant ID",
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			// Optional.
 			"default_subscription_id": {

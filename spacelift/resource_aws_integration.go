@@ -44,9 +44,10 @@ func resourceAWSIntegration() *schema.Resource {
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"role_arn": {
-				Type:        schema.TypeString,
-				Description: "ARN of the AWS IAM role to attach",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ARN of the AWS IAM role to attach",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"generate_credentials_in_worker": {
 				Type:        schema.TypeBool,
