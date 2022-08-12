@@ -12,6 +12,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 // Deprecated: Used for backwards compatibility.
@@ -56,9 +57,10 @@ func resourceAWSRole() *schema.Resource {
 				ForceNew:     true,
 			},
 			"role_arn": {
-				Type:        schema.TypeString,
-				Description: "ARN of the AWS IAM role to attach",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ARN of the AWS IAM role to attach",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,

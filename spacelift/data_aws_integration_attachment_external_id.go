@@ -9,6 +9,7 @@ import (
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataAWSIntegrationAttachmentExternalID() *schema.Resource {
@@ -21,9 +22,10 @@ func dataAWSIntegrationAttachmentExternalID() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"integration_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of the AWS integration",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "immutable ID (slug) of the AWS integration",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"stack_id": {
 				Type:         schema.TypeString,

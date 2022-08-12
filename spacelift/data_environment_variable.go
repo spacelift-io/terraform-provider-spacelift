@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataEnvironmentVariable() *schema.Resource {
@@ -39,9 +40,10 @@ func dataEnvironmentVariable() *schema.Resource {
 				Optional:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "name of the environment variable",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "name of the environment variable",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,

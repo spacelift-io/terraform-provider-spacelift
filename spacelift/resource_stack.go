@@ -14,6 +14,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceStack() *schema.Resource {
@@ -49,9 +50,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"playbook": {
-							Type:        schema.TypeString,
-							Description: "The playbook Ansible should run.",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "The playbook Ansible should run.",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -59,32 +61,47 @@ func resourceStack() *schema.Resource {
 			"after_apply": {
 				Type:        schema.TypeList,
 				Description: "List of after-apply scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"after_destroy": {
 				Type:        schema.TypeList,
 				Description: "List of after-destroy scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"after_init": {
 				Type:        schema.TypeList,
 				Description: "List of after-init scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"after_perform": {
 				Type:        schema.TypeList,
 				Description: "List of after-perform scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"after_plan": {
 				Type:        schema.TypeList,
 				Description: "List of after-plan scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
@@ -112,9 +129,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the Azure DevOps project",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The name of the Azure DevOps project",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -122,37 +140,53 @@ func resourceStack() *schema.Resource {
 			"before_apply": {
 				Type:        schema.TypeList,
 				Description: "List of before-apply scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"before_destroy": {
 				Type:        schema.TypeList,
 				Description: "List of before-destroy scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"before_init": {
 				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"before_perform": {
 				Type:        schema.TypeList,
 				Description: "List of before-perform scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"before_plan": {
 				Type:        schema.TypeList,
 				Description: "List of before-plan scripts",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			"branch": {
-				Type:        schema.TypeString,
-				Description: "GitHub branch to apply changes to",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "GitHub branch to apply changes to",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"bitbucket_cloud": {
 				Type:          schema.TypeList,
@@ -163,9 +197,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The Bitbucket project containing the repository",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The Bitbucket project containing the repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -179,9 +214,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The Bitbucket project containing the repository",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The Bitbucket project containing the repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -195,24 +231,28 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"entry_template_file": {
-							Type:        schema.TypeString,
-							Description: "Template file `cloudformation package` will be called on",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "Template file `cloudformation package` will be called on",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"region": {
-							Type:        schema.TypeString,
-							Description: "AWS region to use",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "AWS region to use",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"stack_name": {
-							Type:        schema.TypeString,
-							Description: "CloudFormation stack name",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "CloudFormation stack name",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"template_bucket": {
-							Type:        schema.TypeString,
-							Description: "S3 bucket to save CloudFormation templates to",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "S3 bucket to save CloudFormation templates to",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -243,9 +283,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The GitHub organization / user the repository belongs to",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The GitHub organization / user the repository belongs to",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -259,9 +300,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The GitLab namespace containing the repository",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The GitLab namespace containing the repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -290,9 +332,10 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Description: "Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.",
-							Optional:    true,
+							Type:             schema.TypeString,
+							Description:      "Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.",
+							Optional:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -310,9 +353,10 @@ func resourceStack() *schema.Resource {
 				ForceNew:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the stack - should be unique in one account",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Name of the stack - should be unique in one account",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"project_root": {
 				Type:        schema.TypeString,
@@ -334,14 +378,16 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"login_url": {
-							Type:        schema.TypeString,
-							Description: "State backend to log into on Run initialize.",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "State backend to log into on Run initialize.",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"stack_name": {
-							Type:        schema.TypeString,
-							Description: "Pulumi stack name to use with the state backend.",
-							Required:    true,
+							Type:             schema.TypeString,
+							Description:      "Pulumi stack name to use with the state backend.",
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -354,9 +400,10 @@ func resourceStack() *schema.Resource {
 				Computed:    true,
 			},
 			"repository": {
-				Type:        schema.TypeString,
-				Description: "Name of the repository, without the owner part",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Name of the repository, without the owner part",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"runner_image": {
 				Type:        schema.TypeString,
@@ -370,8 +417,9 @@ func resourceStack() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:     schema.TypeString,
-							Required: true,
+							Type:             schema.TypeString,
+							Required:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},

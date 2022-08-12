@@ -5,6 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataDriftDetection() *schema.Resource {
@@ -24,9 +26,10 @@ func dataDriftDetection() *schema.Resource {
 				Computed:    true,
 			},
 			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the stack for which to set up drift detection",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the stack for which to set up drift detection",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"schedule": {
 				Type:        schema.TypeList,

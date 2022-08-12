@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataSpace() *schema.Resource {
@@ -19,9 +20,10 @@ func dataSpace() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"space_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of the space",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "immutable ID (slug) of the space",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"parent_space_id": {
 				Type:        schema.TypeString,

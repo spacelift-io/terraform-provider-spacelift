@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataWebhook() *schema.Resource {
@@ -46,9 +47,10 @@ func dataWebhook() *schema.Resource {
 				Optional:    true,
 			},
 			"webhook_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the webhook",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the webhook",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 		},
 	}

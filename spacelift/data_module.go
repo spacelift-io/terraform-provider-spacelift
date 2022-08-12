@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataModule() *schema.Resource {
@@ -135,9 +136,10 @@ func dataModule() *schema.Resource {
 				Computed:    true,
 			},
 			"module_id": {
-				Type:        schema.TypeString,
-				Description: "ID (slug) of the module",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID (slug) of the module",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"shared_accounts": {
 				Type:        schema.TypeSet,

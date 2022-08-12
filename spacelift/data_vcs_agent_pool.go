@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataVCSAgentPool() *schema.Resource {
@@ -21,9 +22,10 @@ func dataVCSAgentPool() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"vcs_agent_pool_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the VCS agent pool to retrieve",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the VCS agent pool to retrieve",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"description": {
 				Type:        schema.TypeString,

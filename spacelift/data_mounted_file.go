@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataMountedFile() *schema.Resource {
@@ -53,9 +54,10 @@ func dataMountedFile() *schema.Resource {
 				Optional:     true,
 			},
 			"relative_path": {
-				Type:        schema.TypeString,
-				Description: "relative path to the mounted file",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "relative path to the mounted file",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"stack_id": {
 				Type:         schema.TypeString,

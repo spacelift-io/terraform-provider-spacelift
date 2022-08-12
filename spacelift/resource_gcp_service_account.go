@@ -10,6 +10,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 // Deprecated: Used for backwards compatibility.
@@ -61,8 +62,11 @@ func resourceGCPServiceAccount() *schema.Resource {
 				ForceNew:    true,
 			},
 			"token_scopes": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
 				MinItems:    1,
 				Description: "List of scopes that will be requested when generating temporary GCP service account credentials",
 				Required:    true,

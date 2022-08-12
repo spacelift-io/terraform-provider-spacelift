@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceAzureIntegration() *schema.Resource {
@@ -30,15 +31,17 @@ func resourceAzureIntegration() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			// Required.
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The friendly name of the integration",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "The friendly name of the integration",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"tenant_id": {
-				Type:        schema.TypeString,
-				Description: "The Azure AD tenant ID",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "The Azure AD tenant ID",
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			// Optional.
 			"default_subscription_id": {
@@ -51,8 +54,11 @@ func resourceAzureIntegration() *schema.Resource {
 			"labels": {
 				Type:        schema.TypeSet,
 				Description: "Labels to set on the integration",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Optional:    true,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
 			},
 			// Read-only.
 			"admin_consent_provided": {

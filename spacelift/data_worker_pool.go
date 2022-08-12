@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataWorkerPool() *schema.Resource {
@@ -36,9 +37,10 @@ func dataWorkerPool() *schema.Resource {
 				Computed:    true,
 			},
 			"worker_pool_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the worker pool",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the worker pool",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"labels": {
 				Type:     schema.TypeSet,

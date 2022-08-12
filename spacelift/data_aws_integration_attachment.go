@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataAWSIntegrationAttachment() *schema.Resource {
@@ -21,9 +22,10 @@ func dataAWSIntegrationAttachment() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"integration_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the integration to attach",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "ID of the integration to attach",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"module_id": {
 				Type:         schema.TypeString,
