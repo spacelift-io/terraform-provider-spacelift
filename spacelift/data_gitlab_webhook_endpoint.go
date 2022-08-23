@@ -24,7 +24,7 @@ func dataGitlabWebhookEndpoint() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			gitlabWebhookEndpointFields.WebhookEndpoint: {
 				Type:        schema.TypeString,
-				Description: "Gitlab webhook endpoint address", 
+				Description: "Gitlab webhook endpoint address",
 				Computed:    true,
 			},
 		},
