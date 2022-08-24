@@ -29,7 +29,7 @@ func TestSpaceData(t *testing.T) {
 			`, randomID),
 			Check: Resource(
 				"data.spacelift_space.test",
-				Attribute("id", StartsWith("my-first-space")),
+				Attribute("id", Contains("my-first-space")),
 				Attribute("parent_space_id", Equals("root")),
 				Attribute("description", Equals("some valid description")),
 			),
