@@ -42,11 +42,6 @@ func dataMountedFile() *schema.Resource {
 				ExactlyOneOf: []string{"context_id", "stack_id", "module_id"},
 				Optional:     true,
 			},
-			"file_mode": {
-				Type:        schema.TypeString,
-				Description: "Permissions of the mounted file (user/group/public).",
-				Optional:    true,
-			},
 			"module_id": {
 				Type:         schema.TypeString,
 				Description:  "ID of the module where the mounted file is stored",
@@ -196,7 +191,6 @@ func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta 
 func populateMountedFile(d *schema.ResourceData, el *structs.ConfigElement) {
 	d.Set("checksum", el.Checksum)
 	d.Set("write_only", el.WriteOnly)
-	d.Set("file_mode", el.FileMode)
 
 	if el.Value != nil {
 		d.Set("content", *el.Value)
