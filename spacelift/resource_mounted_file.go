@@ -3,7 +3,6 @@ package spacelift
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -56,30 +55,6 @@ func resourceMountedFile() *schema.Resource {
 				Optional:     true,
 				ForceNew:     true,
 			},
-			"file_mode": {
-				Type:        schema.TypeString,
-				Description: "Permissions of the mounted file (user/group/public), e.g. `755`",
-				ValidateFunc: func(i interface{}, k string) ([]string, []error) {
-					v, ok := i.(string)
-					if !ok {
-						return nil, []error{fmt.Errorf("expected type of %s to be string", k)}
-					}
-
-					for _, char := range v {
-						asInt, err := strconv.Atoi(string(char))
-						if err != nil {
-							return nil, []error{fmt.Errorf("expected integer instead of %s", string(char))}
-						}
-						if asInt > 7 || asInt < 0 {
-							return nil, []error{fmt.Errorf("expected int between 0 and 7 instead of %s", string(char))}
-						}
-					}
-
-					return nil, nil
-				},
-				Optional: true,
-				ForceNew: true,
-			},
 			"module_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the module on which the mounted file is defined",
@@ -117,12 +92,6 @@ func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta
 			Value:     toString(d.Get("content")),
 			WriteOnly: graphql.Boolean(d.Get("write_only").(bool)),
 		},
-	}
-
-	if v, ok := d.GetOk("file_mode"); ok {
-		c := variables["config"].(structs.ConfigInput)
-		c.FileMode = toOptionalString(v)
-		variables["config"] = c
 	}
 
 	if contextID, ok := d.GetOk("context_id"); ok {
@@ -223,7 +192,6 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	d.Set("checksum", element.Checksum)
-	d.Set("file_mode", element.FileMode)
 	d.Set("relative_path", relativePath)
 	d.Set("write_only", element.WriteOnly)
 
