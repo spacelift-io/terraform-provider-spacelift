@@ -23,9 +23,11 @@ func dataAzureIntegration() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"integration_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID of the integration",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "Immutable ID of the integration. Either `integration_id` or `name` must be specified.",
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"integration_id", "name"},
 			},
 			"admin_consent_provided": {
 				Type: schema.TypeBool,
@@ -71,9 +73,11 @@ func dataAzureIntegration() *schema.Resource {
 				Computed:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The friendly name of the integration",
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "The friendly name of the integration. Either `integration_id` or `name` must be specified.",
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"integration_id", "name"},
 			},
 			"space_id": {
 				Type:        schema.TypeString,
@@ -90,22 +94,59 @@ func dataAzureIntegration() *schema.Resource {
 }
 
 func dataAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var query struct {
-		AzureIntegration *structs.AzureIntegration `graphql:"azureIntegration(id: $id)"`
+	integrationID := d.Get("integration_id").(string)
+	name := d.Get("name").(string)
+	client := meta.(*internal.Client)
+
+	var diagnostics diag.Diagnostics
+	var integration *structs.AzureIntegration
+	if integrationID != "" {
+		integration, diagnostics = findAzureIntegrationByID(ctx, integrationID, client)
+	} else {
+		integration, diagnostics = findAzureIntegrationByName(ctx, name, client)
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Get("integration_id").(string))}
-	if err := meta.(*internal.Client).Query(ctx, "AzureIntegrationRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for the Azure integration: %v", err)
+	if diagnostics != nil {
+		return diagnostics
 	}
 
-	integration := query.AzureIntegration
 	if integration == nil {
-		return diag.Errorf("Azure integration not found: %s", d.Id())
+		idOrName := integrationID
+		if idOrName == "" {
+			idOrName = name
+		}
+
+		return diag.Errorf("Azure integration not found: %s", idOrName)
 	}
 
 	d.SetId(integration.ID)
 	integration.PopulateResourceData(d)
 
 	return nil
+}
+
+func findAzureIntegrationByID(ctx context.Context, integrationID string, client *internal.Client) (*structs.AzureIntegration, diag.Diagnostics) {
+	var query struct {
+		AzureIntegration *structs.AzureIntegration `graphql:"azureIntegration(id: $id)"`
+	}
+
+	variables := map[string]interface{}{"id": graphql.ID(integrationID)}
+	if err := client.Query(ctx, "AzureIntegrationRead", &query, variables); err != nil {
+		return nil, diag.Errorf("could not query for the Azure integration: %v", err)
+	}
+
+	return query.AzureIntegration, nil
+}
+
+func findAzureIntegrationByName(ctx context.Context, name string, client *internal.Client) (*structs.AzureIntegration, diag.Diagnostics) {
+	var query struct {
+		AzureIntegration *structs.AzureIntegration `graphql:"azureIntegrationByName(name: $name)"`
+	}
+
+	variables := map[string]interface{}{"name": graphql.String(name)}
+	if err := client.Query(ctx, "AzureIntegrationByNameRead", &query, variables); err != nil {
+		return nil, diag.Errorf("could not query for the Azure integration: %v", err)
+	}
+
+	return query.AzureIntegration, nil
 }
