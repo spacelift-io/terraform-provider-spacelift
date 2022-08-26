@@ -29,14 +29,18 @@ func dataAWSIntegration() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"integration_id": {
 				Type:             schema.TypeString,
-				Description:      "immutable ID of the integration",
-				Required:         true,
+				Description:      "Immutable ID of the integration. Either `integration_id` or `name` must be specified.",
+				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
+				ExactlyOneOf:     []string{"integration_id", "name"},
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the AWS integration",
-				Computed:    true,
+				Type:         schema.TypeString,
+				Description:  "Name of the AWS integration. Either `integration_id` or `name` must be specified.",
+				Optional:     true,
+				Computed:     true,
+				ExactlyOneOf: []string{"integration_id", "name"},
 			},
 			"role_arn": {
 				Type:        schema.TypeString,
@@ -73,21 +77,57 @@ func dataAWSIntegration() *schema.Resource {
 }
 
 func dataAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var query struct {
-		AWSIntegration *structs.AWSIntegration `graphql:"awsIntegration(id: $id)"`
-	}
-	variables := map[string]interface{}{"id": graphql.ID(d.Get("integration_id").(string))}
-	if err := meta.(*internal.Client).Query(ctx, "AWSIntegrationRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for the aws integration: %v", err)
+	integrationID := d.Get("integration_id").(string)
+	name := d.Get("name").(string)
+	client := meta.(*internal.Client)
+
+	var diagnostics diag.Diagnostics
+	var integration *structs.AWSIntegration
+	if integrationID != "" {
+		integration, diagnostics = findAWSIntegrationByID(ctx, integrationID, client)
+	} else {
+		integration, diagnostics = findAWSIntegrationByName(ctx, name, client)
 	}
 
-	integration := query.AWSIntegration
+	if diagnostics != nil {
+		return diagnostics
+	}
+
 	if integration == nil {
-		return diag.Errorf("AWS integration not found: %s", d.Id())
+		idOrName := integrationID
+		if idOrName == "" {
+			idOrName = name
+		}
+
+		return diag.Errorf("AWS integration not found: %s", idOrName)
 	}
 
 	d.SetId(integration.ID)
 	integration.PopulateResourceData(d)
 
 	return nil
+}
+
+func findAWSIntegrationByID(ctx context.Context, integrationID string, client *internal.Client) (*structs.AWSIntegration, diag.Diagnostics) {
+	var query struct {
+		AWSIntegration *structs.AWSIntegration `graphql:"awsIntegration(id: $id)"`
+	}
+	variables := map[string]interface{}{"id": graphql.ID(integrationID)}
+	if err := client.Query(ctx, "AWSIntegrationRead", &query, variables); err != nil {
+		return nil, diag.Errorf("could not query for the aws integration: %v", err)
+	}
+
+	return query.AWSIntegration, nil
+}
+
+func findAWSIntegrationByName(ctx context.Context, name string, client *internal.Client) (*structs.AWSIntegration, diag.Diagnostics) {
+	var query struct {
+		AWSIntegration *structs.AWSIntegration `graphql:"awsIntegrationByName(name: $name)"`
+	}
+	variables := map[string]interface{}{"name": graphql.String(name)}
+	if err := client.Query(ctx, "AWSIntegrationByNameRead", &query, variables); err != nil {
+		return nil, diag.Errorf("could not query for the aws integration: %v", err)
+	}
+
+	return query.AWSIntegration, nil
 }
