@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataMountedFile() *schema.Resource {
@@ -41,11 +42,6 @@ func dataMountedFile() *schema.Resource {
 				ExactlyOneOf: []string{"context_id", "stack_id", "module_id"},
 				Optional:     true,
 			},
-			"file_mode": {
-				Type:        schema.TypeString,
-				Description: "Permissions of the mounted file (user/group/public).",
-				Optional:    true,
-			},
 			"module_id": {
 				Type:         schema.TypeString,
 				Description:  "ID of the module where the mounted file is stored",
@@ -53,9 +49,10 @@ func dataMountedFile() *schema.Resource {
 				Optional:     true,
 			},
 			"relative_path": {
-				Type:        schema.TypeString,
-				Description: "relative path to the mounted file",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "relative path to the mounted file",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"stack_id": {
 				Type:         schema.TypeString,
@@ -194,7 +191,6 @@ func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta 
 func populateMountedFile(d *schema.ResourceData, el *structs.ConfigElement) {
 	d.Set("checksum", el.Checksum)
 	d.Set("write_only", el.WriteOnly)
-	d.Set("file_mode", el.FileMode)
 
 	if el.Value != nil {
 		d.Set("content", *el.Value)

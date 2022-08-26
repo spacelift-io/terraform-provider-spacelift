@@ -32,7 +32,7 @@ func TestSpaceResource(t *testing.T) {
 				Config: config("boom"),
 				Check: Resource(
 					resourceName,
-					Attribute("id", StartsWith("my-first-space")),
+					Attribute("id", Contains("my-first-space")),
 					Attribute("description", Contains("boom")),
 					Attribute("parent_space_id", Equals("root")),
 				),
@@ -72,8 +72,8 @@ func TestSpaceResource(t *testing.T) {
 				Config: config,
 				Check: Resource(
 					"spacelift_space.test-child",
-					Attribute("id", StartsWith("my-second-space")),
-					Attribute("parent_space_id", StartsWith("my-first-space")),
+					Attribute("id", Contains("my-second-space")),
+					Attribute("parent_space_id", Contains("my-first-space")),
 				),
 			},
 		})

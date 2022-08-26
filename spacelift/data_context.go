@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataContext() *schema.Resource {
@@ -23,9 +24,10 @@ func dataContext() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"context_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of the context",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "immutable ID (slug) of the context",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"description": {
 				Type:        schema.TypeString,

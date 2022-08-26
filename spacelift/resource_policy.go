@@ -10,6 +10,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 var policyTypes = []string{
@@ -51,19 +52,24 @@ func resourcePolicy() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:        schema.TypeString,
-				Description: "Name of the policy - should be unique in one account",
-				Required:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "Name of the policy - should be unique in one account",
+				Required:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"body": {
-				Type:        schema.TypeString,
-				Description: "Body of the policy",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Body of the policy",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"labels": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
 				Optional: true,
 			},
 			"space_id": {

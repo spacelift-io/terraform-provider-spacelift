@@ -11,6 +11,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceWebhook() *schema.Resource {
@@ -59,9 +60,10 @@ func resourceWebhook() *schema.Resource {
 				Default:     true,
 			},
 			"endpoint": {
-				Type:        schema.TypeString,
-				Description: "endpoint to send the POST request to",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "endpoint to send the POST request to",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"module_id": {
 				Type:         schema.TypeString,

@@ -9,6 +9,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceSpace() *schema.Resource {
@@ -38,9 +39,10 @@ func resourceSpace() *schema.Resource {
 				Optional:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "name of the space",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "name of the space",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"inherit_entities": {
 				Type:        schema.TypeBool,

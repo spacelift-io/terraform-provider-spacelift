@@ -4,7 +4,6 @@ package structs
 type ConfigElement struct {
 	ID        string
 	Checksum  string
-	FileMode  *string
 	Type      ConfigType
 	Value     *string
 	WriteOnly bool

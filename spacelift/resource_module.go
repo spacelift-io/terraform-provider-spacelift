@@ -11,6 +11,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceModule() *schema.Resource {
@@ -49,9 +50,10 @@ func resourceModule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The name of the Azure DevOps project",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The name of the Azure DevOps project",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -65,9 +67,10 @@ func resourceModule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The Bitbucket project containing the repository",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The Bitbucket project containing the repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -81,9 +84,10 @@ func resourceModule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The Bitbucket project containing the repository",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The Bitbucket project containing the repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -107,9 +111,10 @@ func resourceModule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The GitHub organization / user the repository belongs to",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The GitHub organization / user the repository belongs to",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
@@ -123,16 +128,20 @@ func resourceModule() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"namespace": {
-							Type:        schema.TypeString,
-							Required:    true,
-							Description: "The GitLab namespace containing the repository",
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The GitLab namespace containing the repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 					},
 				},
 			},
 			"labels": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
 				Optional: true,
 			},
 			"name": {
@@ -158,9 +167,10 @@ func resourceModule() *schema.Resource {
 				Default:     false,
 			},
 			"repository": {
-				Type:        schema.TypeString,
-				Description: "Name of the repository, without the owner part",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "Name of the repository, without the owner part",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"shared_accounts": {
 				Type:        schema.TypeSet,

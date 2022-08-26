@@ -103,14 +103,12 @@ func TestMountedFileResource(t *testing.T) {
 					stack_id      = spacelift_stack.test.id
 					content       = base64encode("bacon is tasty")
 					relative_path = "bacon.txt"
-					file_mode     = "755"
 				}
 			`, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("stack_id", StartsWith("test-stack-")),
 					Attribute("stack_id", Contains(randomID)),
-					Attribute("file_mode", Equals("755")),
 				),
 			},
 			{

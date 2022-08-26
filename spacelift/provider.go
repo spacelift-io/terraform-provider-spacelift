@@ -71,6 +71,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_gcp_service_account":                    dataGCPServiceAccount(),
 				"spacelift_github_enterprise_integration":          dataGithubEnterpriseIntegration(),
 				"spacelift_gitlab_integration":                     dataGitlabIntegration(),
+				"spacelift_gitlab_webhook_endpoint":                dataGitlabWebhookEndpoint(),
 				"spacelift_ips":                                    dataIPs(),
 				"spacelift_module":                                 dataModule(),
 				"spacelift_mounted_file":                           dataMountedFile(),

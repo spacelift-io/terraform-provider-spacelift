@@ -16,6 +16,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceWorkerPool() *schema.Resource {
@@ -41,9 +42,10 @@ func resourceWorkerPool() *schema.Resource {
 				Sensitive:   true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "name of the worker pool",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "name of the worker pool",
+				Required:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"csr": {
 				Type:        schema.TypeString,
@@ -70,8 +72,11 @@ func resourceWorkerPool() *schema.Resource {
 				Computed:    true,
 			},
 			"labels": {
-				Type:     schema.TypeSet,
-				Elem:     &schema.Schema{Type: schema.TypeString},
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
 				Optional: true,
 			},
 		},
