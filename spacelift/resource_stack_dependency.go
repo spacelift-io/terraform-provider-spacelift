@@ -2,7 +2,7 @@ package spacelift
 
 import (
 	"context"
-	"fmt"
+	"path"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -62,7 +62,7 @@ func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not create stack dependency: %s", err)
 	}
 
-	d.SetId(fmt.Sprintf("%s|%s", query.StackDependency.ID, query.StackDependency.StackID))
+	d.SetId(path.Join(query.StackDependency.StackID, query.StackDependency.ID))
 
 	return resourceStackDependencyRead(ctx, d, meta)
 }
@@ -128,8 +128,8 @@ func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceStackDependencyImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	idParts := strings.Split(d.Id(), "|")
-	d.Set("stack_id", idParts[1])
+	idParts := strings.Split(d.Id(), "/")
+	d.Set("stack_id", idParts[0])
 
 	resourceStackDependencyRead(ctx, d, meta)
 
@@ -137,9 +137,9 @@ func resourceStackDependencyImport(ctx context.Context, d *schema.ResourceData, 
 }
 
 func getStackDependencyId(d *schema.ResourceData) graphql.ID {
-	idParts := strings.Split(d.Id(), "|")
+	idParts := strings.Split(d.Id(), "/")
 
-	return graphql.ID(idParts[0])
+	return graphql.ID(idParts[1])
 }
 
 func stackDependencyCreateInput(d *schema.ResourceData) structs.StackDependencyInput {
