@@ -19,9 +19,6 @@ description: |-
 
 - `depends_on_stack_id` (String) immutable ID (slug) of stack to depend on.
 - `stack_id` (String) immutable ID (slug) of stack which has a dependency.
-
-### Optional
-
 - `triggers` (Boolean) describes whether we should trigger the dependent if it's not triggered by the push, but the current stack has changed. Defaults to `true`.
 
 ### Read-Only

@@ -44,8 +44,7 @@ func resourceStackDependency() *schema.Resource {
 			"triggers": {
 				Type:        schema.TypeBool,
 				Description: "describes whether we should trigger the dependent if it's not triggered by the push, but the current stack has changed. Defaults to `true`.",
-				Optional:    true,
-				Default:     true,
+				Required:    true,
 			},
 		},
 	}
