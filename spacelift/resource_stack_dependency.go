@@ -17,11 +17,11 @@ func resourceStackDependency() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_stack_dependency` represents a Spacelift **stack dependency** - " +
 			"a dependency between two stacks. When one stack depends on another, the tracked runs " +
-			"of the stack will not start until the dependent stack is successfully finished.",
+			"of the stack will not start until the dependent stack is successfully finished. Additionally, " +
+			"changes to the dependency will trigger the dependent.",
 
 		CreateContext: resourceStackDependencyCreate,
 		ReadContext:   resourceStackDependencyRead,
-		UpdateContext: resourceStackDependencyUpdate,
 		DeleteContext: resourceStackDependencyDelete,
 
 		Importer: &schema.ResourceImporter{
@@ -41,11 +41,6 @@ func resourceStackDependency() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"triggers": {
-				Type:        schema.TypeBool,
-				Description: "describes whether we should trigger the dependent if it's not triggered by the push, but the current stack has changed. Defaults to `true`.",
-				Required:    true,
-			},
 		},
 	}
 
@@ -63,23 +58,6 @@ func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.SetId(path.Join(query.StackDependency.StackID, query.StackDependency.ID))
-
-	return resourceStackDependencyRead(ctx, d, meta)
-}
-
-func resourceStackDependencyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var query struct {
-		StackDependency structs.StackDependency `graphql:"stackDependencyUpdate(id: $id, triggers: $triggers)"`
-	}
-
-	variables := map[string]interface{}{
-		"id":       getStackDependencyId(d),
-		"triggers": toBool(d.Get("triggers")),
-	}
-
-	if err := meta.(*internal.Client).Mutate(ctx, "StackDependencyUpdate", &query, variables); err != nil {
-		return diag.Errorf("could not update stack dependency: %s", err)
-	}
 
 	return resourceStackDependencyRead(ctx, d, meta)
 }
@@ -122,7 +100,6 @@ func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, me
 
 	d.Set("stack_id", query.Stack.Dependency.StackID)
 	d.Set("depends_on_stack_id", query.Stack.Dependency.DependsOnStackID)
-	d.Set("triggers", query.Stack.Dependency.Triggers)
 
 	return nil
 }
@@ -146,6 +123,5 @@ func stackDependencyCreateInput(d *schema.ResourceData) structs.StackDependencyI
 	return structs.StackDependencyInput{
 		StackID:          toID(d.Get("stack_id")),
 		DependsOnStackID: toID(d.Get("depends_on_stack_id")),
-		Triggers:         toBool(d.Get("triggers")),
 	}
 }
