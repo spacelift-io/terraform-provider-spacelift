@@ -15,8 +15,6 @@ import (
 func resourceAWSIntegration() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"**Note:** This resource is experimental. Please continue to use `spacelift_aws_role`." +
-			"\n\n" +
 			"`spacelift_aws_integration` represents an integration with an AWS " +
 			"account. This integration is account-level and needs to be explicitly " +
 			"attached to individual stacks in order to take effect." +

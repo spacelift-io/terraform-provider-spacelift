@@ -3,13 +3,10 @@
 page_title: "spacelift_aws_integration_attachment Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  Note: This resource is experimental. Please continue to use spacelift_aws_role.
   spacelift_aws_integration_attachment represents the attachment between a reusable AWS integration and a single stack or module.
 ---
 
 # spacelift_aws_integration_attachment (Resource)
-
-**Note:** This resource is experimental. Please continue to use `spacelift_aws_role`.
 
 `spacelift_aws_integration_attachment` represents the attachment between a reusable AWS integration and a single stack or module.
 
