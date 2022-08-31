@@ -19,8 +19,8 @@ func resourceAWSIntegration() *schema.Resource {
 			"account. This integration is account-level and needs to be explicitly " +
 			"attached to individual stacks in order to take effect." +
 			"\n\n" +
-			"Note: when assuming credentials for **shared workers**, Spacelift will use `$accountName-$integrationID@$stackID-$suffix` " +
-			"or `$accountName-$integrationID@$moduleID-$suffix` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) " +
+			"Note: when assuming credentials for **shared workers**, Spacelift will use `$accountName@$integrationID@$stackID@$suffix` " +
+			"or `$accountName@$integrationID@$moduleID@$suffix` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) " +
 			"and `$runID@$stackID@$accountName` truncated to 64 characters as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole)," +
 			"$suffix will be `read` or `write`.",
 
