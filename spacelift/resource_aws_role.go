@@ -29,6 +29,9 @@ func resourceStackAWSRole() *schema.Resource {
 func resourceAWSRole() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
+			"**NOTE:** while this resource continues to work, we have replaced it with the `spacelift_aws_integration` " +
+			"resource. The new resource allows integrations to be shared by multiple stacks/modules " +
+			"and also supports separate read vs write roles. Please use the `spacelift_aws_integration` resource instead.\n\n" +
 			"`spacelift_aws_role` represents [cross-account IAM role delegation](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html) " +
 			"between the Spacelift worker and an individual stack or module. " +
 			"If this is set, Spacelift will use AWS STS to assume the supplied IAM role and " +

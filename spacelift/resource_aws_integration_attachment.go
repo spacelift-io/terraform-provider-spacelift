@@ -18,8 +18,6 @@ import (
 func resourceAWSIntegrationAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"**Note:** This resource is experimental. Please continue to use `spacelift_aws_role`." +
-			"\n\n" +
 			"`spacelift_aws_integration_attachment` represents the attachment between " +
 			"a reusable AWS integration and a single stack or module.",
 
