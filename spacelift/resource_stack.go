@@ -276,7 +276,7 @@ func resourceStack() *schema.Resource {
 			},
 			"github_enterprise": {
 				Type:          schema.TypeList,
-				Description:   "GitHub Enterprise (self-hosted) VCS settings",
+				Description:   "VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application)",
 				Optional:      true,
 				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab"},
 				MaxItems:      1,

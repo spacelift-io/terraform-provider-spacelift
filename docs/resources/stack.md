@@ -199,7 +199,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `description` (String) Free-form stack description for users
 - `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack. Defaults to `false`.
 - `github_action_deploy` (Boolean) Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`.
-- `github_enterprise` (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
+- `github_enterprise` (Block List, Max: 1) VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application) (see [below for nested schema](#nestedblock--github_enterprise))
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - `import_state` (String, Sensitive) State file to upload when creating a new stack
 - `import_state_file` (String) Path to the state file to upload when creating a new stack
