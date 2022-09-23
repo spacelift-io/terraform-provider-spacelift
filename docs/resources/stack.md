@@ -57,7 +57,7 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-datacenter" {
   terraform_version = "0.12.6"
 }
 
-# Terraform stack using GitHub Enterprise as VCS
+# Terraform stack using a GitHub Custom Application. See the following page for more info: https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application
 resource "spacelift_stack" "k8s-cluster-github-enterprise" {
   github_enterprise {
     namespace = "spacelift" # The GitHub organization / user the repository belongs to
