@@ -7,7 +7,7 @@ resource "spacelift_stack" "k8s-cluster" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.3.0"
 }
 
 # Terraform stack using Bitbucket Cloud as VCS
@@ -23,7 +23,7 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.3.0"
 }
 
 # Terraform stack using Bitbucket Data Center as VCS
@@ -39,7 +39,7 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-datacenter" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.3.0"
 }
 
 # Terraform stack using GitHub Enterprise as VCS
@@ -55,7 +55,7 @@ resource "spacelift_stack" "k8s-cluster-github-enterprise" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.3.0"
 }
 
 # Terraform stack using GitLab as VCS
@@ -71,7 +71,7 @@ resource "spacelift_stack" "k8s-cluster-gitlab" {
   name              = "Kubernetes Cluster"
   project_root      = "cluster"
   repository        = "core-infra"
-  terraform_version = "0.12.6"
+  terraform_version = "1.3.0"
 }
 
 # Terraform stack using github.com as VCS and enabling smart sanitization
@@ -83,7 +83,7 @@ resource "spacelift_stack" "k8s-cluster" {
   name                         = "Kubernetes Cluster"
   project_root                 = "cluster"
   repository                   = "core-infra"
-  terraform_version            = "1.2.6"
+  terraform_version            = "1.3.0"
   terraform_smart_sanitization = true
 }
 
