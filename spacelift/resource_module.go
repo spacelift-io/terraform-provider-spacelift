@@ -279,12 +279,12 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateModule structs.Module `graphql:"moduleUpdate(id: $id, input: $input)"`
+		UpdateModule structs.Module `graphql:"moduleUpdateV2(id: $id, input: $input)"`
 	}
 
 	variables := map[string]interface{}{
 		"id":    toID(d.Id()),
-		"input": moduleUpdateInput(d),
+		"input": moduleUpdateV2Input(d),
 	}
 
 	var ret diag.Diagnostics
@@ -312,38 +312,53 @@ func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
+func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace *graphql.String) {
+	provider = graphql.NewString("GITHUB")
+
+	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
+		namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
+		provider = graphql.NewString(structs.VCSProviderAzureDevOps)
+
+		return
+	}
+
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
+		namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+		provider = graphql.NewString(structs.VCSProviderBitbucketCloud)
+
+		return
+	}
+
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
+		namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+		provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
+
+		return
+	}
+
+	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
+		namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
+		provider = graphql.NewString(structs.VCSProviderGitHubEnterprise)
+
+		return
+	}
+
+	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
+		namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
+		provider = graphql.NewString(structs.VCSProviderGitlab)
+
+		return
+	}
+
+	return
+}
+
 func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 	ret := structs.ModuleCreateInput{
 		UpdateInput: moduleUpdateInput(d),
 		Repository:  toString(d.Get("repository")),
 	}
-
-	ret.Provider = graphql.NewString("GITHUB")
-
-	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
-		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
-		ret.Provider = graphql.NewString(structs.VCSProviderAzureDevOps)
-	}
-
-	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
-		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketCloud)
-	}
-
-	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
-		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
-	}
-
-	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
-		ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderGitHubEnterprise)
-	}
-
-	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
-		ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderGitlab)
-	}
+	ret.Provider, ret.Namespace = getSourceData(d)
 
 	name, ok := d.GetOk("name")
 	if ok {
@@ -404,6 +419,51 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 
 	if space, ok := d.GetOk("space_id"); ok {
 		ret.Space = toOptionalString(space)
+	}
+
+	return ret
+}
+
+func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
+	ret := structs.ModuleUpdateV2Input{
+		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
+		Branch:              toString(d.Get("branch")),
+		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
+		Repository:          toString(d.Get("repository")),
+	}
+	ret.Provider, ret.Namespace = getSourceData(d)
+
+	description, ok := d.GetOk("description")
+	if ok {
+		ret.Description = toOptionalString(description)
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+		ret.Labels = &labels
+	}
+
+	if projectRoot := d.Get("project_root"); projectRoot != "" {
+		ret.ProjectRoot = toOptionalString(projectRoot)
+	}
+
+	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
+		var sharedAccounts []graphql.String
+		for _, account := range sharedAccountsSet.List() {
+			sharedAccounts = append(sharedAccounts, graphql.String(account.(string)))
+		}
+		ret.SharedAccounts = &sharedAccounts
+	}
+
+	if space, ok := d.GetOk("space_id"); ok {
+		ret.Space = toOptionalString(space)
+	}
+
+	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
+		ret.WorkerPool = graphql.NewID(workerPoolID)
 	}
 
 	return ret
