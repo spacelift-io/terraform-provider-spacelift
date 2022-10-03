@@ -45,6 +45,12 @@ func dataSpace() *schema.Resource {
 				Description: "indication whether access to this space inherits read access to entities from the parent space",
 				Computed:    true,
 			},
+			"labels": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "list of labels describing a space",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -68,6 +74,13 @@ func dataSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("name", space.Name)
 	d.Set("description", space.Description)
 	d.Set("inherit_entities", space.InheritEntities)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range space.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
 	if space.ParentSpace != nil {
 		d.Set("parent_space_id", *space.ParentSpace)
 	}
