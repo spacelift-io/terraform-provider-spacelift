@@ -25,3 +25,20 @@ type ModuleUpdateInput struct {
 	WorkerPool          *graphql.ID       `json:"workerPool"`
 	Space               *graphql.String   `json:"space"`
 }
+
+// ModuleUpdateV2Input represents the input required to update a Module,
+// including the source.
+type ModuleUpdateV2Input struct {
+	Administrative      graphql.Boolean   `json:"administrative"`
+	Branch              graphql.String    `json:"branch"`
+	Description         *graphql.String   `json:"description"`
+	Labels              *[]graphql.String `json:"labels"`
+	Namespace           *graphql.String   `json:"namespace"`
+	ProjectRoot         *graphql.String   `json:"projectRoot"`
+	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`
+	Provider            *graphql.String   `json:"provider"`
+	Repository          graphql.String    `json:"repository"`
+	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
+	Space               *graphql.String   `json:"space"`
+	WorkerPool          *graphql.ID       `json:"workerPool"`
+}

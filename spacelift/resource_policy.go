@@ -55,7 +55,6 @@ func resourcePolicy() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "Name of the policy - should be unique in one account",
 				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"body": {
