@@ -95,9 +95,8 @@ func TestSpaceResource(t *testing.T) {
 			{
 				Config: config,
 				Check: Resource(
-					"spacelift_space.test-child",
-					Attribute("id", Contains("my-second-space")),
-					Attribute("parent_space_id", Contains("my-first-space")),
+					resourceName,
+					Attribute("id", Contains("my-first-space")),
 					SetEquals("labels", "label1", "label2"),
 				),
 			},
