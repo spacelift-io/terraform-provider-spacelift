@@ -50,6 +50,12 @@ func resourceSpace() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"labels": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "list of labels describing a space",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -69,6 +75,14 @@ func spaceCreateInput(d *schema.ResourceData) structs.SpaceInput {
 	description, ok := d.GetOk("description")
 	if ok {
 		input.Description = toString(description)
+	}
+
+	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
+		var labels []graphql.String
+		for _, label := range labelSet.List() {
+			labels = append(labels, graphql.String(label.(string)))
+		}
+		input.Labels = &labels
 	}
 
 	return input
@@ -114,6 +128,11 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if space.ParentSpace != nil {
 		d.Set("parent_space_id", *space.ParentSpace)
 	}
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range space.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
 
 	return nil
 }
