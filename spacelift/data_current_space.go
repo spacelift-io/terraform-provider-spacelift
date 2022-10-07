@@ -18,9 +18,9 @@ import (
 func dataCurrentSpace() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_current_stack` is a data source that provides information " +
+			"`spacelift_current_space` is a data source that provides information " +
 			"about the space that an administrative stack is in if the run is executed within " +
-			"Spacelift by a stack or module. This allows makes it easier to create resources " +
+			"Spacelift by a stack or module. This  makes it easier to create resources " +
 			"within the same space.",
 		ReadContext: dataCurrentSpaceRead,
 	}
