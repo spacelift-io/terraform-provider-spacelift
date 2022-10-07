@@ -65,6 +65,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_bitbucket_datacenter_integration":       dataBitbucketDatacenterIntegration(),
 				"spacelift_context_attachment":                     dataContextAttachment(),
 				"spacelift_context":                                dataContext(),
+				"spacelift_contexts":                               dataContexts(),
 				"spacelift_current_stack":                          dataCurrentStack(),
 				"spacelift_drift_detection":                        dataDriftDetection(),
 				"spacelift_environment_variable":                   dataEnvironmentVariable(),
