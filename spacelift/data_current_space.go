@@ -5,14 +5,13 @@ import (
 	"path"
 	"strings"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
-
 	"github.com/dgrijalva/jwt-go/v4"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func dataCurrentSpace() *schema.Resource {
