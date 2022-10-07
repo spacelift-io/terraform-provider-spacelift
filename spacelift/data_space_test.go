@@ -21,6 +21,7 @@ func TestSpaceData(t *testing.T) {
 					inherit_entities = true
 					parent_space_id = "root"
 					description = "some valid description"
+					labels = ["label1", "label2"]
 				}
 
 				data "spacelift_space" "test" {
@@ -32,6 +33,7 @@ func TestSpaceData(t *testing.T) {
 				Attribute("id", Contains("my-first-space")),
 				Attribute("parent_space_id", Equals("root")),
 				Attribute("description", Equals("some valid description")),
+				SetEquals("labels", "label1", "label2"),
 			),
 		}})
 	})

@@ -47,6 +47,7 @@ resource "spacelift_space" "development-frontend" {
 
 - `description` (String) free-form space description for users
 - `inherit_entities` (Boolean) indication whether access to this space inherits read access to entities from the parent space. Defaults to `false`.
+- `labels` (Set of String) list of labels describing a space
 - `parent_space_id` (String) immutable ID (slug) of parent space. Defaults to `root`.
 
 ### Read-Only

@@ -47,6 +47,7 @@ func TestSpaceResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("description", Contains("bang")),
+					SetEquals("labels"),
 				),
 			},
 		})
@@ -74,6 +75,29 @@ func TestSpaceResource(t *testing.T) {
 					"spacelift_space.test-child",
 					Attribute("id", Contains("my-second-space")),
 					Attribute("parent_space_id", Contains("my-first-space")),
+				),
+			},
+		})
+	})
+	t.Run("creates a space with labels", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := fmt.Sprintf(`
+				resource "spacelift_space" "test" {
+					name = "My first space %s"
+					parent_space_id = "root"
+					inherit_entities = true
+					labels = ["label1", "label2"]
+				}
+			`, randomID)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config,
+				Check: Resource(
+					resourceName,
+					Attribute("id", Contains("my-first-space")),
+					SetEquals("labels", "label1", "label2"),
 				),
 			},
 		})
