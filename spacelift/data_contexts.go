@@ -14,8 +14,8 @@ import (
 func dataContexts() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_contexts` represents all the contexts created in " +
-			"the Spacelift account.",
+			"`spacelift_contexts` represents all the contexts in the Spacelift " +
+			"account visible to the API user.",
 
 		ReadContext: dataContextsRead,
 

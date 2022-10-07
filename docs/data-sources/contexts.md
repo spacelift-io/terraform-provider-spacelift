@@ -3,12 +3,12 @@
 page_title: "spacelift_contexts Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_contexts represents all the contexts created in the Spacelift account.
+  spacelift_contexts represents all the contexts in the Spacelift account visible to the API user.
 ---
 
 # spacelift_contexts (Data Source)
 
-`spacelift_contexts` represents all the contexts created in the Spacelift account.
+`spacelift_contexts` represents all the contexts in the Spacelift account visible to the API user.
 
 ## Example Usage
 
