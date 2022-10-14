@@ -17,6 +17,8 @@ func main() {
 	})
 }
 
+
+package qa
 provider "spacelift" {}
 
 module "spacelift" {
