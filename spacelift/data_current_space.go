@@ -50,6 +50,9 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	variables := map[string]interface{}{"id": toID(strings.TrimRight(stackID, "/"))}
 	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
+		if strings.Contains(err.Error(), "denied") {
+			return diag.Errorf("could not query for stack: %v, is this stack administrative?", err)
+		}
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
