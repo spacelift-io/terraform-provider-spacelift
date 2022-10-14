@@ -18,8 +18,8 @@ func main() {
 }
 
 
-package qa
-provider "spacelift" {}
+
+provider "aws" {}
 
 module "spacelift" {
   source  = "cloudposse/cloud-infrastructure-automation/spacelift"
