@@ -11,5 +11,5 @@ func FromSpaceliftError(err error) error {
 	if err == nil || !strings.Contains(err.Error(), "unauthorized") {
 		return err
 	}
-	return fmt.Errorf("%w - is it an administrative stack?", err)
+	return fmt.Errorf("%w - is it an administrative stack in the appropriate space?", err)
 }
