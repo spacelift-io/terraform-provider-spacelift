@@ -61,6 +61,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_aws_integration_attachment_external_id": dataAWSIntegrationAttachmentExternalID(),
 				"spacelift_azure_devops_integration":               dataAzureDevopsIntegration(),
 				"spacelift_azure_integration":                      dataAzureIntegration(),
+				"spacelift_azure_integrations":                     dataAzureIntegrations(),
 				"spacelift_azure_integration_attachment":           dataAzureIntegrationAttachment(),
 				"spacelift_bitbucket_cloud_integration":            dataBitbucketCloudIntegration(),
 				"spacelift_bitbucket_datacenter_integration":       dataBitbucketDatacenterIntegration(),
