@@ -17,11 +17,11 @@ description: |-
 
 ### Read-Only
 
-- `contexts` (List of Object) (see [below for nested schema](#nestedatt--contexts))
 - `id` (String) The ID of this resource.
+- `integrations` (List of Object) (see [below for nested schema](#nestedatt--integrations))
 
-<a id="nestedatt--contexts"></a>
-### Nested Schema for `contexts`
+<a id="nestedatt--integrations"></a>
+### Nested Schema for `integrations`
 
 Read-Only:
 
