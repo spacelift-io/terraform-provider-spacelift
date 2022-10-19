@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
@@ -15,7 +16,7 @@ func dataAWSIntegrations() *schema.Resource {
 		Description: "`spacelift_aws_integration` represents a list of all the AWS integrations in the Spacelift account",
 		ReadContext: dataAWSIntegrationsRead,
 		Schema: map[string]*schema.Schema{
-			"contexts": {
+			"integrations": {
 				Type:     schema.TypeList,
 				Computed: true,
 				Elem: &schema.Resource{
@@ -98,11 +99,11 @@ func dataAWSIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta i
 }
 
 func flattenDataIntegrationsList(integrations []*structs.AWSIntegration) []map[string]interface{} {
-	wps := make([]map[string]interface{}, len(integrations))
+	mapped := make([]map[string]interface{}, len(integrations))
 
 	for index, integration := range integrations {
-		wps[index] = integration.ToMap()
+		mapped[index] = integration.ToMap()
 	}
 
-	return wps
+	return mapped
 }
