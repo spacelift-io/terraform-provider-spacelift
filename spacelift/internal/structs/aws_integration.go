@@ -17,17 +17,27 @@ type AWSIntegration struct {
 // PopulateResourceData populates Terraform resource data with the contents of
 // the AWSIntegration.
 func (i *AWSIntegration) PopulateResourceData(d *schema.ResourceData) {
-	d.Set("duration_seconds", i.DurationSeconds)
-	d.Set("generate_credentials_in_worker", i.GenerateCredentialsInWorker)
-	d.Set("external_id", i.ExternalID)
-	d.Set("name", i.Name)
-	d.Set("role_arn", i.RoleARN)
-	d.Set("space_id", i.Space)
+	for key, value := range i.ToMap() {
+		d.Set(key, value)
+	}
+}
 
+func (i *AWSIntegration) ToMap() map[string]interface{} {
+	return map[string]interface{}{
+		"duration_seconds":               i.DurationSeconds,
+		"generate_credentials_in_worker": i.GenerateCredentialsInWorker,
+		"external_id":                    i.ExternalID,
+		"name":                           i.Name,
+		"role_arn":                       i.RoleARN,
+		"space_id":                       i.Space,
+		"labels":                         i.getLabelsSet(),
+	}
+}
+
+func (i *AWSIntegration) getLabelsSet() *schema.Set {
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range i.Labels {
 		labels.Add(label)
 	}
-	d.Set("labels", labels)
-
+	return labels
 }
