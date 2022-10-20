@@ -2,36 +2,80 @@ package spacelift
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
 func TestAWSIntegrationsData(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-	resourceName := "spacelift_aws_integration.test"
-	datasourceName := "data.spacelift_aws_integrations.test"
+	first := &structs.AWSIntegration{
+		DurationSeconds:             1234,
+		GenerateCredentialsInWorker: false,
+		Labels:                      []string{"one", "two"},
+		Name:                        acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
+		RoleARN:                     "arn:aws:iam::039653571618:role/empty-test-role",
+		Space:                       "root",
+	}
+	second := &structs.AWSIntegration{
+		DurationSeconds:             4321,
+		GenerateCredentialsInWorker: true,
+		Labels:                      []string{"three", "four"},
+		Name:                        acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
+		RoleARN:                     "arn:aws:iam::039653571618:role/empty-test-role-2",
+		Space:                       "legacy",
+	}
 
-	testSteps(t, []resource.TestStep{{
-		Config: fmt.Sprintf(`
-		 resource "spacelift_aws_integration" "test" {
-        	name                           = "test-aws-integration-%s"
-        	role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
-        	labels                         = ["one", "two"]
-        	duration_seconds               = 3600
-        	generate_credentials_in_worker = false
-      	 }
+	terraformConfig := fmt.Sprintf(`
+		 %s
+
+		 %s
 
       	 data "spacelift_aws_integrations" "test" {
-			depends_on = [spacelift_aws_integration.test]
+			depends_on = [spacelift_aws_integration.%s, spacelift_aws_integration.%s]
       	 }
-		`, randomID), Check: resource.ComposeTestCheckFunc(
-			Resource(datasourceName, Attribute("id", IsNotEmpty())),
-			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"integrations", "role_arn"}, resourceName, "role_arn"),
-			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"integrations", "name"}, resourceName, "name"),
+		`,
+		awsIntegrationToResource(first),
+		awsIntegrationToResource(second),
+		first.Name, second.Name,
+	)
+	testSteps(t, []resource.TestStep{{
+		Config: terraformConfig, Check: resource.ComposeTestCheckFunc(
+			Resource("data.spacelift_aws_integrations.test", Attribute("id", Equals("spacelift_aws_integrations"))),
+			resource.ComposeTestCheckFunc(awsIntegrationChecks(first)...),
+			resource.ComposeTestCheckFunc(awsIntegrationChecks(second)...),
 		),
 	}})
+}
+
+func awsIntegrationToResource(i *structs.AWSIntegration) string {
+	return fmt.Sprintf(`
+ resource "spacelift_aws_integration" "%s" {
+        	name                           = "%s"
+        	role_arn                       = "%s"	
+			space_id 					   = "%s" 
+        	labels                         =  %s
+        	duration_seconds               =  %d
+        	generate_credentials_in_worker =  %t
+      	 }
+`, i.Name, i.Name, i.RoleARN, i.Space, labelsAsString(i.Labels), i.DurationSeconds, i.GenerateCredentialsInWorker)
+}
+
+func labelsAsString(labels []string) string {
+	return fmt.Sprintf(`["%s"]`, strings.Join(labels, `", "`))
+}
+
+func awsIntegrationChecks(first *structs.AWSIntegration) []resource.TestCheckFunc {
+	return []resource.TestCheckFunc{
+		Resource(fmt.Sprintf("spacelift_aws_integration.%s", first.Name), Attribute("name", Equals(first.Name))),
+		Resource(fmt.Sprintf("spacelift_aws_integration.%s", first.Name), Attribute("role_arn", Equals(first.RoleARN))),
+		Resource(fmt.Sprintf("spacelift_aws_integration.%s", first.Name), Attribute("space_id", Equals(first.Space))),
+		Resource(fmt.Sprintf("spacelift_aws_integration.%s", first.Name), Attribute("duration_seconds", Equals(fmt.Sprintf("%d", first.DurationSeconds)))),
+		Resource(fmt.Sprintf("spacelift_aws_integration.%s", first.Name), Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", first.GenerateCredentialsInWorker)))),
+		Resource(fmt.Sprintf("spacelift_aws_integration.%s", first.Name), SetEquals("labels", first.Labels...)),
+	}
 }
