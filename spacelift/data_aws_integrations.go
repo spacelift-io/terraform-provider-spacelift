@@ -8,7 +8,6 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func dataAWSIntegrations() *schema.Resource {
@@ -22,10 +21,9 @@ func dataAWSIntegrations() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"integration_id": {
-							Type:             schema.TypeString,
-							Description:      "Immutable ID of the integration.",
-							Computed:         true,
-							ValidateDiagFunc: validations.DisallowEmptyString,
+							Type:        schema.TypeString,
+							Description: "Immutable ID of the integration.",
+							Computed:    true,
 						},
 						"name": {
 							Type:        schema.TypeString,
