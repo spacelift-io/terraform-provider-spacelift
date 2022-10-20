@@ -24,14 +24,12 @@ func dataAWSIntegrations() *schema.Resource {
 						"integration_id": {
 							Type:             schema.TypeString,
 							Description:      "Immutable ID of the integration.",
-							Optional:         true,
 							Computed:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"name": {
 							Type:        schema.TypeString,
 							Description: "Name of the AWS integration.",
-							Optional:    true,
 							Computed:    true,
 						},
 						"role_arn": {
