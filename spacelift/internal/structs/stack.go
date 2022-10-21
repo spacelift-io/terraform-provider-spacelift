@@ -85,35 +85,59 @@ type Stack struct {
 
 // ExportVCSSettings exports VCS settings into Terraform schema.
 func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
-	var fieldName string
-	vcsSettings := make(map[string]interface{})
-
-	switch s.Provider {
-	case VCSProviderAzureDevOps:
-		vcsSettings["project"] = s.Namespace
-		fieldName = "azure_devops"
-	case VCSProviderBitbucketCloud:
-		vcsSettings["namespace"] = s.Namespace
-		fieldName = "bitbucket_cloud"
-	case VCSProviderBitbucketDatacenter:
-		vcsSettings["namespace"] = s.Namespace
-		fieldName = "bitbucket_datacenter"
-	case VCSProviderGitHubEnterprise:
-		vcsSettings["namespace"] = s.Namespace
-		fieldName = "github_enterprise"
-	case VCSProviderGitlab:
-		vcsSettings["namespace"] = s.Namespace
-		fieldName = "gitlab"
-	case VCSProviderShowcases:
-		vcsSettings["namespace"] = s.Namespace
-		fieldName = "showcase"
-	}
-
-	if fieldName != "" {
+	if fieldName, vcsSettings := s.VCSSettings(); fieldName != "" {
 		if err := d.Set(fieldName, []interface{}{vcsSettings}); err != nil {
 			return errors.Wrapf(err, "error setting %s (resource)", fieldName)
 		}
 	}
 
 	return nil
+}
+
+// IaC returns IaC settings of a stack.
+func (s *Stack) IaCSettings() (string, map[string]interface{}) {
+	switch s.VendorConfig.Typename {
+	case StackConfigVendorAnsible:
+		return "ansible", singleKeyMap("playbook", s.VendorConfig.Ansible.Playbook)
+	case StackConfigVendorCloudFormation:
+		return "cloudformation", map[string]interface{}{
+			"entry_template_file": s.VendorConfig.CloudFormation.EntryTemplateName,
+			"region":              s.VendorConfig.CloudFormation.Region,
+			"stack_name":          s.VendorConfig.CloudFormation.StackName,
+			"template_bucket":     s.VendorConfig.CloudFormation.TemplateBucket,
+		}
+	case StackConfigVendorKubernetes:
+		return "kubernetes", singleKeyMap("namespace", s.VendorConfig.Kubernetes.Namespace)
+	case StackConfigVendorPulumi:
+		return "pulumi", map[string]interface{}{
+			"login_url":  s.VendorConfig.Pulumi.LoginURL,
+			"stack_name": s.VendorConfig.Pulumi.StackName,
+		}
+	}
+
+	return "", nil
+}
+
+// VCSSettings returns VCS settings of a stack.
+func (s *Stack) VCSSettings() (string, map[string]interface{}) {
+	switch s.Provider {
+	case VCSProviderAzureDevOps:
+		return "azure_devops", singleKeyMap("project", s.Namespace)
+	case VCSProviderBitbucketCloud:
+		return "bitbucket_cloud", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderBitbucketDatacenter:
+		return "bitbucket_datacenter", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderGitHubEnterprise:
+		return "github_enterprise", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderGitlab:
+		return "gitlab", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderShowcases:
+		return "showcase", singleKeyMap("namespace", s.Namespace)
+	}
+
+	return "", nil
+}
+
+func singleKeyMap(key, val string) map[string]interface{} {
+	return map[string]interface{}{key: val}
 }

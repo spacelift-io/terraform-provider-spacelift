@@ -46,30 +46,35 @@ func dataStack() *schema.Resource {
 				Description: "List of after-apply scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"after_destroy": {
 				Type:        schema.TypeList,
 				Description: "List of after-destroy scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"after_init": {
 				Type:        schema.TypeList,
 				Description: "List of after-init scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"after_perform": {
 				Type:        schema.TypeList,
 				Description: "List of after-perform scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"after_plan": {
 				Type:        schema.TypeList,
 				Description: "List of after-plan scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"after_run": {
 				Type:        schema.TypeList,
@@ -111,30 +116,35 @@ func dataStack() *schema.Resource {
 				Description: "List of before-apply scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"before_destroy": {
 				Type:        schema.TypeList,
 				Description: "List of before-destroy scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"before_init": {
 				Type:        schema.TypeList,
 				Description: "List of before-init scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"before_perform": {
 				Type:        schema.TypeList,
 				Description: "List of before-perform scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"before_plan": {
 				Type:        schema.TypeList,
 				Description: "List of before-plan scripts",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
+				Computed:    true,
 			},
 			"bitbucket_cloud": {
 				Type:        schema.TypeList,
@@ -407,36 +417,11 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	}
 	d.Set("labels", labels)
 
-	switch stack.VendorConfig.Typename {
-	case structs.StackConfigVendorAnsible:
-		m := map[string]interface{}{
-			"playbook": stack.VendorConfig.Ansible.Playbook,
+	if iacKey, iacSettings := stack.IaCSettings(); iacKey != "" {
+		if err := d.Set(iacKey, iacSettings); err != nil {
+			return diag.Errorf("could not set IaC settings: %v", err)
 		}
-
-		d.Set("ansible", []interface{}{m})
-	case structs.StackConfigVendorCloudFormation:
-		m := map[string]interface{}{
-			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
-			"region":              stack.VendorConfig.CloudFormation.Region,
-			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
-			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
-		}
-
-		d.Set("cloudformation", []interface{}{m})
-	case structs.StackConfigVendorKubernetes:
-		m := map[string]interface{}{
-			"namespace": stack.VendorConfig.Kubernetes.Namespace,
-		}
-
-		d.Set("kubernetes", []interface{}{m})
-	case structs.StackConfigVendorPulumi:
-		m := map[string]interface{}{
-			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
-			"stack_name": stack.VendorConfig.Pulumi.StackName,
-		}
-
-		d.Set("pulumi", []interface{}{m})
-	default:
+	} else { // this is a Terraform stack
 		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
