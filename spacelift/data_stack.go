@@ -418,7 +418,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("labels", labels)
 
 	if iacKey, iacSettings := stack.IaCSettings(); iacKey != "" {
-		if err := d.Set(iacKey, iacSettings); err != nil {
+		if err := d.Set(iacKey, []interface{}{iacSettings}); err != nil {
 			return diag.Errorf("could not set IaC settings: %v", err)
 		}
 	} else { // this is a Terraform stack

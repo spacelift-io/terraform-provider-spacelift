@@ -17,8 +17,12 @@ import (
 
 func dataStacks() *schema.Resource {
 	stackSchema := dataStack().Schema
-	stackSchema["stack_id"].Computed = true
-	stackSchema["stack_id"].Required = false
+
+	stackSchema["stack_id"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "ID (slug) of the stack",
+		Computed:    true,
+	}
 
 	return &schema.Resource{
 		Description: "" +
@@ -37,7 +41,6 @@ func dataStacks() *schema.Resource {
 			"name":           predicates.StringField("Require stacks to have one of the names", 1),
 			"project_root":   predicates.StringField("Require stacks to be in one of the project roots", 1),
 			"repo":           predicates.StringField("Require stacks to be in one of the repos", 1),
-			"space":          predicates.StringField("Require stacks to be in one of the spaces", 1),
 			"state":          predicates.StringField("Require stacks to have one of the states", 1),
 			"vendor":         predicates.StringField("Require stacks to use one of the IaC vendors", 1),
 			"worker_pool":    predicates.StringField("Require stacks to use one of the worker pools", 1),
@@ -65,9 +68,8 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "name")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "project_root", "projectRoot")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "repo")...)
-	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "space")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, true, "state")...)
-	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "vendor")...)
+	conditions = append(conditions, predicates.BuildStringOrEnum(d, true, "vendor")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "worker_pool", "workerPool")...)
 
 	var query struct {
@@ -132,11 +134,11 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 			}
 
 			if vcsKey, vcsSettings := node.VCSSettings(); vcsKey != "" {
-				stack[vcsKey] = vcsSettings
+				stack[vcsKey] = []interface{}{vcsSettings}
 			}
 
 			if iacKey, iacSettings := node.IaCSettings(); iacKey != "" {
-				stack[iacKey] = iacSettings
+				stack[iacKey] = []interface{}{iacSettings}
 			} else { // this is a Terraform stack
 				stack["terraform_version"] = node.VendorConfig.Terraform.Version
 				stack["terraform_workspace"] = node.VendorConfig.Terraform.Workspace

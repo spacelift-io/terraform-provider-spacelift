@@ -10,7 +10,11 @@ func BooleanField(description string, maxItems int) *schema.Schema {
 		MaxItems:    maxItems,
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
-				"equals": {Type: schema.TypeBool},
+				"equals": {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Default:  true,
+				},
 			},
 		},
 	}
@@ -26,8 +30,11 @@ func StringField(description string, maxItems int) *schema.Schema {
 			Schema: map[string]*schema.Schema{
 				"any_of": {
 					Type:     schema.TypeList,
+					MinItems: 1,
 					Required: true,
-					Elem:     &schema.Schema{Type: schema.TypeString},
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
 				},
 			},
 		},
