@@ -24,7 +24,7 @@ description: |-
 - `locked` (Block List, Max: 1) Require stacks to be locked (see [below for nested schema](#nestedblock--locked))
 - `name` (Block List, Max: 1) Require stacks to have one of the names (see [below for nested schema](#nestedblock--name))
 - `project_root` (Block List, Max: 1) Require stacks to be in one of the project roots (see [below for nested schema](#nestedblock--project_root))
-- `repo` (Block List, Max: 1) Require stacks to be in one of the repos (see [below for nested schema](#nestedblock--repo))
+- `repository` (Block List, Max: 1) Require stacks to be in one of the repositories (see [below for nested schema](#nestedblock--repository))
 - `state` (Block List, Max: 1) Require stacks to have one of the states (see [below for nested schema](#nestedblock--state))
 - `vendor` (Block List, Max: 1) Require stacks to use one of the IaC vendors (see [below for nested schema](#nestedblock--vendor))
 - `worker_pool` (Block List, Max: 1) Require stacks to use one of the worker pools (see [below for nested schema](#nestedblock--worker_pool))
@@ -90,8 +90,8 @@ Required:
 - `any_of` (List of String)
 
 
-<a id="nestedblock--repo"></a>
-### Nested Schema for `repo`
+<a id="nestedblock--repository"></a>
+### Nested Schema for `repository`
 
 Required:
 

@@ -2,18 +2,18 @@ package search
 
 import "github.com/shurcooL/graphql"
 
-type Input struct {
-	First      *graphql.Int      `json:"first"`
-	After      *graphql.String   `json:"after"`
-	Predicates *[]QueryPredicate `json:"predicates"`
+type SearchInput struct {
+	First      *graphql.Int            `json:"first"`
+	After      *graphql.String         `json:"after"`
+	Predicates *[]SearchQueryPredicate `json:"predicates"`
 }
 
-type QueryPredicate struct {
-	Field      graphql.String       `json:"field"`
-	Constraint QueryFieldConstraint `json:"constraint"`
+type SearchQueryPredicate struct {
+	Field      graphql.String             `json:"field"`
+	Constraint SearchQueryFieldConstraint `json:"constraint"`
 }
 
-type QueryFieldConstraint struct {
+type SearchQueryFieldConstraint struct {
 	BooleanEquals *[]graphql.Boolean `json:"booleanEquals"`
 	EnumEquals    *[]graphql.String  `json:"enumEquals"`
 	StringMatches *[]graphql.String  `json:"stringMatches"`

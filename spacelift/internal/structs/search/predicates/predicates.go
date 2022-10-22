@@ -7,7 +7,7 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/search"
 )
 
-func BuildBoolean(d *schema.ResourceData, schemaName string, optionalPredicateName ...string) (out []search.QueryPredicate) {
+func BuildBoolean(d *schema.ResourceData, schemaName string, optionalPredicateName ...string) (out []search.SearchQueryPredicate) {
 	field, ok := d.GetOk(schemaName)
 	if !ok {
 		return
@@ -19,9 +19,9 @@ func BuildBoolean(d *schema.ResourceData, schemaName string, optionalPredicateNa
 			continue
 		}
 
-		out = append(out, search.QueryPredicate{
+		out = append(out, search.SearchQueryPredicate{
 			Field: getPredicateName(schemaName, optionalPredicateName),
-			Constraint: search.QueryFieldConstraint{
+			Constraint: search.SearchQueryFieldConstraint{
 				BooleanEquals: &[]graphql.Boolean{graphql.Boolean(predicate["equals"].(bool))},
 			},
 		})
@@ -30,7 +30,7 @@ func BuildBoolean(d *schema.ResourceData, schemaName string, optionalPredicateNa
 	return
 }
 
-func BuildStringOrEnum(d *schema.ResourceData, isEnum bool, schemaName string, optionalPredicateName ...string) (out []search.QueryPredicate) {
+func BuildStringOrEnum(d *schema.ResourceData, isEnum bool, schemaName string, optionalPredicateName ...string) (out []search.SearchQueryPredicate) {
 	field, ok := d.GetOk(schemaName)
 	if !ok {
 		return nil
@@ -47,14 +47,14 @@ func BuildStringOrEnum(d *schema.ResourceData, isEnum bool, schemaName string, o
 			matches = append(matches, graphql.String(element.(string)))
 		}
 
-		var constraint search.QueryFieldConstraint
+		var constraint search.SearchQueryFieldConstraint
 		if isEnum {
 			constraint.EnumEquals = &matches
 		} else {
 			constraint.StringMatches = &matches
 		}
 
-		out = append(out, search.QueryPredicate{
+		out = append(out, search.SearchQueryPredicate{
 			Field:      getPredicateName(schemaName, optionalPredicateName),
 			Constraint: constraint,
 		})

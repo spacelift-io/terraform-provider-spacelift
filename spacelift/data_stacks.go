@@ -40,7 +40,7 @@ func dataStacks() *schema.Resource {
 			"locked":         predicates.BooleanField("Require stacks to be locked", 1),
 			"name":           predicates.StringField("Require stacks to have one of the names", 1),
 			"project_root":   predicates.StringField("Require stacks to be in one of the project roots", 1),
-			"repo":           predicates.StringField("Require stacks to be in one of the repos", 1),
+			"repository":     predicates.StringField("Require stacks to be in one of the repositories", 1),
 			"state":          predicates.StringField("Require stacks to have one of the states", 1),
 			"vendor":         predicates.StringField("Require stacks to use one of the IaC vendors", 1),
 			"worker_pool":    predicates.StringField("Require stacks to use one of the worker pools", 1),
@@ -58,16 +58,16 @@ func dataStacks() *schema.Resource {
 
 func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// Build the conditions.
-	var conditions []search.QueryPredicate
+	var conditions []search.SearchQueryPredicate
 
 	conditions = append(conditions, predicates.BuildBoolean(d, "administrative")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "branch")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "commit")...)
-	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "labels")...)
+	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "labels", "label")...)
 	conditions = append(conditions, predicates.BuildBoolean(d, "locked")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "name")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "project_root", "projectRoot")...)
-	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "repo")...)
+	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "repository")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, true, "state")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, true, "vendor")...)
 	conditions = append(conditions, predicates.BuildStringOrEnum(d, false, "worker_pool", "workerPool")...)
@@ -81,7 +81,7 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		} `graphql:"searchStacks(input: $input)"`
 	}
 
-	input := search.Input{
+	input := search.SearchInput{
 		First:      graphql.NewInt(50),
 		Predicates: &conditions,
 	}
