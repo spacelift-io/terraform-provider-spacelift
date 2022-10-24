@@ -20,21 +20,34 @@ type AzureIntegration struct {
 // PopulateResourceData populates Terraform resource data with the contents of
 // the AzureIntegration.
 func (i *AzureIntegration) PopulateResourceData(d *schema.ResourceData) {
-	d.Set("admin_consent_provided", i.AdminConsentProvided)
-	d.Set("admin_consent_url", i.AdminConsentURL)
-	d.Set("application_id", i.ApplicationID)
-	d.Set("display_name", i.DisplayName)
-	d.Set("name", i.Name)
-	d.Set("tenant_id", i.TenantID)
-	d.Set("space_id", i.Space)
+	for key, value := range i.ToMap() {
+		d.Set(key, value)
+	}
+}
 
+func (i *AzureIntegration) ToMap() map[string]interface{} {
+	fields := map[string]interface{}{
+		"admin_consent_provided": i.AdminConsentProvided,
+		"admin_consent_url":      i.AdminConsentURL,
+		"application_id":         i.ApplicationID,
+		"display_name":           i.DisplayName,
+		"name":                   i.Name,
+		"tenant_id":              i.TenantID,
+		"space_id":               i.Space,
+	}
 	if subID := i.DefaultSubscriptionID; subID != nil {
-		d.Set("default_subscription_id", *subID)
+		fields["default_subscription_id"] = *subID
 	}
 
+	fields["labels"] = i.getLabelsSet()
+
+	return fields
+}
+
+func (i *AzureIntegration) getLabelsSet() *schema.Set {
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range i.Labels {
 		labels.Add(label)
 	}
-	d.Set("labels", labels)
+	return labels
 }
