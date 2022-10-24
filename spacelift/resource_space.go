@@ -2,6 +2,8 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -98,7 +100,7 @@ func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "CreateSpace", &mutation, variables); err != nil {
-		return diag.Errorf("could not create space %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not create space %v: %v", toString(d.Get("name")), spaceManagementError(err))
 	}
 
 	d.SetId(mutation.CreateSpace.ID)
@@ -148,7 +150,7 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "SpaceUpdate", &mutation, variables); err != nil {
-		return diag.Errorf("could not update space: %v", internal.FromSpaceliftError(err))
+		return diag.Errorf("could not update space: %v", spaceManagementError(err))
 	}
 
 	return resourceSpaceRead(ctx, d, meta)
@@ -162,10 +164,18 @@ func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	variables := map[string]interface{}{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "DeleteSpace", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete space: %v", internal.FromSpaceliftError(err))
+		return diag.Errorf("could not delete space: %v", spaceManagementError(err))
 	}
 
 	d.SetId("")
 
 	return nil
+}
+
+func spaceManagementError(err error) error {
+	if err == nil || !strings.Contains(err.Error(), "unauthorized") {
+		return err
+	}
+
+	return fmt.Errorf("%w - is it an administrative stack in the root space?", err)
 }

@@ -20,7 +20,6 @@ func dataAzureIntegration() *schema.Resource {
 			"need to provide admin consent manually for the integration to work",
 
 		ReadContext: dataAzureIntegrationRead,
-
 		Schema: map[string]*schema.Schema{
 			"integration_id": {
 				Type:         schema.TypeString,
