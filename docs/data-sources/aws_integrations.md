@@ -3,12 +3,12 @@
 page_title: "spacelift_aws_integrations Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_aws_integration represents a list of all the AWS integrations  in the Spacelift account visible to the API user.
+  spacelift_aws_integrations represents a list of all the AWS integrations in the Spacelift account visible to the API user.
 ---
 
 # spacelift_aws_integrations (Data Source)
 
-`spacelift_aws_integration` represents a list of all the AWS integrations  in the Spacelift account visible to the API user.
+`spacelift_aws_integrations` represents a list of all the AWS integrations in the Spacelift account visible to the API user.
 
 
 

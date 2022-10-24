@@ -12,7 +12,7 @@ import (
 
 func dataAWSIntegrations() *schema.Resource {
 	return &schema.Resource{
-		Description: "`spacelift_aws_integration` represents a list of all the AWS integrations  in the Spacelift account visible to the API user.",
+		Description: "`spacelift_aws_integrations` represents a list of all the AWS integrations in the Spacelift account visible to the API user.",
 		ReadContext: dataAWSIntegrationsRead,
 		Schema: map[string]*schema.Schema{
 			"integrations": {
