@@ -60,7 +60,7 @@ func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not create stack dependency: %s", err)
 	}
 
-	d.SetId(path.Join(query.StackDependency.StackID, query.StackDependency.ID))
+	d.SetId(path.Join(query.StackDependency.Stack.ID, query.StackDependency.ID))
 
 	return resourceStackDependencyRead(ctx, d, meta)
 }
@@ -101,8 +101,8 @@ func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, me
 		return nil
 	}
 
-	d.Set("stack_id", query.Stack.Dependency.StackID)
-	d.Set("depends_on_stack_id", query.Stack.Dependency.DependsOnStackID)
+	d.Set("stack_id", query.Stack.Dependency.Stack.ID)
+	d.Set("depends_on_stack_id", query.Stack.Dependency.DependsOnStack.ID)
 
 	return nil
 }
