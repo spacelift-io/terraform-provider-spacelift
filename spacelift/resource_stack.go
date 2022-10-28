@@ -278,10 +278,19 @@ func resourceStack() *schema.Resource {
 				Default:     false,
 			},
 			"github_action_deploy": {
-				Type:        schema.TypeBool,
-				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`.",
-				Optional:    true,
-				Default:     true,
+				Deprecated:    "use allow_run_promotion instead",
+				Type:          schema.TypeBool,
+				Description:   "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`.",
+				Optional:      true,
+				ConflictsWith: []string{"allow_run_promotion"},
+				Default:       true,
+			},
+			"allow_run_promotion": {
+				Type:          schema.TypeBool,
+				Description:   "Allows promotion for proposed runs (GitHub users can deploy from the Checks API as well as from the spacelift UI). Defaults to `true`.",
+				Optional:      true,
+				ConflictsWith: []string{"github_action_deploy"},
+				Default:       true,
 			},
 			"github_enterprise": {
 				Type:          schema.TypeList,
@@ -555,7 +564,6 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
-	d.Set("github_action_deploy", stack.GitHubActionDeploy)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
@@ -564,6 +572,9 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("space_id", stack.Space)
 	d.Set("slug", stack.ID)
+
+	d.Set("github_action_deploy", stack.GitHubActionDeploy)
+	d.Set("allow_run_promotion", stack.GitHubActionDeploy)
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)
@@ -660,11 +671,16 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Autodeploy:          graphql.Boolean(d.Get("autodeploy").(bool)),
 		Autoretry:           graphql.Boolean(d.Get("autoretry").(bool)),
 		Branch:              toString(d.Get("branch")),
-		GitHubActionDeploy:  graphql.Boolean(d.Get("github_action_deploy").(bool)),
 		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		Name:                toString(d.Get("name")),
 		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 		Repository:          toString(d.Get("repository")),
+	}
+
+	if v, ok := d.GetOk("github_action_deploy"); ok {
+		ret.GitHubActionDeploy = graphql.Boolean(v.(bool))
+	} else if v, ok := d.GetOk("allow_run_promotion"); ok {
+		ret.GitHubActionDeploy = graphql.Boolean(v.(bool))
 	}
 
 	afterApplies := []graphql.String{}

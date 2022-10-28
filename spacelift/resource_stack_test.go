@@ -86,6 +86,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					Attribute("github_action_deploy", Equals("true")),
+					Attribute("allow_run_promotion", Equals("true")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
@@ -527,6 +528,55 @@ func TestStackResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("can set run promotion", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		const resourceName = "spacelift_stack.test"
+
+		testSteps(t, []resource.TestStep{
+			{
+				// test deprecated
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						administrative        = true
+						branch                = "master"
+						import_state          = "{}"
+						labels                = ["one", "two"]
+						name                  = "Provider test stack %s"
+						project_root          = "root"
+						repository            = "demo"
+						github_action_deploy  = false
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("github_action_deploy", Equals("false")),
+					Attribute("allow_run_promotion", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						administrative        = true
+						branch                = "master"
+						import_state          = "{}"
+						labels                = ["one", "two"]
+						name                  = "Provider test stack %s"
+						project_root          = "root"
+						repository            = "demo"
+						allow_run_promotion   = false
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("allow_run_promotion", Equals("false")),
+					Attribute("github_action_deploy", Equals("false")),
+				),
+			},
+		})
+
+	})
 }
 
 func TestStackResourceSpace(t *testing.T) {
@@ -603,6 +653,7 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					Attribute("github_action_deploy", Equals("true")),
+					Attribute("allow_run_promotion", Equals("true")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
