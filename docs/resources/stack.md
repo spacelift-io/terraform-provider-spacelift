@@ -184,6 +184,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `after_init` (List of String) List of after-init scripts
 - `after_perform` (List of String) List of after-perform scripts
 - `after_plan` (List of String) List of after-plan scripts
+- `after_run` (List of String) List of after-run scripts
 - `ansible` (Block List, Max: 1) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedblock--ansible))
 - `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed. Defaults to `false`.
 - `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried. Defaults to `false`.

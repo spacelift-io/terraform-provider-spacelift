@@ -71,6 +71,12 @@ func dataStack() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
+			"after_run": {
+				Type:        schema.TypeList,
+				Description: "List of after-run scripts",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
 				Description: "indicates whether changes to this stack can be automatically deployed",
@@ -370,6 +376,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("after_init", stack.AfterInit)
 	d.Set("after_perform", stack.AfterPerform)
 	d.Set("after_plan", stack.AfterPlan)
+	d.Set("after_run", stack.AfterRun)
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)

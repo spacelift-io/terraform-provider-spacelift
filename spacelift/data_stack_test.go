@@ -23,6 +23,7 @@ func TestStackData(t *testing.T) {
 				after_init                   = ["terraform fmt -check", "tflint"]
 				after_perform                = ["echo 'after_perform'"]
 				after_plan                   = ["echo 'after_plan'"]
+				after_run                    = ["echo 'after_run'"]
 				autodeploy                   = true
 				autoretry                    = false
 				before_apply                 = ["ls -la", "rm -rf /"]
@@ -60,6 +61,8 @@ func TestStackData(t *testing.T) {
 				Attribute("after_perform.0", Equals("echo 'after_perform'")),
 				Attribute("after_plan.#", Equals("1")),
 				Attribute("after_plan.0", Equals("echo 'after_plan'")),
+				Attribute("after_run.#", Equals("1")),
+				Attribute("after_run.0", Equals("echo 'after_run'")),
 				Attribute("autodeploy", Equals("true")),
 				Attribute("autoretry", Equals("false")),
 				Attribute("before_apply.#", Equals("2")),

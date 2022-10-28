@@ -29,6 +29,7 @@ type Stack struct {
 	AfterInit           []string      `graphql:"afterInit"`
 	AfterPerform        []string      `graphql:"afterPerform"`
 	AfterPlan           []string      `graphql:"afterPlan"`
+	AfterRun            []string      `graphql:"afterRun"`
 	Autodeploy          bool          `graphql:"autodeploy"`
 	Autoretry           bool          `graphql:"autoretry"`
 	BeforeApply         []string      `graphql:"beforeApply"`

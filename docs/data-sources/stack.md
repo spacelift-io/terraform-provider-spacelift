@@ -32,6 +32,7 @@ data "spacelift_stack" "k8s-core" {
 - `after_init` (List of String) List of after-init scripts
 - `after_perform` (List of String) List of after-perform scripts
 - `after_plan` (List of String) List of after-plan scripts
+- `after_run` (List of String) List of after-run scripts
 - `before_apply` (List of String) List of before-apply scripts
 - `before_destroy` (List of String) List of before-destroy scripts
 - `before_init` (List of String) List of before-init scripts

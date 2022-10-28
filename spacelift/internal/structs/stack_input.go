@@ -10,6 +10,7 @@ type StackInput struct {
 	AfterInit           *[]graphql.String  `json:"afterInit"`
 	AfterPerform        *[]graphql.String  `json:"afterPerform"`
 	AfterPlan           *[]graphql.String  `json:"afterPlan"`
+	AfterRun            *[]graphql.String  `json:"afterRun"`
 	Autodeploy          graphql.Boolean    `json:"autodeploy"`
 	Autoretry           graphql.Boolean    `json:"autoretry"`
 	BeforeApply         *[]graphql.String  `json:"beforeApply"`
