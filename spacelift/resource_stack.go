@@ -103,6 +103,15 @@ func resourceStack() *schema.Resource {
 				},
 				Optional: true,
 			},
+			"after_run": {
+				Type:        schema.TypeList,
+				Description: "List of after-run scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
 			"autodeploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether changes to this stack can be automatically deployed. Defaults to `false`.",
@@ -534,6 +543,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("after_init", stack.AfterInit)
 	d.Set("after_perform", stack.AfterPerform)
 	d.Set("after_plan", stack.AfterPlan)
+	d.Set("after_run", stack.AfterRun)
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
@@ -696,6 +706,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		}
 	}
 	ret.AfterPlan = &afterPlans
+
+	afterRuns := []graphql.String{}
+	if commands, ok := d.GetOk("after_run"); ok {
+		for _, cmd := range commands.([]interface{}) {
+			afterRuns = append(afterRuns, graphql.String(cmd.(string)))
+		}
+	}
+	ret.AfterRun = &afterRuns
 
 	beforeApplies := []graphql.String{}
 	if commands, ok := d.GetOk("before_apply"); ok {
