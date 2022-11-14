@@ -30,6 +30,8 @@ func TestStacksData(t *testing.T) {
 				}
 
 				data "spacelift_stacks" "test" {
+					depends_on = [spacelift_stack.test]
+
 					administrative {}
 
 					branch {
@@ -54,10 +56,6 @@ func TestStacksData(t *testing.T) {
 
 					project_root {
 					  any_of = ["root"]
-					}
-
-					repository {
-					  any_of = ["spacelift-io/demo"]
 					}
 
 					state {

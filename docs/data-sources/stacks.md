@@ -133,6 +133,7 @@ Read-Only:
 - `after_init` (List of String)
 - `after_perform` (List of String)
 - `after_plan` (List of String)
+- `after_run` (List of String)
 - `ansible` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--ansible))
 - `autodeploy` (Boolean)
 - `autoretry` (Boolean)
