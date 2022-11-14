@@ -279,7 +279,7 @@ func resourceStack() *schema.Resource {
 			},
 			"github_action_deploy": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`.",
+				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.",
 				Optional:    true,
 				Default:     true,
 			},
