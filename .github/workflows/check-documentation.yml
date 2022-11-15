@@ -39,4 +39,5 @@ jobs:
           echo "This can happen if you haven't run 'go generate' after making a change."
           echo "Please run go generate and commit the documentation changes to resolve this."
           echo "Changed files: ${{ steps.verify-changed-files.outputs.changed_files }}"
+          git diff
           exit 1
