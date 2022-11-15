@@ -26,7 +26,7 @@ func dataStacks() *schema.Resource {
 
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_stacks` represents all the contexts in the Spacelift " +
+			"`spacelift_stacks` represents all the stacks in the Spacelift " +
 			"account visible to the API user, matching predicates.",
 
 		ReadContext: dataStacksRead,

@@ -3,12 +3,12 @@
 page_title: "spacelift_stacks Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_stacks represents all the contexts in the Spacelift account visible to the API user, matching predicates.
+  spacelift_stacks represents all the stacks in the Spacelift account visible to the API user, matching predicates.
 ---
 
 # spacelift_stacks (Data Source)
 
-`spacelift_stacks` represents all the contexts in the Spacelift account visible to the API user, matching predicates.
+`spacelift_stacks` represents all the stacks in the Spacelift account visible to the API user, matching predicates.
 
 
 
