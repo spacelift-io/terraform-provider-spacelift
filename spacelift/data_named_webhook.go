@@ -52,6 +52,7 @@ func dataNamedWebhook() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "secret used to sign each request so you're able to verify that the request comes from us.",
 				Computed:    true,
+				Sensitive:   true,
 			},
 			"webhook_id": {
 				Type:             schema.TypeString,
@@ -70,13 +71,12 @@ func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	webhookID := d.Get("webhook_id").(string)
 	variables := map[string]interface{}{"id": toID(webhookID)}
-	if err := meta.(*internal.Client).Query(ctx, "GetOneWebhook", &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "GetNamedWebhook", &query, variables); err != nil {
 		return diag.Errorf("could not query for named webhook: %v", err)
 	}
 
 	if query.Webhook == nil {
-		d.SetId("")
-		return nil
+		return diag.Errorf("could not find named webhook")
 	}
 
 	wh := query.Webhook

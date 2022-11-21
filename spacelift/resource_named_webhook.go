@@ -30,9 +30,8 @@ func resourceNamedWebhook() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"enabled": {
 				Type:        schema.TypeBool,
-				Description: "enables or disables sending webhooks. Defaults to `true`.",
-				Optional:    true,
-				Default:     true,
+				Description: "enables or disables sending webhooks.",
+				Required:    true,
 			},
 			"endpoint": {
 				Type:             schema.TypeString,
@@ -66,7 +65,6 @@ func resourceNamedWebhook() *schema.Resource {
 				Description: "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value.",
 				Optional:    true,
 				Sensitive:   true,
-				Default:     "",
 			},
 		},
 	}
@@ -100,13 +98,8 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("could not create named webhook: %v", internal.FromSpaceliftError(err))
 	}
 
-	if !mutation.WebhooksIntegration.Enabled {
-		return diag.Errorf("named webhook not activated")
-	}
-
 	d.SetId(mutation.WebhooksIntegration.ID)
-
-	return nil
+	return resourceNamedWebhookRead(ctx, d, meta)
 }
 
 func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -115,7 +108,7 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
-	if err := meta.(*internal.Client).Query(ctx, "GetOneWebhook", &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "GetNamedWebhook", &query, variables); err != nil {
 		return diag.Errorf("could not query for named webhook: %v", err)
 	}
 
