@@ -108,7 +108,9 @@ func findSpaceByPath(spaces []*structs.Space, path string) (*structs.Space, erro
 		if space.ID == "root" {
 			currentSpace = space
 		}
-		childrenMap[*space.ParentSpace] = append(childrenMap[*space.ParentSpace], space)
+		if space.ParentSpace != nil {
+			childrenMap[*space.ParentSpace] = append(childrenMap[*space.ParentSpace], space)
+		}
 	}
 
 	if currentSpace == nil {
