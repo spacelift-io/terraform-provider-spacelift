@@ -34,7 +34,7 @@ func TestSpaceByPathData(t *testing.T) {
 				}
 			`, spaceName, spaceName),
 			Check: Resource(
-				"data.spacelift_space.test",
+				"data.spacelift_space_by_path.test",
 				Attribute("id", Contains("my-first-space")),
 				Attribute("parent_space_id", Equals("root")),
 				Attribute("description", Equals("some valid description")),
