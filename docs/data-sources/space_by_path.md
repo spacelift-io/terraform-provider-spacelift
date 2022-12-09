@@ -3,12 +3,12 @@
 page_title: "spacelift_space_by_path Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_space_by_path represents a Spacelift space - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to spacelift_space, this resource is identified by a path, not by an ID.For this data source to work, path must be unique. If there are multiple spaces with the same path, this resource will fail.
+  spacelift_space_by_path represents a Spacelift space - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to spacelift_space, this resource is identified by a path, not by an ID. For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail.
 ---
 
 # spacelift_space_by_path (Data Source)
 
-`spacelift_space_by_path` represents a Spacelift **space** - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to `spacelift_space`, this resource is identified by a path, not by an ID.For this data source to work, path must be unique. If there are multiple spaces with the same path, this resource will fail.
+`spacelift_space_by_path` represents a Spacelift **space** - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to `spacelift_space`, this resource is identified by a path, not by an ID. For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail.
 
 ## Example Usage
 
