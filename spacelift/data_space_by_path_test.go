@@ -28,6 +28,9 @@ func TestSpaceByPathData(t *testing.T) {
 
 				data "spacelift_space_by_path" "test" {
 					space_path = "root/%s"
+					depends_on = [
+						spacelift_space.test
+	]
 				}
 			`, spaceName, spaceName),
 			Check: Resource(
