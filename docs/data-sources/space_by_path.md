@@ -18,7 +18,7 @@ data "spacelift_space_by_path" "space" {
 }
 
 output "space_description" {
-  value = data.spacelift_space.space.description
+  value = data.spacelift_space_by_path.space.description
 }
 ```
 

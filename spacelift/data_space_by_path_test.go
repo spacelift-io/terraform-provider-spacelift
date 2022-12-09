@@ -2,11 +2,13 @@ package spacelift
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -37,4 +39,103 @@ func TestSpaceByPathData(t *testing.T) {
 			),
 		}})
 	})
+}
+
+func Test_findSpaceByPath(t *testing.T) {
+	type args struct {
+		spaces []*structs.Space
+		path   string
+	}
+
+	var root = &structs.Space{
+		ID:   "root",
+		Name: "root",
+	}
+	var rootChild = &structs.Space{
+		ID:          "rootChild-randomsuffix1",
+		Name:        "rootChild",
+		ParentSpace: &root.ID,
+	}
+	var rootChild2 = &structs.Space{
+		ID:          "rootChild2-randomsuffix2",
+		Name:        "rootChild2",
+		ParentSpace: &root.ID,
+	}
+	var rootGrandchild = &structs.Space{
+		ID:          "rootGrandchild-randomsuffix3",
+		Name:        "rootGrandchild",
+		ParentSpace: &rootChild.ID,
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    *structs.Space
+		wantErr bool
+	}{
+		{
+			name: "just root should be found",
+			args: args{
+				spaces: []*structs.Space{
+					root,
+				},
+				path: "root",
+			},
+			want:    root,
+			wantErr: false,
+		},
+		{
+			name: "root child should be found",
+			args: args{
+				spaces: []*structs.Space{
+					root,
+					rootChild,
+					rootChild2,
+				},
+				path: "root/rootChild",
+			},
+			want:    rootChild,
+			wantErr: false,
+		},
+		{
+			name: "root grandchild should be found",
+			args: args{
+				spaces: []*structs.Space{
+					root,
+					rootChild,
+					rootChild2,
+					rootGrandchild,
+				},
+				path: "root/rootChild/rootGrandchild",
+			},
+			want:    rootGrandchild,
+			wantErr: false,
+		},
+		{
+			name: "invalid path should return error",
+			args: args{
+				spaces: []*structs.Space{
+					root,
+					rootChild,
+					rootChild2,
+					rootGrandchild,
+				},
+				path: "root/rootGrandchild",
+			},
+			want:    nil,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := findSpaceByPath(tt.args.spaces, tt.args.path)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("findSpaceByPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("findSpaceByPath() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

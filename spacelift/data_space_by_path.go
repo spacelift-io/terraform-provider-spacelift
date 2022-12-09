@@ -121,7 +121,7 @@ func findSpaceByPath(spaces []*structs.Space, path string) (*structs.Space, erro
 
 	for i := 1; i < len(pathSplit); i++ {
 		nameToLookFor := pathSplit[i]
-		currentChildren := childrenMap[currentSpace.Name]
+		currentChildren := childrenMap[currentSpace.ID]
 
 		found := false
 		for _, child := range currentChildren {
