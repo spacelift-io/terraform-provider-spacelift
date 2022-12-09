@@ -16,12 +16,13 @@ func TestRunResource(t *testing.T) {
 		const resourceName = "spacelift_run.test"
 
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_worker_pool" "test" {
-					name        = "Let's create a dummy worker pool to avoid running the job"
+					name        = "Let's create a dummy worker pool to avoid running the job %s"
 				}
 
 				resource "spacelift_stack" "test" {
@@ -36,7 +37,7 @@ func TestRunResource(t *testing.T) {
 
 					keepers = { "bacon" = "tasty" }
 				}
-			`, randomID),
+			`, randomIDwp, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
