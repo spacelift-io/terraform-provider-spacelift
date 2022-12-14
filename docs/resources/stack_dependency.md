@@ -3,13 +3,10 @@
 page_title: "spacelift_stack_dependency Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  Note: This resource is under development. Please do not use it yet.
   spacelift_stack_dependency represents a Spacelift stack dependency - a dependency between two stacks. When one stack depends on another, the tracked runs of the stack will not start until the dependent stack is successfully finished. Additionally, changes to the dependency will trigger the dependent.
 ---
 
 # spacelift_stack_dependency (Resource)
-
-**Note:** This resource is under development. Please do not use it yet. 
 
 `spacelift_stack_dependency` represents a Spacelift **stack dependency** - a dependency between two stacks. When one stack depends on another, the tracked runs of the stack will not start until the dependent stack is successfully finished. Additionally, changes to the dependency will trigger the dependent.
 
