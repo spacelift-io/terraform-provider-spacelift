@@ -45,7 +45,7 @@ func resourceTerraformProvider() *schema.Resource {
 			},
 			"public": {
 				Type:        schema.TypeBool,
-				Description: "Whether the provider is public or not",
+				Description: "Whether the provider is public or not, defaults to false (private)",
 				Optional:    true,
 				Default:     false,
 			},
@@ -63,7 +63,7 @@ func resourceTerraformProvider() *schema.Resource {
 
 func resourceTerraformProviderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var createMutation struct {
-		CreateTerraformProvider structs.TerraformProvider `graphql:"(type: $type, space: $space, description: $description, labels: $labels)"`
+		CreateTerraformProvider structs.TerraformProvider `graphql:"terraformProviderCreate(type: $type, space: $space, description: $description, labels: $labels)"`
 	}
 
 	variables := map[string]any{
@@ -133,6 +133,7 @@ func resourceTerraformProviderRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("labels", query.TerraformProvider.Labels)
 	d.Set("public", query.TerraformProvider.Public)
 	d.Set("space_id", query.TerraformProvider.Space)
+	d.Set("type", query.TerraformProvider.ID)
 
 	return nil
 }

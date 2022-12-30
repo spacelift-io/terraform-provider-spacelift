@@ -35,7 +35,7 @@ resource "spacelift_terraform_provider" "datadog" {
 
 - `description` (String) Free-form description for human users, supports Markdown
 - `labels` (Set of String)
-- `public` (Boolean) Whether the provider is public or not
+- `public` (Boolean) Whether the provider is public or not, defaults to false (private)
 
 ### Read-Only
 
