@@ -23,6 +23,25 @@ jobs:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
+      - name: Install spacectl
+        uses: spacelift-io/setup-spacectl@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List versions for preprod
+        run: spacectl provider list-versions --type=spacelift
+        env:
+          SPACELIFT_API_KEY_ENDPOINT: https://spacelift-io.app.spacelift.dev
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_PREPROD_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_PREPROD_API_KEY_SECRET }}
+
+      - name: List versions for prod
+        run: spacectl provider list-versions --type=spacelift
+        env:
+          SPACELIFT_API_KEY_ENDPOINT: https://spacelift-io.app.spacelift.io
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_PROD_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_PROD_API_KEY_SECRET }}
+
       - name: Set up release notes
         run: |
           echo ${{ steps.import_gpg.outputs.fingerprint }} > key.fingerprint
