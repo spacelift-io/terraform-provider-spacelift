@@ -9,8 +9,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-        with: { fetch-depth: 0 }
+        uses: actions/checkout@v3
+
+      - name: Unshallow
+        run: git fetch --prune --unshallow
 
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -22,6 +24,25 @@ jobs:
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Install spacectl
+        uses: spacelift-io/setup-spacectl@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List versions for preprod
+        run: spacectl provider list-versions --type=spacelift
+        env:
+          SPACELIFT_API_KEY_ENDPOINT: https://spacelift-io.app.spacelift.dev
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_PREPROD_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_PREPROD_API_KEY_SECRET }}
+
+      - name: List versions for prod
+        run: spacectl provider list-versions --type=spacelift
+        env:
+          SPACELIFT_API_KEY_ENDPOINT: https://spacelift-io.app.spacelift.io
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_PROD_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_PROD_API_KEY_SECRET }}
 
       - name: Set up release notes
         run: |
@@ -37,3 +58,23 @@ jobs:
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release new Spacelift version (preprod)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GPG_KEY_ID: ${{ steps.import_gpg.outputs.keyid }}
+          SPACELIFT_API_KEY_ENDPOINT: https://spacelift-io.app.spacelift.dev
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_PREPROD_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_PREPROD_API_KEY_SECRET }}
+        run:
+          spacectl provider create-version --type=spacelift
+
+      - name: Release new Spacelift version (prod)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GPG_KEY_ID: ${{ steps.import_gpg.outputs.keyid }}
+          SPACELIFT_API_KEY_ENDPOINT: https://spacelift-io.app.spacelift.io
+          SPACELIFT_API_KEY_ID: ${{ secrets.SPACELIFT_PROD_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.SPACELIFT_PROD_API_KEY_SECRET }}
+        run:
+          spacectl provider create-version --type=spacelift

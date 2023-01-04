@@ -5,9 +5,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"golang.org/x/exp/slices"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/search/predicates"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
@@ -20,6 +22,7 @@ func dataContexts() *schema.Resource {
 		ReadContext: dataContextsRead,
 
 		Schema: map[string]*schema.Schema{
+			"labels": predicates.StringField("Require contexts to have one of the labels", 0),
 			"contexts": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -59,7 +62,6 @@ func dataContexts() *schema.Resource {
 }
 
 func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-
 	var query struct {
 		Contexts []*structs.Context `graphql:"contexts()"`
 	}
@@ -77,7 +79,23 @@ func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		return nil
 	}
 
-	wps := flattenDataContextsList(contexts)
+	var labelFilters [][]string
+
+	for _, labelFilter := range d.Get("labels").([]interface{}) {
+		possibleValues := labelFilter.(map[string]interface{})["any_of"]
+		if possibleValues == nil {
+			continue
+		}
+
+		var labels []string
+		for _, label := range possibleValues.([]interface{}) {
+			labels = append(labels, label.(string))
+		}
+
+		labelFilters = append(labelFilters, labels)
+	}
+
+	wps := flattenDataContextsList(contexts, labelFilters)
 	if err := d.Set("contexts", wps); err != nil {
 		d.SetId("")
 		return diag.Errorf("could not set contexts: %v", err)
@@ -86,18 +104,47 @@ func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func flattenDataContextsList(contexts []*structs.Context) []map[string]interface{} {
-	wps := make([]map[string]interface{}, len(contexts))
+func flattenDataContextsList(contexts []*structs.Context, labelFilters [][]string) []map[string]interface{} {
+	wps := []map[string]interface{}{}
 
-	for index, ctx := range contexts {
-		wps[index] = map[string]interface{}{
+	for _, ctx := range contexts {
+		if !matchesLabels(ctx.Labels, labelFilters) {
+			continue
+		}
+
+		wps = append(wps, map[string]interface{}{
 			"context_id":  ctx.ID,
 			"description": ctx.Description,
 			"labels":      ctx.Labels,
 			"name":        ctx.Name,
 			"space_id":    ctx.Space,
-		}
+		})
 	}
 
 	return wps
+}
+
+func matchesLabels(labelSet []string, labelFilters [][]string) bool {
+	if len(labelFilters) == 0 {
+		return true
+	}
+
+	for _, labelFilter := range labelFilters {
+		if len(labelFilter) == 0 {
+			continue
+		}
+
+		var matchesFilter bool
+		for _, label := range labelFilter {
+			if slices.Contains(labelSet, label) {
+				matchesFilter = true
+			}
+		}
+
+		if !matchesFilter {
+			return false
+		}
+	}
+
+	return true
 }
