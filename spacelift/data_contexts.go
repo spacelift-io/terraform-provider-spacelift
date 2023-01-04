@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"golang.org/x/exp/slices"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -135,7 +136,7 @@ func matchesLabels(labelSet []string, labelFilters [][]string) bool {
 
 		var matchesFilter bool
 		for _, label := range labelFilter {
-			if contains(labelSet, label) {
+			if slices.Contains(labelSet, label) {
 				matchesFilter = true
 			}
 		}
@@ -146,14 +147,4 @@ func matchesLabels(labelSet []string, labelFilters [][]string) bool {
 	}
 
 	return true
-}
-
-func contains(set []string, value string) bool {
-	for _, item := range set {
-		if item == value {
-			return true
-		}
-	}
-
-	return false
 }
