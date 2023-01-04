@@ -858,7 +858,7 @@ func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	if stack == nil {
-		return nil, fmt.Errorf("stack with ID %q does not exist", stackID)
+		return nil, fmt.Errorf("stack with ID %q does not exist (or you may not have access to it)", stackID)
 	}
 
 	if err := structs.PopulateStack(d, stack); err != nil {

@@ -1063,7 +1063,7 @@ func TestStackResourceSpace(t *testing.T) {
 				ImportState:   true,
 				ResourceName:  "spacelift_stack.test",
 				ImportStateId: stackID,
-				ExpectError:   regexp.MustCompile(fmt.Sprintf("stack with ID %q does not exist", stackID)),
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`stack with ID %q does not exist \(or you may not have access to it\)`, stackID)),
 			},
 		})
 	})
