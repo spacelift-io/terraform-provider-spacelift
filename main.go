@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift"
