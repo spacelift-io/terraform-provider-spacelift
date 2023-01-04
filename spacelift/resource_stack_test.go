@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -1040,6 +1041,29 @@ func TestStackResourceSpace(t *testing.T) {
 					"spacelift_stack.test",
 					SetEquals("labels"),
 				),
+			},
+		})
+	})
+
+	t.Run("importing non-existent resource", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		stackID := fmt.Sprintf("non-existent-stack-%s", resourceName)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch                = "master"
+					name                  = "Provider test stack %s"
+					project_root          = "root"
+					repository            = "demo"
+				}
+			`, randomID),
+				ImportState:   true,
+				ResourceName:  "spacelift_stack.test",
+				ImportStateId: stackID,
+				ExpectError:   regexp.MustCompile(fmt.Sprintf(`stack with ID %q does not exist \(or you may not have access to it\)`, stackID)),
 			},
 		})
 	})
