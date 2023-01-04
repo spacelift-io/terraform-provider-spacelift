@@ -520,100 +520,33 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	return resourceStackRead(ctx, d, meta)
 }
 
-func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func getStackByID(ctx context.Context, client *internal.Client, stackID string) (*structs.Stack, error) {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]interface{}{"id": graphql.ID(stackID)}
 
-	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for stack: %v", err)
+	if err := client.Query(ctx, "StackRead", &query, variables); err != nil {
+		return nil, errors.Wrap(err, "could not query for stack")
 	}
 
-	stack := query.Stack
+	return query.Stack, nil
+}
+
+func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	stack, err := getStackByID(ctx, meta.(*internal.Client), d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if stack == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("administrative", stack.Administrative)
-	d.Set("after_apply", stack.AfterApply)
-	d.Set("after_destroy", stack.AfterDestroy)
-	d.Set("after_init", stack.AfterInit)
-	d.Set("after_perform", stack.AfterPerform)
-	d.Set("after_plan", stack.AfterPlan)
-	d.Set("after_run", stack.AfterRun)
-	d.Set("autodeploy", stack.Autodeploy)
-	d.Set("autoretry", stack.Autoretry)
-	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
-	d.Set("before_apply", stack.BeforeApply)
-	d.Set("before_destroy", stack.BeforeDestroy)
-	d.Set("before_init", stack.BeforeInit)
-	d.Set("before_perform", stack.BeforePerform)
-	d.Set("before_plan", stack.BeforePlan)
-	d.Set("branch", stack.Branch)
-	d.Set("description", stack.Description)
-	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
-	d.Set("github_action_deploy", stack.GitHubActionDeploy)
-	d.Set("manage_state", stack.ManagesStateFile)
-	d.Set("name", stack.Name)
-	d.Set("project_root", stack.ProjectRoot)
-	d.Set("protect_from_deletion", stack.ProtectFromDeletion)
-	d.Set("repository", stack.Repository)
-	d.Set("runner_image", stack.RunnerImage)
-	d.Set("space_id", stack.Space)
-	d.Set("slug", stack.ID)
-
-	if err := stack.ExportVCSSettings(d); err != nil {
+	if err := structs.PopulateStack(d, stack); err != nil {
 		return diag.FromErr(err)
-	}
-
-	labels := schema.NewSet(schema.HashString, []interface{}{})
-	for _, label := range stack.Labels {
-		labels.Add(label)
-	}
-	d.Set("labels", labels)
-
-	switch stack.VendorConfig.Typename {
-	case structs.StackConfigVendorAnsible:
-		m := map[string]interface{}{
-			"playbook": stack.VendorConfig.Ansible.Playbook,
-		}
-
-		d.Set("ansible", []interface{}{m})
-	case structs.StackConfigVendorCloudFormation:
-		m := map[string]interface{}{
-			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
-			"region":              stack.VendorConfig.CloudFormation.Region,
-			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
-			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
-		}
-
-		d.Set("cloudformation", []interface{}{m})
-	case structs.StackConfigVendorKubernetes:
-		m := map[string]interface{}{
-			"namespace": stack.VendorConfig.Kubernetes.Namespace,
-		}
-
-		d.Set("kubernetes", []interface{}{m})
-	case structs.StackConfigVendorPulumi:
-		m := map[string]interface{}{
-			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
-			"stack_name": stack.VendorConfig.Pulumi.StackName,
-		}
-
-		d.Set("pulumi", []interface{}{m})
-	default:
-		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
-		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
-		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
-	}
-
-	if workerPool := stack.WorkerPool; workerPool != nil {
-		d.Set("worker_pool_id", workerPool.ID)
-	} else {
-		d.Set("worker_pool_id", nil)
 	}
 
 	return nil
@@ -914,13 +847,22 @@ func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {
 }
 
 func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	if d.Id() == "" {
+	stackID := d.Id()
+	if stackID == "" {
 		return nil, errors.New("stack ID is required to import a stack")
 	}
 
-	diag := resourceStackRead(ctx, d, meta)
-	if diag.HasError() {
-		return nil, fmt.Errorf("could not import stack: %v", diag)
+	stack, err := getStackByID(ctx, meta.(*internal.Client), stackID)
+	if err != nil {
+		return nil, fmt.Errorf("Could not query for stack with ID %q: %v", stackID, err)
+	}
+
+	if stack == nil {
+		return nil, fmt.Errorf("stack with ID %q does not exist", stackID)
+	}
+
+	if err := structs.PopulateStack(d, stack); err != nil {
+		return nil, errors.Wrap(err, "could not import stack into state")
 	}
 
 	return []*schema.ResourceData{d}, nil
