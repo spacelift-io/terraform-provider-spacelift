@@ -2,9 +2,9 @@ name: Check Documentation
 
 on:
   push:
-    branches: [main, future]
+    branches: [main]
   pull_request:
-    branches: [main, future]
+    branches: [main]
 
 jobs:
   check-documentation:

@@ -2,7 +2,7 @@ name: Test with Prod
 
 on:
   push:
-    branches: [main, future]
+    branches: [main]
 
 jobs:
   deployment:
