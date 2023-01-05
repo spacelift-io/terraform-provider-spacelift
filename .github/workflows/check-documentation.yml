@@ -14,8 +14,8 @@ jobs:
       GO111MODULE: on
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Install Go
         uses: actions/setup-go@v2
