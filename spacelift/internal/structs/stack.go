@@ -138,6 +138,89 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	return "", nil
 }
 
+func PopulateStack(d *schema.ResourceData, stack *Stack) error {
+	d.Set("administrative", stack.Administrative)
+	d.Set("after_apply", stack.AfterApply)
+	d.Set("after_destroy", stack.AfterDestroy)
+	d.Set("after_init", stack.AfterInit)
+	d.Set("after_perform", stack.AfterPerform)
+	d.Set("after_plan", stack.AfterPlan)
+	d.Set("after_run", stack.AfterRun)
+	d.Set("autodeploy", stack.Autodeploy)
+	d.Set("autoretry", stack.Autoretry)
+	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
+	d.Set("before_apply", stack.BeforeApply)
+	d.Set("before_destroy", stack.BeforeDestroy)
+	d.Set("before_init", stack.BeforeInit)
+	d.Set("before_perform", stack.BeforePerform)
+	d.Set("before_plan", stack.BeforePlan)
+	d.Set("branch", stack.Branch)
+	d.Set("description", stack.Description)
+	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
+	d.Set("github_action_deploy", stack.GitHubActionDeploy)
+	d.Set("manage_state", stack.ManagesStateFile)
+	d.Set("name", stack.Name)
+	d.Set("project_root", stack.ProjectRoot)
+	d.Set("protect_from_deletion", stack.ProtectFromDeletion)
+	d.Set("repository", stack.Repository)
+	d.Set("runner_image", stack.RunnerImage)
+	d.Set("space_id", stack.Space)
+	d.Set("slug", stack.ID)
+
+	if err := stack.ExportVCSSettings(d); err != nil {
+		return err
+	}
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range stack.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
+	switch stack.VendorConfig.Typename {
+	case StackConfigVendorAnsible:
+		m := map[string]interface{}{
+			"playbook": stack.VendorConfig.Ansible.Playbook,
+		}
+
+		d.Set("ansible", []interface{}{m})
+	case StackConfigVendorCloudFormation:
+		m := map[string]interface{}{
+			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
+			"region":              stack.VendorConfig.CloudFormation.Region,
+			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
+			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
+		}
+
+		d.Set("cloudformation", []interface{}{m})
+	case StackConfigVendorKubernetes:
+		m := map[string]interface{}{
+			"namespace": stack.VendorConfig.Kubernetes.Namespace,
+		}
+
+		d.Set("kubernetes", []interface{}{m})
+	case StackConfigVendorPulumi:
+		m := map[string]interface{}{
+			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
+			"stack_name": stack.VendorConfig.Pulumi.StackName,
+		}
+
+		d.Set("pulumi", []interface{}{m})
+	default:
+		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
+		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
+		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
+	}
+
+	if workerPool := stack.WorkerPool; workerPool != nil {
+		d.Set("worker_pool_id", workerPool.ID)
+	} else {
+		d.Set("worker_pool_id", nil)
+	}
+
+	return nil
+}
+
 func singleKeyMap(key, val string) map[string]interface{} {
 	return map[string]interface{}{key: val}
 }
