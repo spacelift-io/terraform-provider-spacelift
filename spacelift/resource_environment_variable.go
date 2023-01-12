@@ -68,12 +68,12 @@ func resourceEnvironmentVariable() *schema.Resource {
 			},
 			"value": {
 				Type:             schema.TypeString,
-				Description:      "Value of the environment variable",
+				Description:      "Value of the environment variable. Defaults to an empty string.",
 				DiffSuppressFunc: suppressValueChange,
 				Sensitive:        true,
-				Required:         true,
+				Optional:         true,
+				Default:          "",
 				ForceNew:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
