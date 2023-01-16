@@ -25,6 +25,7 @@ func TestDriftDetectionData(t *testing.T) {
 				resource "spacelift_drift_detection" "test" {
 					stack_id     = spacelift_stack.test.id
 					reconcile    = true
+					ignore_state = true
 					schedule     = ["*/3 * * * *", "*/5 * * * *"]
 				}
 
@@ -36,6 +37,7 @@ func TestDriftDetectionData(t *testing.T) {
 				"data.spacelift_drift_detection.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("stack_id", IsNotEmpty()),
+				Attribute("ignore_state", Equals("true")),
 				Attribute("schedule.#", Equals("2")),
 				Attribute("schedule.0", Equals("*/3 * * * *")),
 				Attribute("schedule.1", Equals("*/5 * * * *")),

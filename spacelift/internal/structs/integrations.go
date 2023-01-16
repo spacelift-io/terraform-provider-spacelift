@@ -10,9 +10,10 @@ type Integrations struct {
 		DurationSeconds             *int    `graphql:"durationSeconds"`
 	} `graphql:"aws"`
 	DriftDetection struct {
-		Reconcile bool     `graphql:"reconcile"`
-		Schedule  []string `graphql:"schedule"`
-		Timezone  string   `graphql:"timezone"`
+		IgnoreState bool     `graphql:"ignoreState"`
+		Reconcile   bool     `graphql:"reconcile"`
+		Schedule    []string `graphql:"schedule"`
+		Timezone    string   `graphql:"timezone"`
 	} `graphql:"driftDetection"`
 	GCP struct {
 		ServiceAccountEmail *string  `graphql:"serviceAccountEmail"`

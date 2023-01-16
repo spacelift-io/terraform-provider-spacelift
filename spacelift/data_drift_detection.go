@@ -25,6 +25,11 @@ func dataDriftDetection() *schema.Resource {
 				Description: "Whether a tracked run should be triggered when drift is detected.",
 				Computed:    true,
 			},
+			"ignore_state": {
+				Type:        schema.TypeBool,
+				Description: "Controls whether drift detection should be performed on a stack in any final state instead of just 'Finished'.",
+				Optional:    true,
+			},
 			"stack_id": {
 				Type:             schema.TypeString,
 				Description:      "ID of the stack for which to set up drift detection",
