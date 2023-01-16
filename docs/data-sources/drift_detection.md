@@ -25,6 +25,10 @@ data "spacelift_drift_detection" "core-infra-production-drift-detection" {
 
 - `stack_id` (String) ID of the stack for which to set up drift detection
 
+### Optional
+
+- `ignore_state` (Boolean) Controls whether drift detection should be performed on a stack in any final state instead of just 'Finished'.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.

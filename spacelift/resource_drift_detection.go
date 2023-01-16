@@ -33,6 +33,11 @@ func resourceDriftDetection() *schema.Resource {
 				Description: "Whether a tracked run should be triggered when drift is detected.",
 				Optional:    true,
 			},
+			"ignore_state": {
+				Type:        schema.TypeBool,
+				Description: "Controls whether drift detection should be performed on a stack in any final state instead of just 'Finished'.",
+				Optional:    true,
+			},
 			"stack_id": {
 				Type:             schema.TypeString,
 				Description:      "ID of the stack for which to set up drift detection",
@@ -63,9 +68,10 @@ func resourceDriftDetection() *schema.Resource {
 func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		CreateDriftDetectionIntegration struct {
-			Reconcile bool     `graphql:"reconcile"`
-			Schedule  []string `graphql:"schedule"`
-			Timezone  string   `graphql:"timezone"`
+			Reconcile   bool     `graphql:"reconcile"`
+			IgnoreState bool     `graphql:"ignoreState"`
+			Schedule    []string `graphql:"schedule"`
+			Timezone    string   `graphql:"timezone"`
 		} `graphql:"stackIntegrationDriftDetectionCreate(stack: $stack, input: $input)"`
 	}
 
@@ -79,9 +85,10 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 	variables := map[string]interface{}{
 		"stack": toID(stackID),
 		"input": structs.DriftDetectionIntegrationInput{
-			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
-			Schedule:  scheduleExpressions,
-			Timezone:  graphql.NewString(graphql.String(d.Get("timezone").(string))),
+			Reconcile:   graphql.Boolean(d.Get("reconcile").(bool)),
+			IgnoreState: graphql.Boolean(d.Get("ignore_state").(bool)),
+			Schedule:    scheduleExpressions,
+			Timezone:    graphql.NewString(graphql.String(d.Get("timezone").(string))),
 		},
 	}
 
@@ -97,9 +104,10 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		UpdateDriftDetectionIntegration struct {
-			Reconcile bool     `graphql:"reconcile"`
-			Schedule  []string `graphql:"schedule"`
-			Timezone  string   `graphql:"timezone"`
+			Reconcile   bool     `graphql:"reconcile"`
+			IgnoreState bool     `graphql:"ignoreState"`
+			Schedule    []string `graphql:"schedule"`
+			Timezone    string   `graphql:"timezone"`
 		} `graphql:"stackIntegrationDriftDetectionUpdate(stack: $stack, input: $input)"`
 	}
 
@@ -113,9 +121,10 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 	variables := map[string]interface{}{
 		"stack": toID(stackID),
 		"input": structs.DriftDetectionIntegrationInput{
-			Reconcile: graphql.Boolean(d.Get("reconcile").(bool)),
-			Schedule:  scheduleExpressions,
-			Timezone:  graphql.NewString(graphql.String(d.Get("timezone").(string))),
+			Reconcile:   graphql.Boolean(d.Get("reconcile").(bool)),
+			IgnoreState: graphql.Boolean(d.Get("ignore_state").(bool)),
+			Schedule:    scheduleExpressions,
+			Timezone:    graphql.NewString(graphql.String(d.Get("timezone").(string))),
 		},
 	}
 
@@ -175,6 +184,7 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 
 	d.Set("reconcile", integration.Reconcile)
 	d.Set("timezone", integration.Timezone)
+	d.Set("ignore_state", integration.IgnoreState)
 
 	schedule := make([]interface{}, len(integration.Schedule))
 	for i, expr := range integration.Schedule {
