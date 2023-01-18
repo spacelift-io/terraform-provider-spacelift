@@ -2,7 +2,7 @@ name: Test with Prod
 
 on:
   push:
-    branches: [main, future]
+    branches: [main]
 
 jobs:
   deployment:
@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@master
+      - name: Checkout
+        uses: actions/checkout@v3
       
       - name: Install Go
         uses: actions/setup-go@v2

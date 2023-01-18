@@ -30,4 +30,3 @@
 - [ ] Pull Request is no longer marked as "draft"
 - [ ] Reviewers have been assigned
 - [ ] Changes have been reviewed by at least one other engineer
-- [ ] The target branch is `future` unless the change is going directly into production

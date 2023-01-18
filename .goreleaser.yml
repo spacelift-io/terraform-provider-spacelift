@@ -34,8 +34,3 @@ signs:
 
 release:
   draft: true
-  extra_files:
-    - glob: ./key.*
-
-changelog:
-  skip: true

@@ -36,6 +36,7 @@ resource "spacelift_drift_detection" "core-infra-production-drift-detection" {
 
 ### Optional
 
+- `ignore_state` (Boolean) Controls whether drift detection should be performed on a stack in any final state instead of just 'Finished'.
 - `reconcile` (Boolean) Whether a tracked run should be triggered when drift is detected.
 - `timezone` (String) Timezone in which the schedule is expressed. Defaults to `UTC`.
 

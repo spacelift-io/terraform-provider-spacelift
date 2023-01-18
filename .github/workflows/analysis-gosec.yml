@@ -2,9 +2,9 @@ name: GoSec
 
 on:
   push:
-    branches: [main, future]
+    branches: [main]
   pull_request:
-    branches: [main, future]
+    branches: [main]
   schedule:
     - cron: "19 7 * * 0"
 
@@ -16,8 +16,8 @@ jobs:
       GO111MODULE: on
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Run GoSec Security Scanner
         uses: securego/gosec@master
