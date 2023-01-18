@@ -30,11 +30,6 @@ func dataSpaceByPath() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
-			"space_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of the space",
-				Computed:    true,
-			},
 			"parent_space_id": {
 				Type:        schema.TypeString,
 				Description: "immutable ID (slug) of parent space",
