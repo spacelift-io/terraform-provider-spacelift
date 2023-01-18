@@ -62,7 +62,7 @@ func dataSpaceByPath() *schema.Resource {
 
 func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	path := d.Get("space_path").(string)
-	if !strings.HasPrefix(path, "root") {
+	if !strings.HasPrefix(path, "root/") && path != "root" {
 		return diag.Errorf("space path must start with `root`")
 	}
 
