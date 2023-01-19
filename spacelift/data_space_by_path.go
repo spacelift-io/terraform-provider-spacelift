@@ -17,7 +17,9 @@ func dataSpaceByPath() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_space_by_path` represents a Spacelift **space** - " +
 			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to `spacelift_space`, this resource is identified by a path, not by an ID. " +
-			"For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail.",
+			"For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail. \n" +
+			"**Disclaimer:** \n" +
+			"This datasource can only be used in a stack that resides in a space with inheritance enabled. In addition, the parent spaces (excluding root) must also have inheritance enabled.",
 
 		ReadContext: dataSpaceByPathRead,
 
@@ -27,11 +29,6 @@ func dataSpaceByPath() *schema.Resource {
 				Description:      "path to the space - a series of space names separated by `/`",
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			"space_id": {
-				Type:        schema.TypeString,
-				Description: "immutable ID (slug) of the space",
-				Computed:    true,
 			},
 			"parent_space_id": {
 				Type:        schema.TypeString,
@@ -65,7 +62,7 @@ func dataSpaceByPath() *schema.Resource {
 
 func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	path := d.Get("space_path").(string)
-	if !strings.HasPrefix(path, "root") {
+	if !strings.HasPrefix(path, "root/") && path != "root" {
 		return diag.Errorf("space path must start with `root`")
 	}
 

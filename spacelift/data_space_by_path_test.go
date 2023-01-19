@@ -3,6 +3,7 @@ package spacelift
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -25,12 +26,10 @@ func TestSpaceByPathData(t *testing.T) {
 					description = "some valid description"
 					labels = ["label1", "label2"]
 				}
-
+	
 				data "spacelift_space_by_path" "test" {
 					space_path = "root/%s"
-					depends_on = [
-						spacelift_space.test
-	]
+					depends_on = [spacelift_space.test]
 				}
 			`, spaceName, spaceName),
 			Check: Resource(
@@ -41,6 +40,27 @@ func TestSpaceByPathData(t *testing.T) {
 				SetEquals("labels", "label1", "label2"),
 			),
 		}})
+	})
+
+	t.Run("invalid space path should return an error", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `
+					data "spacelift_space_by_path" "test" {
+						space_path = "root123"
+					}
+				`,
+				ExpectError: regexp.MustCompile("space path must start with `root`"),
+			},
+			{
+				Config: `
+					data "spacelift_space_by_path" "test" {
+						space_path = "test123/test"
+					}
+				`,
+				ExpectError: regexp.MustCompile("space path must start with `root`"),
+			},
+		})
 	})
 }
 
