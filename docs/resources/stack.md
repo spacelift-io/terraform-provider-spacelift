@@ -138,7 +138,8 @@ resource "spacelift_stack" "k8s-cluster-pulumi" {
 # Kubernetes stack using github.com as VCS
 resource "spacelift_stack" "k8s-core-kubernetes" {
   kubernetes {
-    namespace = "core"
+    namespace       = "core"
+    kubectl_version = "1.26.1" # Optional kubectl version
   }
 
   autodeploy   = true
@@ -288,6 +289,7 @@ Required:
 
 Optional:
 
+- `kubectl_version` (String) Kubectl version.
 - `namespace` (String) Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.
 
 

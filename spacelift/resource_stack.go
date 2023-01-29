@@ -346,6 +346,13 @@ func resourceStack() *schema.Resource {
 							Optional:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
+						"kubectl_version": {
+							Type:             schema.TypeString,
+							Description:      "Kubectl version.",
+							Optional:         true,
+							Computed:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
 					},
 				},
 			},
@@ -767,6 +774,9 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 		if kubernetesSettings, ok := kubernetes[0].(map[string]interface{}); ok {
 			ret.VendorConfig.Kubernetes.Namespace = toString(kubernetesSettings["namespace"])
+			if s := toOptionalString(kubernetesSettings["kubectl_version"]); *s != "" {
+				ret.VendorConfig.Kubernetes.KubectlVersion = s
+			}
 		}
 	} else if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
 		ret.VendorConfig = &structs.VendorConfigInput{

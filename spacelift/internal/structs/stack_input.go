@@ -59,7 +59,8 @@ type CloudFormationInput struct {
 
 // KubernetesInput represents Kubernetes-specific configuration.
 type KubernetesInput struct {
-	Namespace graphql.String `json:"namespace"`
+	Namespace      graphql.String  `json:"namespace"`
+	KubectlVersion *graphql.String `json:"kubectlVersion"`
 }
 
 // PulumiInput represents Pulumi-specific configuration.

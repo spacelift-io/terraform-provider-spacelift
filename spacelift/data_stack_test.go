@@ -166,6 +166,52 @@ func TestStackData(t *testing.T) {
 		}})
 	})
 
+	t.Run("with Kubernetes stack with no kubectl version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				kubernetes {}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("kubernetes.0.kubectl_version", Equals("1.23.5")),
+			),
+		}})
+	})
+
+	t.Run("with Kubernetes stack with a kubectl version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				kubernetes {
+					kubectl_version = "1.2.3"
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("kubernetes.0.kubectl_version", Equals("1.2.3")),
+			),
+		}})
+	})
+
 	t.Run("with Pulumi stack", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
