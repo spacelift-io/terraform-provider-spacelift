@@ -27,8 +27,8 @@ jobs:
         run: go test -parallel 20 -coverprofile=coverage.txt -coverpkg=./... ./...
         env:
           SPACELIFT_API_KEY_ENDPOINT: ${{ secrets.PROD_SPACELIFT_API_KEY_ENDPOINT }}
-          SPACELIFT_API_KEY_ID: ${{ secrets.PROD_SPACELIFT_API_KEY_ID }}
-          SPACELIFT_API_KEY_SECRET: ${{ secrets.PROD_SPACELIFT_API_KEY_SECRET }}
+          SPACELIFT_API_KEY_ID: ${{ secrets.PROD_SPACELIFT_TEST_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.PROD_SPACELIFT_TEST_API_KEY_SECRET }}
           SPACELIFT_PROVIDER_TEST_IPS: ${{ secrets.PROD_SPACELIFT_PROVIDER_TEST_IPS }}
           SPACELIFT_PROVIDER_TEST_GITLAB_API_HOST: https://gitlab.com
           SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_ENDPOINT: ${{ secrets.PROD_SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_ENDPOINT }}
