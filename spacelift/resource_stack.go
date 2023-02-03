@@ -435,7 +435,7 @@ func resourceStack() *schema.Resource {
 			},
 			"space_id": {
 				Type:        schema.TypeString,
-				Description: "ID (slug) of the space the stack is in",
+				Description: "ID (slug) of the space the stack is in. Defaults to `legacy`.",
 				Optional:    true,
 				Computed:    true,
 			},
