@@ -528,6 +528,25 @@ func TestStackResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("when error returned, it is explained properly", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				administrative               = true
+				branch                       = "master"
+				description                  = "bacon"
+				name                         = "Provider test stack %s"
+				project_root                 = "root"
+				repository                   = "demo"
+				terraform_version            = "1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1"
+			}
+		`, randomID),
+			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: Could not parse Range`),
+		}})
+	})
 }
 
 func TestStackResourceSpace(t *testing.T) {
