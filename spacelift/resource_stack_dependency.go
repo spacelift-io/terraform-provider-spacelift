@@ -95,7 +95,8 @@ func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("could not query for stack dependency: %s", err)
 	}
 
-	if query.Stack == nil {
+	if query.Stack == nil || query.Stack.Dependency == nil {
+		d.SetId("")
 		return nil
 	}
 
