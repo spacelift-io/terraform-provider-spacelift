@@ -112,6 +112,7 @@ func resourceScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceDat
 	}
 
 	if query.Stack == nil || query.Stack.ScheduledDelete == nil {
+		d.SetId("")
 		return nil
 	}
 
