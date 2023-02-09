@@ -116,6 +116,7 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 				"branch":                           node.Branch,
 				"description":                      node.Description,
 				"enable_local_preview":             node.LocalPreviewEnabled,
+				"labels":                           node.Labels,
 				"manage_state":                     node.ManagesStateFile,
 				"name":                             node.Name,
 				"project_root":                     node.ProjectRoot,
