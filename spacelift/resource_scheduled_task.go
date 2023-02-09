@@ -153,6 +153,7 @@ func resourceScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if query.Stack == nil || query.Stack.ScheduledTask == nil {
+		d.SetId("")
 		return nil
 	}
 
