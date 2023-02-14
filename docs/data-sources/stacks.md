@@ -233,6 +233,7 @@ Read-Only:
 
 Read-Only:
 
+- `kubectl_version` (String)
 - `namespace` (String)
 
 

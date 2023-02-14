@@ -262,6 +262,11 @@ func dataStack() *schema.Resource {
 							Description: "Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.",
 							Computed:    true,
 						},
+						"kubectl_version": {
+							Type:        schema.TypeString,
+							Description: "Kubectl version.",
+							Computed:    true,
+						},
 					},
 				},
 			},

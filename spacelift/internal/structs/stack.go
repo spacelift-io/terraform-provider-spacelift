@@ -66,7 +66,8 @@ type Stack struct {
 			TemplateBucket    string `graphql:"templateBucket"`
 		} `graphql:"... on StackConfigVendorCloudFormation"`
 		Kubernetes struct {
-			Namespace string `graphql:"namespace"`
+			Namespace      string  `graphql:"namespace"`
+			KubectlVersion *string `graphql:"kubectlVersion"`
 		} `graphql:"... on StackConfigVendorKubernetes"`
 		Pulumi struct {
 			LoginURL  string `graphql:"loginURL"`
@@ -107,7 +108,10 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 			"template_bucket":     s.VendorConfig.CloudFormation.TemplateBucket,
 		}
 	case StackConfigVendorKubernetes:
-		return "kubernetes", singleKeyMap("namespace", s.VendorConfig.Kubernetes.Namespace)
+		return "kubernetes", map[string]interface{}{
+			"namespace":       s.VendorConfig.Kubernetes.Namespace,
+			"kubectl_version": s.VendorConfig.Kubernetes.KubectlVersion,
+		}
 	case StackConfigVendorPulumi:
 		return "pulumi", map[string]interface{}{
 			"login_url":  s.VendorConfig.Pulumi.LoginURL,
@@ -195,7 +199,8 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		d.Set("cloudformation", []interface{}{m})
 	case StackConfigVendorKubernetes:
 		m := map[string]interface{}{
-			"namespace": stack.VendorConfig.Kubernetes.Namespace,
+			"namespace":       stack.VendorConfig.Kubernetes.Namespace,
+			"kubectl_version": stack.VendorConfig.Kubernetes.KubectlVersion,
 		}
 
 		d.Set("kubernetes", []interface{}{m})
