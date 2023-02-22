@@ -15,7 +15,7 @@ func TestModuleResource(t *testing.T) {
 	t.Run("with GitHub", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(description string, protectFromDeletion bool) string {
+		config := func(description string, protectFromDeletion bool, localPreview bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name                  = "github-module-%s"
@@ -23,18 +23,19 @@ func TestModuleResource(t *testing.T) {
 					branch                = "master"
 					description           = "%s"
 					labels                = ["one", "two"]
+					enable_local_preview  = %t
 					protect_from_deletion = %t
 					repository            = "terraform-bacon-tasty"
 					shared_accounts       = ["foo-subdomain", "bar-subdomain"]
 				}
-			`, randomID, description, protectFromDeletion)
+			`, randomID, description, localPreview, protectFromDeletion)
 		}
 
 		const resourceName = "spacelift_module.test"
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("old description", true),
+				Config: config("old description", true, false),
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("github-module-%s", randomID))),
@@ -44,6 +45,7 @@ func TestModuleResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("name", Equals(fmt.Sprintf("github-module-%s", randomID))),
 					AttributeNotPresent("project_root"),
+					Attribute("enable_local_preview", Equals("false")),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
 					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
@@ -56,10 +58,11 @@ func TestModuleResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config("new description", false),
+				Config: config("new description", false, true),
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("description", Equals("new description")),
+					Attribute("enable_local_preview", Equals("true")),
 					Attribute("protect_from_deletion", Equals("false")),
 				),
 			},

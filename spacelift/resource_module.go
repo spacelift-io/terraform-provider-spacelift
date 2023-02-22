@@ -102,6 +102,12 @@ func resourceModule() *schema.Resource {
 				Description: "Free-form module description for users",
 				Optional:    true,
 			},
+			"enable_local_preview": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether local preview versions can be triggered on this Module. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+			},
 			"github_enterprise": {
 				Type:          schema.TypeList,
 				Description:   "GitHub Enterprise (self-hosted) VCS settings",
@@ -239,6 +245,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("administrative", module.Administrative)
 	d.Set("branch", module.Branch)
 	d.Set("name", module.Name)
+	d.Set("enable_local_preview", module.LocalPreviewEnabled)
 	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("repository", module.Repository)
 	d.Set("terraform_provider", module.TerraformProvider)
@@ -385,6 +392,7 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 	ret := structs.ModuleUpdateInput{
 		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
 		Branch:              toString(d.Get("branch")),
+		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 	}
 
@@ -428,6 +436,7 @@ func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
 	ret := structs.ModuleUpdateV2Input{
 		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
 		Branch:              toString(d.Get("branch")),
+		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 		Repository:          toString(d.Get("repository")),
 	}

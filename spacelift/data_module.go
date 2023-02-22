@@ -115,6 +115,11 @@ func dataModule() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
+			"enable_local_preview": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether local preview versions can be triggered on this Module.",
+				Computed:    true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.",
@@ -187,6 +192,7 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)
 	d.Set("branch", module.Branch)
 	d.Set("name", module.Name)
+	d.Set("enable_local_preview", module.LocalPreviewEnabled)
 	d.Set("protect_from_deletion", module.ProtectFromDeletion)
 	d.Set("terraform_provider", module.TerraformProvider)
 	d.Set("space_id", module.Space)

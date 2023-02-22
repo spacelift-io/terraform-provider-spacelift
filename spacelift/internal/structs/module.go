@@ -13,6 +13,7 @@ type Module struct {
 	Description         *string      `graphql:"description"`
 	Integrations        Integrations `graphql:"integrations"`
 	Labels              []string     `graphql:"labels"`
+	LocalPreviewEnabled bool         `graphql:"localPreviewEnabled"`
 	Name                string       `graphql:"name"`
 	Namespace           string       `graphql:"namespace"`
 	ProjectRoot         *string      `graphql:"projectRoot"`

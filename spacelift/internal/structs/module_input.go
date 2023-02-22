@@ -19,6 +19,7 @@ type ModuleUpdateInput struct {
 	Branch              graphql.String    `json:"branch"`
 	Description         *graphql.String   `json:"description"`
 	Labels              *[]graphql.String `json:"labels"`
+	LocalPreviewEnabled graphql.Boolean   `json:"localPreviewEnabled"`
 	ProjectRoot         *graphql.String   `json:"projectRoot"`
 	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`
 	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
@@ -33,6 +34,7 @@ type ModuleUpdateV2Input struct {
 	Branch              graphql.String    `json:"branch"`
 	Description         *graphql.String   `json:"description"`
 	Labels              *[]graphql.String `json:"labels"`
+	LocalPreviewEnabled graphql.Boolean   `json:"localPreviewEnabled"`
 	Namespace           *graphql.String   `json:"namespace"`
 	ProjectRoot         *graphql.String   `json:"projectRoot"`
 	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`

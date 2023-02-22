@@ -34,6 +34,7 @@ data "spacelift_module" "k8s-module" {
 - `bitbucket_datacenter` (List of Object) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedatt--bitbucket_datacenter))
 - `branch` (String) GitHub branch to apply changes to
 - `description` (String) free-form module description for human users (supports Markdown)
+- `enable_local_preview` (Boolean) Indicates whether local preview versions can be triggered on this Module.
 - `github_enterprise` (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
 - `gitlab` (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
 - `id` (String) The ID of this resource.
