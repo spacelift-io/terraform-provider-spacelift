@@ -185,14 +185,12 @@ func blueprintCreateInput(d *schema.ResourceData) structs.BlueprintCreateInput {
 		input.Description = toOptionalString(description)
 	}
 
+	input.Labels = []graphql.String{}
+
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		var labels []graphql.String
-
 		for _, label := range labelSet.List() {
-			labels = append(labels, graphql.String(label.(string)))
+			input.Labels = append(input.Labels, graphql.String(label.(string)))
 		}
-
-		input.Labels = labels
 	}
 
 	if template, ok := d.GetOk("template"); ok {
