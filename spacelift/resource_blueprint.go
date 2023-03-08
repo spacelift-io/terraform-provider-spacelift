@@ -68,6 +68,7 @@ func resourceBlueprint() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Body of the blueprint. If `state` is set to `PUBLISHED`, this field is required.",
 				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}

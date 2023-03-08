@@ -65,9 +65,10 @@ func TestBlueprintResource(t *testing.T) {
 
 	t.Run("Creates and updates a blueprint in PUBLISHED state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		validTemplate := `stack:\n  name: stackerino\n  space: root\n  vcs:\n    branch: main\n    repository: spacelift-io/terraform-provider-spacelift\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: 0.12.0`
+		validTemplate1 := `stack:\n  name: stackerino\n  space: root\n  vcs:\n    branch: main\n    repository: spacelift-io/terraform-provider-spacelift\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: 0.12.0`
+		validTemplate2 := `stack:\n  name: stackerino\n  space: root\n  vcs:\n    branch: main\n    repository: spacelift-io/terraform-provider-spacelift\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: 0.13.0`
 
-		config := func(description string) string {
+		config := func(template, description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_blueprint" "test" {
 					name        = "test-blueprint-%s"
@@ -76,12 +77,12 @@ func TestBlueprintResource(t *testing.T) {
 					labels      = ["one", "two"]
 					state       = "PUBLISHED"
 					template    = "%s"
-				}`, randomID, description, validTemplate)
+				}`, randomID, description, template)
 		}
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("test description"),
+				Config: config(validTemplate1, "test description"),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
@@ -99,7 +100,7 @@ func TestBlueprintResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config("updated description"),
+				Config: config(validTemplate2, "updated description"),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
