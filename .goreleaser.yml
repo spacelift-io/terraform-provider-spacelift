@@ -32,5 +32,8 @@ signs:
       - "--detach-sign"
       - "${artifact}"
 
+changelog:
+  use: github-native
+
 release:
   draft: true
