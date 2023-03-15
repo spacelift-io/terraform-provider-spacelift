@@ -23,7 +23,16 @@ func TestNamedWebhookData(t *testing.T) {
 					enabled  = true
 				}
 
+				resource "spacelift_named_webhook_secret_header" "test-secret" {
+					webhook_id = spacelift_named_webhook.test.id
+					key        = "thisisakey"
+					value      = "thisisavalue"
+				}
+
 				data "spacelift_named_webhook" "test" {
+					depends_on = [
+						spacelift_named_webhook_secret_header.test-secret
+					]
 					webhook_id = spacelift_named_webhook.test.id
 				}
 			`, randomID),
@@ -33,7 +42,7 @@ func TestNamedWebhookData(t *testing.T) {
 			Attribute("endpoint", Equals("https://bacon.org")),
 			Attribute("enabled", Equals("true")),
 			Attribute("secret", Equals("super-secret")),
+			SetContains("secret_header_keys", "thisisakey"),
 		),
 	}})
-
 }

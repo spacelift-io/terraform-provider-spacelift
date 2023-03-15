@@ -54,6 +54,15 @@ func dataNamedWebhook() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"secret_header_keys": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Description: "secret header keys which are currently set for this webhook",
+				Computed:    true,
+			},
+
 			"webhook_id": {
 				Type:             schema.TypeString,
 				Description:      "ID of the webhook",
@@ -92,6 +101,12 @@ func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	shk := schema.NewSet(schema.HashString, []interface{}{})
+	for _, key := range wh.SecretHeaders {
+		shk.Add(key)
+	}
+	d.Set("secret_header_keys", shk)
 
 	return nil
 }
