@@ -18,14 +18,18 @@ func TestContextsData(t *testing.T) {
 
 	testSteps(t, []resource.TestStep{{
 		Config: fmt.Sprintf(`
+			locals {
+				seed = "%s"
+			}
+
 			resource "spacelift_context" "test" {
-				name   = "My first context %s"
-				labels = ["foo", "bar"]
+				name   = "My first context ${local.seed}"
+				labels = ["foo-${local.seed}", "bar-${local.seed}"]
 			}
 
 			resource "spacelift_context" "test2" {
-				name   = "My second context %s"
-				labels = ["baz", "qux"]
+				name   = "My second context ${local.seed}"
+				labels = ["baz-${local.seed}", "qux-${local.seed}"]
 			}
 
 			data "spacelift_contexts" "test" {
@@ -35,14 +39,14 @@ func TestContextsData(t *testing.T) {
 				]
 
 				labels {
-					any_of = ["foo", "abc"]
+					any_of = ["foo-${local.seed}", "abc-${local.seed}"]
 				}
 
 				labels {
-					any_of = ["bar", "def"]
+					any_of = ["bar-${local.seed}", "def-${local.seed}"]
 				}
 			}
-		`, randomID, randomID), Check: resource.ComposeTestCheckFunc(
+		`, randomID), Check: resource.ComposeTestCheckFunc(
 			Resource(datasourceName, Attribute("id", IsNotEmpty())),
 			Resource(datasourceName, Attribute("contexts.#", Equals("1"))),
 			CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"contexts", "context_id"}, resourceName, "id"),
