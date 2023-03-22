@@ -102,6 +102,19 @@ resource "spacelift_stack" "k8s-cluster" {
   terraform_smart_sanitization = true
 }
 
+# Terraform stack using github.com as VCS and enabling external state access
+resource "spacelift_stack" "k8s-cluster" {
+  administrative                  = true
+  autodeploy                      = true
+  branch                          = "master"
+  description                     = "Provisions a Kubernetes cluster"
+  name                            = "Kubernetes Cluster"
+  project_root                    = "cluster"
+  repository                      = "core-infra"
+  terraform_version               = "1.3.0"
+  terraform_external_state_access = true
+}
+
 # CloudFormation stack using github.com as VCS
 resource "spacelift_stack" "k8s-cluster-cloudformation" {
   cloudformation {
