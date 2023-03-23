@@ -484,7 +484,6 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	manageState := d.Get("manage_state").(bool)
-	administrative := d.Get("administrative").(bool)
 
 	variables := map[string]interface{}{
 		"input":         stackInput(d),
@@ -528,9 +527,6 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	if v, ok := d.GetOk("terraform_external_state_access"); ok {
 		if v.(bool) && !manageState {
 			return diag.Errorf(`"terraform_external_state_access" requires "manage_state" to be true`)
-		}
-		if v.(bool) && !administrative {
-			return diag.Errorf(`"terraform_external_state_access" requires "administrative" to be true`)
 		}
 	}
 
