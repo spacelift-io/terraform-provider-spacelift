@@ -98,7 +98,9 @@ func flattenDataIntegrationsList(integrations []*structs.AWSIntegration) []map[s
 	mapped := make([]map[string]interface{}, len(integrations))
 
 	for index, integration := range integrations {
-		mapped[index] = integration.ToMap()
+		integrationToMap := integration.ToMap()
+		integrationToMap["integration_id"] = integration.ID
+		mapped[index] = integrationToMap
 	}
 
 	return mapped

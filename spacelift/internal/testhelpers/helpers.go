@@ -104,6 +104,58 @@ func Attribute(name string, check ValueCheck) AttributeCheck {
 	}
 }
 
+// Nested will scope down attribute checks to a nested attribute.
+// The nested attributes will be stripped of the attributeName prefix.
+func Nested(attributeName string, check AttributeCheck) AttributeCheck {
+	return func(m map[string]string) error {
+		filtered := make(map[string]string, len(m))
+		for key, value := range m {
+			if strings.HasPrefix(key, attributeName) {
+				filtered[strings.TrimLeft(key, attributeName+".")] = value
+			}
+		}
+		return check(filtered)
+	}
+}
+
+// CheckInList will group attributes by index and run the check on each group.
+// If check passes for a single group, the check will pass.
+func CheckInList(check AttributeCheck) AttributeCheck {
+	return func(flattenedAttributes map[string]string) error {
+		nestedAttributes := make([]map[string]string, len(flattenedAttributes))
+		for key, value := range flattenedAttributes {
+			index := strings.Split(key, ".")[0]
+			indexInt, err := strconv.Atoi(index)
+			if err != nil {
+				continue
+			}
+			if nestedAttributes[indexInt] == nil {
+				nestedAttributes[indexInt] = make(map[string]string)
+			}
+			nestedAttributes[indexInt][strings.TrimLeft(key, index+".")] = value
+		}
+
+		for _, nestedAttribute := range nestedAttributes {
+			for key, value := range nestedAttribute {
+				println(key, value)
+			}
+
+		}
+
+		// since we don't know in which order the attributes will be returned, we iterate through all
+		// and check if any of them matches the check
+		var err error
+		for _, nestedAttribute := range nestedAttributes {
+			err = check(nestedAttribute)
+			// if we found matching attributes, we return nil
+			if err == nil {
+				return nil
+			}
+		}
+		return err
+	}
+}
+
 // AttributeNotPresent ensures that an attribute is not set on the resource.
 func AttributeNotPresent(name string) AttributeCheck {
 	return func(attributes map[string]string) error {
