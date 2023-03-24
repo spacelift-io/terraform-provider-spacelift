@@ -72,13 +72,17 @@ func labelsAsString(labels []string) string {
 func awsIntegrationChecks(i *structs.AWSIntegration) []resource.TestCheckFunc {
 	return []resource.TestCheckFunc{
 		Resource("data.spacelift_aws_integrations.test",
-			Nested("integrations", CheckInList(Attribute("name", Equals(i.Name)))),
-			Nested("integrations", CheckInList(Attribute("integration_id", IsNotEmpty()))),
-			Nested("integrations", CheckInList(Attribute("role_arn", Equals(i.RoleARN)))),
-			Nested("integrations", CheckInList(Attribute("space_id", Equals(i.Space)))),
-			Nested("integrations", CheckInList(Attribute("duration_seconds", Equals(fmt.Sprintf("%d", i.DurationSeconds))))),
-			Nested("integrations", CheckInList(Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", i.GenerateCredentialsInWorker))))),
-			Nested("integrations", CheckInList(SetEquals("labels", i.Labels...))),
+			Nested("integrations",
+				CheckInList(
+					Attribute("name", Equals(i.Name)),
+					Attribute("integration_id", IsNotEmpty()),
+					Attribute("role_arn", Equals(i.RoleARN)),
+					Attribute("space_id", Equals(i.Space)),
+					Attribute("duration_seconds", Equals(fmt.Sprintf("%d", i.DurationSeconds))),
+					Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", i.GenerateCredentialsInWorker))),
+					SetEquals("labels", i.Labels...),
+				),
+			),
 		),
 	}
 }
