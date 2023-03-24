@@ -199,7 +199,7 @@ func resourceModule() *schema.Resource {
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
-				Description: "ID of the worker pool to use",
+				Description: "ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.",
 				Optional:    true,
 			},
 		},
