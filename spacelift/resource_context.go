@@ -31,6 +31,105 @@ func resourceContext() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"after_apply": {
+				Type:        schema.TypeList,
+				Description: "List of after-apply scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"after_destroy": {
+				Type:        schema.TypeList,
+				Description: "List of after-destroy scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"after_init": {
+				Type:        schema.TypeList,
+				Description: "List of after-init scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"after_perform": {
+				Type:        schema.TypeList,
+				Description: "List of after-perform scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"after_plan": {
+				Type:        schema.TypeList,
+				Description: "List of after-plan scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"after_run": {
+				Type:        schema.TypeList,
+				Description: "List of after-run scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"before_apply": {
+				Type:        schema.TypeList,
+				Description: "List of before-apply scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"before_destroy": {
+				Type:        schema.TypeList,
+				Description: "List of before-destroy scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"before_init": {
+				Type:        schema.TypeList,
+				Description: "List of before-init scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"before_perform": {
+				Type:        schema.TypeList,
+				Description: "List of before-perform scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
+			"before_plan": {
+				Type:        schema.TypeList,
+				Description: "List of before-plan scripts",
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Optional: true,
+			},
 			"description": {
 				Type:        schema.TypeString,
 				Description: "Free-form context description for users",
@@ -63,22 +162,20 @@ func resourceContext() *schema.Resource {
 
 func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateContext structs.Context `graphql:"contextCreate(name: $name, description: $description, labels: $labels, space: $space)"`
+		CreateContext structs.Context `graphql:"contextCreateV2(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
-		"name":        toString(d.Get("name")),
-		"description": (*graphql.String)(nil),
-		"labels":      (*[]graphql.String)(nil),
-		"space":       (*graphql.ID)(nil),
+	input := structs.ContextInput{
+		Name:  toString(d.Get("name")),
+		Hooks: buildHooksInput(d),
 	}
 
 	if description, ok := d.GetOk("description"); ok {
-		variables["description"] = toOptionalString(description)
+		input.Description = toOptionalString(description)
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
-		variables["space"] = graphql.NewID(spaceID)
+		input.Space = graphql.NewID(spaceID)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -88,8 +185,10 @@ func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta int
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		variables["labels"] = &labels
+		input.Labels = &labels
 	}
+
+	variables := map[string]interface{}{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create context: %v", internal.FromSpaceliftError(err))
@@ -129,28 +228,37 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("labels", labels)
 	d.Set("space_id", context.Space)
 
+	d.Set("after_apply", context.Hooks.AfterApply)
+	d.Set("after_destroy", context.Hooks.AfterDestroy)
+	d.Set("after_init", context.Hooks.AfterInit)
+	d.Set("after_perform", context.Hooks.AfterPerform)
+	d.Set("after_plan", context.Hooks.AfterPlan)
+	d.Set("after_run", context.Hooks.AfterRun)
+	d.Set("before_apply", context.Hooks.BeforeApply)
+	d.Set("before_destroy", context.Hooks.BeforeDestroy)
+	d.Set("before_init", context.Hooks.BeforeInit)
+	d.Set("before_perform", context.Hooks.BeforePerform)
+	d.Set("before_plan", context.Hooks.BeforePlan)
+
 	return nil
 }
 
 func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateContext structs.Context `graphql:"contextUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space)"`
+		UpdateContext structs.Context `graphql:"contextUpdateV2(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
-		"id":          toID(d.Id()),
-		"name":        toString(d.Get("name")),
-		"description": (*graphql.String)(nil),
-		"labels":      (*[]graphql.String)(nil),
-		"space":       (*graphql.ID)(nil),
+	input := structs.ContextInput{
+		Name:  toString(d.Get("name")),
+		Hooks: buildHooksInput(d),
 	}
 
 	if description, ok := d.GetOk("description"); ok {
-		variables["description"] = toOptionalString(description)
+		input.Description = toOptionalString(description)
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
-		variables["space"] = graphql.NewID(spaceID)
+		input.Space = graphql.NewID(spaceID)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -160,10 +268,15 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		variables["labels"] = &labels
+		input.Labels = &labels
 	}
 
 	var ret diag.Diagnostics
+
+	variables := map[string]interface{}{
+		"id":    toID(d.Id()),
+		"input": input,
+	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextUpdate", &mutation, variables); err != nil {
 		ret = append(ret, diag.Errorf("could not update context: %v", internal.FromSpaceliftError(err))...)
@@ -188,4 +301,32 @@ func resourceContextDelete(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId("")
 
 	return nil
+}
+
+func buildHooksInput(d *schema.ResourceData) *structs.HooksInput {
+	return &structs.HooksInput{
+		AfterApply:    gqlStringList(d, "after_apply"),
+		AfterDestroy:  gqlStringList(d, "after_destroy"),
+		AfterInit:     gqlStringList(d, "after_init"),
+		AfterPerform:  gqlStringList(d, "after_perform"),
+		AfterPlan:     gqlStringList(d, "after_plan"),
+		AfterRun:      gqlStringList(d, "after_run"),
+		BeforeApply:   gqlStringList(d, "before_apply"),
+		BeforeDestroy: gqlStringList(d, "before_destroy"),
+		BeforeInit:    gqlStringList(d, "before_init"),
+		BeforePerform: gqlStringList(d, "before_perform"),
+		BeforePlan:    gqlStringList(d, "before_plan"),
+	}
+}
+
+func gqlStringList(d *schema.ResourceData, key string) []graphql.String {
+	var ret []graphql.String
+
+	if list, ok := d.GetOk(key); ok {
+		for _, item := range list.([]interface{}) {
+			ret = append(ret, graphql.String(item.(string)))
+		}
+	}
+
+	return ret
 }
