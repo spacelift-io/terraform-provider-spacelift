@@ -320,7 +320,7 @@ func buildHooksInput(d *schema.ResourceData) *structs.HooksInput {
 }
 
 func gqlStringList(d *schema.ResourceData, key string) []graphql.String {
-	var ret []graphql.String
+	ret := []graphql.String{}
 
 	if list, ok := d.GetOk(key); ok {
 		for _, item := range list.([]interface{}) {
