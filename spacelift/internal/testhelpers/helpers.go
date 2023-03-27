@@ -104,6 +104,59 @@ func Attribute(name string, check ValueCheck) AttributeCheck {
 	}
 }
 
+// Nested will scope down attribute checks to a nested attribute.
+// The nested attributes will be stripped of the attributeName prefix.
+func Nested(attributeName string, check AttributeCheck) AttributeCheck {
+	return func(m map[string]string) error {
+		filteredAttributes := filter(attributeName, m)
+		trimmedAttributes := trimPrefix(attributeName, filteredAttributes)
+		return check(trimmedAttributes)
+	}
+}
+
+// CheckInList will group attributes by index and run the check on each group.
+// If check passes for a single group, the check will pass.
+func CheckInList(checks ...AttributeCheck) AttributeCheck {
+	return func(flattenedAttributes map[string]string) error {
+		nestedAttributes := make([]map[string]string, len(flattenedAttributes))
+		for key, value := range flattenedAttributes {
+			index := strings.Split(key, ".")[0]
+			indexInt, err := strconv.Atoi(index)
+			// if attribute doesn't start with an index, we skip it
+			if err != nil {
+				continue
+			}
+			if nestedAttributes[indexInt] == nil {
+				nestedAttributes[indexInt] = make(map[string]string)
+			}
+			nestedAttributes[indexInt][strings.TrimPrefix(key, index+".")] = value
+		}
+
+		// if one of the checks fail, we return the error
+		for _, check := range checks {
+			if err := singleCheck(nestedAttributes, check); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	}
+}
+
+// singleCheck runs a check on a single nested attribute.
+// if it passes for one of the attributes, it will return nil.
+func singleCheck(nestedAttributes []map[string]string, check AttributeCheck) error {
+	var err error
+	for _, nestedAttribute := range nestedAttributes {
+		err = check(nestedAttribute)
+		// if we found matching attributes, we return nil
+		if err == nil {
+			return nil
+		}
+	}
+	return err
+}
+
 // AttributeNotPresent ensures that an attribute is not set on the resource.
 func AttributeNotPresent(name string) AttributeCheck {
 	return func(attributes map[string]string) error {
@@ -264,4 +317,23 @@ func SetDoesNotContain(name string, values ...string) AttributeCheck {
 
 		return nil
 	}
+}
+
+// trimPrefix will trim the prefix from all keys in the map.
+func trimPrefix(prefix string, m map[string]string) map[string]string {
+	trimmed := make(map[string]string, len(m))
+	for key, value := range m {
+		trimmed[strings.TrimPrefix(key, prefix+".")] = value
+	}
+	return trimmed
+}
+
+func filter(prefix string, m map[string]string) map[string]string {
+	filtered := make(map[string]string, len(m))
+	for key, value := range m {
+		if strings.HasPrefix(key, prefix) {
+			filtered[key] = value
+		}
+	}
+	return filtered
 }

@@ -69,14 +69,20 @@ func labelsAsString(labels []string) string {
 	return fmt.Sprintf(`["%s"]`, strings.Join(labels, `", "`))
 }
 
-func awsIntegrationChecks(first *structs.AWSIntegration) []resource.TestCheckFunc {
-	resourceName := fmt.Sprintf("spacelift_aws_integration.%s", first.Name)
+func awsIntegrationChecks(i *structs.AWSIntegration) []resource.TestCheckFunc {
 	return []resource.TestCheckFunc{
-		Resource(resourceName, Attribute("name", Equals(first.Name))),
-		Resource(resourceName, Attribute("role_arn", Equals(first.RoleARN))),
-		Resource(resourceName, Attribute("space_id", Equals(first.Space))),
-		Resource(resourceName, Attribute("duration_seconds", Equals(fmt.Sprintf("%d", first.DurationSeconds)))),
-		Resource(resourceName, Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", first.GenerateCredentialsInWorker)))),
-		Resource(resourceName, SetEquals("labels", first.Labels...)),
+		Resource("data.spacelift_aws_integrations.test",
+			Nested("integrations",
+				CheckInList(
+					Attribute("name", Equals(i.Name)),
+					Attribute("integration_id", IsNotEmpty()),
+					Attribute("role_arn", Equals(i.RoleARN)),
+					Attribute("space_id", Equals(i.Space)),
+					Attribute("duration_seconds", Equals(fmt.Sprintf("%d", i.DurationSeconds))),
+					Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", i.GenerateCredentialsInWorker))),
+					SetEquals("labels", i.Labels...),
+				),
+			),
+		),
 	}
 }

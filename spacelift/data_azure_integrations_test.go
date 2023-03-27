@@ -73,12 +73,18 @@ func azureIntegrationToResource(i *structs.AzureIntegration) string {
 }
 
 func azureIntegrationChecks(i *structs.AzureIntegration) []resource.TestCheckFunc {
-	resourceName := fmt.Sprintf("spacelift_azure_integration.%s", i.Name)
 	return []resource.TestCheckFunc{
-		Resource(resourceName, Attribute("name", Equals(i.Name))),
-		Resource(resourceName, Attribute("tenant_id", Equals(i.TenantID))),
-		Resource(resourceName, Attribute("default_subscription_id", Equals(*i.DefaultSubscriptionID))),
-		Resource(resourceName, SetEquals("labels", i.Labels...)),
-		Resource(resourceName, Attribute("space_id", Equals(i.Space))),
+		Resource("data.spacelift_azure_integrations.test",
+			Nested("integrations",
+				CheckInList(
+					Attribute("name", Equals(i.Name)),
+					Attribute("tenant_id", Equals(i.TenantID)),
+					Attribute("default_subscription_id", Equals(*i.DefaultSubscriptionID)),
+					SetEquals("labels", i.Labels...),
+					Attribute("space_id", Equals(i.Space)),
+					Attribute("integration_id", IsNotEmpty()),
+				),
+			),
+		),
 	}
 }
