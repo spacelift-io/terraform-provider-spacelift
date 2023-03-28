@@ -572,7 +572,7 @@ func TestStackResource(t *testing.T) {
 						project_root                    = "root"
 						repository                      = "demo"
 						branch                          = "master"
-						administrative                  = true
+						administrative                  = false
 						manage_state                    = true
 					 }`,
 				Check: Resource(
@@ -586,7 +586,7 @@ func TestStackResource(t *testing.T) {
 						project_root                    = "root"
 						repository                      = "demo"
 						branch                          = "master"
-						administrative                  = true
+						administrative                  = false
 						manage_state                    = true
 						terraform_external_state_access = true
 					 }`,
@@ -594,33 +594,6 @@ func TestStackResource(t *testing.T) {
 					"spacelift_stack.test",
 					Attribute("terraform_external_state_access", Equals("true")),
 				),
-			},
-			{
-				Config: `resource "spacelift_stack" "test" {
-						name                            = "External state access test"
-						project_root                    = "root"
-						repository                      = "demo"
-						branch                          = "master"
-						administrative                  = true
-						manage_state                    = true
-						terraform_external_state_access = true
-					 }`,
-				Check: Resource(
-					"spacelift_stack.test",
-					Attribute("terraform_external_state_access", Equals("true")),
-				),
-			},
-			{
-				Config: `resource "spacelift_stack" "test" {
-						name                            = "External state access test"
-						project_root                    = "root"
-						repository                      = "demo"
-						branch                          = "master"
-						administrative                  = true
-						manage_state                    = false
-						terraform_external_state_access = true
-					 }`,
-				ExpectError: regexp.MustCompile(`"terraform_external_state_access" requires "manage_state" to be true`),
 			},
 			{
 				Config: `resource "spacelift_stack" "test" {
@@ -632,7 +605,22 @@ func TestStackResource(t *testing.T) {
 						manage_state                    = true
 						terraform_external_state_access = true
 					 }`,
-				ExpectError: regexp.MustCompile(`"terraform_external_state_access" requires "administrative" to be true`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terraform_external_state_access", Equals("true")),
+				),
+			},
+			{
+				Config: `resource "spacelift_stack" "test" {
+						name                            = "External state access test"
+						project_root                    = "root"
+						repository                      = "demo"
+						branch                          = "master"
+						administrative                  = false
+						manage_state                    = false
+						terraform_external_state_access = true
+					 }`,
+				ExpectError: regexp.MustCompile(`"terraform_external_state_access" requires "manage_state" to be true`),
 			},
 		})
 	})
