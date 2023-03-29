@@ -446,6 +446,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"terraform_external_state_access": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+			},
 			"terraform_smart_sanitization": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.",
@@ -516,6 +522,12 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 			return diag.FromErr(err)
 		}
 		variables["stackObjectID"] = toOptionalString(objectID)
+	}
+
+	if v, ok := d.GetOk("terraform_external_state_access"); ok {
+		if v.(bool) && !manageState {
+			return diag.Errorf(`"terraform_external_state_access" requires "manage_state" to be true`)
+		}
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackCreate", &mutation, variables); err != nil {
@@ -806,6 +818,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			terraformConfig.UseSmartSanitization = toOptionalBool(terraformSmartSanitization)
 		} else {
 			terraformConfig.UseSmartSanitization = toOptionalBool(false)
+		}
+
+		if v, ok := d.GetOk("terraform_external_state_access"); ok {
+			terraformConfig.ExternalStateAccessEnabled = toOptionalBool(v)
+		} else {
+			terraformConfig.ExternalStateAccessEnabled = toOptionalBool(false)
 		}
 
 		ret.VendorConfig = &structs.VendorConfigInput{Terraform: terraformConfig}

@@ -164,6 +164,7 @@ Read-Only:
 - `showcase` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--showcase))
 - `space_id` (String)
 - `stack_id` (String)
+- `terraform_external_state_access` (Boolean)
 - `terraform_smart_sanitization` (Boolean)
 - `terraform_version` (String)
 - `terraform_workspace` (String)

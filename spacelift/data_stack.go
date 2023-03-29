@@ -344,6 +344,11 @@ func dataStack() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
+			"terraform_external_state_access": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether you can access the Stack state file from other stacks or outside of Spacelift.",
+				Computed:    true,
+			},
 			"terraform_smart_sanitization": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
@@ -430,6 +435,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
+		d.Set("terraform_external_state_access", stack.VendorConfig.Terraform.ExternalStateAccessEnabled)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {

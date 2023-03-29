@@ -74,9 +74,10 @@ type Stack struct {
 			StackName string `graphql:"stackName"`
 		} `graphql:"... on StackConfigVendorPulumi"`
 		Terraform struct {
-			UseSmartSanitization bool    `graphql:"useSmartSanitization"`
-			Version              *string `graphql:"version"`
-			Workspace            *string `graphql:"workspace"`
+			UseSmartSanitization       bool    `graphql:"useSmartSanitization"`
+			Version                    *string `graphql:"version"`
+			Workspace                  *string `graphql:"workspace"`
+			ExternalStateAccessEnabled bool    `graphql:"externalStateAccessEnabled"`
 		} `graphql:"... on StackConfigVendorTerraform"`
 	} `graphql:"vendorConfig"`
 	WorkerPool *struct {
@@ -215,6 +216,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
 		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
+		d.Set("terraform_external_state_access", stack.VendorConfig.Terraform.ExternalStateAccessEnabled)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {
