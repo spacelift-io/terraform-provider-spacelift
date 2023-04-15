@@ -51,7 +51,7 @@ resource "spacelift_environment_variable" "core-kubeconfig" {
 - `module_id` (String) ID of the module on which the environment variable is defined
 - `stack_id` (String) ID of the stack on which the environment variable is defined
 - `value` (String, Sensitive) Value of the environment variable. Defaults to an empty string.
-- `write_only` (Boolean) Indicates whether the value can be read back outside a Run. Defaults to `true`.
+- `write_only` (Boolean) Indicates whether the value is secret or not. Defaults to `true`.
 
 ### Read-Only
 
