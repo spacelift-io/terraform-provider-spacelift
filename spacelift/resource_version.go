@@ -37,7 +37,7 @@ func resourceVersion() *schema.Resource {
 				ForceNew:    true,
 			},
 			"version_number": {
-				Description: "A schematic version number to set for the triggered version, example: 0.11.2",
+				Description: "A semantic version number to set for the triggered version, example: 0.11.2",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
