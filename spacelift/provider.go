@@ -128,6 +128,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_named_webhook":                resourceNamedWebhook(),
 				"spacelift_named_webhook_secret_header":  resourceNamedWebhookSecretHeader(),
 				"spacelift_worker_pool":                  resourceWorkerPool(),
+				"spacelift_version":                      resourceVersion(),
 			},
 			ConfigureContextFunc: configureProvider(commit, version),
 		}
