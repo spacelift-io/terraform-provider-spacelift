@@ -43,7 +43,7 @@ func resourceStack() *schema.Resource {
 			},
 			"ansible": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace", "terragrunt"},
 				Description:   "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -233,7 +233,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "kubernetes", "pulumi", "terraform_version", "terraform_workspace", "terragrunt"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -334,7 +334,7 @@ func resourceStack() *schema.Resource {
 			},
 			"kubernetes": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "pulumi", "terraform_version", "terraform_workspace", "terragrunt"},
 				Description:   "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -387,7 +387,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "terraform_version", "terraform_workspace", "terragrunt"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -468,6 +468,39 @@ func resourceStack() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Terraform workspace to select",
 				Optional:    true,
+			},
+			"terragrunt": {
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
+				Description:   "Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+
+						// todo: add terragrunt-specific fields
+						"terraform_version": {
+							Type:             schema.TypeString,
+							Description:      "Terraform version.",
+							Optional:         true,
+							Computed:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"terragrunt_version": {
+							Type:             schema.TypeString,
+							Description:      "Terragrunt version.",
+							Optional:         true,
+							Computed:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"use_run_all": {
+							Type:        schema.TypeBool,
+							Description: "Whether to use `terragrunt run-all` instead of `terragrunt`.",
+							Optional:    true,
+							Default:     false,
+						},
+					},
+				},
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
@@ -619,92 +652,37 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Repository:          toString(d.Get("repository")),
 	}
 
-	afterApplies := []graphql.String{}
-	if commands, ok := d.GetOk("after_apply"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			afterApplies = append(afterApplies, graphql.String(cmd.(string)))
-		}
-	}
+	afterApplies := getStrings(d, "after_apply")
 	ret.AfterApply = &afterApplies
 
-	afterDestroys := []graphql.String{}
-	if commands, ok := d.GetOk("after_destroy"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			afterDestroys = append(afterDestroys, graphql.String(cmd.(string)))
-		}
-	}
+	afterDestroys := getStrings(d, "after_destroy")
 	ret.AfterDestroy = &afterDestroys
 
-	afterInits := []graphql.String{}
-	if commands, ok := d.GetOk("after_init"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			afterInits = append(afterInits, graphql.String(cmd.(string)))
-		}
-	}
+	afterInits := getStrings(d, "after_init")
 	ret.AfterInit = &afterInits
 
-	afterPerforms := []graphql.String{}
-	if commands, ok := d.GetOk("after_perform"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			afterPerforms = append(afterPerforms, graphql.String(cmd.(string)))
-		}
-	}
+	afterPerforms := getStrings(d, "after_perform")
 	ret.AfterPerform = &afterPerforms
 
-	afterPlans := []graphql.String{}
-	if commands, ok := d.GetOk("after_plan"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			afterPlans = append(afterPlans, graphql.String(cmd.(string)))
-		}
-	}
+	afterPlans := getStrings(d, "after_plan")
 	ret.AfterPlan = &afterPlans
 
-	afterRuns := []graphql.String{}
-	if commands, ok := d.GetOk("after_run"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			afterRuns = append(afterRuns, graphql.String(cmd.(string)))
-		}
-	}
+	afterRuns := getStrings(d, "after_run")
 	ret.AfterRun = &afterRuns
 
-	beforeApplies := []graphql.String{}
-	if commands, ok := d.GetOk("before_apply"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			beforeApplies = append(beforeApplies, graphql.String(cmd.(string)))
-		}
-	}
+	beforeApplies := getStrings(d, "before_apply")
 	ret.BeforeApply = &beforeApplies
 
-	beforeDestroys := []graphql.String{}
-	if commands, ok := d.GetOk("before_destroy"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			beforeDestroys = append(beforeDestroys, graphql.String(cmd.(string)))
-		}
-	}
+	beforeDestroys := getStrings(d, "before_destroy")
 	ret.BeforeDestroy = &beforeDestroys
 
-	beforeInits := []graphql.String{}
-	if commands, ok := d.GetOk("before_init"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			beforeInits = append(beforeInits, graphql.String(cmd.(string)))
-		}
-	}
+	beforeInits := getStrings(d, "before_init")
 	ret.BeforeInit = &beforeInits
 
-	beforePerforms := []graphql.String{}
-	if commands, ok := d.GetOk("before_perform"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			beforePerforms = append(beforePerforms, graphql.String(cmd.(string)))
-		}
-	}
+	beforePerforms := getStrings(d, "before_perform")
 	ret.BeforePerform = &beforePerforms
 
-	beforePlans := []graphql.String{}
-	if commands, ok := d.GetOk("before_plan"); ok {
-		for _, cmd := range commands.([]interface{}) {
-			beforePlans = append(beforePlans, graphql.String(cmd.(string)))
-		}
-	}
+	beforePlans := getStrings(d, "before_plan")
 	ret.BeforePlan = &beforePlans
 
 	description, ok := d.GetOk("description")
@@ -770,8 +748,18 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		}}
 	}
 
+	ret.VendorConfig = getVendorConfig(d)
+
+	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
+		ret.WorkerPool = graphql.NewID(workerPoolID)
+	}
+
+	return ret
+}
+
+func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
-		ret.VendorConfig = &structs.VendorConfigInput{
+		return &structs.VendorConfigInput{
 			CloudFormationInput: &structs.CloudFormationInput{
 				EntryTemplateFile: toString(cloudFormation[0].(map[string]interface{})["entry_template_file"]),
 				Region:            toString(cloudFormation[0].(map[string]interface{})["region"]),
@@ -779,61 +767,82 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 				TemplateBucket:    toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
 			},
 		}
-	} else if kubernetes, ok := d.Get("kubernetes").([]interface{}); ok && len(kubernetes) > 0 {
-		ret.VendorConfig = &structs.VendorConfigInput{
+	}
+
+	if kubernetes, ok := d.Get("kubernetes").([]interface{}); ok && len(kubernetes) > 0 {
+		vendorConfig := &structs.VendorConfigInput{
 			Kubernetes: &structs.KubernetesInput{},
 		}
 
 		if kubernetesSettings, ok := kubernetes[0].(map[string]interface{}); ok {
-			ret.VendorConfig.Kubernetes.Namespace = toString(kubernetesSettings["namespace"])
+			vendorConfig.Kubernetes.Namespace = toString(kubernetesSettings["namespace"])
 			if s := toOptionalString(kubernetesSettings["kubectl_version"]); *s != "" {
-				ret.VendorConfig.Kubernetes.KubectlVersion = s
+				vendorConfig.Kubernetes.KubectlVersion = s
 			}
 		}
-	} else if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
-		ret.VendorConfig = &structs.VendorConfigInput{
+		return vendorConfig
+	}
+
+	if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
+		return &structs.VendorConfigInput{
 			Pulumi: &structs.PulumiInput{
 				LoginURL:  toString(pulumi[0].(map[string]interface{})["login_url"]),
 				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
 			},
 		}
-	} else if ansible, ok := d.Get("ansible").([]interface{}); ok && len(ansible) > 0 {
-		ret.VendorConfig = &structs.VendorConfigInput{
+	}
+
+	if ansible, ok := d.Get("ansible").([]interface{}); ok && len(ansible) > 0 {
+		return &structs.VendorConfigInput{
 			AnsibleInput: &structs.AnsibleInput{
 				Playbook: toString(ansible[0].(map[string]interface{})["playbook"]),
 			},
 		}
+	}
+
+	if terragrunt, ok := d.Get("terragrunt").([]interface{}); ok && len(terragrunt) > 0 {
+		return &structs.VendorConfigInput{
+			TerragruntInput: &structs.TerragruntInput{
+				TerraformVersion:  toString(terragrunt[0].(map[string]interface{})["terraform_version"]),
+				TerragruntVersion: toString(terragrunt[0].(map[string]interface{})["terragrunt_version"]),
+				UseRunAll:         toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
+			},
+		}
+	}
+
+	terraformConfig := &structs.TerraformInput{}
+
+	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
+		terraformConfig.Version = toOptionalString(terraformVersion)
+	}
+
+	if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {
+		terraformConfig.Workspace = toOptionalString(terraformWorkspace)
+	}
+
+	if terraformSmartSanitization, ok := d.GetOk("terraform_smart_sanitization"); ok {
+		terraformConfig.UseSmartSanitization = toOptionalBool(terraformSmartSanitization)
 	} else {
-		terraformConfig := &structs.TerraformInput{}
-
-		if terraformVersion, ok := d.GetOk("terraform_version"); ok {
-			terraformConfig.Version = toOptionalString(terraformVersion)
-		}
-
-		if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {
-			terraformConfig.Workspace = toOptionalString(terraformWorkspace)
-		}
-
-		if terraformSmartSanitization, ok := d.GetOk("terraform_smart_sanitization"); ok {
-			terraformConfig.UseSmartSanitization = toOptionalBool(terraformSmartSanitization)
-		} else {
-			terraformConfig.UseSmartSanitization = toOptionalBool(false)
-		}
-
-		if v, ok := d.GetOk("terraform_external_state_access"); ok {
-			terraformConfig.ExternalStateAccessEnabled = toOptionalBool(v)
-		} else {
-			terraformConfig.ExternalStateAccessEnabled = toOptionalBool(false)
-		}
-
-		ret.VendorConfig = &structs.VendorConfigInput{Terraform: terraformConfig}
+		terraformConfig.UseSmartSanitization = toOptionalBool(false)
 	}
 
-	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
-		ret.WorkerPool = graphql.NewID(workerPoolID)
+	if v, ok := d.GetOk("terraform_external_state_access"); ok {
+		terraformConfig.ExternalStateAccessEnabled = toOptionalBool(v)
+	} else {
+		terraformConfig.ExternalStateAccessEnabled = toOptionalBool(false)
 	}
 
-	return ret
+	return &structs.VendorConfigInput{Terraform: terraformConfig}
+}
+
+func getStrings(d *schema.ResourceData, fieldName string) []graphql.String {
+	values := []graphql.String{}
+	if commands, ok := d.GetOk(fieldName); ok {
+		for _, cmd := range commands.([]interface{}) {
+			values = append(values, graphql.String(cmd.(string)))
+		}
+	}
+	return values
 }
 
 func uploadStateFile(ctx context.Context, content string, meta interface{}) (string, error) {

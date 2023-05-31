@@ -232,6 +232,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `terraform_smart_sanitization` (Boolean) Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.
 - `terraform_version` (String) Terraform version to use
 - `terraform_workspace` (String) Terraform workspace to select
+- `terragrunt` (Block List, Max: 1) Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack. (see [below for nested schema](#nestedblock--terragrunt))
 - `worker_pool_id` (String) ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.
 
 ### Read-Only
@@ -322,6 +323,16 @@ Required:
 Required:
 
 - `namespace` (String)
+
+
+<a id="nestedblock--terragrunt"></a>
+### Nested Schema for `terragrunt`
+
+Optional:
+
+- `terraform_version` (String) Terraform version.
+- `terragrunt_version` (String) Terragrunt version.
+- `use_run_all` (Boolean) Whether to use `terragrunt run-all` instead of `terragrunt`.
 
 ## Import
 
