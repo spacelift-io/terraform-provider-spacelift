@@ -645,6 +645,22 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with a public Git repository", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`
+					git {
+                                        	repository_url = "https://github.com/mbialon/gitdemo.git"
+						namespace      = "mbialon"
+                                        }`),
+				Check: Resource(
+					resourceName,
+					Attribute("git.0.repository_url", Equals("https://github.com/mbialon/gitdemo.git")),
+					Attribute("git.0.namespace", Equals("mbialon")),
+				),
+			},
+		})
+	})
 }
 
 func TestStackResourceSpace(t *testing.T) {

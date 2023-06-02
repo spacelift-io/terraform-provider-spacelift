@@ -19,6 +19,9 @@ const (
 	// VCSProviderGitlab represents GitLab VCS provider.
 	VCSProviderGitlab = "GITLAB"
 
+	// VCSProviderGit represents Git VCS provider.
+	VCSProviderGit = "GIT"
+
 	// VCSProviderShowcases represents the showcases provider.
 	VCSProviderShowcases = "SHOWCASE"
 )

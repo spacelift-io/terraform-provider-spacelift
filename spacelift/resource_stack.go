@@ -133,7 +133,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Azure DevOps VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "git", "github_enterprise", "gitlab"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -201,7 +201,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Cloud VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "git", "github_enterprise", "gitlab"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -218,7 +218,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Datacenter VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "git", "github_enterprise", "gitlab"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -277,6 +277,29 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"git": {
+				Type:          schema.TypeList,
+				Description:   "Git VCS settings",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"repository_url": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "URL to a public Git repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"namespace": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "The organization / user the repository belongs to",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+					},
+				},
+			},
 			"github_action_deploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.",
@@ -287,7 +310,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application)",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "git", "gitlab"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -304,7 +327,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "GitLab VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "git", "github_enterprise"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -705,6 +728,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
 		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
 		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
+	}
+
+	if git, ok := d.Get("git").([]interface{}); ok && len(git) > 0 {
+		ret.RepositoryURL = toOptionalString(git[0].(map[string]interface{})["repository_url"])
+		ret.Namespace = toOptionalString(git[0].(map[string]interface{})["namespace"])
+		ret.Provider = graphql.NewString(structs.VCSProviderGit)
 	}
 
 	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
