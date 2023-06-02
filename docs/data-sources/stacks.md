@@ -150,6 +150,7 @@ Read-Only:
 - `cloudformation` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--cloudformation))
 - `description` (String)
 - `enable_local_preview` (Boolean)
+- `git` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--git))
 - `github_enterprise` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--github_enterprise))
 - `gitlab` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--gitlab))
 - `kubernetes` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--kubernetes))
@@ -211,6 +212,15 @@ Read-Only:
 - `region` (String)
 - `stack_name` (String)
 - `template_bucket` (String)
+
+
+<a id="nestedobjatt--stacks--git"></a>
+### Nested Schema for `stacks.git`
+
+Read-Only:
+
+- `namespace` (String)
+- `repository_url` (String)
 
 
 <a id="nestedobjatt--stacks--github_enterprise"></a>

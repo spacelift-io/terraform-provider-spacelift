@@ -213,6 +213,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `cloudformation` (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
 - `description` (String) Free-form stack description for users
 - `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack. Defaults to `false`.
+- `git` (Block List, Max: 1) Git VCS settings (see [below for nested schema](#nestedblock--git))
 - `github_action_deploy` (Boolean) Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.
 - `github_enterprise` (Block List, Max: 1) VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application) (see [below for nested schema](#nestedblock--github_enterprise))
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
@@ -281,6 +282,15 @@ Required:
 - `region` (String) AWS region to use
 - `stack_name` (String) CloudFormation stack name
 - `template_bucket` (String) S3 bucket to save CloudFormation templates to
+
+
+<a id="nestedblock--git"></a>
+### Nested Schema for `git`
+
+Required:
+
+- `namespace` (String) The organization / user the repository belongs to
+- `repository_url` (String) URL to a public Git repository
 
 
 <a id="nestedblock--github_enterprise"></a>
