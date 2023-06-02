@@ -115,6 +115,19 @@ resource "spacelift_stack" "k8s-cluster" {
   terraform_external_state_access = true
 }
 
+# Terraform stack using public Git repository as VCS
+resource "spacelift_stack" "plan-policy-starter-pack" {
+  branch            = "master"
+  description       = "Getting started with plan policies"
+  name              = "Plan Policy Starter Pack"
+  repository        = "plan"
+  terraform_version = "1.3.0"
+  git {
+    repository_url = "https://github.com/spacelift-io/policy-starter-pack.git"
+    namespace      = "spacelift-io"
+  }
+}
+
 # CloudFormation stack using github.com as VCS
 resource "spacelift_stack" "k8s-cluster-cloudformation" {
   cloudformation {
