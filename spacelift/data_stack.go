@@ -213,6 +213,25 @@ func dataStack() *schema.Resource {
 				Description: "free-form stack description for users",
 				Computed:    true,
 			},
+			"git": {
+				Type:        schema.TypeList,
+				Description: "Git VCS settings",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"repository_url": {
+							Type:        schema.TypeString,
+							Description: "URL to a public Git repository",
+							Required:    true,
+						},
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "The organization / user the repository belongs to",
+							Required:    true,
+						},
+					},
+				},
+			},
 			"github_enterprise": {
 				Type:        schema.TypeList,
 				Description: "GitHub Enterprise (self-hosted) VCS settings",

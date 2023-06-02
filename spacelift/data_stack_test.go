@@ -263,6 +263,32 @@ func TestStackData(t *testing.T) {
 			),
 		}})
 	})
+
+	t.Run("with public Git repository", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "gitdemo"
+				git {
+					repository_url = "https://github.com/mbialon/gitdemo.git"
+					namespace      = "mbialon"
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("git.0.repository_url", Equals("https://github.com/mbialon/gitdemo.git")),
+				Attribute("git.0.namespace", Equals("mbialon")),
+			),
+		}})
+	})
 }
 
 func TestStackDataSpace(t *testing.T) {
