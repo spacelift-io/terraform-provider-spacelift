@@ -63,6 +63,7 @@ data "spacelift_stack" "k8s-core" {
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
 - `pulumi` (List of Object) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedatt--pulumi))
+- `raw_git` (List of Object) One-way VCS integration using a raw Git repository link (see [below for nested schema](#nestedatt--raw_git))
 - `repository` (String) Name of the repository, without the owner part
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (List of Object) Showcase-related attributes (see [below for nested schema](#nestedatt--showcase))
@@ -148,6 +149,15 @@ Read-Only:
 
 - `login_url` (String)
 - `stack_name` (String)
+
+
+<a id="nestedatt--raw_git"></a>
+### Nested Schema for `raw_git`
+
+Read-Only:
+
+- `namespace` (String)
+- `url` (String)
 
 
 <a id="nestedatt--showcase"></a>

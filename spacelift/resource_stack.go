@@ -133,7 +133,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Azure DevOps VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				ConflictsWith: conflictingVCSProviders("azure_devops"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -201,7 +201,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Cloud VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				ConflictsWith: conflictingVCSProviders("bitbucket_cloud"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -218,7 +218,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Datacenter VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab"},
+				ConflictsWith: conflictingVCSProviders("bitbucket_datacenter"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -287,7 +287,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application)",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab"},
+				ConflictsWith: conflictingVCSProviders("github_enterprise"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -304,7 +304,7 @@ func resourceStack() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "GitLab VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise"},
+				ConflictsWith: conflictingVCSProviders("gitlab"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -414,6 +414,29 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 				Computed:    true,
+			},
+			"raw_git": {
+				Type:          schema.TypeList,
+				Description:   "One-way VCS integration using a raw Git repository link",
+				Optional:      true,
+				ConflictsWith: conflictingVCSProviders("raw_git"),
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "User-friendly namespace for the repository, this is for cosmetic purposes only",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"url": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "HTTPS URL of the Git repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+					},
+				},
 			},
 			"repository": {
 				Type:             schema.TypeString,
@@ -721,6 +744,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Provider = graphql.NewString(structs.VCSProviderGitlab)
 	}
 
+	if rawGit, ok := d.Get("raw_git").([]interface{}); ok && len(rawGit) > 0 {
+		ret.Provider = graphql.NewString(structs.VCSProviderRawGit)
+		ret.Namespace = toOptionalString(rawGit[0].(map[string]interface{})["namespace"])
+		ret.RepositoryURL = toOptionalString(rawGit[0].(map[string]interface{})["url"])
+	}
+
 	if showcase, ok := d.Get("showcase").([]interface{}); ok && len(showcase) > 0 {
 		ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
 		ret.Provider = graphql.NewString(structs.VCSProviderShowcases)
@@ -896,7 +925,7 @@ func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta inter
 
 	stack, err := getStackByID(ctx, meta.(*internal.Client), stackID)
 	if err != nil {
-		return nil, fmt.Errorf("Could not query for stack with ID %q: %v", stackID, err)
+		return nil, fmt.Errorf("could not query for stack with ID %q: %v", stackID, err)
 	}
 
 	if stack == nil {
@@ -908,4 +937,23 @@ func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	return []*schema.ResourceData{d}, nil
+}
+
+func conflictingVCSProviders(me string) (out []string) {
+	available := []string{
+		"azure_devops",
+		"bitbucket_cloud",
+		"bitbucket_datacenter",
+		"github_enterprise",
+		"gitlab",
+		"raw_git",
+	}
+
+	for _, v := range available {
+		if v != me {
+			out = append(out, v)
+		}
+	}
+
+	return
 }
