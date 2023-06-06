@@ -807,9 +807,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	if terragrunt, ok := d.Get("terragrunt").([]interface{}); ok && len(terragrunt) > 0 {
 		return &structs.VendorConfigInput{
 			TerragruntInput: &structs.TerragruntInput{
-				TerraformVersion:  toString(terragrunt[0].(map[string]interface{})["terraform_version"]),
-				TerragruntVersion: toString(terragrunt[0].(map[string]interface{})["terragrunt_version"]),
-				UseRunAll:         toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
+				TerraformVersion:     toString(terragrunt[0].(map[string]interface{})["terraform_version"]),
+				TerragruntVersion:    toString(terragrunt[0].(map[string]interface{})["terragrunt_version"]),
+				UseRunAll:            toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
+				UseSmartSanitization: toBool(terragrunt[0].(map[string]interface{})["use_smart_sanitization"]),
 			},
 		}
 	}
