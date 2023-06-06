@@ -224,6 +224,7 @@ resource "spacelift_stack" "ansible-stack" {
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.
 - `pulumi` (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
+- `raw_git` (Block List, Max: 1) One-way VCS integration using a raw Git repository link (see [below for nested schema](#nestedblock--raw_git))
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
 - `slug` (String) Allows setting the custom ID (slug) for the stack
@@ -315,6 +316,15 @@ Required:
 
 - `login_url` (String) State backend to log into on Run initialize.
 - `stack_name` (String) Pulumi stack name to use with the state backend.
+
+
+<a id="nestedblock--raw_git"></a>
+### Nested Schema for `raw_git`
+
+Required:
+
+- `namespace` (String) User-friendly namespace for the repository, this is for cosmetic purposes only
+- `url` (String) HTTPS URL of the Git repository
 
 
 <a id="nestedblock--showcase"></a>

@@ -29,6 +29,7 @@ type StackInput struct {
 	ProtectFromDeletion graphql.Boolean    `json:"protectFromDeletion"`
 	Provider            *graphql.String    `json:"provider"`
 	Repository          graphql.String     `json:"repository"`
+	RepositoryURL       *graphql.String    `json:"repositoryURL"`
 	RunnerImage         *graphql.String    `json:"runnerImage"`
 	Space               *graphql.String    `json:"space"`
 	VendorConfig        *VendorConfigInput `json:"vendorConfig"`

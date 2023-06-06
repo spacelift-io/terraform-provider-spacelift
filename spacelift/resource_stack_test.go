@@ -436,6 +436,23 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with raw Git link", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`raw_git {
+						namespace = "bacon"
+						url = "https://github.com/spacelift-io/onboarding.git"
+				}`),
+				Check: Resource(
+					resourceName,
+					Attribute("raw_git.#", Equals("1")),
+					Attribute("raw_git.0.namespace", Equals("bacon")),
+					Attribute("raw_git.0.url", Equals("https://github.com/spacelift-io/onboarding.git")),
+				),
+			},
+		})
+	})
+
 	t.Run("with GitHub and CloudFormation configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
