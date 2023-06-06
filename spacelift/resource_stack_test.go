@@ -533,6 +533,7 @@ func TestStackResource(t *testing.T) {
 						terragrunt_version = "0.45.0"
 						terraform_version = "1.4.0"
 						use_run_all = false
+						use_smart_sanitization = true
 					}`),
 				Check: Resource(
 					resourceName,
@@ -541,6 +542,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("terragrunt.0.terragrunt_version", Equals("0.45.0")),
 					Attribute("terragrunt.0.terraform_version", Equals("1.4.0")),
 					Attribute("terragrunt.0.use_run_all", Equals("false")),
+					Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
 
 					Attribute("cloudformation.#", Equals("0")),
 					Attribute("kubernetes.#", Equals("0")),

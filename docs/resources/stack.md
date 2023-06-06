@@ -333,6 +333,7 @@ Optional:
 - `terraform_version` (String) Terraform version.
 - `terragrunt_version` (String) Terragrunt version.
 - `use_run_all` (Boolean) Whether to use `terragrunt run-all` instead of `terragrunt`.
+- `use_smart_sanitization` (Boolean) Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.
 
 ## Import
 
