@@ -477,8 +477,6 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-
-						// todo: add terragrunt-specific fields
 						"terraform_version": {
 							Type:             schema.TypeString,
 							Description:      "Terraform version.",
@@ -496,6 +494,12 @@ func resourceStack() *schema.Resource {
 						"use_run_all": {
 							Type:        schema.TypeBool,
 							Description: "Whether to use `terragrunt run-all` instead of `terragrunt`.",
+							Optional:    true,
+							Default:     false,
+						},
+						"use_smart_sanitization": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
 							Optional:    true,
 							Default:     false,
 						},
@@ -803,9 +807,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	if terragrunt, ok := d.Get("terragrunt").([]interface{}); ok && len(terragrunt) > 0 {
 		return &structs.VendorConfigInput{
 			TerragruntInput: &structs.TerragruntInput{
-				TerraformVersion:  toString(terragrunt[0].(map[string]interface{})["terraform_version"]),
-				TerragruntVersion: toString(terragrunt[0].(map[string]interface{})["terragrunt_version"]),
-				UseRunAll:         toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
+				TerraformVersion:     toString(terragrunt[0].(map[string]interface{})["terraform_version"]),
+				TerragruntVersion:    toString(terragrunt[0].(map[string]interface{})["terragrunt_version"]),
+				UseRunAll:            toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
+				UseSmartSanitization: toBool(terragrunt[0].(map[string]interface{})["use_smart_sanitization"]),
 			},
 		}
 	}

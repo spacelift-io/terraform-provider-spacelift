@@ -71,9 +71,10 @@ type PulumiInput struct {
 }
 
 type TerragruntInput struct {
-	TerraformVersion  graphql.String  `json:"terraformVersion"`
-	TerragruntVersion graphql.String  `json:"terragruntVersion"`
-	UseRunAll         graphql.Boolean `json:"useRunAll"`
+	TerraformVersion     graphql.String  `json:"terraformVersion"`
+	TerragruntVersion    graphql.String  `json:"terragruntVersion"`
+	UseRunAll            graphql.Boolean `json:"useRunAll"`
+	UseSmartSanitization graphql.Boolean `json:"useSmartSanitization"`
 }
 
 // TerraformInput represents Terraform-specific configuration.
