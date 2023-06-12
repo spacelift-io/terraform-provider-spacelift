@@ -138,6 +138,7 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		return "github_enterprise", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderGitlab:
 		return "gitlab", singleKeyMap("namespace", s.Namespace)
+	case "GIT": // TODO: Backward compatibility, will be removed a few releases later.
 	case VCSProviderRawGit:
 		return "raw_git", map[string]interface{}{
 			"namespace": s.Namespace,
