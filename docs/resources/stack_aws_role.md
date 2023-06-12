@@ -85,5 +85,3 @@ resource "spacelift_stack_aws_role" "k8s-core" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

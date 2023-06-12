@@ -28,5 +28,3 @@ resource "spacelift_context" "prod-k8s-ie" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

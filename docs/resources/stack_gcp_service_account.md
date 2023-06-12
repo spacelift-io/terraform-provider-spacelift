@@ -61,5 +61,3 @@ resource "google_project_iam_member" "k8s-core" {
 
 - `id` (String) The ID of this resource.
 - `service_account_email` (String) Email address of the GCP service account dedicated for this stack
-
-

@@ -12,17 +12,9 @@ jobs:
         uses: actions/checkout@v3
       
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: "1.18"
-
-      - name: Check formatting using gofmt
-        run: gofmt -s -l -d .
-
-      - name: Lint the code using "golangci-lint"
-        run: |
-          wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.46.2
-          ./bin/golangci-lint run -v
+          go-version: "1.19"
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v2

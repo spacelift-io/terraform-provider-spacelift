@@ -44,5 +44,3 @@ resource "spacelift_run" "this" {
 ### Read-Only
 
 - `id` (String) The ID of the triggered run.
-
-

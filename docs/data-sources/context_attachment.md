@@ -42,5 +42,3 @@ data "spacelift_context_attachment" "kafka-k8s-ie" {
 
 - `id` (String) The ID of this resource.
 - `priority` (Number) Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value.
-
-

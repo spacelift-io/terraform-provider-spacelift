@@ -35,5 +35,3 @@ data "spacelift_drift_detection" "core-infra-production-drift-detection" {
 - `reconcile` (Boolean) Whether a tracked run should be triggered when drift is detected.
 - `schedule` (List of String) List of cron schedule expressions based on which drift detection should be triggered.
 - `timezone` (String) Timezone in which the schedule is expressed
-
-
