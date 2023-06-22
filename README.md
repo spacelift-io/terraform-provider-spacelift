@@ -24,7 +24,7 @@ If you want to build from source, you can simply use `go build` in the root of t
 
 To develop the provider locally you need the following tools:
 
-- [Go 1.18](https://go.dev/doc/install).
+- [Go 1.19](https://go.dev/doc/install).
 - [GoReleaser](https://goreleaser.com/).
 - A Spacelift account to use for testing.
 
@@ -32,7 +32,8 @@ To develop the provider locally you need the following tools:
 
 To generate the documentation, run the following command:
 ```shell
-go generate
+cd tools
+go generate ./...
 ```
 
 ### Using a Local Build of the Provider

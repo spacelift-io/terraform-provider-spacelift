@@ -36,5 +36,3 @@ resource "spacelift_stack_activator" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

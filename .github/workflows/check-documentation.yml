@@ -18,15 +18,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
-          go-version: "1.18"
+          go-version: "1.19"
 
       - name: Generate documentation
-        run: go generate
+        run: cd tools && go generate ./...
 
       - name: Verify Changed files
-        uses: tj-actions/verify-changed-files@v10.1
+        uses: tj-actions/verify-changed-files@v15
         id: verify-changed-files
         with:
           files: |

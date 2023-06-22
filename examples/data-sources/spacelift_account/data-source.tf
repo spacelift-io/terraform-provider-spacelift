@@ -1,1 +1,1 @@
-data "spacelift_account" "this" {} 
+data "spacelift_account" "this" {}

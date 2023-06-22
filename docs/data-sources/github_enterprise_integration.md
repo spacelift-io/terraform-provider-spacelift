@@ -25,5 +25,3 @@ data "spacelift_github_enterprise_integration" "github_enterprise_integration" {
 - `app_id` (String) Github integration app id
 - `id` (String) The ID of this resource.
 - `webhook_secret` (String) Github integration webhook secret
-
-

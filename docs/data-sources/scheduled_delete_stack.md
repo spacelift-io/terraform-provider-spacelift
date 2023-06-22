@@ -32,5 +32,3 @@ data "spacelift_scheduled_delete_stack" "ireland-kubeconfig-delete" {
 - `id` (String) The ID of this resource.
 - `schedule_id` (String) ID of the schedule
 - `stack_id` (String) Stack ID of the scheduling config
-
-
