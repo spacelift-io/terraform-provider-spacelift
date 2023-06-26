@@ -91,8 +91,8 @@ func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("could not query for space: %v", err)
 	}
 
-	parentSpaceRaw, parentSpaceSpecified := d.GetOk("parentSpace")
-	requestedParentSpace := "root"
+	parentSpaceRaw, parentSpaceSpecified := d.GetOk("parent_space")
+	requestedParentSpace := ""
 	if parentSpaceSpecified {
 		requestedParentSpace = parentSpaceRaw.(string)
 	}
@@ -124,11 +124,12 @@ func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{
 				continue
 			}
 		}
+
 		spaces = append(spaces, map[string]interface{}{
-			"id":               space.ID,
+			"space_id":         space.ID,
 			"name":             space.Name,
 			"description":      space.Description,
-			"parent_space":     space.ParentSpace,
+			"parent_space_id":  space.ParentSpace,
 			"inherit_entities": space.InheritEntities,
 			"labels":           space.Labels,
 		})
