@@ -14,22 +14,11 @@ import (
 func dataSpaces() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_spaces` can find all policies and optionally only spaces that have certain labels.",
+			"`spacelift_spaces` can find all spaces in the spacelift organization.",
 
 		ReadContext: dataSpacesRead,
 
 		Schema: map[string]*schema.Schema{
-			"parent_space": {
-				Type:        schema.TypeString,
-				Description: "required parent space to",
-				Optional:    true,
-			},
-			"labels": {
-				Type:        schema.TypeSet,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Description: "required labels to match",
-				Optional:    true,
-			},
 			"spaces": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -91,40 +80,8 @@ func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("could not query for space: %v", err)
 	}
 
-	parentSpaceRaw, parentSpaceSpecified := d.GetOk("parent_space")
-	requestedParentSpace := ""
-	if parentSpaceSpecified {
-		requestedParentSpace = parentSpaceRaw.(string)
-	}
-
-	labelsRaw, labelsSpecified := d.GetOk("labels")
-	requestedLabels := labelsRaw.(*schema.Set).List()
-
 	var spaces []interface{}
 	for _, space := range query.Spaces {
-		if parentSpaceSpecified && space.ParentSpace != requestedParentSpace {
-			continue
-		}
-
-		if labelsSpecified {
-			found := false
-			for _, required := range requestedLabels {
-				found = false
-				for _, existing := range space.Labels {
-					if required == existing {
-						found = true
-					}
-				}
-				if !found {
-					break // we didn't find a required label
-				}
-			}
-
-			if !found {
-				continue
-			}
-		}
-
 		spaces = append(spaces, map[string]interface{}{
 			"space_id":         space.ID,
 			"name":             space.Name,
