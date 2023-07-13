@@ -31,6 +31,7 @@ To develop the provider locally you need the following tools:
 ### Generating the Documentation
 
 To generate the documentation, run the following command:
+
 ```shell
 cd tools
 go generate ./...
@@ -51,7 +52,7 @@ This involves the following steps:
 To build the provider, run the following command:
 
 ```shell
-goreleaser build --rm-dist --snapshot
+goreleaser build --clean --snapshot
 ```
 
 This will produce a number of binaries in subfolders of the `dist` folder for each supported
