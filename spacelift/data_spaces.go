@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -64,7 +65,6 @@ func dataSpaces() *schema.Resource {
 }
 
 func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	d.SetId(fmt.Sprintf("spaces/%s/%s", d.Get("parent_space").(string), d.Get("labels").(*schema.Set).List()))
 	var query struct {
 		Spaces []struct {
 			ID              string   `graphql:"id"`
@@ -92,7 +92,11 @@ func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		})
 	}
 
-	d.Set("spaces", spaces)
+	d.SetId(fmt.Sprintf("spaces-%d", time.Now().UnixNano()))
+
+	if err := d.Set("spaces", spaces); err != nil {
+		return diag.Errorf("could not set stacks: %v", err)
+	}
 
 	return nil
 }
