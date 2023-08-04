@@ -50,5 +50,3 @@ Read-Only:
 - `name` (String)
 - `space_id` (String)
 - `type` (String)
-
-

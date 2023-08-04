@@ -156,5 +156,3 @@ Read-Only:
 Read-Only:
 
 - `namespace` (String)
-
-

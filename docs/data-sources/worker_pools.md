@@ -34,5 +34,3 @@ Read-Only:
 - `name` (String)
 - `space_id` (String)
 - `worker_pool_id` (String)
-
-

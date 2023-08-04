@@ -33,5 +33,3 @@ data "spacelift_worker_pool" "k8s-core" {
 - `labels` (Set of String)
 - `name` (String) name of the worker pool
 - `space_id` (String) ID (slug) of the space the worker pool is in
-
-

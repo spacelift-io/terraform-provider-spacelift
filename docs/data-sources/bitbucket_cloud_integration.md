@@ -23,5 +23,3 @@ data "spacelift_bitbucket_cloud_integration" "bitbucket_cloud_integration" {}
 
 - `id` (String) The ID of this resource.
 - `username` (String) Bitbucket Cloud username
-
-

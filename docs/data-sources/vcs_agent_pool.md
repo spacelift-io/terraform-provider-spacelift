@@ -30,5 +30,3 @@ data "spacelift_context" "ghe" {
 - `description` (String) Free-form VCS agent pool description for users
 - `id` (String) The ID of this resource.
 - `name` (String) Name of the VCS agent pool
-
-

@@ -29,5 +29,3 @@ description: |-
 - `secret` (String, Sensitive) secret used to sign each request so you're able to verify that the request comes from us.
 - `secret_header_keys` (Set of String) secret header keys which are currently set for this webhook
 - `space_id` (String) ID of the space the webhook is in
-
-

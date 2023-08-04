@@ -28,5 +28,3 @@ resource "spacelift_environment_variable" "core-kubeconfig" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-
-

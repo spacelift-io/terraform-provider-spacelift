@@ -37,5 +37,3 @@ output "policy_body" {
 - `name` (String) name of the policy
 - `space_id` (String) ID (slug) of the space the policy is in
 - `type` (String) type of the policy
-
-

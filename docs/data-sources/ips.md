@@ -23,5 +23,3 @@ data "spacelift_ips" "ips" {}
 
 - `id` (String) The ID of this resource.
 - `ips` (Set of String) the list of spacelift.io outgoing IP addresses
-
-
