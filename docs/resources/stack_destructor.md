@@ -52,3 +52,5 @@ resource "spacelift_stack_destructor" "k8s-core" {
 Optional:
 
 - `delete` (String)
+
+

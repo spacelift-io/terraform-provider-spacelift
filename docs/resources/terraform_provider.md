@@ -40,3 +40,5 @@ resource "spacelift_terraform_provider" "datadog" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+
