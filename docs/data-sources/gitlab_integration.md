@@ -24,3 +24,5 @@ data "spacelift_gitlab_integration" "gitlab_integration" {}
 - `api_host` (String) Gitlab integration api host
 - `id` (String) The ID of this resource.
 - `webhook_secret` (String) Gitlab integration webhook secret
+
+

@@ -24,3 +24,5 @@ data "spacelift_gitlab_webhook_endpoint" "this" {
 
 - `id` (String) The ID of this resource.
 - `webhook_endpoint` (String) Gitlab webhook endpoint address
+
+

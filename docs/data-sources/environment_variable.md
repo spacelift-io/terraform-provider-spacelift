@@ -51,3 +51,5 @@ data "spacelift_environment_variable" "core-kubeconfig" {
 - `id` (String) The ID of this resource.
 - `value` (String, Sensitive) value of the environment variable
 - `write_only` (Boolean) indicates whether the value can be read back outside a Run
+
+

@@ -24,3 +24,5 @@ data "spacelift_azure_devops_integration" "azure_devops_integration" {}
 - `id` (String) The ID of this resource.
 - `organization_url` (String) Azure DevOps integration organization url
 - `webhook_password` (String) Azure DevOps integration webhook password
+
+

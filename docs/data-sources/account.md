@@ -25,3 +25,5 @@ data "spacelift_account" "this" {}
 - `id` (String) The ID of this resource.
 - `name` (String) name of the account
 - `tier` (String) account billing tier
+
+

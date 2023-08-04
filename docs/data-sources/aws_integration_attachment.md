@@ -30,3 +30,5 @@ description: |-
 - `id` (String) The ID of this resource.
 - `read` (Boolean) Indicates whether this attachment is used for read operations
 - `write` (Boolean) Indicates whether this attachment is used for write operations
+
+

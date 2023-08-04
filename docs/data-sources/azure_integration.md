@@ -43,3 +43,5 @@ data "spacelift_azure_integration" "example" {
 - `labels` (Set of String) Labels to set on the integration
 - `space_id` (String) ID (slug) of the space the integration is in
 - `tenant_id` (String) The Azure AD tenant ID
+
+

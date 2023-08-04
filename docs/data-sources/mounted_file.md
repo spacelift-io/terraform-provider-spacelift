@@ -51,3 +51,5 @@ data "spacelift_mounted_file" "core-kubeconfig" {
 - `content` (String, Sensitive) content of the mounted file encoded using Base-64
 - `id` (String) The ID of this resource.
 - `write_only` (Boolean) indicates whether the value can be read back outside a Run
+
+

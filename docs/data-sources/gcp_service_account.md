@@ -37,3 +37,5 @@ data "spacelift_gcp_service_account" "k8s-core" {
 - `id` (String) The ID of this resource.
 - `service_account_email` (String) email address of the GCP service account dedicated for this stack
 - `token_scopes` (Set of String) list of Google API scopes
+
+
