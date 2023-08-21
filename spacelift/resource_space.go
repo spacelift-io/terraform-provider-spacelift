@@ -120,7 +120,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	space := query.Space
 	if space == nil {
-		return diag.Errorf("space not found")
+		return diag.Errorf("could not find space %s", d.Id())
 	}
 
 	d.SetId(space.ID)
