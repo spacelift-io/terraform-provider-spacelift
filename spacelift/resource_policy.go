@@ -164,6 +164,13 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 	d.Set("labels", labels)
 
+	if policy.Type == "TASK" || policy.Type == "INITIALIZATION" {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  "Policy type is deprecated, please use APPROVAL policy instead",
+		}}
+	}
+
 	return nil
 }
 
