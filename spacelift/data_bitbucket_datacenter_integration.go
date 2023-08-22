@@ -13,10 +13,12 @@ var bitbucketDatacenterFields = struct {
 	UserFacingHost string
 	APIHost        string
 	WebhookSecret  string
+	WebhookURL     string
 }{
 	UserFacingHost: "user_facing_host",
 	APIHost:        "api_host",
 	WebhookSecret:  "webhook_secret",
+	WebhookURL:     "webhook_url",
 }
 
 func dataBitbucketDatacenterIntegration() *schema.Resource {
@@ -36,6 +38,11 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 				Description: "Bitbucket Datacenter integration webhook secret",
 				Computed:    true,
 			},
+			bitbucketDatacenterFields.WebhookURL: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration webhook URL",
+				Computed:    true,
+			},
 			bitbucketDatacenterFields.UserFacingHost: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Datacenter integration user facing host",
@@ -51,6 +58,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 			APIHost        string `graphql:"apiHost"`
 			WebhookSecret  string `graphql:"webhookSecret"`
 			UserFacingHost string `graphql:"userFacingHost"`
+			WebhookURL     string `graphql:"webhookURL"`
 		} `graphql:"bitbucketDatacenterIntegration"`
 	}
 
@@ -66,6 +74,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 	d.SetId("spacelift_bitbucket_datacenter_integration_id") // TF expects id to be set otherwise it will fail
 	d.Set(bitbucketDatacenterFields.APIHost, bitbucketDatacenterIntegration.APIHost)
 	d.Set(bitbucketDatacenterFields.WebhookSecret, bitbucketDatacenterIntegration.WebhookSecret)
+	d.Set(bitbucketDatacenterFields.WebhookURL, bitbucketDatacenterIntegration.WebhookURL)
 	d.Set(bitbucketDatacenterFields.UserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
 
 	return nil
