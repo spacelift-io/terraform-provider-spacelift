@@ -126,7 +126,7 @@ terraform {
 provider "spacelift" {
   api_key_endpoint = "https://<account-name>.app.spacelift.io"
   api_key_id       = "<api-key-id>"
-  api_key_secret   = "<api-key-secret"
+  api_key_secret   = "<api-key-secret>"
 }
 
 data "spacelift_account" "this" {
