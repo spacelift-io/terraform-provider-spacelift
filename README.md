@@ -145,4 +145,4 @@ In order to release a new version of the provider one should follow those simple
 
 - Create a new tag for the latest commit on tha main branch `git tag  vX.Y.Z -m "Release"`
 - Push the tag `git push origin vX.Y.Z`
-- Refer to our [internal wiki](https://app.archbee.com/docs/dMS7BZGMqzvpWO6GZQDvr/HIoUgkdmiPeUjUvZL_NEL) on publishing the release artifacts
+- Refer to our [internal wiki](https://www.notion.so/spacelift/Spacelift-Terraform-Provider-18cf11e5c8ad4a44bf6395cd69a744b7#1540245e247545bcb38e03b1050d6032) on publishing the release artifacts
