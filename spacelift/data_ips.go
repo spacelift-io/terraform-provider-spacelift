@@ -14,7 +14,10 @@ func dataIPs() *schema.Resource {
 		Description: "" +
 			"`spacelift_ips` returns the list of Spacelift's outgoing IP addresses, " +
 			"which you can use to whitelist connections coming from the " +
-			"Spacelift's \"mothership\".",
+			"Spacelift's \"mothership\". **NOTE:** this does not include the IP addresses " +
+			"of the workers in Spacelift's public worker pool. If you need to ensure " +
+			"that requests made during runs originate from a known set of IP addresses, " +
+			"please consider setting up a [private worker pool](https://docs.spacelift.io/concepts/worker-pools).",
 		ReadContext: ipsRead,
 		Schema: map[string]*schema.Schema{
 			"ips": {

@@ -159,6 +159,7 @@ Read-Only:
 - `project_root` (String)
 - `protect_from_deletion` (Boolean)
 - `pulumi` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--pulumi))
+- `raw_git` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--raw_git))
 - `repository` (String)
 - `runner_image` (String)
 - `showcase` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--showcase))
@@ -247,11 +248,18 @@ Read-Only:
 - `stack_name` (String)
 
 
+<a id="nestedobjatt--stacks--raw_git"></a>
+### Nested Schema for `stacks.raw_git`
+
+Read-Only:
+
+- `namespace` (String)
+- `url` (String)
+
+
 <a id="nestedobjatt--stacks--showcase"></a>
 ### Nested Schema for `stacks.showcase`
 
 Read-Only:
 
 - `namespace` (String)
-
-

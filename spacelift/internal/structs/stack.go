@@ -40,6 +40,7 @@ type Stack struct {
 	Branch              string        `graphql:"branch"`
 	Deleting            bool          `graphql:"deleting"`
 	Description         *string       `graphql:"description"`
+	IsDisabled          bool          `graphql:"isDisabled"`
 	GitHubActionDeploy  bool          `graphql:"githubActionDeploy"`
 	Integrations        *Integrations `graphql:"integrations"`
 	Labels              []string      `graphql:"labels"`
@@ -51,6 +52,7 @@ type Stack struct {
 	ProtectFromDeletion bool          `graphql:"protectFromDeletion"`
 	Provider            string        `graphql:"provider"`
 	Repository          string        `graphql:"repository"`
+	RepositoryURL       *string       `graphql:"repositoryURL"`
 	RunnerImage         *string       `graphql:"runnerImage"`
 	Space               string        `graphql:"space"`
 	TerraformVersion    *string       `graphql:"terraformVersion"`
@@ -136,6 +138,11 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		return "github_enterprise", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderGitlab:
 		return "gitlab", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderRawGit:
+		return "raw_git", map[string]interface{}{
+			"namespace": s.Namespace,
+			"url":       s.RepositoryURL,
+		}
 	case VCSProviderShowcases:
 		return "showcase", singleKeyMap("namespace", s.Namespace)
 	}

@@ -60,14 +60,16 @@ func dataSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		Space *structs.Space `graphql:"space(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("space_id"))}
+	spaceID := d.Get("space_id")
+
+	variables := map[string]interface{}{"id": toID(spaceID)}
 	if err := meta.(*internal.Client).Query(ctx, "SpaceRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for space: %v", err)
 	}
 
 	space := query.Space
 	if space == nil {
-		return diag.Errorf("space not found")
+		return diag.Errorf("could not find space %s", spaceID)
 	}
 
 	d.SetId(space.ID)

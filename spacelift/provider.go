@@ -82,6 +82,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_policies":                               dataPolicies(),
 				"spacelift_policy":                                 dataPolicy(),
 				"spacelift_space":                                  dataSpace(),
+				"spacelift_spaces":                                 dataSpaces(),
 				"spacelift_space_by_path":                          dataSpaceByPath(),
 				"spacelift_scheduled_task":                         dataScheduledTask(),
 				"spacelift_scheduled_delete_stack":                 dataScheduledDeleteStack(),
@@ -119,6 +120,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack":                        resourceStack(),
 				"spacelift_stack_dependency":             resourceStackDependency(),
 				"spacelift_stack_dependency_reference":   resourceStackDependencyReference(),
+				"spacelift_stack_activator":              resourceStackActivator(),
 				"spacelift_stack_destructor":             resourceStackDestructor(),
 				"spacelift_stack_aws_role":               resourceStackAWSRole(),           // deprecated
 				"spacelift_stack_gcp_service_account":    resourceStackGCPServiceAccount(), // deprecated
@@ -128,6 +130,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_named_webhook":                resourceNamedWebhook(),
 				"spacelift_named_webhook_secret_header":  resourceNamedWebhookSecretHeader(),
 				"spacelift_worker_pool":                  resourceWorkerPool(),
+				"spacelift_version":                      resourceVersion(),
 			},
 			ConfigureContextFunc: configureProvider(commit, version),
 		}

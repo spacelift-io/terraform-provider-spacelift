@@ -25,5 +25,4 @@ data "spacelift_bitbucket_datacenter_integration" "bitbucket_datacenter_integrat
 - `id` (String) The ID of this resource.
 - `user_facing_host` (String) Bitbucket Datacenter integration user facing host
 - `webhook_secret` (String) Bitbucket Datacenter integration webhook secret
-
-
+- `webhook_url` (String) Bitbucket Datacenter integration webhook URL

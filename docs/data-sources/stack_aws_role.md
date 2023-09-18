@@ -48,5 +48,3 @@ data "spacelift_stack_aws_role" "k8s-core" {
 - `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
 - `id` (String) The ID of this resource.
 - `role_arn` (String) ARN of the AWS IAM role to attach
-
-

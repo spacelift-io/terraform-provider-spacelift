@@ -29,6 +29,7 @@ type StackInput struct {
 	ProtectFromDeletion graphql.Boolean    `json:"protectFromDeletion"`
 	Provider            *graphql.String    `json:"provider"`
 	Repository          graphql.String     `json:"repository"`
+	RepositoryURL       *graphql.String    `json:"repositoryURL"`
 	RunnerImage         *graphql.String    `json:"runnerImage"`
 	Space               *graphql.String    `json:"space"`
 	VendorConfig        *VendorConfigInput `json:"vendorConfig"`
@@ -42,6 +43,7 @@ type VendorConfigInput struct {
 	Kubernetes          *KubernetesInput     `json:"kubernetes"`
 	Pulumi              *PulumiInput         `json:"pulumi"`
 	Terraform           *TerraformInput      `json:"terraform"`
+	TerragruntInput     *TerragruntInput     `json:"terragrunt"`
 }
 
 // AnsibleInput represents Ansible-specific configuration.
@@ -67,6 +69,13 @@ type KubernetesInput struct {
 type PulumiInput struct {
 	LoginURL  graphql.String `json:"loginURL"`
 	StackName graphql.String `json:"stackName"`
+}
+
+type TerragruntInput struct {
+	TerraformVersion     graphql.String  `json:"terraformVersion"`
+	TerragruntVersion    graphql.String  `json:"terragruntVersion"`
+	UseRunAll            graphql.Boolean `json:"useRunAll"`
+	UseSmartSanitization graphql.Boolean `json:"useSmartSanitization"`
 }
 
 // TerraformInput represents Terraform-specific configuration.

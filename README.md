@@ -24,15 +24,17 @@ If you want to build from source, you can simply use `go build` in the root of t
 
 To develop the provider locally you need the following tools:
 
-- [Go 1.18](https://go.dev/doc/install).
+- [Go 1.19](https://go.dev/doc/install).
 - [GoReleaser](https://goreleaser.com/).
 - A Spacelift account to use for testing.
 
 ### Generating the Documentation
 
 To generate the documentation, run the following command:
+
 ```shell
-go generate
+cd tools
+go generate ./...
 ```
 
 ### Using a Local Build of the Provider
@@ -50,7 +52,7 @@ This involves the following steps:
 To build the provider, run the following command:
 
 ```shell
-goreleaser build --rm-dist --snapshot
+goreleaser build --clean --snapshot
 ```
 
 This will produce a number of binaries in subfolders of the `dist` folder for each supported
@@ -124,7 +126,7 @@ terraform {
 provider "spacelift" {
   api_key_endpoint = "https://<account-name>.app.spacelift.io"
   api_key_id       = "<api-key-id>"
-  api_key_secret   = "<api-key-secret"
+  api_key_secret   = "<api-key-secret>"
 }
 
 data "spacelift_account" "this" {
@@ -143,4 +145,4 @@ In order to release a new version of the provider one should follow those simple
 
 - Create a new tag for the latest commit on tha main branch `git tag  vX.Y.Z -m "Release"`
 - Push the tag `git push origin vX.Y.Z`
-- Refer to our [internal wiki](https://app.archbee.com/docs/dMS7BZGMqzvpWO6GZQDvr/HIoUgkdmiPeUjUvZL_NEL) on publishing the release artifacts
+- Refer to our [internal wiki](https://www.notion.so/spacelift/Spacelift-Terraform-Provider-18cf11e5c8ad4a44bf6395cd69a744b7#1540245e247545bcb38e03b1050d6032) on publishing the release artifacts

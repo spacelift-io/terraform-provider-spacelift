@@ -309,6 +309,25 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
+			"raw_git": {
+				Type:        schema.TypeList,
+				Description: "One-way VCS integration using a raw Git repository link",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "User-friendly namespace for the repository, this is for cosmetic purposes only",
+							Computed:    true,
+						},
+						"url": {
+							Type:        schema.TypeString,
+							Description: "HTTPS URL of the Git repository",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",

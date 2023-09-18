@@ -44,5 +44,3 @@ data "spacelift_aws_integration" "example" {
 - `labels` (Set of String)
 - `role_arn` (String) ARN of the AWS IAM role to attach
 - `space_id` (String) ID (slug) of the space the integration is in
-
-

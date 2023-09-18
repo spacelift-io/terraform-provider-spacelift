@@ -34,5 +34,3 @@ data "spacelift_scheduled_task" "ireland-kubeconfig-destroy" {
 - `schedule_id` (String) ID of the schedule
 - `stack_id` (String) Stack ID of the scheduled task
 - `timezone` (String) Timezone in which the schedule is expressed. Defaults to `UTC`.
-
-

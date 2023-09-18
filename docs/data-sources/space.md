@@ -37,5 +37,3 @@ output "space_description" {
 - `labels` (Set of String) list of labels describing a space
 - `name` (String) name of the space
 - `parent_space_id` (String) immutable ID (slug) of parent space
-
-

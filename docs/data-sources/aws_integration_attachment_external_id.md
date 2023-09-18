@@ -49,5 +49,3 @@ data "spacelift_aws_integration_attachment_external_id" "my_module" {
 - `assume_role_policy_statement` (String) An assume role policy statement that can be attached to your role to allow Spacelift to assume it
 - `external_id` (String) The external ID that will be used during role assumption
 - `id` (String) The ID of this resource.
-
-

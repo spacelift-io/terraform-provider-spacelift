@@ -6,8 +6,8 @@ resource "spacelift_stack" "k8s-core" {
 resource "spacelift_scheduled_task" "k8s-core-create" {
   stack_id = spacelift_stack.k8s-core.id
 
-  command = "terraform apply -auto-approve"
-  every = ["0 7 * * 1-5"]
+  command  = "terraform apply -auto-approve"
+  every    = ["0 7 * * 1-5"]
   timezone = "CET"
 }
 
@@ -15,8 +15,8 @@ resource "spacelift_scheduled_task" "k8s-core-create" {
 resource "spacelift_scheduled_task" "k8s-core-destroy" {
   stack_id = spacelift_stack.k8s-core.id
 
-  command = "terraform destroy -auto-approve"
-  every = ["0 21 * * 1-5"]
+  command  = "terraform destroy -auto-approve"
+  every    = ["0 21 * * 1-5"]
   timezone = "CET"
 }
 
@@ -25,5 +25,5 @@ resource "spacelift_scheduled_task" "k8s-core-destroy" {
   stack_id = spacelift_stack.k8s-core.id
 
   command = "terraform destroy -auto-approve"
-  at = "1663336895"
+  at      = "1663336895"
 }
