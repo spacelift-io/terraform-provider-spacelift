@@ -350,7 +350,7 @@ func TestStackResource(t *testing.T) {
 				terraform_version            = "1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1"
 			}
 		`, randomID),
-			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: Could not parse Range`),
+			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: improper constraint: 1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1`),
 		}})
 	})
 
