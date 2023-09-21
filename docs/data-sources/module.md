@@ -47,6 +47,7 @@ data "spacelift_module" "k8s-module" {
 - `space_id` (String) ID (slug) of the space the module is in
 - `terraform_provider` (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
 - `worker_pool_id` (String) ID of the worker pool to use
+- `workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `TERRAFORM_FOSS` or `CUSTOM`.
 
 <a id="nestedatt--azure_devops"></a>
 ### Nested Schema for `azure_devops`

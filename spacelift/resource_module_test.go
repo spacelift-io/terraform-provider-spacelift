@@ -171,6 +171,76 @@ func TestModuleResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with workflow_tool", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			// Defaults to TERRAFORM_FOSS
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "workflow_tool" {
+                    name               = "workflow-tool-%s"
+					branch             = "master"
+					repository         = "terraform-bacon-tasty"
+                    terraform_provider = "papaya"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_module.workflow_tool",
+					Attribute("workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+			// Can update the tool
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "workflow_tool" {
+                    name               = "workflow-tool-%s"
+					branch             = "master"
+					repository         = "terraform-bacon-tasty"
+                    terraform_provider = "papaya"
+					workflow_tool      = "CUSTOM"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_module.workflow_tool",
+					Attribute("workflow_tool", Equals("CUSTOM")),
+				),
+			},
+			// Can create a module with TERRAFORM_FOSS
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "workflow_tool_terraform_foss" {
+			        name               = "workflow-tool-terraform-foss-%s"
+					branch             = "master"
+					repository         = "terraform-bacon-tasty"
+			        terraform_provider = "papaya"
+					workflow_tool      = "TERRAFORM_FOSS"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_module.workflow_tool_terraform_foss",
+					Attribute("workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+			// Can create a module with CUSTOM
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "workflow_tool_custom" {
+			        name               = "workflow-tool-custom-%s"
+					branch             = "master"
+					repository         = "terraform-bacon-tasty"
+			        terraform_provider = "papaya"
+					workflow_tool      = "CUSTOM"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_module.workflow_tool_custom",
+					Attribute("workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
 }
 
 func TestModuleResourceSpace(t *testing.T) {

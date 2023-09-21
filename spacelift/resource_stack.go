@@ -43,7 +43,7 @@ func resourceStack() *schema.Resource {
 			},
 			"ansible": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -233,7 +233,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "kubernetes", "pulumi", "terraform_version", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"ansible", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -334,7 +334,7 @@ func resourceStack() *schema.Resource {
 			},
 			"kubernetes": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "pulumi", "terraform_version", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"ansible", "cloudformation", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -387,7 +387,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "terraform_version", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -487,6 +487,12 @@ func resourceStack() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
 			},
+			"terraform_workflow_tool": {
+				Type:        schema.TypeString,
+				Description: "Defines the tool that will be used to execute the workflow. This can be one of `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"terraform_workspace": {
 				Type:        schema.TypeString,
 				Description: "Terraform workspace to select",
@@ -494,7 +500,7 @@ func resourceStack() *schema.Resource {
 			},
 			"terragrunt": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
 				Description:   "Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -775,12 +781,6 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.RunnerImage = toOptionalString(runnerImage)
 	}
 
-	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
-		ret.VendorConfig = &structs.VendorConfigInput{Terraform: &structs.TerraformInput{
-			Version: toOptionalString(terraformVersion),
-		}}
-	}
-
 	ret.VendorConfig = getVendorConfig(d)
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
@@ -848,6 +848,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 	if terraformVersion, ok := d.GetOk("terraform_version"); ok {
 		terraformConfig.Version = toOptionalString(terraformVersion)
+	}
+
+	if terraformWorkflowTool, ok := d.GetOk("terraform_workflow_tool"); ok {
+		terraformConfig.WorkflowTool = toOptionalString(terraformWorkflowTool)
 	}
 
 	if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {

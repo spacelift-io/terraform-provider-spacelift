@@ -202,6 +202,12 @@ func resourceModule() *schema.Resource {
 				Description: "ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.",
 				Optional:    true,
 			},
+			"workflow_tool": {
+				Type:        schema.TypeString,
+				Description: "Defines the tool that will be used to execute the workflow. This can be one of `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -279,6 +285,10 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 		d.Set("worker_pool_id", workerPool.ID)
 	} else {
 		d.Set("worker_pool_id", nil)
+	}
+
+	if workflowTool := module.WorkflowTool; workflowTool != nil {
+		d.Set("workflow_tool", *workflowTool)
 	}
 
 	return nil
@@ -385,6 +395,10 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		ret.TerraformProvider = toOptionalString(terraformProvider)
 	}
 
+	if workflowTool, ok := d.GetOk("workflow_tool"); ok {
+		ret.WorkflowTool = toOptionalString(workflowTool)
+	}
+
 	return ret
 }
 
@@ -473,6 +487,10 @@ func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
 
 	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
 		ret.WorkerPool = graphql.NewID(workerPoolID)
+	}
+
+	if workflowTool, ok := d.GetOk("workflow_tool"); ok {
+		ret.WorkflowTool = toOptionalString(workflowTool)
 	}
 
 	return ret

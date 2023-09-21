@@ -378,6 +378,11 @@ func dataStack() *schema.Resource {
 				Description: "Terraform version to use",
 				Computed:    true,
 			},
+			"terraform_workflow_tool": {
+				Type:        schema.TypeString,
+				Description: "Defines the tool that will be used to execute the workflow. This can be one of `TERRAFORM_FOSS` or `CUSTOM`.",
+				Computed:    true,
+			},
 			"terraform_workspace": {
 				Type:        schema.TypeString,
 				Description: "Terraform workspace to select",
@@ -455,6 +460,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
 		d.Set("terraform_external_state_access", stack.VendorConfig.Terraform.ExternalStateAccessEnabled)
+		d.Set("terraform_workflow_tool", stack.VendorConfig.Terraform.WorkflowTool)
 	}
 
 	if workerPool := stack.WorkerPool; workerPool != nil {

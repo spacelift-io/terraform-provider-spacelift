@@ -1203,6 +1203,76 @@ func TestStackResourceSpace(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with terraform_workflow_tool", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			// Check that the tool defaults correctly
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "terraform_workflow_tool" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool",
+					Attribute("terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+			// Check we can update it to a different tool
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "terraform_workflow_tool" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_workflow_tool = "CUSTOM"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool",
+					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
+			// Check we can create a TERRAFORM_FOSS stack
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "terraform_workflow_tool_foss" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool TERRAFORM_FOSS %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_workflow_tool = "TERRAFORM_FOSS"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_foss",
+					Attribute("terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+			// Check we can create a CUSTOM stack
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "terraform_workflow_tool_custom" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool CUSTOM %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_workflow_tool = "CUSTOM"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_custom",
+					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
 }
 
 // getConfig returns a stack config with injected vendor config

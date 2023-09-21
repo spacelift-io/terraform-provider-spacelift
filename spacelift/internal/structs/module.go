@@ -26,6 +26,7 @@ type Module struct {
 	WorkerPool          *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
+	WorkflowTool *string `graphql:"workflowTool"`
 }
 
 // ExportVCSSettings exports VCS settings into Terraform schema.

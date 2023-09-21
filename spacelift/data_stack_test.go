@@ -263,6 +263,55 @@ func TestStackData(t *testing.T) {
 			),
 		}})
 	})
+
+	t.Run("with terraform_workflow_tool defaulted", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack workflow_tool default %s"
+					project_root = "root"
+					repository   = "demo"
+				}
+				data "spacelift_stack" "test" {
+					stack_id = spacelift_stack.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_stack.test",
+					Attribute("terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+		})
+	})
+
+	t.Run("with terraform_workflow_tool set", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_workflow_tool = "CUSTOM"
+				}
+				data "spacelift_stack" "test" {
+					stack_id = spacelift_stack.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_stack.test",
+					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
 }
 
 func TestStackDataSpace(t *testing.T) {

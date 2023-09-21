@@ -168,6 +168,7 @@ Read-Only:
 - `terraform_external_state_access` (Boolean)
 - `terraform_smart_sanitization` (Boolean)
 - `terraform_version` (String)
+- `terraform_workflow_tool` (String)
 - `terraform_workspace` (String)
 - `worker_pool_id` (String)
 

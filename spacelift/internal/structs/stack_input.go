@@ -82,6 +82,7 @@ type TerragruntInput struct {
 type TerraformInput struct {
 	UseSmartSanitization       *graphql.Boolean `json:"useSmartSanitization"`
 	Version                    *graphql.String  `json:"version"`
+	WorkflowTool               *graphql.String  `json:"workflowTool"`
 	Workspace                  *graphql.String  `json:"workspace"`
 	ExternalStateAccessEnabled *graphql.Boolean `json:"externalStateAccessEnabled"`
 }
