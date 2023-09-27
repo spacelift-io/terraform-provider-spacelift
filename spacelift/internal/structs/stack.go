@@ -6,7 +6,7 @@ import (
 )
 
 // StackConfigVendorAnsible is a graphql union typename.
-const StackConfigVendorAnsible = "StackConfigVendorAnsible"
+const StackConfigVendorAnsible = "StackConfigVendorAnsible" // #nosec G101 not a credential
 
 // StackConfigVendorCloudFormation is a graphql union typename.
 const StackConfigVendorCloudFormation = "StackConfigVendorCloudFormation"
