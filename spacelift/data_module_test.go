@@ -11,10 +11,11 @@ import (
 )
 
 func TestModuleData(t *testing.T) {
-	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+	t.Run("basic test", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-	testSteps(t, []resource.TestStep{{
-		Config: fmt.Sprintf(`
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
 			resource "spacelift_module" "test" {
                 name            = "test-module-%s"
 				administrative  = true
@@ -28,20 +29,70 @@ func TestModuleData(t *testing.T) {
 				module_id = spacelift_module.test.id
 			}
 		`, randomID),
-		Check: Resource(
-			"data.spacelift_module.test",
-			Attribute("id", Equals(fmt.Sprintf("test-module-%s", randomID))),
-			Attribute("administrative", Equals("true")),
-			Attribute("branch", Equals("master")),
-			Attribute("description", Equals("description")),
-			SetEquals("labels", "one", "two"),
-			Attribute("name", Equals(fmt.Sprintf("test-module-%s", randomID))),
-			Attribute("project_root", Equals("")),
-			Attribute("repository", Equals("terraform-bacon-tasty")),
-			SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
-			Attribute("terraform_provider", Equals("default")),
-		),
-	}})
+			Check: Resource(
+				"data.spacelift_module.test",
+				Attribute("id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("administrative", Equals("true")),
+				Attribute("branch", Equals("master")),
+				Attribute("description", Equals("description")),
+				SetEquals("labels", "one", "two"),
+				Attribute("name", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("project_root", Equals("")),
+				Attribute("repository", Equals("terraform-bacon-tasty")),
+				SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+				Attribute("terraform_provider", Equals("default")),
+			),
+		}})
+	})
+
+	t.Run("with terraform_workflow_tool defaulted", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "test" {
+					name            = "test-module-%s"
+					administrative  = true
+					branch          = "master"
+					repository      = "terraform-bacon-tasty"
+				}
+				data "spacelift_module" "test" {
+					module_id = spacelift_module.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_module.test",
+					Attribute("workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+		})
+	})
+
+	t.Run("with terraform_workflow_tool set", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "test" {
+					name            = "test-module-%s"
+					administrative  = true
+					branch          = "master"
+					repository      = "terraform-bacon-tasty"
+					workflow_tool   = "CUSTOM"
+				}
+				data "spacelift_module" "test" {
+					module_id = spacelift_module.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_module.test",
+					Attribute("workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
 }
 
 func TestModuleDataSpace(t *testing.T) {

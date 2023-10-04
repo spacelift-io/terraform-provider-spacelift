@@ -167,6 +167,11 @@ func dataModule() *schema.Resource {
 				Description: "ID of the worker pool to use",
 				Computed:    true,
 			},
+			"workflow_tool": {
+				Type:        schema.TypeString,
+				Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -231,6 +236,10 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		d.Set("worker_pool_id", workerPool.ID)
 	} else {
 		d.Set("worker_pool_id", nil)
+	}
+
+	if workflowTool := module.WorkflowTool; workflowTool != nil {
+		d.Set("workflow_tool", *workflowTool)
 	}
 
 	return nil
