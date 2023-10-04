@@ -32,7 +32,7 @@ resource "spacelift_user_group" "test" {
 ### Required
 
 - `access` (Block List, Min: 1) (see [below for nested schema](#nestedblock--access))
-- `name` (String)
+- `name` (String) Name of the user group - should be unique in one account
 
 ### Read-Only
 
@@ -43,5 +43,5 @@ resource "spacelift_user_group" "test" {
 
 Required:
 
-- `level` (String)
-- `space_id` (String)
+- `level` (String) Type of access to the space. Possible values are: READ, WRITE, ADMIN
+- `space_id` (String) ID (slug) of the space the user group has access to

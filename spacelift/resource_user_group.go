@@ -39,12 +39,12 @@ func resourceUserGroup() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
+				Description:      "Name of the user group - should be unique in one account",
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"access": {
-
 				Type:     schema.TypeList,
 				MinItems: 1,
 				Required: true,
@@ -52,11 +52,14 @@ func resourceUserGroup() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"space_id": {
 							Type:             schema.TypeString,
+							Description:      "ID (slug) of the space the user group has access to",
 							Required:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"level": {
-							Type:         schema.TypeString,
+							Type: schema.TypeString,
+							Description: "Type of access to the space. Possible values are: " +
+								"READ, WRITE, ADMIN",
 							Required:     true,
 							ValidateFunc: validation.StringInSlice(validAccessLevels, false),
 						},
