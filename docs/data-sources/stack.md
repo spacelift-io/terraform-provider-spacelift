@@ -71,7 +71,7 @@ data "spacelift_stack" "k8s-core" {
 - `terraform_external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift.
 - `terraform_smart_sanitization` (Boolean) Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.
 - `terraform_version` (String) Terraform version to use
-- `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `TERRAFORM_FOSS` or `CUSTOM`.
+- `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`.
 - `terraform_workspace` (String) Terraform workspace to select
 - `worker_pool_id` (String) ID of the worker pool to use
 

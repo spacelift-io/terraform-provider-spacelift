@@ -1239,6 +1239,22 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
 				),
 			},
+			// Check we can create an OPEN_TOFU stack
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "terraform_workflow_tool_open_tofu" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool OPEN_TOFU %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_workflow_tool = "OPEN_TOFU"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_open_tofu",
+					Attribute("terraform_workflow_tool", Equals("OPEN_TOFU")),
+				),
+			},
 			// Check we can create a TERRAFORM_FOSS stack
 			{
 				Config: fmt.Sprintf(`

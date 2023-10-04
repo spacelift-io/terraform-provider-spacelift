@@ -489,7 +489,7 @@ func resourceStack() *schema.Resource {
 			},
 			"terraform_workflow_tool": {
 				Type:        schema.TypeString,
-				Description: "Defines the tool that will be used to execute the workflow. This can be one of `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
+				Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
 				Optional:    true,
 				Computed:    true,
 			},

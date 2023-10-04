@@ -207,6 +207,22 @@ func TestModuleResource(t *testing.T) {
 					Attribute("workflow_tool", Equals("CUSTOM")),
 				),
 			},
+			// Can create a module with OPEN_TOFU
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_module" "workflow_tool_open_tofu" {
+			        name               = "workflow-tool-open-tofu-%s"
+					branch             = "master"
+					repository         = "terraform-bacon-tasty"
+			        terraform_provider = "papaya"
+					workflow_tool      = "OPEN_TOFU"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_module.workflow_tool_open_tofu",
+					Attribute("workflow_tool", Equals("OPEN_TOFU")),
+				),
+			},
 			// Can create a module with TERRAFORM_FOSS
 			{
 				Config: fmt.Sprintf(`
