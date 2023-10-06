@@ -25,7 +25,7 @@ func resourceUserGroup() *schema.Resource {
 			"`spacelift_user_group` represents a Spacelift **user group** - " +
 			"a collection of users as provided by your Identity Provider (IdP). " +
 			"If you assign permissions to a user group, all users in the group " +
-			"will have those permissions, unless the user's permissions are higher than " +
+			"will have those permissions unless the user's permissions are higher than " +
 			"the group's permissions.",
 		CreateContext: resourceUserGroupCreate,
 		ReadContext:   resourceUserGroupRead,
