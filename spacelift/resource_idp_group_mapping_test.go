@@ -11,33 +11,33 @@ import (
 )
 
 var withOneAccess = `
-resource "spacelift_user_group" "test" {
+resource "spacelift_idp_group_mapping" "test" {
   name = "%s"
-  access {
+  policy {
     space_id = "root"
-    level    = "ADMIN"
+    role     = "ADMIN"
   }
 }
 `
 
 var withTwoAccesses = `
-resource "spacelift_user_group" "test" {
+resource "spacelift_idp_group_mapping" "test" {
   name = "%s"
-  access {
+  policy {
     space_id = "root"
-    level    = "ADMIN"
+    role     = "ADMIN"
   }
-  access {
+  policy {
     space_id = "legacy"
-    level    = "READ"
+    role     = "READ"
   }
 }
 `
 
-func TestUserGroupResource(t *testing.T) {
-	const resourceName = "spacelift_user_group.test"
+func TestIdpGroupMappingResource(t *testing.T) {
+	const resourceName = "spacelift_idp_group_mapping.test"
 
-	t.Run("creates and updates a user group without an error", func(t *testing.T) {
+	t.Run("creates and updates an idp group mapping without error", func(t *testing.T) {
 		oldName := "old name"
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -47,8 +47,8 @@ func TestUserGroupResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(oldName)),
-					SetContains("access", "root"),
-					SetContains("access", "ADMIN"),
+					SetContains("policy", "root"),
+					SetContains("policy", "ADMIN"),
 				),
 			},
 			{
@@ -75,20 +75,20 @@ func TestUserGroupResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(randomID)),
-					SetContains("access", "root"),
-					SetContains("access", "ADMIN"),
-					SetContains("access", "legacy"),
-					SetContains("access", "READ"),
+					SetContains("policy", "root"),
+					SetContains("policy", "ADMIN"),
+					SetContains("policy", "legacy"),
+					SetContains("policy", "READ"),
 				),
 			},
 			{
 				Config: fmt.Sprintf(withOneAccess, randomID),
 				Check: Resource(
 					resourceName,
-					SetContains("access", "root"),
-					SetContains("access", "ADMIN"),
-					SetDoesNotContain("access", "legacy"),
-					SetDoesNotContain("access", "READ"),
+					SetContains("policy", "root"),
+					SetContains("policy", "ADMIN"),
+					SetDoesNotContain("policy", "legacy"),
+					SetDoesNotContain("policy", "READ"),
 				),
 			},
 		})

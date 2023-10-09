@@ -74,9 +74,9 @@ func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, 
 		IdpGroupMapping *structs.IdpGroupMapping `graphql:"managedUserGroupCreate(input: $input)"`
 	}
 	variables := map[string]interface{}{
-		"input": structs.IdpGroupMappingCreateInput{
-			Name:                        toString(d.Get("name")),
-			UserManagementPoliciesInput: getPolicies(d),
+		"input": structs.ManagedUserGroupCreateInput{
+			Name:        toString(d.Get("name")),
+			AccessRules: getPolicies(d),
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupCreate", &mutation, variables); err != nil {
@@ -86,7 +86,7 @@ func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, 
 	// set the ID in TF state
 	d.SetId(mutation.IdpGroupMapping.ID)
 
-	// confirm it worked and populate policies in the TF state
+	// fetch from remote and write to the TF state
 	return resourceIdpGroupMappingRead(ctx, d, meta)
 }
 
@@ -132,9 +132,9 @@ func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, 
 		IdpGroupMapping *structs.IdpGroupMapping `graphql:"managedUserGroupUpdate(input: $input)"`
 	}
 	variables := map[string]interface{}{
-		"input": structs.IdpGroupMappingUpdateInput{
-			ID:                          toID(d.Id()),
-			UserManagementPoliciesInput: getPolicies(d),
+		"input": structs.ManagedUserGroupUpdateInput{
+			ID:          toID(d.Id()),
+			AccessRules: getPolicies(d),
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupUpdate", &mutation, variables); err != nil {
@@ -163,13 +163,13 @@ func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func getPolicies(d *schema.ResourceData) []structs.UserManagementPolicyInput {
-	var policies []structs.UserManagementPolicyInput
-	for _, p := range d.Get("access").([]interface{}) {
+func getPolicies(d *schema.ResourceData) []structs.SpaceAccessRuleInput {
+	var policies []structs.SpaceAccessRuleInput
+	for _, p := range d.Get("policy").([]interface{}) {
 		policy := p.(map[string]interface{})
-		policies = append(policies, structs.UserManagementPolicyInput{
-			Space: toID(policy["space_id"]),
-			Role:  structs.Role(policy["level"].(string)),
+		policies = append(policies, structs.SpaceAccessRuleInput{
+			Space:            toID(policy["space_id"]),
+			SpaceAccessLevel: structs.SpaceAccessLevel(policy["role"].(string)),
 		})
 	}
 	return policies
