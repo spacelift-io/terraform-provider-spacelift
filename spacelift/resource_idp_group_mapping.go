@@ -37,7 +37,7 @@ func resourceIdpGroupMapping() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
-				Description:      "Name of the mapping - should be unique in one account",
+				Description:      "Name of the user group - should be unique in one account",
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
@@ -50,7 +50,7 @@ func resourceIdpGroupMapping() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"space_id": {
 							Type:             schema.TypeString,
-							Description:      "ID (slug) of the space the user group will have access to",
+							Description:      "ID (slug) of the space the user group has access to",
 							Required:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
@@ -71,54 +71,52 @@ func resourceIdpGroupMapping() *schema.Resource {
 func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// send a create query to the API
 	var mutation struct {
-		IdpGroupMapping *structs.IdpGroupMapping `graphql:"managedUserGroupCreate(input: $input)"`
+		UserGroup *structs.UserGroup `graphql:"managedUserGroupCreate(input: $input)"`
 	}
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserGroupCreateInput{
 			Name:        toString(d.Get("name")),
-			AccessRules: getPolicies(d),
+			AccessRules: getAccessRules(d),
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create mapping %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not create user group mapping %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
 	}
 
 	// set the ID in TF state
-	d.SetId(mutation.IdpGroupMapping.ID)
+	d.SetId(mutation.UserGroup.ID)
 
-	// fetch from remote and write to the TF state
+	// fetch from remote and write to TF state
 	return resourceIdpGroupMappingRead(ctx, d, meta)
 }
 
 func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// send a read query to the API
 	var query struct {
-		IdpGroupMapping *structs.IdpGroupMapping `graphql:"managedUserGroup(id: $id)"`
+		UserGroup *structs.UserGroup `graphql:"managedUserGroup(id: $id)"`
 	}
-	variables := map[string]interface{}{
-		"id": graphql.ID(d.Id()),
-	}
+	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "ManagedUserGroupRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for IdP group mapping: %v", err)
+		return diag.Errorf("could not query for user group mapping: %v", err)
 	}
 
 	// if the mapping is not found on the Spacelift side, delete it from the TF state
-	idpGroupMapping := query.IdpGroupMapping
-	if idpGroupMapping == nil {
+	userGroup := query.UserGroup
+	if userGroup == nil {
 		d.SetId("")
 		return nil
 	}
 
 	// if found, update the TF state
-	d.Set("name", idpGroupMapping.Name)
-	var policies []interface{}
-	for _, p := range idpGroupMapping.UserManagementPolicies {
-		policies = append(policies, map[string]interface{}{
-			"space_id": p.Space,
-			"level":    p.Role,
+	d.Set("name", userGroup.Name)
+	var accessList []interface{}
+	for _, a := range userGroup.AccessRules {
+		accessList = append(accessList, map[string]interface{}{
+			"space_id": a.Space,
+			"role":     a.SpaceAccessLevel,
 		})
 	}
-	d.Set("access", policies)
+	d.Set("policy", accessList)
 
 	return nil
 
@@ -129,16 +127,16 @@ func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, 
 
 	// send an update query to the API
 	var mutation struct {
-		IdpGroupMapping *structs.IdpGroupMapping `graphql:"managedUserGroupUpdate(input: $input)"`
+		UserGroup *structs.UserGroup `graphql:"managedUserGroupUpdate(input: $input)"`
 	}
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserGroupUpdateInput{
 			ID:          toID(d.Id()),
-			AccessRules: getPolicies(d),
+			AccessRules: getAccessRules(d),
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupUpdate", &mutation, variables); err != nil {
-		ret = append(ret, diag.Errorf("could not update IdP group mapping: %v", internal.FromSpaceliftError(err))...)
+		ret = append(ret, diag.Errorf("could not update user group mapping: %v", internal.FromSpaceliftError(err))...)
 	}
 
 	// send a read query to the API
@@ -150,27 +148,27 @@ func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, 
 func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// send a delete query to the API
 	var mutation struct {
-		IdpGroupMapping *structs.IdpGroupMapping `graphql:"managedUserGroupDelete(id: $id)"`
+		UserGroup *structs.UserGroup `graphql:"managedUserGroupDelete(id: $id)"`
 	}
 	variables := map[string]interface{}{"id": toID(d.Id())}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete IdP group mapping: %v", internal.FromSpaceliftError(err))
+		return diag.Errorf("could not delete user group mapping: %v", internal.FromSpaceliftError(err))
 	}
 
-	// if the mapping was successfully removed on the Spacelift side, remove it from the TF state
+	// if the mapping was successfully removed from the Spacelift side, delete it from the TF state
 	d.SetId("")
 
 	return nil
 }
 
-func getPolicies(d *schema.ResourceData) []structs.SpaceAccessRuleInput {
-	var policies []structs.SpaceAccessRuleInput
-	for _, p := range d.Get("policy").([]interface{}) {
-		policy := p.(map[string]interface{})
-		policies = append(policies, structs.SpaceAccessRuleInput{
-			Space:            toID(policy["space_id"]),
-			SpaceAccessLevel: structs.SpaceAccessLevel(policy["role"].(string)),
+func getAccessRules(d *schema.ResourceData) []structs.SpaceAccessRuleInput {
+	var accessRules []structs.SpaceAccessRuleInput
+	for _, a := range d.Get("policy").([]interface{}) {
+		access := a.(map[string]interface{})
+		accessRules = append(accessRules, structs.SpaceAccessRuleInput{
+			Space:            toID(access["space_id"]),
+			SpaceAccessLevel: structs.SpaceAccessLevel(access["role"].(string)),
 		})
 	}
-	return policies
+	return accessRules
 }

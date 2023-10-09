@@ -37,7 +37,7 @@ resource "spacelift_idp_group_mapping" "test" {
 func TestIdpGroupMappingResource(t *testing.T) {
 	const resourceName = "spacelift_idp_group_mapping.test"
 
-	t.Run("creates and updates an idp group mapping without error", func(t *testing.T) {
+	t.Run("creates and updates a user group mapping without an error", func(t *testing.T) {
 		oldName := "old name"
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
