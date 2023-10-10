@@ -1,5 +1,5 @@
 resource "spacelift_user_mapping" "test" {
-  email    = "johnk@eample.com"
+  email    = "johnk@example.com"
   username = "johnk"
   policy {
     space_id = "root"

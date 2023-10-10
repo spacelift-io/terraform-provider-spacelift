@@ -45,7 +45,7 @@ func resourceUserMapping() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"space_id": {
 							Type:             schema.TypeString,
-							Description:      "ID (slug) of the space the user group has access to",
+							Description:      "ID (slug) of the space the user has access to",
 							Required:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
@@ -66,7 +66,7 @@ func resourceUserMapping() *schema.Resource {
 func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	// send an Invite (create) mutation to the API
 	var mutation struct {
-		User *structs.User `graphql:"managedUserInvite(input: $iinput)"`
+		User *structs.User `graphql:"managedUserInvite(input: $input)"`
 	}
 	variables := map[string]interface{}{
 		"input": structs.UserInviteInput{
