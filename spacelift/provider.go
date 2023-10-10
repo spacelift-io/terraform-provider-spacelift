@@ -109,6 +109,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_drift_detection":              resourceDriftDetection(),
 				"spacelift_environment_variable":         resourceEnvironmentVariable(),
 				"spacelift_gcp_service_account":          resourceGCPServiceAccount(),
+				"spacelift_idp_group_mapping":            resourceIdpGroupMapping(),
 				"spacelift_module":                       resourceModule(),
 				"spacelift_mounted_file":                 resourceMountedFile(),
 				"spacelift_policy_attachment":            resourcePolicyAttachment(),
@@ -125,7 +126,6 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack_aws_role":               resourceStackAWSRole(),           // deprecated
 				"spacelift_stack_gcp_service_account":    resourceStackGCPServiceAccount(), // deprecated
 				"spacelift_terraform_provider":           resourceTerraformProvider(),
-				"spacelift_idp_group_mapping":            resourceIdpGroupMapping(),
 				"spacelift_vcs_agent_pool":               resourceVCSAgentPool(),
 				"spacelift_webhook":                      resourceWebhook(),
 				"spacelift_named_webhook":                resourceNamedWebhook(),
