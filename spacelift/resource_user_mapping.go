@@ -2,7 +2,6 @@ package spacelift
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -29,7 +28,7 @@ func resourceUserMapping() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"email": {
+			"invitation_email": {
 				Type:        schema.TypeString,
 				Description: "Email of the user. Used for sending an invitation.",
 				Optional:    true,
@@ -72,9 +71,9 @@ func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i in
 	}
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserInviteInput{
-			Email:       toString(d.Get("email")),
-			Username:    toString(d.Get("username")),
-			AccessRules: getAccessRules(d),
+			InvitationEmail: toString(d.Get("invitation_email")),
+			Username:        toString(d.Get("username")),
+			AccessRules:     getAccessRules(d),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "ManagedUserInvite", &mutation, variables); err != nil {
@@ -90,7 +89,6 @@ func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i in
 
 func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	// send a read query to the API
-	fmt.Println("reading")
 	var query struct {
 		User *structs.User `graphql:"managedUser(id: $id)"`
 	}
@@ -106,7 +104,7 @@ func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, i inte
 	}
 
 	// if found, update the TF state
-	d.Set("email", query.User.Email)
+	d.Set("invitation_email", query.User.InvitationEmail)
 	d.Set("username", query.User.Username)
 	var accessList []interface{}
 	for _, a := range query.User.AccessRules {
@@ -129,6 +127,7 @@ func resourceUserMappingUpdate(ctx context.Context, d *schema.ResourceData, i in
 	}
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserUpdateInput{
+			ID:          toID(d.Id()),
 			AccessRules: getAccessRules(d),
 		},
 	}

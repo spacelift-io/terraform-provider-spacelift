@@ -12,7 +12,7 @@ import (
 
 var userWithOneAccess = `
 resource "spacelift_user_mapping" "test" {
-  email = "%s"
+  invitation_email = "%s"
   username = "%s"
   policy {
 	space_id = "root"
@@ -25,18 +25,18 @@ func TestUserResource(t *testing.T) {
 	const resourceName = "spacelift_user_mapping.test"
 
 	t.Run("creates and updates a user mapping without an error", func(t *testing.T) {
-		randomEmail := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
 
-		newEmail := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		newUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		exampleEmailNew := fmt.Sprintf("%s@example.com", newUsername)
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: fmt.Sprintf(userWithOneAccess, randomEmail, randomUsername),
+				Config: fmt.Sprintf(userWithOneAccess, exampleEmail, randomUsername),
 				Check: Resource(
 					resourceName,
-					Attribute("email", Equals(randomEmail)),
+					Attribute("invitation_email", Equals(exampleEmail)),
 					Attribute("username", Equals(randomUsername)),
 					SetContains("policy", "root"),
 					SetContains("policy", "ADMIN"),
@@ -48,10 +48,10 @@ func TestUserResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: fmt.Sprintf(userWithOneAccess, newEmail, newUsername),
+				Config: fmt.Sprintf(userWithOneAccess, exampleEmailNew, newUsername),
 				Check: Resource(
 					resourceName,
-					Attribute("email", Equals(newEmail)),
+					Attribute("invitation_email", Equals(exampleEmailNew)),
 					Attribute("username", Equals(newUsername)),
 					SetContains("policy", "root"),
 					SetContains("policy", "ADMIN"),
