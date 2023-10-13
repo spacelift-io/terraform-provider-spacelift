@@ -1,12 +1,12 @@
 resource "spacelift_user_mapping" "test" {
-  email    = "johnk@example.com"
-  username = "johnk"
+  invitation_email = "johnk@example.com"
+  username         = "johnk"
   policy {
     space_id = "root"
-    role = "ADMIN"
+    role     = "ADMIN"
   }
   policy {
     space_id = "legacy"
-    role = "READ"
+    role     = "READ"
   }
 }
