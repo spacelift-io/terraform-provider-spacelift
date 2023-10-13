@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,7 +32,7 @@ func resourceUserMapping() *schema.Resource {
 			"email": {
 				Type:        schema.TypeString,
 				Description: "Email of the user. Used for sending an invitation.",
-				Required:    true,
+				Optional:    true,
 			},
 			"username": {
 				Type:        schema.TypeString,
@@ -40,7 +41,8 @@ func resourceUserMapping() *schema.Resource {
 			},
 			"policy": {
 				Type:     schema.TypeList,
-				Optional: true,
+				MinItems: 1,
+				Required: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"space_id": {
@@ -69,14 +71,14 @@ func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i in
 		User *structs.User `graphql:"managedUserInvite(input: $input)"`
 	}
 	variables := map[string]interface{}{
-		"input": structs.UserInviteInput{
+		"input": structs.ManagedUserInviteInput{
 			Email:       toString(d.Get("email")),
 			Username:    toString(d.Get("username")),
 			AccessRules: getAccessRules(d),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "ManagedUserInvite", &mutation, variables); err != nil {
-		return diag.Errorf("could not create user %s: %v", toString(d.Get("username")), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not create user mapping %s: %v", toString(d.Get("username")), internal.FromSpaceliftError(err))
 	}
 
 	// set the ID in TF state
@@ -88,12 +90,13 @@ func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i in
 
 func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	// send a read query to the API
+	fmt.Println("reading")
 	var query struct {
 		User *structs.User `graphql:"managedUser(id: $id)"`
 	}
 	variables := map[string]interface{}{"id": toID(d.Id())}
-	if err := i.(*internal.Client).Query(ctx, "ManagedUserRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for user: %v", err)
+	if err := i.(*internal.Client).Query(ctx, "ManagedUser", &query, variables); err != nil {
+		return diag.Errorf("could not query for user mapping: %v", err)
 	}
 
 	// if the mapping is not found on the remote side, delete it from the TF state
@@ -125,12 +128,12 @@ func resourceUserMappingUpdate(ctx context.Context, d *schema.ResourceData, i in
 		User *structs.User `graphql:"managedUserUpdate(input: $input)"`
 	}
 	variables := map[string]interface{}{
-		"input": structs.UserUpdateInput{
+		"input": structs.ManagedUserUpdateInput{
 			AccessRules: getAccessRules(d),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "ManagedUserUpdate", &mutation, variables); err != nil {
-		ret = append(ret, diag.Errorf("could not update user %s: %v", d.Id(), internal.FromSpaceliftError(err))...)
+		ret = append(ret, diag.Errorf("could not update user mapping %s: %v", d.Id(), internal.FromSpaceliftError(err))...)
 	}
 
 	// fetch from remote and write to TF state
@@ -146,7 +149,7 @@ func resourceUserMappingDelete(ctx context.Context, d *schema.ResourceData, i in
 	}
 	variables := map[string]interface{}{"id": toID(d.Id())}
 	if err := i.(*internal.Client).Mutate(ctx, "ManagedUserDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete user %s: %v", d.Id(), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not delete user mapping %s: %v", d.Id(), internal.FromSpaceliftError(err))
 	}
 
 	// if the user was deleted, remove it from the TF state as well
