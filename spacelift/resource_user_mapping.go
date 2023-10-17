@@ -31,7 +31,7 @@ func resourceUserMapping() *schema.Resource {
 			"invitation_email": {
 				Type:        schema.TypeString,
 				Description: "Email of the user. Used for sending an invitation.",
-				Optional:    true,
+				Required:    true,
 			},
 			"username": {
 				Type:        schema.TypeString,
