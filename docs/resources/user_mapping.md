@@ -32,12 +32,9 @@ resource "spacelift_user_mapping" "test" {
 
 ### Required
 
+- `invitation_email` (String) Email of the user. Used for sending an invitation.
 - `policy` (Block List, Min: 1) (see [below for nested schema](#nestedblock--policy))
 - `username` (String) Username of the user
-
-### Optional
-
-- `invitation_email` (String) Email of the user. Used for sending an invitation.
 
 ### Read-Only
 
