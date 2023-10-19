@@ -12,16 +12,16 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
-func resourceUserMapping() *schema.Resource {
+func resourceUser() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_user_mapping` represents a mapping between a Spacelift user " +
+			"`spacelift_user` represents a mapping between a Spacelift user " +
 			"(managed using an Identity Provider) and a Policy. A Policy defines " +
 			"what access rights the user has to a given Space.",
-		CreateContext: resourceUserMappingCreate,
-		ReadContext:   resourceUserMappingRead,
-		UpdateContext: resourceUserMappingUpdate,
-		DeleteContext: resourceUserMappingDelete,
+		CreateContext: resourceUserCreate,
+		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
+		DeleteContext: resourceUserDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -64,7 +64,7 @@ func resourceUserMapping() *schema.Resource {
 	}
 }
 
-func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	// send an Invite (create) mutation to the API
 	var mutation struct {
 		User *structs.User `graphql:"managedUserInvite(input: $input)"`
@@ -84,10 +84,10 @@ func resourceUserMappingCreate(ctx context.Context, d *schema.ResourceData, i in
 	d.SetId(mutation.User.ID)
 
 	// fetch state from remote and write to TF state
-	return resourceUserMappingRead(ctx, d, i)
+	return resourceUserRead(ctx, d, i)
 }
 
-func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	// send a read query to the API
 	var query struct {
 		User *structs.User `graphql:"managedUser(id: $id)"`
@@ -118,7 +118,7 @@ func resourceUserMappingRead(ctx context.Context, d *schema.ResourceData, i inte
 	return nil
 }
 
-func resourceUserMappingUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var ret diag.Diagnostics
 
 	// send an update query to the API
@@ -136,12 +136,12 @@ func resourceUserMappingUpdate(ctx context.Context, d *schema.ResourceData, i in
 	}
 
 	// fetch from remote and write to TF state
-	ret = append(ret, resourceUserMappingCreate(ctx, d, i)...)
+	ret = append(ret, resourceUserCreate(ctx, d, i)...)
 
 	return ret
 }
 
-func resourceUserMappingDelete(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
 	// send a delete query to the API
 	var mutation struct {
 		User *structs.User `graphql:"managedUserDelete(id: $id)"`

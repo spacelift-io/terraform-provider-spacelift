@@ -11,7 +11,7 @@ import (
 )
 
 var userWithOneAccess = `
-resource "spacelift_user_mapping" "test" {
+resource "spacelift_user" "test" {
   invitation_email = "%s"
   username = "%s"
   policy {
@@ -22,9 +22,9 @@ resource "spacelift_user_mapping" "test" {
 `
 
 func TestUserResource(t *testing.T) {
-	const resourceName = "spacelift_user_mapping.test"
+	const resourceName = "spacelift_user.test"
 
-	t.Run("creates and updates a user mapping without an error", func(t *testing.T) {
+	t.Run("creates and updates a user without an error", func(t *testing.T) {
 		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
 
