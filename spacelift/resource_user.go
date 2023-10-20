@@ -136,7 +136,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i interface
 	}
 
 	// fetch from remote and write to TF state
-	ret = append(ret, resourceUserCreate(ctx, d, i)...)
+	ret = append(ret, resourceUserRead(ctx, d, i)...)
 
 	return ret
 }
