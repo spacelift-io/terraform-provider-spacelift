@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -62,8 +63,7 @@ func TestUserResource(t *testing.T) {
 		})
 	})
 
-	// Note: the api doesn't allow for the username or email to be updated
-	t.Run("can remove one access", func(t *testing.T) {
+	t.Run("can edit access list", func(t *testing.T) {
 		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
 
@@ -88,6 +88,55 @@ func TestUserResource(t *testing.T) {
 			},
 		})
 
+	})
+
+	t.Run("cannot change email address", func(t *testing.T) {
+		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
+
+		randomUsername2 := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		exampleEmail2 := fmt.Sprintf("%s@example.com", randomUsername2)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(userWithOneAccess, exampleEmail, randomUsername),
+				Check: Resource(
+					resourceName,
+					Attribute("invitation_email", Equals(exampleEmail)),
+					Attribute("username", Equals(randomUsername)),
+					SetContains("policy", "root", "ADMIN"),
+					SetDoesNotContain("policy", "legacy"),
+				),
+			},
+			{
+				Config:      fmt.Sprintf(userWithOneAccess, exampleEmail2, randomUsername),
+				ExpectError: regexp.MustCompile(`invitation_email cannot be changed`),
+			},
+		})
+	})
+
+	t.Run("cannot change username", func(t *testing.T) {
+		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
+
+		randomUsername2 := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(userWithOneAccess, exampleEmail, randomUsername),
+				Check: Resource(
+					resourceName,
+					Attribute("invitation_email", Equals(exampleEmail)),
+					Attribute("username", Equals(randomUsername)),
+					SetContains("policy", "root", "ADMIN"),
+					SetDoesNotContain("policy", "legacy"),
+				),
+			},
+			{
+				Config:      fmt.Sprintf(userWithOneAccess, exampleEmail, randomUsername2),
+				ExpectError: regexp.MustCompile(`username cannot be changed`),
+			},
+		})
 	})
 
 }

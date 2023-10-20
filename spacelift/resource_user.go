@@ -119,6 +119,14 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, i interface{}
 }
 
 func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+	// input validation
+	if d.HasChange("invitation_email") {
+		return diag.Errorf("invitation_email cannot be changed")
+	}
+	if d.HasChange("username") {
+		return diag.Errorf("username cannot be changed")
+	}
+
 	var ret diag.Diagnostics
 
 	// send an update query to the API
