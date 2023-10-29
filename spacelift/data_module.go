@@ -93,6 +93,37 @@ func dataModule() *schema.Resource {
 							Description: "GitHub Enterprise namespace of the stack's repository",
 							Required:    true,
 						},
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the GitHub Enterprise application",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "Name of the GitHub Enterprise application",
+							Computed:    true,
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Description: "Description of the GitHub Enterprise application",
+							Computed:    true,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether this is the default GitHub Enterprise application",
+							Computed:    true,
+						},
+						"labels": {
+							Type:        schema.TypeSet,
+							Description: "Labels of the GitHub Enterprise application",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Computed:    true,
+						},
+						"space_id": {
+							Type:        schema.TypeString,
+							Description: "ID (slug) of the space the GitHub Enterprise application is in",
+							Computed:    true,
+						},
 					},
 				},
 			},

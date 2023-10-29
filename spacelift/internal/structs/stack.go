@@ -50,13 +50,24 @@ type Stack struct {
 	Namespace           string        `graphql:"namespace"`
 	ProjectRoot         *string       `graphql:"projectRoot"`
 	ProtectFromDeletion bool          `graphql:"protectFromDeletion"`
-	Provider            string        `graphql:"provider"`
+	Provider            VCSProvider   `graphql:"provider"`
 	Repository          string        `graphql:"repository"`
 	RepositoryURL       *string       `graphql:"repositoryURL"`
 	RunnerImage         *string       `graphql:"runnerImage"`
 	Space               string        `graphql:"space"`
 	TerraformVersion    *string       `graphql:"terraformVersion"`
-	VendorConfig        struct {
+	VCSIntegration      *struct {
+		ID          string   `graphql:"id"`
+		Description string   `graphql:"description"`
+		IsDefault   bool     `graphql:"isDefault"`
+		Labels      []string `graphql:"labels"`
+		Name        string   `graphql:"name"`
+		Provider    string   `graphql:"provider"`
+		Space       struct {
+			ID string `graphql:"id"`
+		} `graphql:"space"`
+	} `graphql:"vcsIntegration"`
+	VendorConfig struct {
 		Typename string `graphql:"__typename"`
 		Ansible  struct {
 			Playbook string `graphql:"playbook"`
@@ -136,7 +147,15 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	case VCSProviderBitbucketDatacenter:
 		return "bitbucket_datacenter", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderGitHubEnterprise:
-		return "github_enterprise", singleKeyMap("namespace", s.Namespace)
+		return "github_enterprise", map[string]interface{}{
+			"id":          s.VCSIntegration.ID,
+			"name":        s.VCSIntegration.Name,
+			"namespace":   s.Namespace,
+			"description": s.VCSIntegration.Description,
+			"is_default":  s.VCSIntegration.IsDefault,
+			"labels":      s.VCSIntegration.Labels,
+			"space_id":    s.VCSIntegration.Space.ID,
+		}
 	case VCSProviderGitlab:
 		return "gitlab", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderRawGit:

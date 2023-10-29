@@ -297,6 +297,11 @@ func resourceStack() *schema.Resource {
 							Description:      "The GitHub organization / user the repository belongs to",
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.",
+						},
 					},
 				},
 			},
@@ -727,38 +732,42 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
 		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
-		ret.Provider = graphql.NewString(structs.VCSProviderAzureDevOps)
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderAzureDevOps))
 	}
 
 	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
 		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketCloud)
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketCloud))
 	}
 
 	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
 		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketDatacenter))
 	}
 
 	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
-		ret.Namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderGitHubEnterprise)
+		ghEnterpriseSettings := githubEnterprise[0].(map[string]interface{})
+		if id, ok := ghEnterpriseSettings["id"]; ok {
+			ret.VCSIntegrationID = graphql.NewID(id)
+		}
+		ret.Namespace = toOptionalString(ghEnterpriseSettings["namespace"])
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderGitHubEnterprise))
 	}
 
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
 		ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderGitlab)
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderGitlab))
 	}
 
 	if rawGit, ok := d.Get("raw_git").([]interface{}); ok && len(rawGit) > 0 {
-		ret.Provider = graphql.NewString(structs.VCSProviderRawGit)
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderRawGit))
 		ret.Namespace = toOptionalString(rawGit[0].(map[string]interface{})["namespace"])
 		ret.RepositoryURL = toOptionalString(rawGit[0].(map[string]interface{})["url"])
 	}
 
 	if showcase, ok := d.Get("showcase").([]interface{}); ok && len(showcase) > 0 {
 		ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
-		ret.Provider = graphql.NewString(structs.VCSProviderShowcases)
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderShowcases))
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {

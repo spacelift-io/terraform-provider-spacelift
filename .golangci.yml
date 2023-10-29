@@ -104,7 +104,7 @@ linters:
     - ineffassign
     - nolintlint
     - staticcheck
-    - structcheck
+    - unused
     - typecheck
 
 severity:

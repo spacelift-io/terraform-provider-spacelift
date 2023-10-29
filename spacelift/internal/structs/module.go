@@ -18,12 +18,23 @@ type Module struct {
 	Namespace           string       `graphql:"namespace"`
 	ProjectRoot         *string      `graphql:"projectRoot"`
 	ProtectFromDeletion bool         `graphql:"protectFromDeletion"`
-	Provider            string       `graphql:"provider"`
+	Provider            VCSProvider  `graphql:"provider"`
 	Repository          string       `graphql:"repository"`
 	SharedAccounts      []string     `graphql:"sharedAccounts"`
 	Space               string       `graphql:"space"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
-	WorkerPool          *struct {
+	VCSIntegration      *struct {
+		ID          string   `graphql:"id"`
+		Description string   `graphql:"description"`
+		IsDefault   bool     `graphql:"isDefault"`
+		Labels      []string `graphql:"labels"`
+		Name        string   `graphql:"name"`
+		Provider    string   `graphql:"provider"`
+		Space       struct {
+			ID string `graphql:"id"`
+		} `graphql:"space"`
+	} `graphql:"vcsIntegration"`
+	WorkerPool *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
 	WorkflowTool *string `graphql:"workflowTool"`
@@ -46,6 +57,12 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:
 		vcsSettings["namespace"] = m.Namespace
+		vcsSettings["id"] = m.VCSIntegration.ID
+		vcsSettings["name"] = m.VCSIntegration.Name
+		vcsSettings["description"] = m.VCSIntegration.Description
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		vcsSettings["labels"] = m.VCSIntegration.Labels
+		vcsSettings["space_id"] = m.VCSIntegration.Space.ID
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
 		vcsSettings["namespace"] = m.Namespace
