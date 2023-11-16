@@ -1,3 +1,9 @@
 {
-    "go.testEnvFile": "${workspaceFolder}/test.env"
+    "go.testEnvFile": "${workspaceFolder}/test.env",
+    "cSpell.words": [
+        "autoretry",
+        "datacenter",
+        "pulumi",
+        "Spacelift"
+    ]
 }
