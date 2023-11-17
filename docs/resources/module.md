@@ -73,6 +73,18 @@ Required:
 
 - `project` (String) The name of the Azure DevOps project
 
+Optional:
+
+- `id` (String) ID of the Azure Devops integration. If not specified, the default integration will be used.
+
+Read-Only:
+
+- `description` (String) Description of the Azure Devops integration
+- `is_default` (Boolean) Indicates whether this is the default Azure Devops integration
+- `labels` (Set of String) Labels of the Azure Devops integration
+- `name` (String) Name of the Azure Devops integration
+- `space_id` (String) ID (slug) of the space the Azure Devops integration is in
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`
@@ -97,6 +109,10 @@ Required:
 
 - `namespace` (String) The GitHub organization / user the repository belongs to
 
+Optional:
+
+- `id` (String) The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--gitlab"></a>
 ### Nested Schema for `gitlab`
@@ -104,6 +120,18 @@ Required:
 Required:
 
 - `namespace` (String) The GitLab namespace containing the repository
+
+Optional:
+
+- `id` (String) ID of the Gitlab integration. If not specified, the default integration will be used.
+
+Read-Only:
+
+- `description` (String) Description of the Gitlab integration
+- `is_default` (Boolean) Indicates whether this is the default Gitlab integration
+- `labels` (Set of String) Labels of the Gitlab integration
+- `name` (String) Name of the Gitlab integration
+- `space_id` (String) ID (slug) of the space the Gitlab integration is in
 
 ## Import
 

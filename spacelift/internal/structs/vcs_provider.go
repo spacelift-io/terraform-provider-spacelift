@@ -1,27 +1,32 @@
 package structs
 
+type VCSProvider string
+
 const (
 	// VCSProviderAzureDevOps represents Azure DevOps VCS provider.
-	VCSProviderAzureDevOps = "AZURE_DEVOPS"
+	VCSProviderAzureDevOps VCSProvider = "AZURE_DEVOPS"
 
 	// VCSProviderBitbucketDatacenter represents Bitbucket Datacenter
 	// (self-hosted) VCS provider.
-	VCSProviderBitbucketDatacenter = "BITBUCKET_DATACENTER"
+	VCSProviderBitbucketDatacenter VCSProvider = "BITBUCKET_DATACENTER"
 
 	// VCSProviderBitbucketCloud represents Bitbucket Cloud (managed) VCS
 	// provider.
-	VCSProviderBitbucketCloud = "BITBUCKET_CLOUD"
+	VCSProviderBitbucketCloud VCSProvider = "BITBUCKET_CLOUD"
+
+	// VCSProviderGitHub represents GitHub VCS provider.
+	VCSProviderGitHub VCSProvider = "GITHUB"
 
 	// VCSProviderGitHubEnterprise represents GitHub Enterprise (self-hosted)
 	// VCS provider.
-	VCSProviderGitHubEnterprise = "GITHUB_ENTERPRISE"
+	VCSProviderGitHubEnterprise VCSProvider = "GITHUB_ENTERPRISE"
 
 	// VCSProviderGitlab represents GitLab VCS provider.
-	VCSProviderGitlab = "GITLAB"
+	VCSProviderGitlab VCSProvider = "GITLAB"
 
 	// VCSProviderRawGit represents raw Git link VCS provider.
-	VCSProviderRawGit = "GIT"
+	VCSProviderRawGit VCSProvider = "GIT"
 
 	// VCSProviderShowcases represents the showcases provider.
-	VCSProviderShowcases = "SHOWCASE"
+	VCSProviderShowcases VCSProvider = "SHOWCASE"
 )
