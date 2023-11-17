@@ -304,6 +304,10 @@ Required:
 
 - `namespace` (String) The GitLab namespace containing the repository
 
+Optional:
+
+- `id` (String) The ID of the Gitlab integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--kubernetes"></a>
 ### Nested Schema for `kubernetes`

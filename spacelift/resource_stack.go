@@ -313,6 +313,11 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the Gitlab integration. If not specified, the default integration will be used.",
+						},
 						"namespace": {
 							Type:             schema.TypeString,
 							Required:         true,
@@ -755,7 +760,11 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
-		ret.Namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
+		gitlabSettings := gitlab[0].(map[string]interface{})
+		if id, ok := gitlabSettings["id"]; ok {
+			ret.VCSIntegrationID = graphql.NewID(id.(string))
+		}
+		ret.Namespace = toOptionalString(gitlabSettings["namespace"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderGitlab))
 	}
 

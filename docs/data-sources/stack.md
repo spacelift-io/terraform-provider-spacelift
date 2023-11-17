@@ -137,7 +137,13 @@ Read-Only:
 
 Read-Only:
 
+- `description` (String)
+- `id` (String)
+- `is_default` (Boolean)
+- `labels` (Set of String)
+- `name` (String)
 - `namespace` (String)
+- `space_id` (String)
 
 
 <a id="nestedatt--kubernetes"></a>

@@ -65,6 +65,12 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		vcsSettings["space_id"] = m.VCSIntegration.Space.ID
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
+		vcsSettings["id"] = m.VCSIntegration.ID
+		vcsSettings["name"] = m.VCSIntegration.Name
+		vcsSettings["description"] = m.VCSIntegration.Description
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		vcsSettings["labels"] = populateLabels(m.VCSIntegration.Labels)
+		vcsSettings["space_id"] = m.VCSIntegration.Space.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "gitlab"
 	}
