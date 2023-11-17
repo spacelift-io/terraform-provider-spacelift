@@ -186,6 +186,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `project` (String)
 
 
@@ -194,6 +195,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `namespace` (String)
 
 
@@ -202,6 +204,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `namespace` (String)
 
 
@@ -221,6 +224,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `namespace` (String)
 
 
@@ -229,6 +233,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `namespace` (String)
 
 

@@ -9,13 +9,20 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-var gitlabIntegrationFields = struct {
-	APIHost       string
-	WebhookSecret string
-}{
-	APIHost:       "api_host",
-	WebhookSecret: "webhook_secret",
-}
+const (
+	gitlabId            = "id"
+	gitlabName          = "name"
+	gitlabDescription   = "description"
+	gitlabIsDefault     = "is_default"
+	gitlabLabels        = "labels"
+	gitlabSpaceID       = "space_id"
+	gitlabAppID         = "app_id"
+	gitlabAPIHost       = "api_host"
+	gitlabWebhookSecret = "webhook_secret"
+	gitlabWebhookURL    = "webhook_url"
+
+	defaultGitlabIntegrationID = "gitlab-default-integration"
+)
 
 func dataGitlabIntegration() *schema.Resource {
 	return &schema.Resource{
@@ -24,14 +31,52 @@ func dataGitlabIntegration() *schema.Resource {
 		ReadContext: dataGitlabIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			gitlabIntegrationFields.APIHost: {
+			gitlabId: {
+				Type:        schema.TypeString,
+				Description: "Gitlab integration id. If not provided, the default integration will be returned",
+				Optional:    true,
+			},
+			gitlabName: {
+				Type:        schema.TypeString,
+				Description: "Gitlab integration name",
+				Computed:    true,
+			},
+			gitlabDescription: {
+				Type:        schema.TypeString,
+				Description: "Gitlab integration description",
+				Computed:    true,
+			},
+			gitlabIsDefault: {
+				Type:        schema.TypeBool,
+				Description: "Gitlab integration is default",
+				Computed:    true,
+			},
+			gitlabLabels: {
+				Type:        schema.TypeList,
+				Description: "Gitlab integration labels",
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			gitlabSpaceID: {
+				Type:        schema.TypeString,
+				Description: "Gitlab integration space id",
+				Computed:    true,
+			},
+			gitlabAPIHost: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration api host",
 				Computed:    true,
 			},
-			gitlabIntegrationFields.WebhookSecret: {
+			gitlabWebhookSecret: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration webhook secret",
+				Computed:    true,
+			},
+			gitlabWebhookURL: {
+				Type:        schema.TypeString,
+				Description: "Gitlab integration webhook url",
 				Computed:    true,
 			},
 		},
@@ -42,12 +87,27 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	var query struct {
 		GitlabIntegration *struct {
-			APIHost       string `graphql:"apiHost"`
-			WebhookSecret string `graphql:"webhookSecret"`
-		} `graphql:"gitlabIntegration"`
+			ID          string `graphql:"id"`
+			Name        string `graphql:"name"`
+			Description string `graphql:"description"`
+			IsDefault   bool   `graphql:"isDefault"`
+			Space       struct {
+				ID string `graphql:"id"`
+			} `graphql:"space"`
+			Labels        []string `graphql:"labels"`
+			APIHost       string   `graphql:"apiHost"`
+			WebhookSecret string   `graphql:"webhookSecret"`
+			WebhookURL    string   `graphql:"webhookUrl"`
+		} `graphql:"gitlabIntegration(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "GitlabIntegrationRead", &query, map[string]interface{}{}); err != nil {
+	variables := map[string]interface{}{"id": defaultGitlabIntegrationID}
+
+	if id, ok := d.GetOk(gitlabId); ok && id != "" {
+		variables["id"] = toID(id)
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "GitlabIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for gitlab integration: %v", err)
 	}
 
@@ -56,9 +116,22 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("gitlab integration not found")
 	}
 
-	d.SetId("spacelift_gitlab_integration_id") // TF expects id to be set otherwise it will fail
-	d.Set(gitlabIntegrationFields.APIHost, gitlabIntegration.APIHost)
-	d.Set(gitlabIntegrationFields.WebhookSecret, gitlabIntegration.WebhookSecret)
+	d.SetId(gitlabIntegration.ID)
+	d.Set(gitlabAPIHost, gitlabIntegration.APIHost)
+	d.Set(gitlabWebhookSecret, gitlabIntegration.WebhookSecret)
+	d.Set(gitlabWebhookURL, gitlabIntegration.WebhookURL)
+	d.Set(gitlabId, gitlabIntegration.ID)
+	d.Set(gitlabName, gitlabIntegration.Name)
+	d.Set(gitlabDescription, gitlabIntegration.Description)
+	d.Set(gitlabIsDefault, gitlabIntegration.IsDefault)
+	d.Set(gitlabSpaceID, gitlabIntegration.Space.ID)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range gitlabIntegration.Labels {
+		labels.Add(label)
+	}
+
+	d.Set(gitlabLabels, labels)
 
 	return nil
 }
