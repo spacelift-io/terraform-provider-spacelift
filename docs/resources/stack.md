@@ -258,6 +258,10 @@ Required:
 
 - `project` (String) The name of the Azure DevOps project
 
+Optional:
+
+- `id` (String) The ID of the Azure Devops integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`
@@ -293,6 +297,10 @@ Required:
 
 - `namespace` (String) The GitHub organization / user the repository belongs to
 
+Optional:
+
+- `id` (String) The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--gitlab"></a>
 ### Nested Schema for `gitlab`
@@ -300,6 +308,10 @@ Required:
 Required:
 
 - `namespace` (String) The GitLab namespace containing the repository
+
+Optional:
+
+- `id` (String) The ID of the Gitlab integration. If not specified, the default integration will be used.
 
 
 <a id="nestedblock--kubernetes"></a>

@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -15,10 +14,10 @@ func TestSpacesData(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{{
 			// Should find at least the legacy and root spaces.
-			Config: fmt.Sprintf(`
+			Config: `
 				data "spacelift_spaces" "test" {
 				}
-			`),
+			`,
 			Check: resource.ComposeTestCheckFunc(
 				Resource(datasourceName, Attribute("id", IsNotEmpty())),
 			),

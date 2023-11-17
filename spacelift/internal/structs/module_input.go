@@ -11,6 +11,7 @@ type ModuleCreateInput struct {
 	Repository        graphql.String    `json:"repository"`
 	TerraformProvider *graphql.String   `json:"terraformProvider"`
 	Space             *graphql.String   `json:"space"`
+	VCSIntegrationID  *graphql.ID       `json:"vcsIntegrationId"`
 	WorkflowTool      *graphql.String   `json:"workflowTool"`
 }
 
@@ -43,6 +44,7 @@ type ModuleUpdateV2Input struct {
 	Repository          graphql.String    `json:"repository"`
 	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
 	Space               *graphql.String   `json:"space"`
+	VCSIntegrationID    *graphql.ID       `json:"vcsIntegrationId"`
 	WorkerPool          *graphql.ID       `json:"workerPool"`
 	WorkflowTool        *graphql.String   `json:"workflowTool"`
 }
