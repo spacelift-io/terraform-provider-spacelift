@@ -122,6 +122,11 @@ func resourceModule() *schema.Resource {
 							Description:      "The GitHub organization / user the repository belongs to",
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.",
+						},
 					},
 				},
 			},
@@ -329,40 +334,44 @@ func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace *graphql.String) {
+func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace *graphql.String, vcsIntegrationID *graphql.ID) {
 	provider = graphql.NewString("GITHUB")
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
 		namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
-		provider = graphql.NewString(structs.VCSProviderAzureDevOps)
+		provider = graphql.NewString(graphql.String(structs.VCSProviderAzureDevOps))
 
 		return
 	}
 
 	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
 		namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
-		provider = graphql.NewString(structs.VCSProviderBitbucketCloud)
+		provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketCloud))
 
 		return
 	}
 
 	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
 		namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
-		provider = graphql.NewString(structs.VCSProviderBitbucketDatacenter)
+		provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketDatacenter))
 
 		return
 	}
 
 	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
+		ghEnterpriseSettings := githubEnterprise[0].(map[string]interface{})
+		if id, ok := ghEnterpriseSettings["id"]; ok {
+			vcsIntegrationID = graphql.NewID(id)
+		}
 		namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
-		provider = graphql.NewString(structs.VCSProviderGitHubEnterprise)
+		provider = graphql.NewString(graphql.String(structs.VCSProviderGitHubEnterprise))
 
 		return
 	}
 
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
 		namespace = toOptionalString(gitlab[0].(map[string]interface{})["namespace"])
-		provider = graphql.NewString(structs.VCSProviderGitlab)
+		provider = graphql.NewString(graphql.String(structs.VCSProviderGitlab))
 
 		return
 	}
@@ -375,7 +384,7 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		UpdateInput: moduleUpdateInput(d),
 		Repository:  toString(d.Get("repository")),
 	}
-	ret.Provider, ret.Namespace = getSourceData(d)
+	ret.Provider, ret.Namespace, ret.VCSIntegrationID = getSourceData(d)
 
 	name, ok := d.GetOk("name")
 	if ok {
@@ -454,7 +463,7 @@ func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
 		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 		Repository:          toString(d.Get("repository")),
 	}
-	ret.Provider, ret.Namespace = getSourceData(d)
+	ret.Provider, ret.Namespace, ret.VCSIntegrationID = getSourceData(d)
 
 	description, ok := d.GetOk("description")
 	if ok {

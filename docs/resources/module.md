@@ -97,6 +97,10 @@ Required:
 
 - `namespace` (String) The GitHub organization / user the repository belongs to
 
+Optional:
+
+- `id` (String) The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--gitlab"></a>
 ### Nested Schema for `gitlab`
