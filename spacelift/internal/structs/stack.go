@@ -51,13 +51,16 @@ type Stack struct {
 	ProjectRoot            *string       `graphql:"projectRoot"`
 	AdditionalProjectGlobs []string      `graphql:"additionalProjectGlobs"`
 	ProtectFromDeletion    bool          `graphql:"protectFromDeletion"`
-	Provider               string        `graphql:"provider"`
+	Provider               VCSProvider   `graphql:"provider"`
 	Repository             string        `graphql:"repository"`
 	RepositoryURL          *string       `graphql:"repositoryURL"`
 	RunnerImage            *string       `graphql:"runnerImage"`
 	Space                  string        `graphql:"space"`
 	TerraformVersion       *string       `graphql:"terraformVersion"`
-	VendorConfig           struct {
+	VCSIntegration         *struct {
+		ID string `graphql:"id"`
+	} `graphql:"vcsIntegration"`
+	VendorConfig struct {
 		Typename string `graphql:"__typename"`
 		Ansible  struct {
 			Playbook string `graphql:"playbook"`
@@ -131,15 +134,30 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
-		return "azure_devops", singleKeyMap("project", s.Namespace)
+		return "azure_devops", map[string]interface{}{
+			"id":      s.VCSIntegration.ID,
+			"project": s.Namespace,
+		}
 	case VCSProviderBitbucketCloud:
-		return "bitbucket_cloud", singleKeyMap("namespace", s.Namespace)
+		return "bitbucket_cloud", map[string]interface{}{
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
+		}
 	case VCSProviderBitbucketDatacenter:
-		return "bitbucket_datacenter", singleKeyMap("namespace", s.Namespace)
+		return "bitbucket_datacenter", map[string]interface{}{
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
+		}
 	case VCSProviderGitHubEnterprise:
-		return "github_enterprise", singleKeyMap("namespace", s.Namespace)
+		return "github_enterprise", map[string]interface{}{
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
+		}
 	case VCSProviderGitlab:
-		return "gitlab", singleKeyMap("namespace", s.Namespace)
+		return "gitlab", map[string]interface{}{
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
+		}
 	case VCSProviderRawGit:
 		return "raw_git", map[string]interface{}{
 			"namespace": s.Namespace,

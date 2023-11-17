@@ -103,9 +103,14 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Azure Devops VCS integration",
+							Computed:    true,
+						},
 						"project": {
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 							Description: "The name of the Azure DevOps project",
 						},
 					},
@@ -152,10 +157,15 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Bitbucket Cloud integration",
+							Computed:    true,
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "Bitbucket Cloud namespace of the stack's repository",
-							Required:    true,
+							Computed:    true,
 						},
 					},
 				},
@@ -166,10 +176,15 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Bitbucket Datacenter integration",
+							Computed:    true,
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "Bitbucket Datacenter namespace of the stack's repository",
-							Required:    true,
+							Computed:    true,
 						},
 					},
 				},
@@ -219,10 +234,15 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the GitHub Enterprise integration",
+							Computed:    true,
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "GitHub Enterprise namespace of the stack's repository",
-							Required:    true,
+							Computed:    true,
 						},
 					},
 				},
@@ -233,6 +253,11 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Gitlab integration",
+							Computed:    true,
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "GitLab namespace of the stack's repository",

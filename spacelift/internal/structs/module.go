@@ -18,12 +18,15 @@ type Module struct {
 	Namespace           string       `graphql:"namespace"`
 	ProjectRoot         *string      `graphql:"projectRoot"`
 	ProtectFromDeletion bool         `graphql:"protectFromDeletion"`
-	Provider            string       `graphql:"provider"`
+	Provider            VCSProvider  `graphql:"provider"`
 	Repository          string       `graphql:"repository"`
 	SharedAccounts      []string     `graphql:"sharedAccounts"`
 	Space               string       `graphql:"space"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
-	WorkerPool          *struct {
+	VCSIntegration      *struct {
+		ID string `graphql:"id"`
+	} `graphql:"vcsIntegration"`
+	WorkerPool *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
 	WorkflowTool *string `graphql:"workflowTool"`
@@ -36,18 +39,23 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 
 	switch m.Provider {
 	case VCSProviderAzureDevOps:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["project"] = m.Namespace
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "bitbucket_cloud"
 	case VCSProviderBitbucketDatacenter:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "gitlab"
 	}
