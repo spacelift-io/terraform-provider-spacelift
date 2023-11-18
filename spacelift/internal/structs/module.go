@@ -61,7 +61,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		vcsSettings["name"] = m.VCSIntegration.Name
 		vcsSettings["description"] = m.VCSIntegration.Description
 		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
-		vcsSettings["labels"] = m.VCSIntegration.Labels
+		vcsSettings["labels"] = populateLabels(m.VCSIntegration.Labels)
 		vcsSettings["space_id"] = m.VCSIntegration.Space.ID
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
@@ -76,4 +76,14 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 	}
 
 	return nil
+}
+
+func populateLabels(labels []string) *schema.Set {
+	retVal := schema.NewSet(schema.HashString, []interface{}{})
+
+	for _, label := range labels {
+		retVal.Add(label)
+	}
+
+	return retVal
 }
