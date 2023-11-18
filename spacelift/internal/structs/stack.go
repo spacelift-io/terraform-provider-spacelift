@@ -141,7 +141,15 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
-		return "azure_devops", singleKeyMap("project", s.Namespace)
+		return "azure_devops", map[string]interface{}{
+			"id":          s.VCSIntegration.ID,
+			"name":        s.VCSIntegration.Name,
+			"description": s.VCSIntegration.Description,
+			"is_default":  s.VCSIntegration.IsDefault,
+			"labels":      s.VCSIntegration.Labels,
+			"space_id":    s.VCSIntegration.Space.ID,
+			"project":     s.Namespace,
+		}
 	case VCSProviderBitbucketCloud:
 		return "bitbucket_cloud", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderBitbucketDatacenter:

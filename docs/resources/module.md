@@ -73,6 +73,18 @@ Required:
 
 - `project` (String) The name of the Azure DevOps project
 
+Optional:
+
+- `id` (String) ID of the Azure Devops integration. If not specified, the default integration will be used.
+
+Read-Only:
+
+- `description` (String) Description of the Azure Devops integration
+- `is_default` (Boolean) Indicates whether this is the default Azure Devops integration
+- `labels` (Set of String) Labels of the Azure Devops integration
+- `name` (String) Name of the Azure Devops integration
+- `space_id` (String) ID (slug) of the space the Azure Devops integration is in
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`

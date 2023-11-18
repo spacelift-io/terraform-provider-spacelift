@@ -103,6 +103,37 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Azure Devops project",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "Name of the Azure Devops project",
+							Computed:    true,
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Description: "Description of the Azure Devops project",
+							Computed:    true,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether this is the default Azure Devops project",
+							Computed:    true,
+						},
+						"labels": {
+							Type:        schema.TypeSet,
+							Description: "Labels of the Azure Devops project",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Computed:    true,
+						},
+						"space_id": {
+							Type:        schema.TypeString,
+							Description: "ID (slug) of the space the Azure Devops project is in",
+							Computed:    true,
+						},
 						"project": {
 							Type:        schema.TypeString,
 							Required:    true,
@@ -219,11 +250,6 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"namespace": {
-							Type:        schema.TypeString,
-							Description: "GitHub Enterprise namespace of the stack's repository",
-							Computed:    true,
-						},
 						"id": {
 							Type:        schema.TypeString,
 							Description: "ID of the GitHub Enterprise application",
@@ -253,6 +279,11 @@ func dataStack() *schema.Resource {
 						"space_id": {
 							Type:        schema.TypeString,
 							Description: "ID (slug) of the space the GitHub Enterprise application is in",
+							Computed:    true,
+						},
+						"namespace": {
+							Type:        schema.TypeString,
+							Description: "GitHub Enterprise namespace of the stack's repository",
 							Computed:    true,
 						},
 					},
