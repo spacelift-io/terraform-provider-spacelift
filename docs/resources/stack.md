@@ -257,6 +257,10 @@ Required:
 
 - `project` (String) The name of the Azure DevOps project
 
+Optional:
+
+- `id` (String) The ID of the Azure Devops integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`

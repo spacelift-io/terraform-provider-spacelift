@@ -9,13 +9,19 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-var azureDevopsIntegrationFields = struct {
-	OrganizationURL string
-	WebhookPassword string
-}{
-	OrganizationURL: "organization_url",
-	WebhookPassword: "webhook_password",
-}
+const (
+	azureDevopsID              = "id"
+	azureDevopsName            = "name"
+	azureDevopsDescription     = "description"
+	azureDevopsIsDefault       = "is_default"
+	azureDevopsLabels          = "labels"
+	azureDevopsSpaceID         = "space_id"
+	azureDevopsOrganizationURL = "organization_url"
+	azureDevopsWebhookPassword = "webhook_password"
+	azureDevopsWebhookURL      = "webhook_url"
+
+	defaultAzureDevopsIntegrationID = "azure-devops-repo-default-integration"
+)
 
 func dataAzureDevopsIntegration() *schema.Resource {
 	return &schema.Resource{
@@ -24,14 +30,52 @@ func dataAzureDevopsIntegration() *schema.Resource {
 		ReadContext: dataAzureDevopsIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			azureDevopsIntegrationFields.OrganizationURL: {
+			azureDevopsID: {
+				Type:        schema.TypeString,
+				Description: "Azure DevOps integration id. If not provided, the default integration will be returned",
+				Optional:    true,
+			},
+			azureDevopsName: {
+				Type:        schema.TypeString,
+				Description: "Azure DevOps integration name",
+				Computed:    true,
+			},
+			azureDevopsDescription: {
+				Type:        schema.TypeString,
+				Description: "Azure DevOps integration description",
+				Computed:    true,
+			},
+			azureDevopsIsDefault: {
+				Type:        schema.TypeBool,
+				Description: "Azure DevOps integration is default",
+				Computed:    true,
+			},
+			azureDevopsLabels: {
+				Type:        schema.TypeList,
+				Description: "Azure DevOps integration labels",
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			azureDevopsSpaceID: {
+				Type:        schema.TypeString,
+				Description: "Azure DevOps integration space id",
+				Computed:    true,
+			},
+			azureDevopsOrganizationURL: {
 				Type:        schema.TypeString,
 				Description: "Azure DevOps integration organization url",
 				Computed:    true,
 			},
-			azureDevopsIntegrationFields.WebhookPassword: {
+			azureDevopsWebhookPassword: {
 				Type:        schema.TypeString,
 				Description: "Azure DevOps integration webhook password",
+				Computed:    true,
+			},
+			azureDevopsWebhookURL: {
+				Type:        schema.TypeString,
+				Description: "Azure DevOps integration webhook url",
 				Computed:    true,
 			},
 		},
@@ -41,12 +85,27 @@ func dataAzureDevopsIntegration() *schema.Resource {
 func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		AzureDevOpsIntegration *struct {
-			OrganizationURL string `graphql:"organizationURL"`
-			WebhookPassword string `graphql:"webhookPassword"`
-		} `graphql:"azureDevOpsRepoIntegration"`
+			ID          string `graphql:"id"`
+			Name        string `graphql:"name"`
+			Description string `graphql:"description"`
+			IsDefault   bool   `graphql:"isDefault"`
+			Space       struct {
+				ID string `graphql:"id"`
+			} `graphql:"space"`
+			Labels          []string `graphql:"labels"`
+			OrganizationURL string   `graphql:"organizationURL"`
+			WebhookPassword string   `graphql:"webhookPassword"`
+			WebhookURL      string   `graphql:"webhookUrl"`
+		} `graphql:"azureDevOpsRepoIntegration(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "AzureDevOpsIntegrationRead", &query, map[string]interface{}{}); err != nil {
+	variables := map[string]interface{}{"id": defaultAzureDevopsIntegrationID}
+
+	if id, ok := d.GetOk(azureDevopsID); ok && id != "" {
+		variables["id"] = toID(id)
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "AzureDevOpsIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for azure devops integration: %v", err)
 	}
 
@@ -55,9 +114,22 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("azure devops integration not found")
 	}
 
-	d.SetId("spacelift_azure_devops_integration_id") // TF expects id to be set otherwise it will fail
-	d.Set(azureDevopsIntegrationFields.OrganizationURL, azureDevopsIntegration.OrganizationURL)
-	d.Set(azureDevopsIntegrationFields.WebhookPassword, azureDevopsIntegration.WebhookPassword)
+	d.SetId(azureDevopsIntegration.ID)
+	d.Set(azureDevopsID, azureDevopsIntegration.ID)
+	d.Set(azureDevopsName, azureDevopsIntegration.Name)
+	d.Set(azureDevopsDescription, azureDevopsIntegration.Description)
+	d.Set(azureDevopsIsDefault, azureDevopsIntegration.IsDefault)
+	d.Set(azureDevopsSpaceID, azureDevopsIntegration.Space.ID)
+	d.Set(azureDevopsOrganizationURL, azureDevopsIntegration.OrganizationURL)
+	d.Set(azureDevopsWebhookPassword, azureDevopsIntegration.WebhookPassword)
+	d.Set(azureDevopsWebhookURL, azureDevopsIntegration.WebhookURL)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range azureDevopsIntegration.Labels {
+		labels.Add(label)
+	}
+
+	d.Set(azureDevopsLabels, labels)
 
 	return nil
 }

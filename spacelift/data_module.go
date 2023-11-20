@@ -41,6 +41,37 @@ func dataModule() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Azure Devops integration",
+							Computed:    true,
+						},
+						"name": {
+							Type:        schema.TypeString,
+							Description: "Name of the Azure Devops integration",
+							Computed:    true,
+						},
+						"description": {
+							Type:        schema.TypeString,
+							Description: "Description of the Azure Devops integration",
+							Computed:    true,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether this is the default Azure Devops integration",
+							Computed:    true,
+						},
+						"labels": {
+							Type:        schema.TypeSet,
+							Description: "Labels of the Azure Devops integration",
+							Elem:        &schema.Schema{Type: schema.TypeString},
+							Computed:    true,
+						},
+						"space_id": {
+							Type:        schema.TypeString,
+							Description: "ID (slug) of the space the Azure Devops integration is in",
+							Computed:    true,
+						},
 						"project": {
 							Type:        schema.TypeString,
 							Required:    true,

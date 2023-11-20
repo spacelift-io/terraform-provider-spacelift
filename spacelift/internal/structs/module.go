@@ -47,6 +47,12 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 
 	switch m.Provider {
 	case VCSProviderAzureDevOps:
+		vcsSettings["id"] = m.VCSIntegration.ID
+		vcsSettings["name"] = m.VCSIntegration.Name
+		vcsSettings["description"] = m.VCSIntegration.Description
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		vcsSettings["labels"] = populateLabels(m.VCSIntegration.Labels)
+		vcsSettings["space_id"] = m.VCSIntegration.Space.ID
 		vcsSettings["project"] = m.Namespace
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
@@ -56,13 +62,13 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:
-		vcsSettings["namespace"] = m.Namespace
 		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["name"] = m.VCSIntegration.Name
 		vcsSettings["description"] = m.VCSIntegration.Description
 		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
 		vcsSettings["labels"] = populateLabels(m.VCSIntegration.Labels)
 		vcsSettings["space_id"] = m.VCSIntegration.Space.ID
+		vcsSettings["namespace"] = m.Namespace
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
 		vcsSettings["namespace"] = m.Namespace

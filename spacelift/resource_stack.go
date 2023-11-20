@@ -137,6 +137,11 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the Azure Devops integration. If not specified, the default integration will be used.",
+						},
 						"project": {
 							Type:             schema.TypeString,
 							Required:         true,
@@ -731,6 +736,10 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret.Provider = graphql.NewString("GITHUB")
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
+		azureSettings := azureDevOps[0].(map[string]interface{})
+		if id, ok := azureSettings["id"]; ok {
+			ret.VCSIntegrationID = graphql.NewID(id.(string))
+		}
 		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderAzureDevOps))
 	}
