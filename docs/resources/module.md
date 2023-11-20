@@ -121,6 +121,18 @@ Required:
 
 - `namespace` (String) The GitLab namespace containing the repository
 
+Optional:
+
+- `id` (String) ID of the Gitlab integration. If not specified, the default integration will be used.
+
+Read-Only:
+
+- `description` (String) Description of the Gitlab integration
+- `is_default` (Boolean) Indicates whether this is the default Gitlab integration
+- `labels` (Set of String) Labels of the Gitlab integration
+- `name` (String) Name of the Gitlab integration
+- `space_id` (String) ID (slug) of the space the Gitlab integration is in
+
 ## Import
 
 Import is supported using the following syntax:

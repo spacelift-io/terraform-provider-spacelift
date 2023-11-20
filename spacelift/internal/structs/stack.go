@@ -165,7 +165,15 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 			"space_id":    s.VCSIntegration.Space.ID,
 		}
 	case VCSProviderGitlab:
-		return "gitlab", singleKeyMap("namespace", s.Namespace)
+		return "gitlab", map[string]interface{}{
+			"id":          s.VCSIntegration.ID,
+			"name":        s.VCSIntegration.Name,
+			"namespace":   s.Namespace,
+			"description": s.VCSIntegration.Description,
+			"is_default":  s.VCSIntegration.IsDefault,
+			"labels":      s.VCSIntegration.Labels,
+			"space_id":    s.VCSIntegration.Space.ID,
+		}
 	case VCSProviderRawGit:
 		return "raw_git", map[string]interface{}{
 			"namespace": s.Namespace,

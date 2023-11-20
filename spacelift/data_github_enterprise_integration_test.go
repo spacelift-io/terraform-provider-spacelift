@@ -10,7 +10,7 @@ import (
 )
 
 func TestGithubEnterpriseIntegrationData(t *testing.T) {
-	t.Run("with the ID specified", func(t *testing.T) {
+	t.Run("without the ID specified", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_github_enterprise_integration" "test" {}
@@ -37,7 +37,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 			`,
 			Check: Resource(
 				"data.spacelift_github_enterprise_integration.test",
-				Attribute("id", IsNotEmpty()),
+				Attribute("id", Equals("github-enterprise-default-integration")),
 				Attribute("name", IsNotEmpty()),
 				Attribute("is_default", Equals("true")),
 				Attribute("space_id", IsNotEmpty()),
