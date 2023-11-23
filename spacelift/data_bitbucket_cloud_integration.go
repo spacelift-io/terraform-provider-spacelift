@@ -10,9 +10,11 @@ import (
 )
 
 var bitbucketCloudFields = struct {
-	Username string
+	Username   string
+	WebhookURL string
 }{
-	Username: "username",
+	Username:   "username",
+	WebhookURL: "webhook_url",
 }
 
 func dataBitbucketCloudIntegration() *schema.Resource {
@@ -27,6 +29,11 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 				Description: "Bitbucket Cloud username",
 				Computed:    true,
 			},
+			bitbucketCloudFields.WebhookURL: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud integration webhook URL",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -34,7 +41,8 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		BitbucketCloudIntegration *struct {
-			Username string `graphql:"username"`
+			Username   string `graphql:"username"`
+			WebhookURL string `graphql:"webhookUrl"`
 		} `graphql:"bitbucketCloudIntegration"`
 	}
 
@@ -49,6 +57,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 
 	d.SetId("spacelift_bitbucket_cloud_integration_id") // TF expects id to be set otherwise it will fail
 	d.Set(bitbucketCloudFields.Username, bitbucketCloudIntegration.Username)
+	d.Set(bitbucketCloudFields.WebhookURL, bitbucketCloudIntegration.WebhookURL)
 
 	return nil
 }
