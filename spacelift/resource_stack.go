@@ -379,6 +379,12 @@ func resourceStack() *schema.Resource {
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Optional:    true,
 			},
+			"additional_project_globs": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Project globs is an optional list of paths to track changes of in addition to the project root.",
+			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
 				Description: "Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.",
@@ -775,6 +781,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if projectRoot, ok := d.GetOk("project_root"); ok {
 		ret.ProjectRoot = toOptionalString(projectRoot)
+	}
+
+	if globsSet, ok := d.Get("additional_project_globs").(*schema.Set); ok {
+		var gbs []graphql.String
+		for _, gb := range globsSet.List() {
+			gbs = append(gbs, graphql.String(gb.(string)))
+		}
+		ret.AddditionalProjectGlobs = &gbs
 	}
 
 	if runnerImage, ok := d.GetOk("runner_image"); ok {

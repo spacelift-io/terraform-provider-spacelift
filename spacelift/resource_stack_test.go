@@ -20,29 +20,30 @@ func TestStackResource(t *testing.T) {
 		config := func(description string, protectFromDeletion bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
-					administrative        = true
-					after_apply           = ["ls -la", "rm -rf /"]
-					after_destroy         = ["echo 'after_destroy'"]
-					after_init            = ["terraform fmt -check", "tflint"]
-					after_perform         = ["echo 'after_perform'"]
-					after_plan            = ["echo 'after_plan'"]
-					after_run             = ["echo 'after_run'"]
-					autodeploy            = true
-					autoretry             = false
-					before_apply          = ["ls -la", "rm -rf /"]
-					before_destroy        = ["echo 'before_destroy'"]
-					before_init           = ["terraform fmt -check", "tflint"]
-					before_perform        = ["echo 'before_perform'"]
-					before_plan           = ["echo 'before_plan'"]
-					branch                = "master"
-					description           = "%s"
-					import_state          = "{}"
-					labels                = ["one", "two"]
-					name                  = "Provider test stack %s"
-					project_root          = "root"
-					protect_from_deletion = %t
-					repository            = "demo"
-					runner_image          = "custom_image:runner"
+					administrative           = true
+					after_apply              = ["ls -la", "rm -rf /"]
+					after_destroy            = ["echo 'after_destroy'"]
+					after_init               = ["terraform fmt -check", "tflint"]
+					after_perform            = ["echo 'after_perform'"]
+					after_plan               = ["echo 'after_plan'"]
+					after_run                = ["echo 'after_run'"]
+					autodeploy               = true
+					autoretry                = false
+					before_apply             = ["ls -la", "rm -rf /"]
+					before_destroy           = ["echo 'before_destroy'"]
+					before_init              = ["terraform fmt -check", "tflint"]
+					before_perform           = ["echo 'before_perform'"]
+					before_plan              = ["echo 'before_plan'"]
+					branch                   = "master"
+					description              = "%s"
+					import_state             = "{}"
+					labels                   = ["one", "two"]
+					name                     = "Provider test stack %s"
+					project_root             = "root"
+					additional_project_globs = ["/bacon", "/bacon/eggs/*"]
+					protect_from_deletion    = %t
+					repository               = "demo"
+					runner_image             = "custom_image:runner"
 				}
 			`, description, randomID, protectFromDeletion)
 		}
@@ -90,6 +91,7 @@ func TestStackResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
+					SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),

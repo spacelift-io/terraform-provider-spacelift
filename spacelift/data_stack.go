@@ -285,6 +285,12 @@ func dataStack() *schema.Resource {
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Computed:    true,
 			},
+			"additional_project_globs": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Project globs is an optional list of paths to track changes of in addition to the project root.",
+			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
 				Description: "Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.",
@@ -450,6 +456,12 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	globs := schema.NewSet(schema.HashString, []interface{}{})
+	for _, gb := range stack.AdditionalProjectGlobs {
+		globs.Add(gb)
+	}
+	d.Set("additional_project_globs", globs)
 
 	if iacKey, iacSettings := stack.IaCSettings(); iacKey != "" {
 		if err := d.Set(iacKey, []interface{}{iacSettings}); err != nil {

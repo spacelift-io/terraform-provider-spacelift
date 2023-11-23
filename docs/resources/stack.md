@@ -192,6 +192,7 @@ resource "spacelift_stack" "ansible-stack" {
 
 ### Optional
 
+- `additional_project_globs` (Set of String) Project globs is an optional list of paths to track changes of in addition to the project root.
 - `administrative` (Boolean) Indicates whether this stack can manage others. Defaults to `false`.
 - `after_apply` (List of String) List of after-apply scripts
 - `after_destroy` (List of String) List of after-destroy scripts

@@ -127,6 +127,7 @@ Required:
 
 Read-Only:
 
+- `additional_project_globs` (Set of String)
 - `administrative` (Boolean)
 - `after_apply` (List of String)
 - `after_destroy` (List of String)
