@@ -9,13 +9,24 @@ import (
 )
 
 func TestBitbucketCloudIntegrationData(t *testing.T) {
-	testSteps(t, []resource.TestStep{{
-		Config: `
+	testSteps(t, []resource.TestStep{
+		{
+			Config: `
 			data "spacelift_bitbucket_cloud_integration" "test" {}
 		`,
-		Check: Resource(
-			"data.spacelift_bitbucket_cloud_integration.test",
-			Attribute("username", IsNotEmpty()),
-		),
-	}})
+			Check: Resource(
+				"data.spacelift_bitbucket_cloud_integration.test",
+				Attribute("username", IsNotEmpty()),
+			),
+		},
+		{
+			Config: `
+			data "spacelift_bitbucket_cloud_integration" "test" {}
+		`,
+			Check: Resource(
+				"data.spacelift_bitbucket_cloud_integration.test",
+				Attribute("webhook_url", IsNotEmpty()),
+			),
+		},
+	})
 }
