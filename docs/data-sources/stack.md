@@ -27,6 +27,7 @@ data "spacelift_stack" "k8s-core" {
 
 ### Optional
 
+- `additional_project_globs` (Set of String) Project globs is an optional list of paths to track changes of in addition to the project root.
 - `after_apply` (List of String) List of after-apply scripts
 - `after_destroy` (List of String) List of after-destroy scripts
 - `after_init` (List of String) List of after-init scripts

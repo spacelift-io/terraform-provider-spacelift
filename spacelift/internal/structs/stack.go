@@ -22,41 +22,42 @@ const StackConfigVendorKubernetes = "StackConfigVendorKubernetes"
 
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
-	ID                  string        `graphql:"id"`
-	Administrative      bool          `graphql:"administrative"`
-	AfterApply          []string      `graphql:"afterApply"`
-	AfterDestroy        []string      `graphql:"afterDestroy"`
-	AfterInit           []string      `graphql:"afterInit"`
-	AfterPerform        []string      `graphql:"afterPerform"`
-	AfterPlan           []string      `graphql:"afterPlan"`
-	AfterRun            []string      `graphql:"afterRun"`
-	Autodeploy          bool          `graphql:"autodeploy"`
-	Autoretry           bool          `graphql:"autoretry"`
-	BeforeApply         []string      `graphql:"beforeApply"`
-	BeforeDestroy       []string      `graphql:"beforeDestroy"`
-	BeforeInit          []string      `graphql:"beforeInit"`
-	BeforePerform       []string      `graphql:"beforePerform"`
-	BeforePlan          []string      `graphql:"beforePlan"`
-	Branch              string        `graphql:"branch"`
-	Deleting            bool          `graphql:"deleting"`
-	Description         *string       `graphql:"description"`
-	IsDisabled          bool          `graphql:"isDisabled"`
-	GitHubActionDeploy  bool          `graphql:"githubActionDeploy"`
-	Integrations        *Integrations `graphql:"integrations"`
-	Labels              []string      `graphql:"labels"`
-	LocalPreviewEnabled bool          `graphql:"localPreviewEnabled"`
-	ManagesStateFile    bool          `graphql:"managesStateFile"`
-	Name                string        `graphql:"name"`
-	Namespace           string        `graphql:"namespace"`
-	ProjectRoot         *string       `graphql:"projectRoot"`
-	ProtectFromDeletion bool          `graphql:"protectFromDeletion"`
-	Provider            string        `graphql:"provider"`
-	Repository          string        `graphql:"repository"`
-	RepositoryURL       *string       `graphql:"repositoryURL"`
-	RunnerImage         *string       `graphql:"runnerImage"`
-	Space               string        `graphql:"space"`
-	TerraformVersion    *string       `graphql:"terraformVersion"`
-	VendorConfig        struct {
+	ID                     string        `graphql:"id"`
+	Administrative         bool          `graphql:"administrative"`
+	AfterApply             []string      `graphql:"afterApply"`
+	AfterDestroy           []string      `graphql:"afterDestroy"`
+	AfterInit              []string      `graphql:"afterInit"`
+	AfterPerform           []string      `graphql:"afterPerform"`
+	AfterPlan              []string      `graphql:"afterPlan"`
+	AfterRun               []string      `graphql:"afterRun"`
+	Autodeploy             bool          `graphql:"autodeploy"`
+	Autoretry              bool          `graphql:"autoretry"`
+	BeforeApply            []string      `graphql:"beforeApply"`
+	BeforeDestroy          []string      `graphql:"beforeDestroy"`
+	BeforeInit             []string      `graphql:"beforeInit"`
+	BeforePerform          []string      `graphql:"beforePerform"`
+	BeforePlan             []string      `graphql:"beforePlan"`
+	Branch                 string        `graphql:"branch"`
+	Deleting               bool          `graphql:"deleting"`
+	Description            *string       `graphql:"description"`
+	IsDisabled             bool          `graphql:"isDisabled"`
+	GitHubActionDeploy     bool          `graphql:"githubActionDeploy"`
+	Integrations           *Integrations `graphql:"integrations"`
+	Labels                 []string      `graphql:"labels"`
+	LocalPreviewEnabled    bool          `graphql:"localPreviewEnabled"`
+	ManagesStateFile       bool          `graphql:"managesStateFile"`
+	Name                   string        `graphql:"name"`
+	Namespace              string        `graphql:"namespace"`
+	ProjectRoot            *string       `graphql:"projectRoot"`
+	AdditionalProjectGlobs []string      `graphql:"additionalProjectGlobs"`
+	ProtectFromDeletion    bool          `graphql:"protectFromDeletion"`
+	Provider               string        `graphql:"provider"`
+	Repository             string        `graphql:"repository"`
+	RepositoryURL          *string       `graphql:"repositoryURL"`
+	RunnerImage            *string       `graphql:"runnerImage"`
+	Space                  string        `graphql:"space"`
+	TerraformVersion       *string       `graphql:"terraformVersion"`
+	VendorConfig           struct {
 		Typename string `graphql:"__typename"`
 		Ansible  struct {
 			Playbook string `graphql:"playbook"`
@@ -189,6 +190,12 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	globs := schema.NewSet(schema.HashString, []interface{}{})
+	for _, gb := range stack.AdditionalProjectGlobs {
+		globs.Add(gb)
+	}
+	d.Set("additional_project_globs", globs)
 
 	switch stack.VendorConfig.Typename {
 	case StackConfigVendorAnsible:
