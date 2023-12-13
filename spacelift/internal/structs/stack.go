@@ -58,15 +58,7 @@ type Stack struct {
 	Space                  string        `graphql:"space"`
 	TerraformVersion       *string       `graphql:"terraformVersion"`
 	VCSIntegration         *struct {
-		ID          string   `graphql:"id"`
-		Description string   `graphql:"description"`
-		IsDefault   bool     `graphql:"isDefault"`
-		Labels      []string `graphql:"labels"`
-		Name        string   `graphql:"name"`
-		Provider    string   `graphql:"provider"`
-		Space       struct {
-			ID string `graphql:"id"`
-		} `graphql:"space"`
+		ID string `graphql:"id"`
 	} `graphql:"vcsIntegration"`
 	VendorConfig struct {
 		Typename string `graphql:"__typename"`
@@ -143,13 +135,8 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
 		return "azure_devops", map[string]interface{}{
-			"id":          s.VCSIntegration.ID,
-			"name":        s.VCSIntegration.Name,
-			"description": s.VCSIntegration.Description,
-			"is_default":  s.VCSIntegration.IsDefault,
-			"labels":      s.VCSIntegration.Labels,
-			"space_id":    s.VCSIntegration.Space.ID,
-			"project":     s.Namespace,
+			"id":      s.VCSIntegration.ID,
+			"project": s.Namespace,
 		}
 	case VCSProviderBitbucketCloud:
 		return "bitbucket_cloud", singleKeyMap("namespace", s.Namespace)
@@ -157,23 +144,13 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		return "bitbucket_datacenter", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderGitHubEnterprise:
 		return "github_enterprise", map[string]interface{}{
-			"id":          s.VCSIntegration.ID,
-			"name":        s.VCSIntegration.Name,
-			"namespace":   s.Namespace,
-			"description": s.VCSIntegration.Description,
-			"is_default":  s.VCSIntegration.IsDefault,
-			"labels":      s.VCSIntegration.Labels,
-			"space_id":    s.VCSIntegration.Space.ID,
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
 		}
 	case VCSProviderGitlab:
 		return "gitlab", map[string]interface{}{
-			"id":          s.VCSIntegration.ID,
-			"name":        s.VCSIntegration.Name,
-			"namespace":   s.Namespace,
-			"description": s.VCSIntegration.Description,
-			"is_default":  s.VCSIntegration.IsDefault,
-			"labels":      s.VCSIntegration.Labels,
-			"space_id":    s.VCSIntegration.Space.ID,
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
 		}
 	case VCSProviderRawGit:
 		return "raw_git", map[string]interface{}{
