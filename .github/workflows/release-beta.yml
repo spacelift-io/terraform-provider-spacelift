@@ -7,6 +7,9 @@ on:
       providerType:
         description: 'Provider type'
         required: true
+      ref:
+          description: 'The branch, tag or SHA to use'
+          required: true
 
 jobs:
   goreleaser:
@@ -21,6 +24,8 @@ jobs:
           exit 1
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
 
       - name: Unshallow
         run: git fetch --prune --unshallow
