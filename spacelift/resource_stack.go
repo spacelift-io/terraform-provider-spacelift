@@ -748,7 +748,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
 		azureSettings := azureDevOps[0].(map[string]interface{})
-		if id, ok := azureSettings["id"]; ok {
+		if id, ok := azureSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id.(string))
 		}
 		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
@@ -767,7 +767,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
 		ghEnterpriseSettings := githubEnterprise[0].(map[string]interface{})
-		if id, ok := ghEnterpriseSettings["id"]; ok {
+		if id, ok := ghEnterpriseSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id)
 		}
 		ret.Namespace = toOptionalString(ghEnterpriseSettings["namespace"])
@@ -776,7 +776,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
 		gitlabSettings := gitlab[0].(map[string]interface{})
-		if id, ok := gitlabSettings["id"]; ok {
+		if id, ok := gitlabSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id.(string))
 		}
 		ret.Namespace = toOptionalString(gitlabSettings["namespace"])

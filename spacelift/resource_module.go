@@ -349,7 +349,7 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
 		azureSettings := azureDevOps[0].(map[string]interface{})
-		if id, ok := azureSettings["id"]; ok {
+		if id, ok := azureSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
 		namespace = toOptionalString(azureSettings["project"])
@@ -374,7 +374,7 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 
 	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
 		ghEnterpriseSettings := githubEnterprise[0].(map[string]interface{})
-		if id, ok := ghEnterpriseSettings["id"]; ok {
+		if id, ok := ghEnterpriseSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
 		namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
@@ -385,7 +385,7 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 
 	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
 		gitlabSettings := gitlab[0].(map[string]interface{})
-		if id, ok := gitlabSettings["id"]; ok {
+		if id, ok := gitlabSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id.(string))
 		}
 		namespace = toOptionalString(gitlabSettings["namespace"])
