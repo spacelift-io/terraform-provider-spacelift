@@ -1,0 +1,1 @@
+terraform import spacelift_saved_filter.my_filter $FILTER_ID

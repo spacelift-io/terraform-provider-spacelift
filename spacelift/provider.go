@@ -71,6 +71,8 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_current_space":                          dataCurrentSpace(),
 				"spacelift_current_stack":                          dataCurrentStack(),
 				"spacelift_drift_detection":                        dataDriftDetection(),
+				"spacelift_saved_filter":                           dataSavedFilter(),
+				"spacelift_saved_filters":                          dataSavedFilters(),
 				"spacelift_environment_variable":                   dataEnvironmentVariable(),
 				"spacelift_gcp_service_account":                    dataGCPServiceAccount(),
 				"spacelift_github_enterprise_integration":          dataGithubEnterpriseIntegration(),
@@ -127,6 +129,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack_destructor":             resourceStackDestructor(),
 				"spacelift_stack_aws_role":               resourceStackAWSRole(),           // deprecated
 				"spacelift_stack_gcp_service_account":    resourceStackGCPServiceAccount(), // deprecated
+				"spacelift_saved_filter":                 resourceSavedFilter(),
 				"spacelift_terraform_provider":           resourceTerraformProvider(),
 				"spacelift_user":                         resourceUser(),
 				"spacelift_vcs_agent_pool":               resourceVCSAgentPool(),
