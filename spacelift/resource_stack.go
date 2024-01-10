@@ -210,6 +210,11 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the Bitbucket Cloud integration. If not specified, the default integration will be used.",
+						},
 						"namespace": {
 							Type:             schema.TypeString,
 							Required:         true,
@@ -756,6 +761,10 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	}
 
 	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
+		bitbucketCloudSettings := bitbucketCloud[0].(map[string]interface{})
+		if id, ok := bitbucketCloudSettings["id"]; ok && id != nil && id.(string) != "" {
+			ret.VCSIntegrationID = graphql.NewID(id.(string))
+		}
 		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketCloud))
 	}
