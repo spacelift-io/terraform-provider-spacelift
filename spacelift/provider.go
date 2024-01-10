@@ -119,6 +119,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_space":                        resourceSpace(),
 				"spacelift_scheduled_task":               resourceScheduledTask(),
 				"spacelift_scheduled_delete_stack":       resourceScheduledDeleteStack(),
+				"spacelift_security_email":               resourceSecurityEmail(),
 				"spacelift_stack":                        resourceStack(),
 				"spacelift_stack_dependency":             resourceStackDependency(),
 				"spacelift_stack_dependency_reference":   resourceStackDependencyReference(),
