@@ -10,19 +10,3 @@ type BitbucketDatacenterIntegration struct {
 	WebhookSecret  string `graphql:"webhookSecret"`
 	WebhookURL     string `graphql:"webhookURL"`
 }
-
-var BitbucketDatacenterFields = struct {
-	UserFacingHost string
-	Username       string
-	AccessToken    string
-	APIHost        string
-	WebhookSecret  string
-	WebhookURL     string
-}{
-	UserFacingHost: "user_facing_host",
-	Username:       "username",
-	AccessToken:    "access_token",
-	APIHost:        "api_host",
-	WebhookSecret:  "webhook_secret",
-	WebhookURL:     "webhook_url",
-}

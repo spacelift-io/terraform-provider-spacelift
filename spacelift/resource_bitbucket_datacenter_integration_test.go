@@ -19,9 +19,9 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 		config := func(apiHost, userFacingHost, username, accessToken string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_bitbucket_datacenter_integration" "test" {
-					api_host        = "apiHost-%s"
-					user_facing_host = "facingHost-%s"
-					username = "user-%s"
+					api_host        = "%s"
+					user_facing_host = "%s"
+					username = "%s"
 					access_token = "access-%s"
 				}
 			`, apiHost, userFacingHost, username, accessToken)
@@ -29,29 +29,24 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config(randomChars, randomChars, randomChars, randomChars),
+				Config: config("https://bitbucket.com/new-"+randomChars, "https://bitbucket.com/new-"+randomChars, "userName", randomChars),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
-					Attribute("api_host", StartsWith("apiHost-")),
-					Attribute("user_facing_host", StartsWith("facingHost-")),
-					Attribute("username", StartsWith("user-")),
+					Attribute("api_host", StartsWith("https://bitbucket.com")),
+					Attribute("user_facing_host", StartsWith("https://bitbucket.com")),
+					Attribute("username", StartsWith("userName")),
 					Attribute("access_token", StartsWith("access-")),
 					Attribute("webhook_url", IsNotEmpty()),
 					Attribute("webhook_secret", IsNotEmpty()),
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				Config: config(randomChars, "newUserFacingHost", "newUsername", randomChars),
+				Config: config("https://bitbucket.com/new-"+randomChars, "https://bitbucket.com/new-"+randomChars, "newUserName", randomChars),
 				Check: Resource(
 					resourceName,
-					Attribute("user_facing_host", Equals("newUserFacingHost")),
-					Attribute("username", Equals("newUsername")),
+					Attribute("user_facing_host", StartsWith("https://bitbucket.com/new")),
+					Attribute("username", Equals("newUserName")),
 				),
 			},
 		})

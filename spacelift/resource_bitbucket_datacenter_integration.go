@@ -10,6 +10,15 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
+const (
+	bitbucketDatacenterUserFacingHost = "user_facing_host"
+	bitbucketDatacenterUsername       = "username"
+	bitbucketDatacenterAccessToken    = "access_token"
+	bitbucketDatacenterAPIHost        = "api_host"
+	bitbucketDatacenterWebhookSecret  = "webhook_secret"
+	bitbucketDatacenterWebhookURL     = "webhook_url"
+)
+
 func resourceBitbucketDatacenterIntegration() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_bitbucket_datacenter_integration` represents details of a bitbucket datacenter integration",
@@ -19,39 +28,35 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 		UpdateContext: resourceBitbucketDatacenterIntegrationUpdate,
 		DeleteContext: resourceBitbucketDatacenterIntegrationDelete,
 
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-
 		Schema: map[string]*schema.Schema{
-			structs.BitbucketDatacenterFields.APIHost: {
+			bitbucketDatacenterAPIHost: {
 				Type:        schema.TypeString,
 				Description: "The API host where requests will be sent",
 				Required:    true,
 			},
-			structs.BitbucketDatacenterFields.UserFacingHost: {
+			bitbucketDatacenterUserFacingHost: {
 				Type:        schema.TypeString,
 				Description: "User Facing Host which will be user for all user-facing URLs displayed in the Spacelift UI",
 				Required:    true,
 			},
-			structs.BitbucketDatacenterFields.Username: {
+			bitbucketDatacenterUsername: {
 				Type:        schema.TypeString,
 				Description: "Username which will be used to authenticate requests for cloning repositories",
 				Required:    true,
 			},
-			structs.BitbucketDatacenterFields.AccessToken: {
+			bitbucketDatacenterAccessToken: {
 				Type:        schema.TypeString,
 				Description: "User access token from Bitbucket",
 				Sensitive:   true,
 				Required:    true,
 			},
-			structs.BitbucketDatacenterFields.WebhookSecret: {
+			bitbucketDatacenterWebhookSecret: {
 				Type:        schema.TypeString,
 				Description: "Secret for webhooks originating from Bitbucket repositories",
 				Computed:    true,
 				Sensitive:   true,
 			},
-			structs.BitbucketDatacenterFields.WebhookURL: {
+			bitbucketDatacenterWebhookURL: {
 				Type:        schema.TypeString,
 				Description: "URL for webhooks originating from Bitbucket repositories",
 				Computed:    true,
@@ -66,10 +71,10 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 	}
 
 	variables := map[string]interface{}{
-		"apiHost":        toString(d.Get(structs.BitbucketDatacenterFields.APIHost)),
-		"userFacingHost": toString(d.Get(structs.BitbucketDatacenterFields.UserFacingHost)),
-		"username":       toString(d.Get(structs.BitbucketDatacenterFields.Username)),
-		"accessToken":    toString(d.Get(structs.BitbucketDatacenterFields.AccessToken)),
+		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
+		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
+		"username":       toString(d.Get(bitbucketDatacenterUsername)),
+		"accessToken":    toString(d.Get(bitbucketDatacenterAccessToken)),
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "BitbucketDatacenterIntegrationCreate", &mutation, variables); err != nil {
@@ -79,15 +84,6 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 	fillResults(d, &mutation.CreateBitbucketDatacenterIntegration)
 
 	return nil
-}
-
-func fillResults(d *schema.ResourceData, bitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration) {
-	d.SetId("spacelift_bitbucket_datacenter_integration_id") // same id as hardcoded in data-query
-	d.Set(structs.BitbucketDatacenterFields.APIHost, bitbucketDatacenterIntegration.APIHost)
-	d.Set(structs.BitbucketDatacenterFields.Username, bitbucketDatacenterIntegration.Username)
-	d.Set(structs.BitbucketDatacenterFields.UserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
-	d.Set(structs.BitbucketDatacenterFields.WebhookURL, bitbucketDatacenterIntegration.WebhookURL)
-	d.Set(structs.BitbucketDatacenterFields.WebhookSecret, bitbucketDatacenterIntegration.WebhookSecret)
 }
 
 func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -115,10 +111,10 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 	}
 
 	variables := map[string]interface{}{
-		"apiHost":        toString(d.Get(structs.BitbucketDatacenterFields.APIHost)),
-		"userFacingHost": toString(d.Get(structs.BitbucketDatacenterFields.UserFacingHost)),
-		"username":       toString(d.Get(structs.BitbucketDatacenterFields.Username)),
-		"accessToken":    toString(d.Get(structs.BitbucketDatacenterFields.AccessToken)),
+		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
+		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
+		"username":       toString(d.Get(bitbucketDatacenterUsername)),
+		"accessToken":    toString(d.Get(bitbucketDatacenterAccessToken)),
 	}
 
 	var ret diag.Diagnostics
@@ -146,4 +142,14 @@ func resourceBitbucketDatacenterIntegrationDelete(ctx context.Context, d *schema
 	d.SetId("")
 
 	return nil
+}
+
+func fillResults(d *schema.ResourceData, bitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration) {
+	d.SetId("spacelift_bitbucket_datacenter_integration_id")
+	d.Set(bitbucketDatacenterAPIHost, bitbucketDatacenterIntegration.APIHost)
+	d.Set(bitbucketDatacenterUsername, bitbucketDatacenterIntegration.Username)
+	d.Set(bitbucketDatacenterUserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
+	d.Set(bitbucketDatacenterWebhookURL, bitbucketDatacenterIntegration.WebhookURL)
+	d.Set(bitbucketDatacenterWebhookSecret, bitbucketDatacenterIntegration.WebhookSecret)
+	// Note: the access token is not exposed in the API.
 }
