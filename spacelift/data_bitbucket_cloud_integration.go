@@ -9,13 +9,18 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-var bitbucketCloudFields = struct {
-	Username   string
-	WebhookURL string
-}{
-	Username:   "username",
-	WebhookURL: "webhook_url",
-}
+const (
+	bitbucketCloudID          = "id"
+	bitbucketCloudName        = "name"
+	bitbucketCloudDescription = "description"
+	bitbucketCloudIsDefault   = "is_default"
+	bitbucketCloudLabels      = "labels"
+	bitbucketCloudSpaceID     = "space_id"
+	bitbucketCloudUsername    = "username"
+	bitbucketCloudWebhookURL  = "webhook_url"
+
+	defaultBitbucketCloudIntegrationID = "bitbucket-cloud-default-integration"
+)
 
 func dataBitbucketCloudIntegration() *schema.Resource {
 	return &schema.Resource{
@@ -24,12 +29,45 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 		ReadContext: dataBitbucketCloudIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			bitbucketCloudFields.Username: {
+			bitbucketCloudID: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud integration id. If not provided, the default integration will be returned",
+				Optional:    true,
+			},
+			bitbucketCloudName: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud integration name",
+				Computed:    true,
+			},
+			bitbucketCloudDescription: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud integration description",
+				Computed:    true,
+			},
+			bitbucketCloudIsDefault: {
+				Type:        schema.TypeBool,
+				Description: "Bitbucket Cloud integration is default",
+				Computed:    true,
+			},
+			bitbucketCloudLabels: {
+				Type:        schema.TypeList,
+				Description: "Bitbucket Cloud integration labels",
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			bitbucketCloudSpaceID: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud integration space id",
+				Computed:    true,
+			},
+			bitbucketCloudUsername: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Cloud username",
 				Computed:    true,
 			},
-			bitbucketCloudFields.WebhookURL: {
+			bitbucketCloudWebhookURL: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Cloud integration webhook URL",
 				Computed:    true,
@@ -41,12 +79,26 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		BitbucketCloudIntegration *struct {
-			Username   string `graphql:"username"`
-			WebhookURL string `graphql:"webhookUrl"`
-		} `graphql:"bitbucketCloudIntegration"`
+			ID          string `graphql:"id"`
+			Name        string `graphql:"name"`
+			Description string `graphql:"description"`
+			IsDefault   bool   `graphql:"isDefault"`
+			Space       struct {
+				ID string `graphql:"id"`
+			} `graphql:"space"`
+			Labels     []string `graphql:"labels"`
+			Username   string   `graphql:"username"`
+			WebhookURL string   `graphql:"webhookUrl"`
+		} `graphql:"bitbucketCloudIntegration(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "BitbucketCloudIntegrationRead", &query, map[string]interface{}{}); err != nil {
+	variables := map[string]interface{}{"id": defaultBitbucketCloudIntegrationID}
+
+	if id, ok := d.GetOk(bitbucketCloudID); ok && id != "" {
+		variables["id"] = toID(id)
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "BitbucketCloudIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for bitbucket cloud integration: %v", err)
 	}
 
@@ -55,9 +107,21 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 		return diag.Errorf("bitbucket cloud integration not found")
 	}
 
-	d.SetId("spacelift_bitbucket_cloud_integration_id") // TF expects id to be set otherwise it will fail
-	d.Set(bitbucketCloudFields.Username, bitbucketCloudIntegration.Username)
-	d.Set(bitbucketCloudFields.WebhookURL, bitbucketCloudIntegration.WebhookURL)
+	d.SetId(bitbucketCloudIntegration.ID)
+	d.Set(bitbucketCloudID, bitbucketCloudIntegration.ID)
+	d.Set(bitbucketCloudName, bitbucketCloudIntegration.Name)
+	d.Set(bitbucketCloudDescription, bitbucketCloudIntegration.Description)
+	d.Set(bitbucketCloudIsDefault, bitbucketCloudIntegration.IsDefault)
+	d.Set(bitbucketCloudSpaceID, bitbucketCloudIntegration.Space.ID)
+	d.Set(bitbucketCloudUsername, bitbucketCloudIntegration.Username)
+	d.Set(bitbucketCloudWebhookURL, bitbucketCloudIntegration.WebhookURL)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range bitbucketCloudIntegration.Labels {
+		labels.Add(label)
+	}
+
+	d.Set(bitbucketCloudLabels, labels)
 
 	return nil
 }

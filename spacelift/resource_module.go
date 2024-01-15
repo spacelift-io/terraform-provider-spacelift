@@ -71,6 +71,11 @@ func resourceModule() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Optional:    true,
+							Description: "The ID of the Bitbucket Cloud integration. If not specified, the default integration will be used.",
+						},
 						"namespace": {
 							Type:             schema.TypeString,
 							Required:         true,
@@ -359,7 +364,11 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 	}
 
 	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
-		namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+		bitbucketCloudSettings := bitbucketCloud[0].(map[string]interface{})
+		if id, ok := bitbucketCloudSettings["id"]; ok && id != nil && id.(string) != "" {
+			vcsIntegrationID = graphql.NewID(id)
+		}
+		namespace = toOptionalString(bitbucketCloudSettings["namespace"])
 		provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketCloud))
 
 		return
@@ -377,7 +386,7 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		if id, ok := ghEnterpriseSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
-		namespace = toOptionalString(githubEnterprise[0].(map[string]interface{})["namespace"])
+		namespace = toOptionalString(ghEnterpriseSettings["namespace"])
 		provider = graphql.NewString(graphql.String(structs.VCSProviderGitHubEnterprise))
 
 		return
