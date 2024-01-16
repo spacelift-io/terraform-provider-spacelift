@@ -144,7 +144,10 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 			"namespace": s.Namespace,
 		}
 	case VCSProviderBitbucketDatacenter:
-		return "bitbucket_datacenter", singleKeyMap("namespace", s.Namespace)
+		return "bitbucket_datacenter", map[string]interface{}{
+			"id":        s.VCSIntegration.ID,
+			"namespace": s.Namespace,
+		}
 	case VCSProviderGitHubEnterprise:
 		return "github_enterprise", map[string]interface{}{
 			"id":        s.VCSIntegration.ID,

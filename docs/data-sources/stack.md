@@ -98,6 +98,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `namespace` (String)
 
 
@@ -106,6 +107,7 @@ Read-Only:
 
 Read-Only:
 
+- `id` (String)
 - `namespace` (String)
 
 

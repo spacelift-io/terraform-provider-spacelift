@@ -282,6 +282,10 @@ Required:
 
 - `namespace` (String) The Bitbucket project containing the repository
 
+Optional:
+
+- `id` (String) The ID of the Bitbucket Datacenter integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--cloudformation"></a>
 ### Nested Schema for `cloudformation`

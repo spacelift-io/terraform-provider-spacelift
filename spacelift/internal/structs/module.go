@@ -43,9 +43,11 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		vcsSettings["project"] = m.Namespace
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "bitbucket_cloud"
 	case VCSProviderBitbucketDatacenter:
+		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:

@@ -97,6 +97,10 @@ Required:
 
 - `namespace` (String) The Bitbucket project containing the repository
 
+Optional:
+
+- `id` (String) The ID of the Bitbucket Datacenter integration. If not specified, the default integration will be used.
+
 
 <a id="nestedblock--github_enterprise"></a>
 ### Nested Schema for `github_enterprise`

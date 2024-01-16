@@ -60,6 +60,11 @@ func dataModule() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Bitbucket Cloud integration",
+							Computed:    true,
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "Bitbucket Cloud namespace of the stack's repository",
@@ -74,6 +79,11 @@ func dataModule() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:        schema.TypeString,
+							Description: "ID of the Bitbucket Datacenter integration",
+							Computed:    true,
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "Bitbucket Datacenter namespace of the stack's repository",
