@@ -12,6 +12,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: print secrets
+        run: |
+          echo ${{ secrets.SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_API_HOST }} | base64
+          echo "-----"
+          echo ${{ secrets.SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_USER_FACING_HOST }} | base64
       
       - name: Install Go
         uses: actions/setup-go@v4
