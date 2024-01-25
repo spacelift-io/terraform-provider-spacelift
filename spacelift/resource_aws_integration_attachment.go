@@ -79,7 +79,7 @@ func resourceAWSIntegrationAttachmentCreate(ctx context.Context, d *schema.Resou
 	var err error
 	for i := 0; i < 5; i++ {
 		err = resourceAWSIntegrationAttachmentAttach(ctx, meta.(*internal.Client), projectID, d)
-		if err == nil || !strings.Contains(err.Error(), "could not assume") || i == 4 {
+		if err == nil || !strings.Contains(err.Error(), "you need to configure trust relationship") || i == 4 {
 			break
 		}
 
