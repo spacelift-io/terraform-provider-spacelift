@@ -33,3 +33,4 @@ data "spacelift_github_enterprise_integration" "github_enterprise_integration" {
 - `name` (String) Github integration name
 - `space_id` (String) Github integration space id
 - `webhook_secret` (String) Github integration webhook secret
+- `webhook_url` (String) Github integration webhook url
