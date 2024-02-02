@@ -23,6 +23,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 				Attribute("space_id", IsNotEmpty()),
 				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST"))),
 				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET"))),
+				Attribute("webhook_url", IsNotEmpty()),
 				Attribute("app_id", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID"))),
 			),
 		}})
@@ -43,6 +44,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 				Attribute("space_id", IsNotEmpty()),
 				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST"))),
 				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET"))),
+				Attribute("webhook_url", IsNotEmpty()),
 				Attribute("app_id", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID"))),
 			),
 		}})

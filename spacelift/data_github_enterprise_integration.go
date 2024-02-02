@@ -19,6 +19,7 @@ const (
 	ghEnterpriseAppID         = "app_id"
 	ghEnterpriseAPIHost       = "api_host"
 	ghEnterpriseWebhookSecret = "webhook_secret"
+	ghEnterpriseWebhookURL    = "webhook_url"
 
 	defaultGHEIntegrationID = "github-enterprise-default-integration"
 )
@@ -73,6 +74,11 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 				Description: "Github integration webhook secret",
 				Computed:    true,
 			},
+			ghEnterpriseWebhookURL: {
+				Type:        schema.TypeString,
+				Description: "Github integration webhook url",
+				Computed:    true,
+			},
 			ghEnterpriseAppID: {
 				Type:        schema.TypeString,
 				Description: "Github integration app id",
@@ -88,6 +94,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 			AppID         string `graphql:"appID"`
 			APIHost       string `graphql:"apiHost"`
 			WebhookSecret string `graphql:"webhookSecret"`
+			WebhookURL    string `graphql:"webhookUrl"`
 			ID            string `graphql:"id"`
 			Name          string `graphql:"name"`
 			Description   string `graphql:"description"`
@@ -117,6 +124,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 	d.SetId(githubEnterpriseIntegration.ID)
 	d.Set(ghEnterpriseAPIHost, githubEnterpriseIntegration.APIHost)
 	d.Set(ghEnterpriseWebhookSecret, githubEnterpriseIntegration.WebhookSecret)
+	d.Set(ghEnterpriseWebhookURL, githubEnterpriseIntegration.WebhookURL)
 	d.Set(ghEnterpriseAppID, githubEnterpriseIntegration.AppID)
 	d.Set(ghEnterpriseId, githubEnterpriseIntegration.ID)
 	d.Set(ghEnterpriseName, githubEnterpriseIntegration.Name)
