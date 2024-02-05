@@ -9,17 +9,21 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-var bitbucketDatacenterFields = struct {
-	UserFacingHost string
-	APIHost        string
-	WebhookSecret  string
-	WebhookURL     string
-}{
-	UserFacingHost: "user_facing_host",
-	APIHost:        "api_host",
-	WebhookSecret:  "webhook_secret",
-	WebhookURL:     "webhook_url",
-}
+const (
+	bitbucketDatacenterID             = "id"
+	bitbucketDatacenterName           = "name"
+	bitbucketDatacenterDescription    = "description"
+	bitbucketDatacenterIsDefault      = "is_default"
+	bitbucketDatacenterLabels         = "labels"
+	bitbucketDatacenterSpaceID        = "space_id"
+	bitbucketDatacenterUserFacingHost = "user_facing_host"
+	bitbucketDatacenterAPIHost        = "api_host"
+	bitbucketDatacenterUsername       = "username"
+	bitbucketDatacenterWebhookURL     = "webhook_url"
+	bitbucketDatacenterWebhookSecret  = "webhook_secret"
+
+	defaultBitbucketDatacenterIntegrationID = "bitbucket-datacenter-default-integration"
+)
 
 func dataBitbucketDatacenterIntegration() *schema.Resource {
 	return &schema.Resource{
@@ -28,22 +32,60 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 		ReadContext: dataBitbucketDatacenterIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			bitbucketDatacenterFields.APIHost: {
+			bitbucketDatacenterID: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration id. If not provided, the default integration will be returned",
+				Optional:    true,
+			},
+			bitbucketDatacenterName: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration name",
+				Computed:    true,
+			},
+			bitbucketDatacenterDescription: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration description",
+				Computed:    true,
+			},
+			bitbucketDatacenterIsDefault: {
+				Type:        schema.TypeBool,
+				Description: "Bitbucket Datacenter integration is default",
+				Computed:    true,
+			},
+			bitbucketDatacenterLabels: {
+				Type:        schema.TypeList,
+				Description: "Bitbucket Datacenter integration labels",
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			bitbucketDatacenterSpaceID: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration space id",
+				Computed:    true,
+			},
+			bitbucketDatacenterUsername: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter username",
+				Computed:    true,
+			},
+			bitbucketDatacenterAPIHost: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Datacenter integration api host",
 				Computed:    true,
 			},
-			bitbucketDatacenterFields.WebhookSecret: {
+			bitbucketDatacenterWebhookSecret: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Datacenter integration webhook secret",
 				Computed:    true,
 			},
-			bitbucketDatacenterFields.WebhookURL: {
+			bitbucketDatacenterWebhookURL: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Datacenter integration webhook URL",
 				Computed:    true,
 			},
-			bitbucketDatacenterFields.UserFacingHost: {
+			bitbucketDatacenterUserFacingHost: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Datacenter integration user facing host",
 				Computed:    true,
@@ -55,14 +97,28 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
 		BitbucketDataCenterIntegration *struct {
-			APIHost        string `graphql:"apiHost"`
-			WebhookSecret  string `graphql:"webhookSecret"`
-			UserFacingHost string `graphql:"userFacingHost"`
-			WebhookURL     string `graphql:"webhookURL"`
-		} `graphql:"bitbucketDatacenterIntegration"`
+			ID          string `graphql:"id"`
+			Name        string `graphql:"name"`
+			Description string `graphql:"description"`
+			IsDefault   bool   `graphql:"isDefault"`
+			Space       struct {
+				ID string `graphql:"id"`
+			} `graphql:"space"`
+			Labels         []string `graphql:"labels"`
+			APIHost        string   `graphql:"apiHost"`
+			WebhookSecret  string   `graphql:"webhookSecret"`
+			UserFacingHost string   `graphql:"userFacingHost"`
+			WebhookURL     string   `graphql:"webhookURL"`
+			Username       string   `graphql:"username"`
+		} `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "BitbucketDatacenterIntegrationRead", &query, map[string]interface{}{}); err != nil {
+	variables := map[string]interface{}{"id": defaultBitbucketDatacenterIntegrationID}
+	if id, ok := d.GetOk(bitbucketDatacenterID); ok && id != "" {
+		variables["id"] = toID(id)
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "BitbucketDatacenterIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for bitbucket datacenter integration: %v", err)
 	}
 
@@ -71,11 +127,24 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 		return diag.Errorf("bitbucket datacenter integration not found")
 	}
 
-	d.SetId("spacelift_bitbucket_datacenter_integration_id") // TF expects id to be set otherwise it will fail
-	d.Set(bitbucketDatacenterFields.APIHost, bitbucketDatacenterIntegration.APIHost)
-	d.Set(bitbucketDatacenterFields.WebhookSecret, bitbucketDatacenterIntegration.WebhookSecret)
-	d.Set(bitbucketDatacenterFields.WebhookURL, bitbucketDatacenterIntegration.WebhookURL)
-	d.Set(bitbucketDatacenterFields.UserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
+	d.SetId(bitbucketDatacenterIntegration.ID)
+	d.Set(bitbucketDatacenterID, bitbucketDatacenterIntegration.ID)
+	d.Set(bitbucketDatacenterName, bitbucketDatacenterIntegration.Name)
+	d.Set(bitbucketDatacenterDescription, bitbucketDatacenterIntegration.Description)
+	d.Set(bitbucketDatacenterIsDefault, bitbucketDatacenterIntegration.IsDefault)
+	d.Set(bitbucketDatacenterSpaceID, bitbucketDatacenterIntegration.Space.ID)
+	d.Set(bitbucketDatacenterAPIHost, bitbucketDatacenterIntegration.APIHost)
+	d.Set(bitbucketDatacenterWebhookSecret, bitbucketDatacenterIntegration.WebhookSecret)
+	d.Set(bitbucketDatacenterWebhookURL, bitbucketDatacenterIntegration.WebhookURL)
+	d.Set(bitbucketDatacenterUserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
+	d.Set(bitbucketDatacenterUsername, bitbucketDatacenterIntegration.Username)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range bitbucketDatacenterIntegration.Labels {
+		labels.Add(label)
+	}
+
+	d.Set(bitbucketDatacenterLabels, labels)
 
 	return nil
 }
