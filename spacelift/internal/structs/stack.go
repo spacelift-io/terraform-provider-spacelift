@@ -136,18 +136,21 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
 		return "azure_devops", map[string]interface{}{
-			"id":      s.VCSIntegration.ID,
-			"project": s.Namespace,
+			"id":         s.VCSIntegration.ID,
+			"project":    s.Namespace,
+			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderBitbucketCloud:
 		return "bitbucket_cloud", map[string]interface{}{
-			"id":        s.VCSIntegration.ID,
-			"namespace": s.Namespace,
+			"id":         s.VCSIntegration.ID,
+			"namespace":  s.Namespace,
+			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderBitbucketDatacenter:
 		return "bitbucket_datacenter", map[string]interface{}{
-			"id":        s.VCSIntegration.ID,
-			"namespace": s.Namespace,
+			"id":         s.VCSIntegration.ID,
+			"namespace":  s.Namespace,
+			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderGitHubEnterprise:
 		return "github_enterprise", map[string]interface{}{
@@ -157,8 +160,9 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		}
 	case VCSProviderGitlab:
 		return "gitlab", map[string]interface{}{
-			"id":        s.VCSIntegration.ID,
-			"namespace": s.Namespace,
+			"id":         s.VCSIntegration.ID,
+			"namespace":  s.Namespace,
+			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderRawGit:
 		return "raw_git", map[string]interface{}{
