@@ -53,12 +53,22 @@ func resourceModule() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "ID of the Azure Devops integration. If not specified, the default integration will be used.",
 							Optional:    true,
+							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+								isDefault := res.Get("azure_devops.0.is_default").(bool)
+
+								return isDefault && new == ""
+							},
 						},
 						"project": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Description:      "The name of the Azure DevOps project",
 							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Azure DevOps integration",
 						},
 					},
 				},
@@ -75,12 +85,22 @@ func resourceModule() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The ID of the Bitbucket Cloud integration. If not specified, the default integration will be used.",
+							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+								isDefault := res.Get("bitbucket_cloud.0.is_default").(bool)
+
+								return isDefault && new == ""
+							},
 						},
 						"namespace": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Description:      "The Bitbucket project containing the repository",
 							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Bitbucket Cloud integration",
 						},
 					},
 				},
@@ -97,12 +117,22 @@ func resourceModule() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The ID of the Bitbucket Datacenter integration. If not specified, the default integration will be used.",
+							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+								isDefault := res.Get("bitbucket_datacenter.0.is_default").(bool)
+
+								return isDefault && new == ""
+							},
 						},
 						"namespace": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Description:      "The Bitbucket project containing the repository",
 							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Bitbucket Datacenter integration",
 						},
 					},
 				},
@@ -141,6 +171,16 @@ func resourceModule() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.",
+							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+								isDefault := res.Get("github_enterprise.0.is_default").(bool)
+
+								return isDefault && new == ""
+							},
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default GitHub Enterprise integration",
 						},
 					},
 				},
@@ -157,12 +197,22 @@ func resourceModule() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "ID of the Gitlab integration. If not specified, the default integration will be used.",
 							Optional:    true,
+							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+								isDefault := res.Get("gitlab.0.is_default").(bool)
+
+								return isDefault && new == ""
+							},
 						},
 						"namespace": {
 							Type:             schema.TypeString,
 							Required:         true,
 							Description:      "The GitLab namespace containing the repository",
 							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default GitLab integration",
 						},
 					},
 				},

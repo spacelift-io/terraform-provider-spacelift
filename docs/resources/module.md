@@ -77,6 +77,10 @@ Optional:
 
 - `id` (String) ID of the Azure Devops integration. If not specified, the default integration will be used.
 
+Read-Only:
+
+- `is_default` (Boolean) Indicates whether this is the default Azure DevOps integration
+
 
 <a id="nestedblock--bitbucket_cloud"></a>
 ### Nested Schema for `bitbucket_cloud`
@@ -88,6 +92,10 @@ Required:
 Optional:
 
 - `id` (String) The ID of the Bitbucket Cloud integration. If not specified, the default integration will be used.
+
+Read-Only:
+
+- `is_default` (Boolean) Indicates whether this is the default Bitbucket Cloud integration
 
 
 <a id="nestedblock--bitbucket_datacenter"></a>
@@ -101,6 +109,10 @@ Optional:
 
 - `id` (String) The ID of the Bitbucket Datacenter integration. If not specified, the default integration will be used.
 
+Read-Only:
+
+- `is_default` (Boolean) Indicates whether this is the default Bitbucket Datacenter integration
+
 
 <a id="nestedblock--github_enterprise"></a>
 ### Nested Schema for `github_enterprise`
@@ -113,6 +125,10 @@ Optional:
 
 - `id` (String) The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.
 
+Read-Only:
+
+- `is_default` (Boolean) Indicates whether this is the default GitHub Enterprise integration
+
 
 <a id="nestedblock--gitlab"></a>
 ### Nested Schema for `gitlab`
@@ -124,6 +140,10 @@ Required:
 Optional:
 
 - `id` (String) ID of the Gitlab integration. If not specified, the default integration will be used.
+
+Read-Only:
+
+- `is_default` (Boolean) Indicates whether this is the default GitLab integration
 
 ## Import
 

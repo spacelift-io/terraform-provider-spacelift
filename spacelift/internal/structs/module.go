@@ -24,7 +24,8 @@ type Module struct {
 	Space               string       `graphql:"space"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
 	VCSIntegration      *struct {
-		ID string `graphql:"id"`
+		ID        string `graphql:"id"`
+		IsDefault bool   `graphql:"isDefault"`
 	} `graphql:"vcsIntegration"`
 	WorkerPool *struct {
 		ID string `graphql:"id"`
@@ -41,22 +42,27 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 	case VCSProviderAzureDevOps:
 		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["project"] = m.Namespace
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
 		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
 		fieldName = "bitbucket_cloud"
 	case VCSProviderBitbucketDatacenter:
 		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:
 		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
 		vcsSettings["id"] = m.VCSIntegration.ID
 		vcsSettings["namespace"] = m.Namespace
+		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
 		fieldName = "gitlab"
 	}
 
