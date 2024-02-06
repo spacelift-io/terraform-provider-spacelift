@@ -316,6 +316,16 @@ func resourceStack() *schema.Resource {
 							Type:        schema.TypeString,
 							Optional:    true,
 							Description: "The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.",
+							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+								isDefault := res.Get("github_enterprise.0.is_default").(bool)
+
+								return isDefault && new == ""
+							},
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default GitHub Enterprise integration",
 						},
 					},
 				},

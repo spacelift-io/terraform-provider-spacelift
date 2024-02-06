@@ -58,7 +58,8 @@ type Stack struct {
 	Space                  string        `graphql:"space"`
 	TerraformVersion       *string       `graphql:"terraformVersion"`
 	VCSIntegration         *struct {
-		ID string `graphql:"id"`
+		ID        string `graphql:"id"`
+		IsDefault bool   `graphql:"isDefault"`
 	} `graphql:"vcsIntegration"`
 	VendorConfig struct {
 		Typename string `graphql:"__typename"`
@@ -150,8 +151,9 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		}
 	case VCSProviderGitHubEnterprise:
 		return "github_enterprise", map[string]interface{}{
-			"id":        s.VCSIntegration.ID,
-			"namespace": s.Namespace,
+			"id":         s.VCSIntegration.ID,
+			"namespace":  s.Namespace,
+			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderGitlab:
 		return "gitlab", map[string]interface{}{
