@@ -140,7 +140,6 @@ func resourceStack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The ID of the Azure Devops integration. If not specified, the default integration will be used.",
 							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
 								isDefault := res.Get("azure_devops.0.is_default").(bool)
@@ -224,7 +223,6 @@ func resourceStack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The ID of the Bitbucket Cloud integration. If not specified, the default integration will be used.",
 							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
 								isDefault := res.Get("bitbucket_cloud.0.is_default").(bool)
@@ -257,7 +255,6 @@ func resourceStack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The ID of the Bitbucket Datacenter integration. If not specified, the default integration will be used.",
 							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
 								isDefault := res.Get("bitbucket_datacenter.0.is_default").(bool)
@@ -348,7 +345,6 @@ func resourceStack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The ID of the GitHub Enterprise integration. If not specified, the default integration will be used.",
 							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
 								isDefault := res.Get("github_enterprise.0.is_default").(bool)
@@ -375,7 +371,6 @@ func resourceStack() *schema.Resource {
 						"id": {
 							Type:        schema.TypeString,
 							Optional:    true,
-							Computed:    true,
 							Description: "The ID of the Gitlab integration. If not specified, the default integration will be used.",
 							DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
 								isDefault := res.Get("gitlab.0.is_default").(bool)
