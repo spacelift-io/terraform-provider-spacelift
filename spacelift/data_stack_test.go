@@ -11,6 +11,30 @@ import (
 )
 
 func TestStackData(t *testing.T) {
+	t.Run("Custom vcs integration attributes", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `resource "spacelift_stack" "test" {
+						name                            = "provider-gitlab-integration-attributes-test"
+						repository                      = "multimodule"
+						branch                          = "main"
+						administrative                  = false
+						manage_state                    = true
+						gitlab {
+							namespace = "spacelift-ci"
+						}
+					 }
+						data "spacelift_stack" "test" {
+							stack_id = spacelift_stack.test.id
+						}`,
+				Check: Resource(
+					"data.spacelift_stack.test",
+					Attribute("gitlab.0.id", Equals("gitlab-default-integration")),
+				),
+			},
+		})
+	})
+
 	t.Run("with Terraform stack", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

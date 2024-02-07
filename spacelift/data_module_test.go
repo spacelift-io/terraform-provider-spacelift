@@ -11,6 +11,29 @@ import (
 )
 
 func TestModuleData(t *testing.T) {
+	t.Run("Custom vcs integration attributes", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `resource "spacelift_module" "test" {
+						name                            = "provider-gitlab-integration-attributes-test"
+						repository                      = "multimodule"
+						branch                          = "main"
+						administrative                  = false
+						gitlab {
+							namespace = "spacelift-ci"
+						}
+					 }
+						data "spacelift_module" "test" {
+							module_id = spacelift_module.test.id
+						}`,
+				Check: Resource(
+					"data.spacelift_module.test",
+					Attribute("gitlab.0.id", Equals("gitlab-default-integration")),
+				),
+			},
+		})
+	})
+
 	t.Run("basic test", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
