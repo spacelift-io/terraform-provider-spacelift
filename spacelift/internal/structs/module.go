@@ -36,33 +36,53 @@ type Module struct {
 // ExportVCSSettings exports VCS settings into Terraform schema.
 func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 	var fieldName string
-	vcsSettings := make(map[string]interface{})
+	var vcsSettings map[string]interface{}
 
 	switch m.Provider {
 	case VCSProviderAzureDevOps:
-		vcsSettings["id"] = m.VCSIntegration.ID
-		vcsSettings["project"] = m.Namespace
-		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		if m.VCSIntegration != nil {
+			vcsSettings = map[string]interface{}{
+				"id":         m.VCSIntegration.ID,
+				"project":    m.Namespace,
+				"is_default": m.VCSIntegration.IsDefault,
+			}
+		}
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
-		vcsSettings["id"] = m.VCSIntegration.ID
-		vcsSettings["namespace"] = m.Namespace
-		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		if m.VCSIntegration != nil {
+			vcsSettings = map[string]interface{}{
+				"id":         m.VCSIntegration.ID,
+				"namespace":  m.Namespace,
+				"is_default": m.VCSIntegration.IsDefault,
+			}
+		}
 		fieldName = "bitbucket_cloud"
 	case VCSProviderBitbucketDatacenter:
-		vcsSettings["id"] = m.VCSIntegration.ID
-		vcsSettings["namespace"] = m.Namespace
-		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		if m.VCSIntegration != nil {
+			vcsSettings = map[string]interface{}{
+				"id":         m.VCSIntegration.ID,
+				"namespace":  m.Namespace,
+				"is_default": m.VCSIntegration.IsDefault,
+			}
+		}
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:
-		vcsSettings["id"] = m.VCSIntegration.ID
-		vcsSettings["namespace"] = m.Namespace
-		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		if m.VCSIntegration != nil {
+			vcsSettings = map[string]interface{}{
+				"id":         m.VCSIntegration.ID,
+				"namespace":  m.Namespace,
+				"is_default": m.VCSIntegration.IsDefault,
+			}
+		}
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
-		vcsSettings["id"] = m.VCSIntegration.ID
-		vcsSettings["namespace"] = m.Namespace
-		vcsSettings["is_default"] = m.VCSIntegration.IsDefault
+		if m.VCSIntegration != nil {
+			vcsSettings = map[string]interface{}{
+				"id":         m.VCSIntegration.ID,
+				"namespace":  m.Namespace,
+				"is_default": m.VCSIntegration.IsDefault,
+			}
+		}
 		fieldName = "gitlab"
 	}
 

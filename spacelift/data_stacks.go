@@ -135,7 +135,11 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 			}
 
 			if vcsKey, vcsSettings := node.VCSSettings(); vcsKey != "" {
-				stack[vcsKey] = []interface{}{vcsSettings}
+				vcsValue := []interface{}{vcsSettings}
+				if vcsSettings == nil {
+					vcsValue = nil
+				}
+				stack[vcsKey] = vcsValue
 			}
 
 			if iacKey, iacSettings := node.IaCSettings(); iacKey != "" {

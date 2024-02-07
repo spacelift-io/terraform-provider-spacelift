@@ -96,7 +96,11 @@ type Stack struct {
 // ExportVCSSettings exports VCS settings into Terraform schema.
 func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
 	if fieldName, vcsSettings := s.VCSSettings(); fieldName != "" {
-		if err := d.Set(fieldName, []interface{}{vcsSettings}); err != nil {
+		fieldValue := []interface{}{vcsSettings}
+		if vcsSettings == nil {
+			fieldValue = nil
+		}
+		if err := d.Set(fieldName, fieldValue); err != nil {
 			return errors.Wrapf(err, "error setting %s (resource)", fieldName)
 		}
 	}
@@ -135,30 +139,45 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
+		if s.VCSIntegration == nil {
+			return "azure_devops", nil
+		}
 		return "azure_devops", map[string]interface{}{
 			"id":         s.VCSIntegration.ID,
 			"project":    s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderBitbucketCloud:
+		if s.VCSIntegration == nil {
+			return "bitbucket_cloud", nil
+		}
 		return "bitbucket_cloud", map[string]interface{}{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderBitbucketDatacenter:
+		if s.VCSIntegration == nil {
+			return "bitbucket_datacenter", nil
+		}
 		return "bitbucket_datacenter", map[string]interface{}{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderGitHubEnterprise:
+		if s.VCSIntegration == nil {
+			return "github_enterprise", nil
+		}
 		return "github_enterprise", map[string]interface{}{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderGitlab:
+		if s.VCSIntegration == nil {
+			return "gitlab", nil
+		}
 		return "gitlab", map[string]interface{}{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
