@@ -90,6 +90,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `is_default` (Boolean)
 - `project` (String)
 
 
@@ -99,6 +100,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `is_default` (Boolean)
 - `namespace` (String)
 
 
@@ -108,6 +110,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `is_default` (Boolean)
 - `namespace` (String)
 
 
@@ -128,6 +131,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `is_default` (Boolean)
 - `namespace` (String)
 
 
@@ -137,6 +141,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `is_default` (Boolean)
 - `namespace` (String)
 
 

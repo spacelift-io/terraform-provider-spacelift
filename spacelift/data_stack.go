@@ -108,6 +108,11 @@ func dataStack() *schema.Resource {
 							Description: "ID of the Azure Devops VCS integration",
 							Computed:    true,
 						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Azure Devops VCS integration",
+						},
 						"project": {
 							Type:        schema.TypeString,
 							Computed:    true,
@@ -162,6 +167,11 @@ func dataStack() *schema.Resource {
 							Description: "ID of the Bitbucket Cloud integration",
 							Computed:    true,
 						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Bitbucket Cloud integration",
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "Bitbucket Cloud namespace of the stack's repository",
@@ -180,6 +190,11 @@ func dataStack() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "ID of the Bitbucket Datacenter integration",
 							Computed:    true,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Bitbucket Datacenter integration",
 						},
 						"namespace": {
 							Type:        schema.TypeString,
@@ -239,6 +254,11 @@ func dataStack() *schema.Resource {
 							Description: "ID of the GitHub Enterprise integration",
 							Computed:    true,
 						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default GitHub Enterprise integration",
+						},
 						"namespace": {
 							Type:        schema.TypeString,
 							Description: "GitHub Enterprise namespace of the stack's repository",
@@ -257,6 +277,11 @@ func dataStack() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "ID of the Gitlab integration",
 							Computed:    true,
+						},
+						"is_default": {
+							Type:        schema.TypeBool,
+							Computed:    true,
+							Description: "Indicates whether this is the default Gitlab integration",
 						},
 						"namespace": {
 							Type:        schema.TypeString,
