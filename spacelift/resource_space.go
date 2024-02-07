@@ -17,7 +17,9 @@ import (
 func resourceSpace() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_space` represents a Spacelift **space** - " +
-			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space.",
+			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space.\n\n" +
+			"**Please note:** the `spacelift_space` resource requires root Admin permissions, and can only be used by administrative stacks " +
+			"in the root space, or using an API key or user session that has root space access.",
 
 		CreateContext: resourceSpaceCreate,
 		ReadContext:   resourceSpaceRead,
