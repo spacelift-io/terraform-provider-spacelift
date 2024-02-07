@@ -29,6 +29,7 @@ func TestModuleData(t *testing.T) {
 				Check: Resource(
 					"data.spacelift_module.test",
 					Attribute("gitlab.0.id", Equals("gitlab-default-integration")),
+					Attribute("gitlab.0.is_default", Equals("true")),
 				),
 			},
 		})
