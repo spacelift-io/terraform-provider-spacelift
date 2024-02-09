@@ -45,7 +45,8 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 	stackID, _ := path.Split(claims.Subject)
 
 	var query struct {
-		Stack *structs.Stack `graphql:"stack(id: $id)"`
+		Stack  *structs.Stack  `graphql:"stack(id: $id)"`
+		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": toID(strings.TrimRight(stackID, "/"))}
@@ -56,11 +57,15 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
-	stack := query.Stack
-	if stack == nil {
-		return diag.Errorf("stack not found")
+	if stack := query.Stack; stack != nil {
+		d.SetId(stack.Space)
+		return nil
 	}
 
-	d.SetId(stack.Space)
-	return nil
+	if module := query.Module; module != nil {
+		d.SetId(module.Space)
+		return nil
+	}
+
+	return diag.Errorf("could not find stack or module with ID %s", stackID)
 }
