@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,43 +10,44 @@ import (
 
 func TestBitbucketDataCenterIntegrationData(t *testing.T) {
 	t.Run("without the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.BitbucketDatacenter.Default
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_bitbucket_datacenter_integration" "test" {}
 			`,
 			Check: Resource(
 				"data.spacelift_bitbucket_datacenter_integration.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("name", IsNotEmpty()),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
 				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_API_HOST"))),
-				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_SECRET"))),
-				Attribute("webhook_url", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_URL"))),
-				Attribute("user_facing_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_USER_FACING_HOST"))),
+				Attribute("space_id", Equals("root")),
+				Attribute("api_host", Equals(cfg.APIHost)),
+				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute("user_facing_host", Equals(cfg.UserFacingHost)),
 			),
 		}})
 	})
 
 	t.Run("with the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.BitbucketDatacenter.SpaceLevel
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_bitbucket_datacenter_integration" "test" {
-					id = "bitbucket-datacenter-default-integration"
+					id = "` + cfg.ID + `"
 				}
 			`,
 			Check: Resource(
 				"data.spacelift_bitbucket_datacenter_integration.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("name", IsNotEmpty()),
-				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_API_HOST"))),
-				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_SECRET"))),
-				Attribute("webhook_url", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_WEBHOOK_URL"))),
-				Attribute("user_facing_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_BITBUCKET_DATACENTER_USER_FACING_HOST"))),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
+				Attribute("is_default", Equals("false")),
+				Attribute("space_id", Equals(cfg.Space)),
+				Attribute("api_host", Equals(cfg.APIHost)),
+				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute("user_facing_host", Equals(cfg.UserFacingHost)),
 			),
 		}})
 	})
-
 }

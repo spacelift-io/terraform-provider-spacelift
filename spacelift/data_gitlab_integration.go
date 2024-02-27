@@ -20,8 +20,6 @@ const (
 	gitlabAPIHost       = "api_host"
 	gitlabWebhookSecret = "webhook_secret"
 	gitlabWebhookURL    = "webhook_url"
-
-	defaultGitlabIntegrationID = "gitlab-default-integration"
 )
 
 func dataGitlabIntegration() *schema.Resource {
@@ -101,7 +99,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		} `graphql:"gitlabIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": defaultGitlabIntegrationID}
+	variables := map[string]interface{}{"id": ""}
 
 	if id, ok := d.GetOk(gitlabId); ok && id != "" {
 		variables["id"] = toID(id)

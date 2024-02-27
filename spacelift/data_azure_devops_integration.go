@@ -19,8 +19,6 @@ const (
 	azureDevopsOrganizationURL = "organization_url"
 	azureDevopsWebhookPassword = "webhook_password"
 	azureDevopsWebhookURL      = "webhook_url"
-
-	defaultAzureDevopsIntegrationID = "azure-devops-repo-default-integration"
 )
 
 func dataAzureDevopsIntegration() *schema.Resource {
@@ -99,7 +97,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 		} `graphql:"azureDevOpsRepoIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": defaultAzureDevopsIntegrationID}
+	variables := map[string]interface{}{"id": ""}
 
 	if id, ok := d.GetOk(azureDevopsID); ok && id != "" {
 		variables["id"] = toID(id)

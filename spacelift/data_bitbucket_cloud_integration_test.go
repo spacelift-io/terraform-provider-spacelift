@@ -10,40 +10,42 @@ import (
 
 func TestBitbucketCloudIntegrationData(t *testing.T) {
 	t.Run("without the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.BitbucketCloud.Default
 		testSteps(t, []resource.TestStep{
 			{
 				Config: `
-				data "spacelift_bitbucket_cloud_integration" "test" {}
-			`,
+					data "spacelift_bitbucket_cloud_integration" "test" {}
+				`,
 				Check: Resource(
 					"data.spacelift_bitbucket_cloud_integration.test",
-					Attribute("id", IsNotEmpty()),
-					Attribute("name", IsNotEmpty()),
+					Attribute("id", Equals(cfg.ID)),
+					Attribute("name", Equals(cfg.Name)),
 					Attribute("is_default", Equals("true")),
-					Attribute("space_id", IsNotEmpty()),
-					Attribute("username", IsNotEmpty()),
-					Attribute("webhook_url", IsNotEmpty()),
+					Attribute("space_id", Equals("root")),
+					Attribute("username", Equals(cfg.Username)),
+					Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				),
 			},
 		})
 	})
 
 	t.Run("with the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.BitbucketCloud.SpaceLevel
 		testSteps(t, []resource.TestStep{
 			{
 				Config: `
-				data "spacelift_bitbucket_cloud_integration" "test" {
-					id = "bitbucket-cloud-default-integration"
-				}
-			`,
+					data "spacelift_bitbucket_cloud_integration" "test" {
+						id = "` + cfg.ID + `"
+					}
+				`,
 				Check: Resource(
 					"data.spacelift_bitbucket_cloud_integration.test",
-					Attribute("id", IsNotEmpty()),
-					Attribute("name", IsNotEmpty()),
-					Attribute("is_default", Equals("true")),
-					Attribute("space_id", IsNotEmpty()),
-					Attribute("username", IsNotEmpty()),
-					Attribute("webhook_url", IsNotEmpty()),
+					Attribute("id", Equals(cfg.ID)),
+					Attribute("name", Equals(cfg.Name)),
+					Attribute("is_default", Equals("false")),
+					Attribute("space_id", Equals(cfg.Space)),
+					Attribute("username", Equals(cfg.Username)),
+					Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				),
 			},
 		})

@@ -20,8 +20,6 @@ const (
 	ghEnterpriseAPIHost       = "api_host"
 	ghEnterpriseWebhookSecret = "webhook_secret"
 	ghEnterpriseWebhookURL    = "webhook_url"
-
-	defaultGHEIntegrationID = "github-enterprise-default-integration"
 )
 
 func dataGithubEnterpriseIntegration() *schema.Resource {
@@ -106,7 +104,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 		} `graphql:"githubEnterpriseIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": defaultGHEIntegrationID}
+	variables := map[string]interface{}{"id": ""}
 
 	if id, ok := d.GetOk(ghEnterpriseId); ok && id != "" {
 		variables["id"] = toID(id)

@@ -22,8 +22,8 @@ func TestVersionResource(t *testing.T) {
 				resource "spacelift_module" "test" {
 					name           = "test-version-module-%s"
 					administrative = true
-					branch         = "master"
-					repository     = "terraform-spacelift-example"
+					branch         = "module"
+					repository     = "terraform-bacon-tasty"
 					labels         = ["version-test"]
 				}
 

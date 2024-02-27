@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -16,7 +15,7 @@ func TestGitlabWebhookEndpointData(t *testing.T) {
 		`,
 		Check: Resource(
 			"data.spacelift_gitlab_webhook_endpoint.test",
-			Attribute("webhook_endpoint", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_ENDPOINT"))),
+			Attribute("webhook_endpoint", Equals(testConfig.SourceCode.Gitlab.Default.WebhookURL)),
 		),
 	}})
 }
