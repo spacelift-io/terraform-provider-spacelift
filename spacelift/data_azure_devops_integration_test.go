@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,39 +10,41 @@ import (
 
 func TestAzureDevOpsIntegrationData(t *testing.T) {
 	t.Run("without the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.AzureDevOps.Default
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_azure_devops_integration" "test" {}
 			`,
 			Check: Resource(
 				"data.spacelift_azure_devops_integration.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("name", IsNotEmpty()),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
 				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("organization_url", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_AZURE_DEVOPS_ORGANIZATION_URL"))),
-				Attribute("webhook_password", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_AZURE_DEVOPS_WEBHOOK_PASSWORD"))),
-				Attribute("webhook_url", IsNotEmpty()),
+				Attribute("space_id", Equals("root")),
+				Attribute("organization_url", Equals(cfg.OrganizationURL)),
+				Attribute("webhook_password", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 			),
 		}})
 	})
 
 	t.Run("with the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.AzureDevOps.SpaceLevel
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_azure_devops_integration" "test" {
-					id = "azure-devops-repo-default-integration"
+					id = "` + cfg.ID + `"
 				}
 			`,
 			Check: Resource(
 				"data.spacelift_azure_devops_integration.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("name", IsNotEmpty()),
-				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("organization_url", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_AZURE_DEVOPS_ORGANIZATION_URL"))),
-				Attribute("webhook_password", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_AZURE_DEVOPS_WEBHOOK_PASSWORD"))),
-				Attribute("webhook_url", IsNotEmpty()),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
+				Attribute("is_default", Equals("false")),
+				Attribute("space_id", Equals(cfg.Space)),
+				Attribute("organization_url", Equals(cfg.OrganizationURL)),
+				Attribute("webhook_password", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 			),
 		}})
 	})

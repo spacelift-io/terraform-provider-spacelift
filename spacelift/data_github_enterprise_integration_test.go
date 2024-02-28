@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,41 +10,43 @@ import (
 
 func TestGithubEnterpriseIntegrationData(t *testing.T) {
 	t.Run("without the ID specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.GithubEnterprise.Default
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_github_enterprise_integration" "test" {}
 			`,
 			Check: Resource(
 				"data.spacelift_github_enterprise_integration.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("name", IsNotEmpty()),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
 				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST"))),
-				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET"))),
-				Attribute("webhook_url", IsNotEmpty()),
-				Attribute("app_id", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID"))),
+				Attribute("space_id", Equals("root")),
+				Attribute("api_host", Equals(cfg.APIHost)),
+				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute("app_id", Equals(cfg.AppID)),
 			),
 		}})
 	})
 
 	t.Run("with the ID specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.GithubEnterprise.SpaceLevel
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_github_enterprise_integration" "test" {
-					id = "github-enterprise-default-integration"
+					id = "` + cfg.ID + `"
 				}
 			`,
 			Check: Resource(
 				"data.spacelift_github_enterprise_integration.test",
-				Attribute("id", Equals("github-enterprise-default-integration")),
-				Attribute("name", IsNotEmpty()),
-				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_API_HOST"))),
-				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_WEBHOOK_SECRET"))),
-				Attribute("webhook_url", IsNotEmpty()),
-				Attribute("app_id", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITHUB_ENTERPRISE_APP_ID"))),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
+				Attribute("is_default", Equals("false")),
+				Attribute("space_id", Equals(cfg.Space)),
+				Attribute("api_host", Equals(cfg.APIHost)),
+				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute("app_id", Equals(cfg.AppID)),
 			),
 		}})
 	})

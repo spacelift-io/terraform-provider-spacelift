@@ -21,8 +21,6 @@ const (
 	bitbucketDatacenterUsername       = "username"
 	bitbucketDatacenterWebhookURL     = "webhook_url"
 	bitbucketDatacenterWebhookSecret  = "webhook_secret"
-
-	defaultBitbucketDatacenterIntegrationID = "bitbucket-datacenter-default-integration"
 )
 
 func dataBitbucketDatacenterIntegration() *schema.Resource {
@@ -113,7 +111,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 		} `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": defaultBitbucketDatacenterIntegrationID}
+	variables := map[string]interface{}{"id": ""}
 	if id, ok := d.GetOk(bitbucketDatacenterID); ok && id != "" {
 		variables["id"] = toID(id)
 	}

@@ -371,7 +371,7 @@ func TestStackResource(t *testing.T) {
 					 }`,
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("gitlab.0.id", Equals("gitlab-default-integration")),
+					Attribute("gitlab.0.id", Equals(testConfig.SourceCode.Gitlab.Default.ID)),
 				),
 			},
 		})

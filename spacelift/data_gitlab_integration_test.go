@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -11,39 +10,41 @@ import (
 
 func TestGitlabIntegrationData(t *testing.T) {
 	t.Run("without the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.Gitlab.Default
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_gitlab_integration" "test" {}
 			`,
 			Check: Resource(
 				"data.spacelift_gitlab_integration.test",
-				Attribute("id", IsNotEmpty()),
-				Attribute("name", IsNotEmpty()),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
 				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_API_HOST"))),
-				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_SECRET"))),
-				Attribute("webhook_url", IsNotEmpty()),
+				Attribute("space_id", Equals("root")),
+				Attribute("api_host", Equals(cfg.APIHost)),
+				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 			),
 		}})
 	})
 
 	t.Run("with the id specified", func(t *testing.T) {
+		cfg := testConfig.SourceCode.Gitlab.SpaceLevel
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_gitlab_integration" "test" {
-					id = "gitlab-default-integration"
+					id = "` + cfg.ID + `"
 				}
 			`,
 			Check: Resource(
 				"data.spacelift_gitlab_integration.test",
-				Attribute("id", Equals("gitlab-default-integration")),
-				Attribute("name", IsNotEmpty()),
-				Attribute("is_default", Equals("true")),
-				Attribute("space_id", IsNotEmpty()),
-				Attribute("api_host", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_API_HOST"))),
-				Attribute("webhook_secret", Equals(os.Getenv("SPACELIFT_PROVIDER_TEST_GITLAB_WEBHOOK_SECRET"))),
-				Attribute("webhook_url", IsNotEmpty()),
+				Attribute("id", Equals(cfg.ID)),
+				Attribute("name", Equals(cfg.Name)),
+				Attribute("is_default", Equals("false")),
+				Attribute("space_id", Equals(cfg.Space)),
+				Attribute("api_host", Equals(cfg.APIHost)),
+				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
+				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 			),
 		}})
 	})

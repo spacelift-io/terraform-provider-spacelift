@@ -18,8 +18,6 @@ const (
 	bitbucketCloudSpaceID     = "space_id"
 	bitbucketCloudUsername    = "username"
 	bitbucketCloudWebhookURL  = "webhook_url"
-
-	defaultBitbucketCloudIntegrationID = "bitbucket-cloud-default-integration"
 )
 
 func dataBitbucketCloudIntegration() *schema.Resource {
@@ -92,7 +90,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 		} `graphql:"bitbucketCloudIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": defaultBitbucketCloudIntegrationID}
+	variables := map[string]interface{}{"id": ""}
 
 	if id, ok := d.GetOk(bitbucketCloudID); ok && id != "" {
 		variables["id"] = toID(id)
