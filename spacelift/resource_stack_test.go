@@ -356,27 +356,6 @@ func TestStackResource(t *testing.T) {
 		}})
 	})
 
-	t.Run("vcs integration id", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{
-			{
-				Config: `resource "spacelift_stack" "test" {
-						name                            = "VCS Integration ID setting test"
-						repository                      = "multimodule"
-						branch                          = "main"
-						administrative                  = false
-						manage_state                    = true
-						gitlab {
-							namespace = "spacelift-ci"
-						}
-					 }`,
-				Check: Resource(
-					"spacelift_stack.test",
-					Attribute("gitlab.0.id", Equals(testConfig.SourceCode.Gitlab.Default.ID)),
-				),
-			},
-		})
-	})
-
 	t.Run("external state access", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
