@@ -32,22 +32,22 @@ func TestVCSIntegration(t *testing.T) {
 					// Azure Dev Ops
 					{
 						name:       "azure-devops-with-non-specified-integration-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      "root",
 						provider: `azure_devops {
-							project = "spacelift-ci"
+							project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 						}`,
 						attribute:      "azure_devops.0.id",
 						attributeValue: testConfig.SourceCode.AzureDevOps.Default.ID,
 					},
 					{
 						name:       "azure-devops-with-an-empty-integration-id-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      "root",
 						provider: `azure_devops {
-							project = "spacelift-ci"
+							project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 							id = ""
 						}`,
 						attribute:      "azure_devops.0.id",
@@ -55,11 +55,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "azure-devops-with-default-integration-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      "root",
 						provider: `azure_devops {
-							project = "spacelift-ci"
+							project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.AzureDevOps.Default.ID + `"
 						}`,
 						attribute:      "azure_devops.0.id",
@@ -67,11 +67,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "azure-devops-with-space-level-integration-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      testConfig.SourceCode.AzureDevOps.SpaceLevel.Space,
 						provider: `azure_devops {
-							project = "spacelift-ci"
+							project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.ID + `"
 						}`,
 						attribute:      "azure_devops.0.id",
@@ -79,11 +79,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "azure-devops-with-default-integration-from-data-source-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      "root",
 						provider: `azure_devops {
-							project = "spacelift-ci"
+							project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 							id = data.spacelift_azure_devops_integration.test.id
 						}`,
 						dataSource:     `data "spacelift_azure_devops_integration" "test" {}`,
@@ -92,11 +92,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "azure-devops-with-space-level-integration-from-data-source-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      testConfig.SourceCode.AzureDevOps.SpaceLevel.Space,
 						provider: `azure_devops {
-							project = "spacelift-ci"
+							project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 							id = data.spacelift_azure_devops_integration.test.id
 						}`,
 						dataSource: `data "spacelift_azure_devops_integration" "test" {
@@ -108,22 +108,22 @@ func TestVCSIntegration(t *testing.T) {
 					// Bitbucket Cloud
 					{
 						name:       "bitbucket-cloud-with-non-specified-integration-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_cloud {
-							namespace = "thespacelift"
+							namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 						}`,
 						attribute:      "bitbucket_cloud.0.id",
 						attributeValue: testConfig.SourceCode.BitbucketCloud.Default.ID,
 					},
 					{
 						name:       "bitbucket-cloud-with-an-empty-integration-id-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_cloud {
-							namespace = "thespacelift"
+							namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 							id = ""
 						}`,
 						attribute:      "bitbucket_cloud.0.id",
@@ -131,11 +131,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-cloud-with-default-integration-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_cloud {
-							namespace = "thespacelift"
+							namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.BitbucketCloud.Default.ID + `"
 						}`,
 						attribute:      "bitbucket_cloud.0.id",
@@ -143,11 +143,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-cloud-with-space-level-integration-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      testConfig.SourceCode.BitbucketCloud.SpaceLevel.Space,
 						provider: `bitbucket_cloud {
-							namespace = "thespacelift"
+							namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.BitbucketCloud.SpaceLevel.ID + `"
 						}`,
 						attribute:      "bitbucket_cloud.0.id",
@@ -155,11 +155,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-cloud-with-default-integration-from-data-source-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_cloud {
-							namespace = "thespacelift"
+							namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 							id = data.spacelift_bitbucket_cloud_integration.test.id
 						}`,
 						dataSource:     `data "spacelift_bitbucket_cloud_integration" "test" {}`,
@@ -168,11 +168,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-cloud-with-space-level-integration-from-data-source-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      testConfig.SourceCode.BitbucketCloud.SpaceLevel.Space,
 						provider: `bitbucket_cloud {
-							namespace = "thespacelift"
+							namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 							id = data.spacelift_bitbucket_cloud_integration.test.id
 						}`,
 						dataSource: `data "spacelift_bitbucket_cloud_integration" "test" {
@@ -184,22 +184,22 @@ func TestVCSIntegration(t *testing.T) {
 					// Bitbucket Datacenter
 					{
 						name:       "bitbucket-datacenter-with-non-specified-integration-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_datacenter {
-							namespace = "E2E"
+							namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 						}`,
 						attribute:      "bitbucket_datacenter.0.id",
 						attributeValue: testConfig.SourceCode.BitbucketDatacenter.Default.ID,
 					},
 					{
 						name:       "bitbucket-datacenter-with-an-empty-integration-id-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_datacenter {
-							namespace = "E2E"
+							namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 							id = ""
 						}`,
 						attribute:      "bitbucket_datacenter.0.id",
@@ -207,11 +207,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-datacenter-with-default-integration-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_datacenter {
-							namespace = "E2E"
+							namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.BitbucketDatacenter.Default.ID + `"
 						}`,
 						attribute:      "bitbucket_datacenter.0.id",
@@ -219,11 +219,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-datacenter-with-space-level-integration-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space,
 						provider: `bitbucket_datacenter {
-							namespace = "E2E"
+							namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.ID + `"
 						}`,
 						attribute:      "bitbucket_datacenter.0.id",
@@ -231,11 +231,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-datacenter-with-default-integration-from-data-source-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      "root",
 						provider: `bitbucket_datacenter {
-							namespace = "E2E"
+							namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 							id = data.spacelift_bitbucket_datacenter_integration.test.id
 						}`,
 						dataSource:     `data "spacelift_bitbucket_datacenter_integration" "test" {}`,
@@ -244,11 +244,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "bitbucket-datacenter-with-space-level-integration-from-data-source-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space,
 						provider: `bitbucket_datacenter {
-							namespace = "E2E"
+							namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 							id = data.spacelift_bitbucket_datacenter_integration.test.id
 						}`,
 						dataSource: `data "spacelift_bitbucket_datacenter_integration" "test" {
@@ -260,22 +260,22 @@ func TestVCSIntegration(t *testing.T) {
 					// GitHub Enterprise
 					{
 						name:       "github-with-non-specified-integration-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      "root",
 						provider: `github_enterprise {
-							namespace = "spacelift-ci-org"
+							namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 						}`,
 						attribute:      "github_enterprise.0.id",
 						attributeValue: testConfig.SourceCode.GithubEnterprise.Default.ID,
 					},
 					{
 						name:       "github-with-an-empty-integration-id-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      "root",
 						provider: `github_enterprise {
-							namespace = "spacelift-ci-org"
+							namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 							id = ""
 						}`,
 						attribute:      "github_enterprise.0.id",
@@ -283,11 +283,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "github-with-default-integration-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      "root",
 						provider: `github_enterprise {
-							namespace = "spacelift-ci-org"
+							namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.GithubEnterprise.Default.ID + `"
 						}`,
 						attribute:      "github_enterprise.0.id",
@@ -295,11 +295,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "github-with-space-level-integration-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      testConfig.SourceCode.GithubEnterprise.SpaceLevel.Space,
 						provider: `github_enterprise {
-							namespace = "spacelift-ci-org"
+							namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.GithubEnterprise.SpaceLevel.ID + `"
 						}`,
 						attribute:      "github_enterprise.0.id",
@@ -307,11 +307,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "github-with-default-integration-from-data-source-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      "root",
 						provider: `github_enterprise {
-							namespace = "spacelift-ci-org"
+							namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 							id = data.spacelift_github_enterprise_integration.test.id
 						}`,
 						dataSource:     `data "spacelift_github_enterprise_integration" "test" {}`,
@@ -320,11 +320,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "github-with-space-level-integration-from-data-source-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      testConfig.SourceCode.GithubEnterprise.SpaceLevel.Space,
 						provider: `github_enterprise {
-							namespace = "spacelift-ci-org"
+							namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 							id = data.spacelift_github_enterprise_integration.test.id
 						}`,
 						dataSource: `data "spacelift_github_enterprise_integration" "test" {
@@ -336,22 +336,22 @@ func TestVCSIntegration(t *testing.T) {
 					// GitLab
 					{
 						name:       "gitlab-with-non-specified-integration-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      "root",
 						provider: `gitlab {
-							namespace = "spacelift-ci"
+							namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 						}`,
 						attribute:      "gitlab.0.id",
 						attributeValue: testConfig.SourceCode.Gitlab.Default.ID,
 					},
 					{
 						name:       "gitlab-with-an-empty-integration-id-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      "root",
 						provider: `gitlab {
-							namespace = "spacelift-ci"
+							namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 							id = ""
 						}`,
 						attribute:      "gitlab.0.id",
@@ -359,11 +359,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "gitlab-with-default-integration-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      "root",
 						provider: `gitlab {
-							namespace = "spacelift-ci"
+							namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.Gitlab.Default.ID + `"
 						}`,
 						attribute:      "gitlab.0.id",
@@ -371,11 +371,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "gitlab-with-space-level-integration-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      testConfig.SourceCode.Gitlab.SpaceLevel.Space,
 						provider: `gitlab {
-							namespace = "spacelift-ci"
+							namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 							id = "` + testConfig.SourceCode.Gitlab.SpaceLevel.ID + `"
 						}`,
 						attribute:      "gitlab.0.id",
@@ -383,11 +383,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "gitlab-with-default-integration-from-data-source-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      "root",
 						provider: `gitlab {
-							namespace = "spacelift-ci"
+							namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 							id = data.spacelift_gitlab_integration.test.id
 						}`,
 						dataSource:     `data "spacelift_gitlab_integration" "test" {}`,
@@ -396,11 +396,11 @@ func TestVCSIntegration(t *testing.T) {
 					},
 					{
 						name:       "gitlab-with-space-level-integration-from-data-source-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      testConfig.SourceCode.Gitlab.SpaceLevel.Space,
 						provider: `gitlab {
-							namespace = "spacelift-ci"
+							namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 							id = data.spacelift_gitlab_integration.test.id
 						}`,
 						dataSource: `data "spacelift_gitlab_integration" "test" {
@@ -414,17 +414,16 @@ func TestVCSIntegration(t *testing.T) {
 				for _, tc := range testCases {
 					tc := tc
 					t.Run(tc.name, func(t *testing.T) {
-						config := fmt.Sprintf(`
-							%s
+						config := tc.dataSource + `
 
-							resource "`+resourceName+`" "test" {
-								name                            = "%s"
-								repository                      = "%s"
-								branch                          = "%s"
-								space_id                        = "%s"
+							resource "` + resourceName + `" "test" {
+								name                            = "` + tc.name + `"
+								repository                      = "` + tc.repository + `"
+								branch                          = "` + tc.branch + `"
+								space_id                        = "` + tc.space + `"
 								administrative                  = false
-								%s
-							}`, tc.dataSource, tc.name, tc.repository, tc.branch, tc.space, tc.provider)
+								` + tc.provider + `
+							}`
 
 						var tfstateSerial int64
 						testSteps(t, []resource.TestStep{
@@ -472,14 +471,14 @@ func TestVCSIntegration(t *testing.T) {
 					// Azure Dev Ops
 					{
 						name:       "azure-devops-with-changing-vcs-id-" + randomID(),
-						repository: "spacelift-ci",
-						branch:     "main",
+						repository: testConfig.SourceCode.AzureDevOps.Repository.Name,
+						branch:     testConfig.SourceCode.AzureDevOps.Repository.Branch,
 						space:      testConfig.SourceCode.AzureDevOps.SpaceLevel.Space,
 						steps: []testCaseStep{
 							{
 								dataSource: "",
 								provider: `azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "azure_devops.0.id",
@@ -489,7 +488,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.ID + `"
 								}`,
 								attribute: testCaseStepAttribute{
@@ -502,7 +501,7 @@ func TestVCSIntegration(t *testing.T) {
 									id = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.ID + `"
 								}`,
 								provider: `azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 									id = data.spacelift_azure_devops_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -513,7 +512,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: `data "spacelift_azure_devops_integration" "test" {}`,
 								provider: `azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 									id = data.spacelift_azure_devops_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -524,7 +523,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "azure_devops.0.id",
@@ -536,14 +535,14 @@ func TestVCSIntegration(t *testing.T) {
 					// Bitbucket Cloud
 					{
 						name:       "bitbucket-cloud-with-changing-vcs-id-" + randomID(),
-						repository: "empty",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketCloud.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketCloud.Repository.Branch,
 						space:      testConfig.SourceCode.BitbucketCloud.SpaceLevel.Space,
 						steps: []testCaseStep{
 							{
 								dataSource: "",
 								provider: `bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "bitbucket_cloud.0.id",
@@ -553,7 +552,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.BitbucketCloud.SpaceLevel.ID + `"
 								}`,
 								attribute: testCaseStepAttribute{
@@ -566,7 +565,7 @@ func TestVCSIntegration(t *testing.T) {
 									id = "` + testConfig.SourceCode.BitbucketCloud.SpaceLevel.ID + `"
 								}`,
 								provider: `bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 									id = data.spacelift_bitbucket_cloud_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -577,7 +576,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: `data "spacelift_bitbucket_cloud_integration" "test" {}`,
 								provider: `bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 									id = data.spacelift_bitbucket_cloud_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -588,7 +587,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "bitbucket_cloud.0.id",
@@ -600,14 +599,14 @@ func TestVCSIntegration(t *testing.T) {
 					// Bitbucket Datacenter
 					{
 						name:       "bitbucket-datacenter-with-changing-vcs-id-" + randomID(),
-						repository: "tfprovider-test",
-						branch:     "master",
+						repository: testConfig.SourceCode.BitbucketDatacenter.Repository.Name,
+						branch:     testConfig.SourceCode.BitbucketDatacenter.Repository.Branch,
 						space:      testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space,
 						steps: []testCaseStep{
 							{
 								dataSource: "",
 								provider: `bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "bitbucket_datacenter.0.id",
@@ -617,7 +616,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.ID + `"
 								}`,
 								attribute: testCaseStepAttribute{
@@ -630,7 +629,7 @@ func TestVCSIntegration(t *testing.T) {
 									id = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.ID + `"
 								}`,
 								provider: `bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 									id = data.spacelift_bitbucket_datacenter_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -641,7 +640,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: `data "spacelift_bitbucket_datacenter_integration" "test" {}`,
 								provider: `bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 									id = data.spacelift_bitbucket_datacenter_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -652,7 +651,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "bitbucket_datacenter.0.id",
@@ -664,14 +663,14 @@ func TestVCSIntegration(t *testing.T) {
 					// GitHub Enterprise
 					{
 						name:       "github-enterprise-with-changing-vcs-id-" + randomID(),
-						repository: "empty",
-						branch:     "main",
+						repository: testConfig.SourceCode.GithubEnterprise.Repository.Name,
+						branch:     testConfig.SourceCode.GithubEnterprise.Repository.Branch,
 						space:      testConfig.SourceCode.GithubEnterprise.SpaceLevel.Space,
 						steps: []testCaseStep{
 							{
 								dataSource: "",
 								provider: `github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "github_enterprise.0.id",
@@ -681,7 +680,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.GithubEnterprise.SpaceLevel.ID + `"
 								}`,
 								attribute: testCaseStepAttribute{
@@ -694,7 +693,7 @@ func TestVCSIntegration(t *testing.T) {
 									id = "` + testConfig.SourceCode.GithubEnterprise.SpaceLevel.ID + `"
 								}`,
 								provider: `github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 									id = data.spacelift_github_enterprise_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -705,7 +704,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: `data "spacelift_github_enterprise_integration" "test" {}`,
 								provider: `github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 									id = data.spacelift_github_enterprise_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -716,7 +715,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "github_enterprise.0.id",
@@ -728,14 +727,14 @@ func TestVCSIntegration(t *testing.T) {
 					// GitLab
 					{
 						name:       "gitlab-with-changing-vcs-id-" + randomID(),
-						repository: "multimodule",
-						branch:     "main",
+						repository: testConfig.SourceCode.Gitlab.Repository.Name,
+						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      testConfig.SourceCode.Gitlab.SpaceLevel.Space,
 						steps: []testCaseStep{
 							{
 								dataSource: "",
 								provider: `gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "gitlab.0.id",
@@ -745,7 +744,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.Gitlab.SpaceLevel.ID + `"
 								}`,
 								attribute: testCaseStepAttribute{
@@ -758,7 +757,7 @@ func TestVCSIntegration(t *testing.T) {
 									id = "` + testConfig.SourceCode.Gitlab.SpaceLevel.ID + `"
 								}`,
 								provider: `gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 									id = data.spacelift_gitlab_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -769,7 +768,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: `data "spacelift_gitlab_integration" "test" {}`,
 								provider: `gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 									id = data.spacelift_gitlab_integration.test.id
 								}`,
 								attribute: testCaseStepAttribute{
@@ -780,7 +779,7 @@ func TestVCSIntegration(t *testing.T) {
 							{
 								dataSource: "",
 								provider: `gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 								}`,
 								attribute: testCaseStepAttribute{
 									key:   "gitlab.0.id",
@@ -798,17 +797,16 @@ func TestVCSIntegration(t *testing.T) {
 						for i := range tc.steps {
 							step := tc.steps[i]
 							steps = append(steps, resource.TestStep{
-								Config: fmt.Sprintf(`
-									%s
+								Config: step.dataSource + `
 
-									resource "`+resourceName+`" "test" {
-										name                            = "%s"
-										repository                      = "%s"
-										branch                          = "%s"
-										space_id                        = "%s"
+									resource "` + resourceName + `" "test" {
+										name                            = "` + tc.name + `"
+										repository                      = "` + tc.repository + `"
+										branch                          = "` + tc.branch + `"
+										space_id                        = "` + tc.space + `"
 										administrative                  = false
-										%s
-									}`, step.dataSource, tc.name, tc.repository, tc.branch, tc.space, step.provider),
+										` + step.provider + `
+									}`,
 								Check: Resource(resourceName+".test", Attribute(step.attribute.key, Equals(step.attribute.value))),
 							})
 						}
@@ -824,12 +822,12 @@ func TestVCSIntegration(t *testing.T) {
 						Config: `
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "spacelift-ci"
-								branch                          = "main"
+								repository                      = "` + testConfig.SourceCode.AzureDevOps.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.AzureDevOps.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.Space + `"
 								administrative                  = false
 								azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.ID + `"
 								}
 							}
@@ -840,12 +838,12 @@ func TestVCSIntegration(t *testing.T) {
 						Config: `
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "empty"
-								branch                          = "master"
+								repository                      = "` + testConfig.SourceCode.BitbucketCloud.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.BitbucketCloud.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.BitbucketCloud.SpaceLevel.Space + `"
 								administrative                  = false
 								bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.BitbucketCloud.SpaceLevel.ID + `"
 								}
 							}
@@ -856,12 +854,12 @@ func TestVCSIntegration(t *testing.T) {
 						Config: `
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "tfprovider-test"
-								branch                          = "master"
+								repository                      = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space + `"
 								administrative                  = false
 								bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.ID + `"
 								}
 							}
@@ -872,12 +870,12 @@ func TestVCSIntegration(t *testing.T) {
 						Config: `
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "empty"
-								branch                          = "main"
+								repository                      = "` + testConfig.SourceCode.GithubEnterprise.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.GithubEnterprise.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.GithubEnterprise.SpaceLevel.Space + `"
 								administrative                  = false
 								github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.GithubEnterprise.SpaceLevel.ID + `"
 								}
 							}
@@ -888,12 +886,12 @@ func TestVCSIntegration(t *testing.T) {
 						Config: `
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "multimodule"
-								branch                          = "main"
+								repository                      = "` + testConfig.SourceCode.Gitlab.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.Gitlab.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.Gitlab.SpaceLevel.Space + `"
 								administrative                  = false
 								gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 									id = "` + testConfig.SourceCode.Gitlab.SpaceLevel.ID + `"
 								}
 							}
@@ -906,12 +904,12 @@ func TestVCSIntegration(t *testing.T) {
 							
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "spacelift-ci"
-								branch                          = "main"
+								repository                      = "` + testConfig.SourceCode.AzureDevOps.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.AzureDevOps.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.Space + `"
 								administrative                  = false
 								azure_devops {
-									project = "spacelift-ci"
+									project = "` + testConfig.SourceCode.AzureDevOps.Repository.Namespace + `"
 									id = data.spacelift_azure_devops_integration.test.id
 								}
 							}
@@ -924,12 +922,12 @@ func TestVCSIntegration(t *testing.T) {
 
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "empty"
-								branch                          = "master"
+								repository                      = "` + testConfig.SourceCode.BitbucketCloud.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.BitbucketCloud.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.BitbucketCloud.SpaceLevel.Space + `"
 								administrative                  = false
 								bitbucket_cloud {
-									namespace = "thespacelift"
+									namespace = "` + testConfig.SourceCode.BitbucketCloud.Repository.Namespace + `"
 									id = data.spacelift_bitbucket_cloud_integration.test.id
 								}
 							}
@@ -942,12 +940,12 @@ func TestVCSIntegration(t *testing.T) {
 							
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "tfprovider-test"
-								branch                          = "master"
+								repository                      = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space + `"
 								administrative                  = false
 								bitbucket_datacenter {
-									namespace = "E2E"
+									namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"
 									id = data.spacelift_bitbucket_datacenter_integration.test.id
 								}
 							}
@@ -960,12 +958,12 @@ func TestVCSIntegration(t *testing.T) {
 
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "empty"
-								branch                          = "main"
+								repository                      = "` + testConfig.SourceCode.GithubEnterprise.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.GithubEnterprise.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.GithubEnterprise.SpaceLevel.Space + `"
 								administrative                  = false
 								github_enterprise {
-									namespace = "spacelift-ci-org"
+									namespace = "` + testConfig.SourceCode.GithubEnterprise.Repository.Namespace + `"
 									id = data.spacelift_github_enterprise_integration.test.id
 								}
 							}
@@ -978,12 +976,12 @@ func TestVCSIntegration(t *testing.T) {
 
 							resource "` + resourceName + `" "test" {
 								name                            = "mix-different-providers-` + randomID() + `"
-								repository                      = "multimodule"
-								branch                          = "main"
+								repository                      = "` + testConfig.SourceCode.Gitlab.Repository.Name + `"
+								branch                          = "` + testConfig.SourceCode.Gitlab.Repository.Branch + `"
 								space_id                        = "` + testConfig.SourceCode.Gitlab.SpaceLevel.Space + `"
 								administrative                  = false
 								gitlab {
-									namespace = "spacelift-ci"
+									namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"
 									id = data.spacelift_gitlab_integration.test.id
 								}
 							}

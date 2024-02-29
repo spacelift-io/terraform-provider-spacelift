@@ -27,6 +27,11 @@ var testConfig struct {
 				WebhookSecret   string
 				WebhookURL      string
 			}
+			Repository struct {
+				Name      string
+				Namespace string
+				Branch    string
+			}
 		}
 		BitbucketCloud struct {
 			Default struct {
@@ -41,6 +46,11 @@ var testConfig struct {
 				Space      string
 				Username   string
 				WebhookURL string
+			}
+			Repository struct {
+				Name      string
+				Namespace string
+				Branch    string
 			}
 		}
 		BitbucketDatacenter struct {
@@ -63,6 +73,11 @@ var testConfig struct {
 				WebhookSecret  string
 				WebhookURL     string
 			}
+			Repository struct {
+				Name      string
+				Namespace string
+				Branch    string
+			}
 		}
 		GithubEnterprise struct {
 			Default struct {
@@ -82,6 +97,11 @@ var testConfig struct {
 				WebhookSecret string
 				WebhookURL    string
 			}
+			Repository struct {
+				Name      string
+				Namespace string
+				Branch    string
+			}
 		}
 		Gitlab struct {
 			Default struct {
@@ -98,6 +118,11 @@ var testConfig struct {
 				APIHost       string
 				WebhookSecret string
 				WebhookURL    string
+			}
+			Repository struct {
+				Name      string
+				Namespace string
+				Branch    string
 			}
 		}
 	}
