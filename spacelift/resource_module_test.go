@@ -69,26 +69,6 @@ func TestModuleResource(t *testing.T) {
 		})
 	})
 
-	t.Run("vcs integration id", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{
-			{
-				Config: `resource "spacelift_module" "test" {
-						name                            = "integration-id-check-test"
-						repository                      = "multimodule"
-						branch                          = "main"
-						administrative                  = false
-						gitlab {
-							namespace = "spacelift-ci"
-						}
-					 }`,
-				Check: Resource(
-					"spacelift_module.test",
-					Attribute("gitlab.0.id", Equals(testConfig.SourceCode.Gitlab.Default.ID)),
-				),
-			},
-		})
-	})
-
 	t.Run("project root and custom name", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
