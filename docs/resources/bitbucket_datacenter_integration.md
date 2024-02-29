@@ -14,6 +14,9 @@ description: |-
 
 ```terraform
 resource "spacelift_bitbucket_datacenter_integration" "example" {
+  name             = "Bitbucket integration"
+  is_default       = false
+  space_id         = "root"
   api_host         = "private://bitbucket_spacelift/bitbucket"
   user_facing_host = "https://bitbucket.spacelift.io/bitbucket"
   username         = "bitbucket_user_name"
@@ -28,12 +31,20 @@ resource "spacelift_bitbucket_datacenter_integration" "example" {
 
 - `access_token` (String, Sensitive) User access token from Bitbucket
 - `api_host` (String) The API host where requests will be sent
+- `is_default` (Boolean) Bitbucket Datacenter integration is default.
+- `name` (String) Bitbucket Datacenter integration name
 - `user_facing_host` (String) User Facing Host which will be user for all user-facing URLs displayed in the Spacelift UI
 - `username` (String) Username which will be used to authenticate requests for cloning repositories
 
+### Optional
+
+- `description` (String) Bitbucket Datacenter integration description
+- `labels` (Set of String) Bitbucket Datacenter integration labels
+- `space_id` (String) Bitbucket Datacenter integration space id. Defaults to `root`.
+
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Bitbucket Datacenter integration id.
 - `webhook_secret` (String, Sensitive) Secret for webhooks originating from Bitbucket repositories
 - `webhook_url` (String) URL for webhooks originating from Bitbucket repositories
 

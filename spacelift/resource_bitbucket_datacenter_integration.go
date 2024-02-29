@@ -8,15 +8,11 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 const (
-	bitbucketDatacenterUserFacingHost = "user_facing_host"
-	bitbucketDatacenterUsername       = "username"
-	bitbucketDatacenterAccessToken    = "access_token"
-	bitbucketDatacenterAPIHost        = "api_host"
-	bitbucketDatacenterWebhookSecret  = "webhook_secret"
-	bitbucketDatacenterWebhookURL     = "webhook_url"
+	bitbucketDatacenterAccessToken = "access_token"
 )
 
 func resourceBitbucketDatacenterIntegration() *schema.Resource {
@@ -29,6 +25,43 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 		DeleteContext: resourceBitbucketDatacenterIntegrationDelete,
 
 		Schema: map[string]*schema.Schema{
+			bitbucketDatacenterID: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration id.",
+				Computed:    true,
+			},
+			bitbucketDatacenterName: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration name",
+				Required:    true,
+			},
+			bitbucketDatacenterIsDefault: {
+				Type:        schema.TypeBool,
+				Description: "Bitbucket Datacenter integration is default.",
+				Required:    true,
+			},
+			bitbucketDatacenterSpaceID: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration space id. Defaults to `root`.",
+				Optional:    true,
+				Computed:    true,
+			},
+			bitbucketDatacenterLabels: {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type:             schema.TypeString,
+					ValidateDiagFunc: validations.DisallowEmptyString,
+				},
+				Description: "Bitbucket Datacenter integration labels",
+				Optional:    true,
+				Computed:    true,
+			},
+			bitbucketDatacenterDescription: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Datacenter integration description",
+				Optional:    true,
+				Computed:    true,
+			},
 			bitbucketDatacenterAPIHost: {
 				Type:        schema.TypeString,
 				Description: "The API host where requests will be sent",
@@ -67,13 +100,20 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 
 func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken)"`
+		CreateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
 	}
 
 	variables := map[string]interface{}{
+		"customInput": &structs.CustomVCSInput{
+			Name:        toString(d.Get(bitbucketDatacenterName)),
+			IsDefault:   toOptionalBool(d.Get(bitbucketDatacenterIsDefault)),
+			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
+			Labels:      toOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
+		},
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
-		"username":       toString(d.Get(bitbucketDatacenterUsername)),
+		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
 		"accessToken":    toString(d.Get(bitbucketDatacenterAccessToken)),
 	}
 
@@ -88,10 +128,10 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 
 func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		BitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegration"`
+		BitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{}
+	variables := map[string]interface{}{"id": d.Id()}
 	if err := meta.(*internal.Client).Query(ctx, "BitbucketDatacenterIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the bitbucket datacenter integration: %v", err)
 	}
@@ -107,14 +147,20 @@ func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.R
 
 func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken)"`
+		UpdateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
 	}
 
 	variables := map[string]interface{}{
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
-		"username":       toString(d.Get(bitbucketDatacenterUsername)),
-		"accessToken":    toString(d.Get(bitbucketDatacenterAccessToken)),
+		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
+		"accessToken":    toOptionalString(d.Get(bitbucketDatacenterAccessToken)),
+		"customInput": &structs.CustomVCSUpdateInput{
+			ID:          toID(d.Id()),
+			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
+			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
+			Labels:      toOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+		},
 	}
 
 	var ret diag.Diagnostics
@@ -130,10 +176,12 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 
 func resourceBitbucketDatacenterIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		DeleteBitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationDelete"`
+		DeleteBitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{}
+	variables := map[string]interface{}{
+		"id": toID(d.Id()),
+	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "BitbucketDatacenterIntegrationDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete bitbucket datacenter integration: %v", internal.FromSpaceliftError(err))
@@ -145,11 +193,21 @@ func resourceBitbucketDatacenterIntegrationDelete(ctx context.Context, d *schema
 }
 
 func fillResults(d *schema.ResourceData, bitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration) {
-	d.SetId("spacelift_bitbucket_datacenter_integration_id")
+	// Note: the access token is not exposed in the API.
+	d.SetId(bitbucketDatacenterIntegration.ID)
 	d.Set(bitbucketDatacenterAPIHost, bitbucketDatacenterIntegration.APIHost)
 	d.Set(bitbucketDatacenterUsername, bitbucketDatacenterIntegration.Username)
 	d.Set(bitbucketDatacenterUserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
 	d.Set(bitbucketDatacenterWebhookURL, bitbucketDatacenterIntegration.WebhookURL)
 	d.Set(bitbucketDatacenterWebhookSecret, bitbucketDatacenterIntegration.WebhookSecret)
-	// Note: the access token is not exposed in the API.
+	d.Set(bitbucketDatacenterIsDefault, bitbucketDatacenterIntegration.IsDefault)
+	d.Set(bitbucketDatacenterSpaceID, bitbucketDatacenterIntegration.Space.ID)
+	d.Set(bitbucketDatacenterName, bitbucketDatacenterIntegration.Name)
+	d.Set(bitbucketDatacenterDescription, bitbucketDatacenterIntegration.Description)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range bitbucketDatacenterIntegration.Labels {
+		labels.Add(label)
+	}
+	d.Set(bitbucketDatacenterLabels, labels)
 }
