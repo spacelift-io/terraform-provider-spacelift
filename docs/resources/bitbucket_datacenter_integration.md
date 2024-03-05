@@ -13,14 +13,27 @@ description: |-
 ## Example Usage
 
 ```terraform
+# When a Bitbucket Datacenter server is accessible from the public internet.
 resource "spacelift_bitbucket_datacenter_integration" "example" {
   name             = "Bitbucket integration"
   is_default       = false
   space_id         = "root"
-  api_host         = "private://bitbucket_spacelift/bitbucket"
-  user_facing_host = "https://bitbucket.spacelift.io/bitbucket"
+  api_host         = "https://mybitbucket.myorg.com"
+  user_facing_host = "https://mybitbucket.myorg.com"
   username         = "bitbucket_user_name"
-  access_token     = "ABCD-MDQ3NzgxMzg3NzZ0VpOejJZmQfBBlpxxJuK9j1LLQG8g"
+  access_token     = "ABCD-EFGhiJKlMNoPQrSTuVWxYz0123456789abCDefGhiJkL"
+}
+
+# When a Bitbucket Datacenter server is not accessible from the public internet.
+# We need to use "private://" scheme to reach out our VCS Agent pool.
+resource "spacelift_bitbucket_datacenter_integration" "private-example" {
+  name             = "Bitbucket integration"
+  is_default       = false
+  space_id         = "root"
+  api_host         = "private://mybitbucket"
+  user_facing_host = "https://mybitbucket.myorg.com"
+  username         = "bitbucket_user_name"
+  access_token     = "ABCD-EFGhiJKlMNoPQrSTuVWxYz0123456789abCDefGhiJkL"
 }
 ```
 
@@ -33,7 +46,7 @@ resource "spacelift_bitbucket_datacenter_integration" "example" {
 - `api_host` (String) The API host where requests will be sent
 - `is_default` (Boolean) Bitbucket Datacenter integration is default.
 - `name` (String) Bitbucket Datacenter integration name
-- `user_facing_host` (String) User Facing Host which will be user for all user-facing URLs displayed in the Spacelift UI
+- `user_facing_host` (String) User Facing Host which will be used for all user-facing URLs displayed in the Spacelift UI
 - `username` (String) Username which will be used to authenticate requests for cloning repositories
 
 ### Optional
