@@ -69,7 +69,7 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 			},
 			bitbucketDatacenterUserFacingHost: {
 				Type:        schema.TypeString,
-				Description: "User Facing Host which will be user for all user-facing URLs displayed in the Spacelift UI",
+				Description: "User Facing Host which will be used for all user-facing URLs displayed in the Spacelift UI",
 				Required:    true,
 			},
 			bitbucketDatacenterUsername: {
