@@ -58,7 +58,7 @@ func dataSavedFilter() *schema.Resource {
 
 func dataFilterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		Filter struct {
+		Filter *struct {
 			ID        string `graphql:"id"`
 			IsPublic  bool   `graphql:"isPublic"`
 			CreatedBy string `graphql:"createdBy"`
@@ -68,10 +68,15 @@ func dataFilterRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		} `graphql:"savedFilter(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": d.Get("filter_id")}
+	id := d.Get("filter_id")
+	variables := map[string]interface{}{"id": id}
 
 	if err := meta.(*internal.Client).Query(ctx, "savedFilter", &query, variables); err != nil {
 		return diag.Errorf("could not query for filter: %v", err)
+	}
+
+	if query.Filter == nil {
+		return diag.Errorf("could not find filter %s", id)
 	}
 
 	d.SetId(query.Filter.ID)

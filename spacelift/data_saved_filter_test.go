@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -10,7 +11,7 @@ import (
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
-func TestFilterData(t *testing.T) {
+func TestSavedFilterData(t *testing.T) {
 	t.Run("creates and updates a filter", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -36,6 +37,17 @@ func TestFilterData(t *testing.T) {
 				Attribute("type", Equals("stacks")),
 				Attribute("is_public", Equals("true")),
 			),
+		}})
+	})
+
+	t.Run("filter doesn't exist", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{{
+			Config: `
+				data "spacelift_saved_filter" "test" {
+					filter_id = "non-existent"
+				}
+			`,
+			ExpectError: regexp.MustCompile("could not find filter non-existent"),
 		}})
 	})
 }

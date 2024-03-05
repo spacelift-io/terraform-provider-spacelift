@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -73,23 +74,27 @@ func dataSavedFilters() *schema.Resource {
 
 func dataFiltersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		Filters []structs.SavedFilter `graphql:"savedFilters()"`
+		Filters []structs.SavedFilter `graphql:"savedFilters(type: $type)"`
 	}
 
+	// Filtering by type is supported on the server side, but by name,
+	// we need to do it here on the client side.
 	typeRaw, typeSpecified := d.GetOk("filter_type")
 	requestedType := typeRaw.(string)
 	nameRaw, nameSpecified := d.GetOk("filter_name")
 	requestedName := nameRaw.(string)
 
-	if err := meta.(*internal.Client).Query(ctx, "savedFilters", &query, nil); err != nil {
+	variables := map[string]interface{}{"type": (*graphql.String)(nil)}
+	if typeSpecified {
+		variables["type"] = toString(requestedType)
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "savedFilters", &query, variables); err != nil {
 		return diag.Errorf("could not query for filters: %v", err)
 	}
 
 	var filters []interface{}
 	for _, filter := range query.Filters {
-		if typeSpecified && filter.Type != requestedType {
-			continue
-		}
 		if nameSpecified && filter.Name != requestedName {
 			continue
 		}

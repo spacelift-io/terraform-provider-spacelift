@@ -1,7 +1,7 @@
 package spacelift
 
 import (
-	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -17,17 +17,17 @@ func TestSavedFilterResource(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		config := func(filterType string) string {
-			return fmt.Sprintf(`
+			return `
 				resource "spacelift_saved_filter" "test" {
-					name = "My first filter %s"					
-					type = "%s"
+					name = "My first filter ` + randomID + `"
+					type = "` + filterType + `"
 					is_public = true
 					data = jsonencode({
 						"key": "activeFilters",
 						"value": jsonencode({})
   					})
 				}
-			`, randomID, filterType)
+			`
 		}
 
 		testSteps(t, []resource.TestStep{
@@ -51,6 +51,27 @@ func TestSavedFilterResource(t *testing.T) {
 					resourceName,
 					Attribute("type", Equals("contexts")),
 				),
+			},
+		})
+	})
+
+	t.Run("unexpected type", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `
+					resource "spacelift_saved_filter" "test" {
+						name = "My first filter ` + randomID + `"
+						type = "whatever"
+						is_public = true
+						data = jsonencode({
+							"key": "activeFilters",
+							"value": jsonencode({})
+						})
+					}
+				`,
+				ExpectError: regexp.MustCompile(`expected type to be one of \["stacks" "blueprints" "contexts" "webhooks"\], got whatever`),
 			},
 		})
 	})
