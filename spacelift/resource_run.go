@@ -2,9 +2,15 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
+	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -20,6 +26,11 @@ func resourceRun() *schema.Resource {
 		CreateContext: resourceRunCreate,
 		ReadContext:   schema.NoopContext,
 		Delete:        schema.RemoveFromState,
+		UpdateContext: schema.NoopContext,
+
+		Timeouts: &schema.ResourceTimeout{
+			Create: schema.DefaultTimeout(30 * time.Minute),
+		},
 
 		Schema: map[string]*schema.Schema{
 			"stack_id": {
@@ -55,7 +66,61 @@ func resourceRun() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"wait": {
+				Type:        schema.TypeList,
+				Optional:    true,
+				Description: "Wait for the run to finish",
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"enabled": {
+							Type:        schema.TypeBool,
+							Description: "Whether waiting for a job is enabled or not. Default: `false`",
+							Optional:    true,
+							Default:     false,
+						},
+						"continue_on_failed": {
+							Type:        schema.TypeBool,
+							Description: "Continue if run failed. Default: `false`",
+							Optional:    true,
+							Default:     false,
+						},
+						"continue_on_discarded": {
+							Type:        schema.TypeBool,
+							Description: "Continue if run has been discarded. Default: `false`",
+							Optional:    true,
+							Default:     false,
+						},
+						"continue_on_timeout": {
+							Type:        schema.TypeBool,
+							Description: "Continue if run timed out, i.e. did not reach end state `finished` in time. Default: `false`",
+							Optional:    true,
+							Default:     false,
+						},
+					},
+				},
+			},
 		},
+	}
+}
+
+type waitConfiguration struct {
+	enabled               bool
+	continue_on_failed    bool
+	continue_on_discarded bool
+	continue_on_timeout   bool
+}
+
+func expandWaitConfiguration(input []interface{}) *waitConfiguration {
+	if len(input) == 0 {
+		return nil
+	}
+	v := input[0].(map[string]interface{})
+	return &waitConfiguration{
+		enabled:               v["enabled"].(bool),
+		continue_on_failed:    v["continue_on_failed"].(bool),
+		continue_on_discarded: v["continue_on_discarded"].(bool),
+		continue_on_timeout:   v["continue_on_timeout"].(bool),
 	}
 }
 
@@ -64,7 +129,7 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 		ID string `graphql:"runResourceCreate(stack: $stack, commitSha: $sha, proposed: $proposed)"`
 	}
 
-	stackID := d.Get("stack_id")
+	stackID := d.Get("stack_id").(string)
 
 	variables := map[string]interface{}{
 		"stack":    toID(stackID),
@@ -80,11 +145,149 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 		variables["proposed"] = graphql.NewBoolean(graphql.Boolean(proposed.(bool)))
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "ResourceRunCreate", &mutation, variables); err != nil {
+	client := meta.(*internal.Client)
+	if err := client.Mutate(ctx, "ResourceRunCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not trigger run for stack %s: %v", stackID, internal.FromSpaceliftError(err))
+	}
+
+	if waitRaw, ok := d.GetOk("wait"); ok {
+		wait := expandWaitConfiguration(waitRaw.([]interface{}))
+
+		if wait.enabled {
+			stateConf := &retry.StateChangeConf{
+				ContinuousTargetOccurence: 1,
+				Delay:                     10 * time.Second, // TODO: Delay must be a multiple of Timeout
+				MinTimeout:                10 * time.Second,
+				Pending: []string{
+					"unknown",
+					"queued",
+					"initializing",
+					"planning",
+					"unconfirmed",
+					"confirmed",
+					"applying",
+					"performing",
+					"destroying",
+					"preparing",
+					"preparing_apply",
+					"replan_requested",
+					"pending",
+					"preparing_replan",
+					"ready",
+					"pending_review",
+				},
+				Target: []string{
+					"discarded",
+					"failed",
+					"finished",
+					"discarded",
+					"stopped",
+					"skipped",
+				},
+				Refresh: checkStackStatusFunc(ctx, client, stackID, mutation.ID),
+				Timeout: d.Timeout(schema.TimeoutCreate),
+			}
+
+			finalState, err := stateConf.WaitForStateContext(ctx)
+			if err != nil {
+				if timeoutErr, ok := internal.AsError[*retry.TimeoutError](err); ok {
+					tflog.Debug(ctx, "received retry.TimeoutError from WaitForStateContext", map[string]any{
+						"stackID":       stackID,
+						"runID":         mutation.ID,
+						"lastState":     timeoutErr.LastState,
+						"expectedState": timeoutErr.ExpectedState,
+					})
+					finalState = "__timeout__"
+				} else if err == context.DeadlineExceeded {
+					tflog.Debug(ctx, "received context.DeadlineExceeded from WaitForStateContext", map[string]any{
+						"stackID": stackID,
+						"runID":   mutation.ID,
+					})
+					finalState = "__timeout__"
+				} else {
+					return diag.Errorf("failed waiting for run %s on stack %s to finish. error(%T): %+v ", mutation.ID, stackID, err, err)
+				}
+			}
+
+			switch finalState.(string) {
+			case "finished":
+			case "discarded":
+				if !wait.continue_on_discarded {
+					return diag.Errorf("run %s on stack %s has been discarded (canceled)", mutation.ID, stackID)
+				} else {
+					tflog.Info(ctx, "run has been discarded but continue_on_discarded=true",
+						map[string]any{
+							"stackID": stackID,
+							"runID":   mutation.ID,
+						})
+				}
+			case "__timeout__":
+				if !wait.continue_on_timeout {
+					return diag.Errorf("run %s on stack %s has timed out", mutation.ID, stackID)
+				} else {
+					tflog.Info(ctx, "run timed out but continue_on_discarded=true",
+						map[string]any{
+							"stackID": stackID,
+							"runID":   mutation.ID,
+						})
+				}
+			case "failed":
+				if !wait.continue_on_failed {
+					return diag.Errorf("run %s on stack %s has ended with status %s", mutation.ID, stackID, finalState)
+				} else {
+					tflog.Info(ctx, "run failed but continue_on_failed=true",
+						map[string]any{
+							"stackID":    stackID,
+							"runID":      mutation.ID,
+							"finalState": finalState,
+						})
+				}
+			default:
+				return diag.Errorf("run %s on stack %s has ended with status %s", mutation.ID, stackID, finalState)
+			}
+		}
 	}
 
 	d.SetId(mutation.ID)
 
 	return nil
+}
+
+func checkStackStatusFunc(ctx context.Context, client *internal.Client, stackID string, runID string) retry.StateRefreshFunc {
+	return func() (result any, state string, err error) {
+		state, err = getStackRunStateByID(ctx, client, stackID, runID)
+		// instead of a resource handle we return the state here.
+		// Makes it easier to detect which end state has been reached.
+		// Otherwise we would need another GraphQL query
+		result = state
+		return
+	}
+}
+
+func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID string, runID string) (string, error) {
+	var query struct {
+		Stack struct {
+			Run struct {
+				ID    graphql.String
+				State graphql.String
+			} `graphql:"run(id: $runId)"`
+		} `graphql:"stack(id: $stackId)"`
+	}
+
+	variables := map[string]interface{}{
+		"stackId": graphql.ID(stackID),
+		"runId":   graphql.ID(runID),
+	}
+
+	if err := client.Query(ctx, "StackRunRead", &query, variables); err != nil {
+		return "", errors.Wrap(err, fmt.Sprintf("could not query for run %s of stack %s", runID, stackID))
+	}
+
+	currentState := strings.ToLower(string(query.Stack.Run.State))
+	tflog.Debug(ctx, "current state of run", map[string]interface{}{
+		"stackID":      stackID,
+		"runID":        runID,
+		"currentState": currentState,
+	})
+	return currentState, nil
 }
