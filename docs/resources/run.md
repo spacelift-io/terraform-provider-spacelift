@@ -40,7 +40,27 @@ resource "spacelift_run" "this" {
 - `commit_sha` (String) The commit SHA for which to trigger a run.
 - `keepers` (Map of String) Arbitrary map of values that, when changed, will trigger recreation of the resource.
 - `proposed` (Boolean) Whether the run is a proposed run. Defaults to `false`.
+- `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `wait` (Block List, Max: 1) Wait for the run to finish (see [below for nested schema](#nestedblock--wait))
 
 ### Read-Only
 
 - `id` (String) The ID of the triggered run.
+
+<a id="nestedblock--timeouts"></a>
+### Nested Schema for `timeouts`
+
+Optional:
+
+- `create` (String)
+
+
+<a id="nestedblock--wait"></a>
+### Nested Schema for `wait`
+
+Optional:
+
+- `continue_on_discarded` (Boolean) Continue if run has been discarded. Default: `false`
+- `continue_on_failed` (Boolean) Continue if run failed. Default: `false`
+- `continue_on_timeout` (Boolean) Continue if run timed out, i.e. did not reach end state `finished` in time. Default: `false`
+- `enabled` (Boolean) Whether waiting for a job is enabled or not. Default: `false`
