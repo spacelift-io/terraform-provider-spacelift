@@ -1,0 +1,1 @@
+terraform import spacelift_bitbucket_datacenter_integration.example spacelift_bitbucket_datacenter_integration_id

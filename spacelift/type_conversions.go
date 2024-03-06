@@ -1,6 +1,9 @@
 package spacelift
 
-import "github.com/shurcooL/graphql"
+import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/shurcooL/graphql"
+)
 
 func toBool(input interface{}) graphql.Boolean {
 	return graphql.Boolean(input.(bool))
@@ -25,4 +28,20 @@ func toString(input interface{}) graphql.String {
 func toOptionalInt(input interface{}) *graphql.Int {
 	v := graphql.Int(input.(int))
 	return graphql.NewInt(v)
+}
+
+func toOptionalStringList(input interface{}) *[]graphql.String {
+	if input == nil {
+		return nil
+	}
+
+	if labelSet, ok := input.(*schema.Set); ok {
+		var labels []graphql.String
+		for _, label := range labelSet.List() {
+			labels = append(labels, toString(label))
+		}
+		return &labels
+	}
+
+	return nil
 }

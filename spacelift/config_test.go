@@ -72,6 +72,7 @@ var testConfig struct {
 				APIHost        string
 				WebhookSecret  string
 				WebhookURL     string
+				AccessToken    string
 			}
 			Repository struct {
 				Name      string

@@ -32,6 +32,6 @@ data "spacelift_bitbucket_datacenter_integration" "bitbucket_datacenter_integrat
 - `name` (String) Bitbucket Datacenter integration name
 - `space_id` (String) Bitbucket Datacenter integration space id
 - `user_facing_host` (String) Bitbucket Datacenter integration user facing host
-- `username` (String) Bitbucket Datacenter username
+- `username` (String) Username which will be used to authenticate requests for cloning repositories
 - `webhook_secret` (String) Bitbucket Datacenter integration webhook secret
 - `webhook_url` (String) Bitbucket Datacenter integration webhook URL

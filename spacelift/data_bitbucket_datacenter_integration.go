@@ -63,14 +63,14 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 				Description: "Bitbucket Datacenter integration space id",
 				Computed:    true,
 			},
-			bitbucketDatacenterUsername: {
-				Type:        schema.TypeString,
-				Description: "Bitbucket Datacenter username",
-				Computed:    true,
-			},
 			bitbucketDatacenterAPIHost: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Datacenter integration api host",
+				Computed:    true,
+			},
+			bitbucketDatacenterUsername: {
+				Type:        schema.TypeString,
+				Description: "Username which will be used to authenticate requests for cloning repositories",
 				Computed:    true,
 			},
 			bitbucketDatacenterWebhookSecret: {
