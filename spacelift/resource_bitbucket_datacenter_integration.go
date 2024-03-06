@@ -121,7 +121,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 		return diag.Errorf("could not create the bitbucket datacenter integration: %v", internal.FromSpaceliftError(err))
 	}
 
-	fillResults(d, &mutation.CreateBitbucketDatacenterIntegration)
+	fillBitbucketDatacenterIntegrationResults(d, &mutation.CreateBitbucketDatacenterIntegration)
 
 	return nil
 }
@@ -139,7 +139,7 @@ func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.R
 	if query.BitbucketDatacenterIntegration == nil {
 		d.SetId("")
 	} else {
-		fillResults(d, query.BitbucketDatacenterIntegration)
+		fillBitbucketDatacenterIntegrationResults(d, query.BitbucketDatacenterIntegration)
 	}
 
 	return nil
@@ -169,7 +169,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 		ret = append(ret, diag.Errorf("could not update the bitbucket datacenter integration: %v", internal.FromSpaceliftError(err))...)
 	}
 
-	fillResults(d, &mutation.UpdateBitbucketDatacenterIntegration)
+	fillBitbucketDatacenterIntegrationResults(d, &mutation.UpdateBitbucketDatacenterIntegration)
 
 	return ret
 }
@@ -192,7 +192,7 @@ func resourceBitbucketDatacenterIntegrationDelete(ctx context.Context, d *schema
 	return nil
 }
 
-func fillResults(d *schema.ResourceData, bitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration) {
+func fillBitbucketDatacenterIntegrationResults(d *schema.ResourceData, bitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration) {
 	// Note: the access token is not exposed in the API.
 	d.SetId(bitbucketDatacenterIntegration.ID)
 	d.Set(bitbucketDatacenterAPIHost, bitbucketDatacenterIntegration.APIHost)
