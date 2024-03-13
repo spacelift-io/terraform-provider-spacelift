@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -79,21 +80,17 @@ func resourceRun() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 						},
-						"continue_on_failed": {
-							Type:        schema.TypeBool,
-							Description: "Continue if run failed. Default: `false`",
+						"continue_on_state": {
+							Type: schema.TypeSet,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Description: "Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`",
 							Optional:    true,
-							Default:     false,
-						},
-						"continue_on_discarded": {
-							Type:        schema.TypeBool,
-							Description: "Continue if run has been discarded. Default: `false`",
-							Optional:    true,
-							Default:     false,
 						},
 						"continue_on_timeout": {
 							Type:        schema.TypeBool,
-							Description: "Continue if run timed out, i.e. did not reach end state `finished` in time. Default: `false`",
+							Description: "Continue if run timed out, i.e. did not reach any defined end state in time. Default: `false`",
 							Optional:    true,
 							Default:     false,
 						},
@@ -105,10 +102,9 @@ func resourceRun() *schema.Resource {
 }
 
 type waitConfiguration struct {
-	enabled               bool
-	continue_on_failed    bool
-	continue_on_discarded bool
-	continue_on_timeout   bool
+	enabled           bool
+	continueOnState   []string
+	continueOnTimeout bool
 }
 
 func expandWaitConfiguration(input []interface{}) *waitConfiguration {
@@ -116,12 +112,25 @@ func expandWaitConfiguration(input []interface{}) *waitConfiguration {
 		return nil
 	}
 	v := input[0].(map[string]interface{})
-	return &waitConfiguration{
-		enabled:               v["enabled"].(bool),
-		continue_on_failed:    v["continue_on_failed"].(bool),
-		continue_on_discarded: v["continue_on_discarded"].(bool),
-		continue_on_timeout:   v["continue_on_timeout"].(bool),
+	cfg := &waitConfiguration{
+		enabled:           v["enabled"].(bool),
+		continueOnState:   []string{},
+		continueOnTimeout: v["continue_on_timeout"].(bool),
 	}
+
+	if v, ok := v["continue_on_state"]; ok {
+		for _, item := range v.(*schema.Set).List() {
+			str, ok := item.(string)
+			if !ok {
+				panic(fmt.Sprintf("continue_on_state contains a non-string element %+v", str))
+			}
+			cfg.continueOnState = append(cfg.continueOnState, str)
+		}
+	}
+	if len(cfg.continueOnState) == 0 {
+		cfg.continueOnState = append(cfg.continueOnState, "finished")
+	}
+	return cfg
 }
 
 func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -159,30 +168,10 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 				Delay:                     10 * time.Second, // TODO: Delay must be a multiple of Timeout
 				MinTimeout:                10 * time.Second,
 				Pending: []string{
-					"unknown",
-					"queued",
-					"initializing",
-					"planning",
-					"unconfirmed",
-					"confirmed",
-					"applying",
-					"performing",
-					"destroying",
-					"preparing",
-					"preparing_apply",
-					"replan_requested",
-					"pending",
-					"preparing_replan",
-					"ready",
-					"pending_review",
+					"running",
 				},
 				Target: []string{
-					"discarded",
-					"failed",
 					"finished",
-					"discarded",
-					"stopped",
-					"skipped",
 				},
 				Refresh: checkStackStatusFunc(ctx, client, stackID, mutation.ID),
 				Timeout: d.Timeout(schema.TimeoutCreate),
@@ -210,19 +199,8 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 			}
 
 			switch finalState.(string) {
-			case "finished":
-			case "discarded":
-				if !wait.continue_on_discarded {
-					return diag.Errorf("run %s on stack %s has been discarded (canceled)", mutation.ID, stackID)
-				} else {
-					tflog.Info(ctx, "run has been discarded but continue_on_discarded=true",
-						map[string]any{
-							"stackID": stackID,
-							"runID":   mutation.ID,
-						})
-				}
 			case "__timeout__":
-				if !wait.continue_on_timeout {
+				if !wait.continueOnTimeout {
 					return diag.Errorf("run %s on stack %s has timed out", mutation.ID, stackID)
 				} else {
 					tflog.Info(ctx, "run timed out but continue_on_discarded=true",
@@ -231,45 +209,47 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 							"runID":   mutation.ID,
 						})
 				}
-			case "failed":
-				if !wait.continue_on_failed {
-					return diag.Errorf("run %s on stack %s has ended with status %s", mutation.ID, stackID, finalState)
-				} else {
-					tflog.Info(ctx, "run failed but continue_on_failed=true",
-						map[string]any{
-							"stackID":    stackID,
-							"runID":      mutation.ID,
-							"finalState": finalState,
-						})
-				}
 			default:
-				return diag.Errorf("run %s on stack %s has ended with status %s", mutation.ID, stackID, finalState)
+				if !slices.Contains[[]string](wait.continueOnState, finalState.(string)) {
+					return diag.Errorf("run %s on stack %s has ended with status %s. expected %v", mutation.ID, stackID, finalState, wait.continueOnState)
+				}
+				tflog.Debug(ctx, "run finished", map[string]any{
+					"stackID":    stackID,
+					"runID":      mutation.ID,
+					"finalState": finalState,
+				})
 			}
 		}
 	}
 
 	d.SetId(mutation.ID)
-
 	return nil
 }
 
 func checkStackStatusFunc(ctx context.Context, client *internal.Client, stackID string, runID string) retry.StateRefreshFunc {
 	return func() (result any, state string, err error) {
-		state, err = getStackRunStateByID(ctx, client, stackID, runID)
-		// instead of a resource handle we return the state here.
+		// instead of a resource handle we return the current state as result
 		// Makes it easier to detect which end state has been reached.
 		// Otherwise we would need another GraphQL query
-		result = state
+		result, finished, err := getStackRunStateByID(ctx, client, stackID, runID)
+		if err != nil {
+			return
+		}
+		state = "running"
+		if finished {
+			state = "finished"
+		}
 		return
 	}
 }
 
-func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID string, runID string) (string, error) {
+func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID string, runID string) (string, bool, error) {
 	var query struct {
 		Stack struct {
 			Run struct {
-				ID    graphql.String
-				State graphql.String
+				ID       graphql.String
+				State    graphql.String
+				Finished graphql.Boolean
 			} `graphql:"run(id: $runId)"`
 		} `graphql:"stack(id: $stackId)"`
 	}
@@ -280,7 +260,7 @@ func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID 
 	}
 
 	if err := client.Query(ctx, "StackRunRead", &query, variables); err != nil {
-		return "", errors.Wrap(err, fmt.Sprintf("could not query for run %s of stack %s", runID, stackID))
+		return "", false, errors.Wrap(err, fmt.Sprintf("could not query for run %s of stack %s", runID, stackID))
 	}
 
 	currentState := strings.ToLower(string(query.Stack.Run.State))
@@ -288,6 +268,7 @@ func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID 
 		"stackID":      stackID,
 		"runID":        runID,
 		"currentState": currentState,
+		"finished":     query.Stack.Run.Finished,
 	})
-	return currentState, nil
+	return currentState, bool(query.Stack.Run.Finished), nil
 }
