@@ -60,7 +60,6 @@ Optional:
 
 Optional:
 
-- `continue_on_discarded` (Boolean) Continue if run has been discarded. Default: `false`
-- `continue_on_failed` (Boolean) Continue if run failed. Default: `false`
-- `continue_on_timeout` (Boolean) Continue if run timed out, i.e. did not reach end state `finished` in time. Default: `false`
+- `continue_on_state` (Set of String) Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`
+- `continue_on_timeout` (Boolean) Continue if run timed out, i.e. did not reach any defined end state in time. Default: `false`
 - `enabled` (Boolean) Whether waiting for a job is enabled or not. Default: `false`
