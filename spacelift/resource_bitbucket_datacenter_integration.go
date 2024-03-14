@@ -23,6 +23,9 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 		ReadContext:   resourceBitbucketDatacenterIntegrationRead,
 		UpdateContext: resourceBitbucketDatacenterIntegrationUpdate,
 		DeleteContext: resourceBitbucketDatacenterIntegrationDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			bitbucketDatacenterID: {
