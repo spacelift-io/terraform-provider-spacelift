@@ -90,6 +90,12 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"access_token"}, // specified only in the config
+			},
+			{
 				Config: configBitbucket("newUserName", host, token, "new descr", `["new label1"]`),
 				Check: Resource(
 					resourceName,
