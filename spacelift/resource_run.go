@@ -74,9 +74,9 @@ func resourceRun() *schema.Resource {
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"enabled": {
+						"disabled": {
 							Type:        schema.TypeBool,
-							Description: "Whether waiting for a job is enabled or not. Default: `false`",
+							Description: "Whether waiting for a job is disabled or not. Default: `false`",
 							Optional:    true,
 							Default:     false,
 						},
@@ -102,7 +102,7 @@ func resourceRun() *schema.Resource {
 }
 
 type waitConfiguration struct {
-	enabled           bool
+	disabled          bool
 	continueOnState   []string
 	continueOnTimeout bool
 }
@@ -113,7 +113,7 @@ func expandWaitConfiguration(input []interface{}) *waitConfiguration {
 	}
 	v := input[0].(map[string]interface{})
 	cfg := &waitConfiguration{
-		enabled:           v["enabled"].(bool),
+		disabled:          v["disabled"].(bool),
 		continueOnState:   []string{},
 		continueOnTimeout: v["continue_on_timeout"].(bool),
 	}
@@ -162,7 +162,7 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 	if waitRaw, ok := d.GetOk("wait"); ok {
 		wait := expandWaitConfiguration(waitRaw.([]interface{}))
 
-		if wait.enabled {
+		if !wait.disabled {
 			stateConf := &retry.StateChangeConf{
 				ContinuousTargetOccurence: 1,
 				Delay:                     10 * time.Second, // TODO: Delay must be a multiple of Timeout
