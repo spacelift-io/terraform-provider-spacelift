@@ -42,6 +42,7 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 
 ### Optional
 
+- `description` (String) Description of the policy
 - `labels` (Set of String)
 - `space_id` (String) ID (slug) of the space the policy is in
 

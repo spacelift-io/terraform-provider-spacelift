@@ -45,6 +45,7 @@ output "policy_ids" {
 
 Read-Only:
 
+- `description` (String)
 - `id` (String)
 - `labels` (Set of String)
 - `name` (String)
