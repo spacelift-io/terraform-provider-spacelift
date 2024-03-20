@@ -5,10 +5,11 @@ type PolicyType string
 
 // Policy represents Policy data relevant to the provider.
 type Policy struct {
-	ID     string   `graphql:"id"`
-	Labels []string `graphql:"labels"`
-	Name   string   `graphql:"name"`
-	Body   string   `graphql:"body"`
-	Type   string   `graphql:"type"`
-	Space  string   `graphql:"space"`
+	ID          string   `graphql:"id"`
+	Labels      []string `graphql:"labels"`
+	Name        string   `graphql:"name"`
+	Body        string   `graphql:"body"`
+	Type        string   `graphql:"type"`
+	Space       string   `graphql:"space"`
+	Description string   `graphql:"description"`
 }

@@ -59,6 +59,11 @@ func dataPolicies() *schema.Resource {
 							Description: "Type of the policy",
 							Computed:    true,
 						},
+						"description": {
+							Type:        schema.TypeString,
+							Description: "description of the policy",
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -70,11 +75,12 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.SetId(fmt.Sprintf("policies/%s/%s", d.Get("type").(string), d.Get("labels").(*schema.Set).List()))
 	var query struct {
 		Policies []struct {
-			ID     string   `graphql:"id"`
-			Labels []string `graphql:"labels"`
-			Name   string   `graphql:"name"`
-			Type   string   `graphql:"type"`
-			Space  string   `graphql:"space"`
+			ID          string   `graphql:"id"`
+			Labels      []string `graphql:"labels"`
+			Name        string   `graphql:"name"`
+			Type        string   `graphql:"type"`
+			Space       string   `graphql:"space"`
+			Description string   `graphql:"description"`
 		} `graphql:"policies()"`
 	}
 
@@ -110,11 +116,12 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			}
 		}
 		policies = append(policies, map[string]interface{}{
-			"id":       policy.ID,
-			"labels":   policy.Labels,
-			"name":     policy.Name,
-			"type":     policy.Type,
-			"space_id": policy.Space,
+			"id":          policy.ID,
+			"labels":      policy.Labels,
+			"name":        policy.Name,
+			"type":        policy.Type,
+			"space_id":    policy.Space,
+			"description": policy.Description,
 		})
 	}
 
