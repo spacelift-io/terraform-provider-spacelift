@@ -190,10 +190,14 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	variables := map[string]interface{}{
 		"id":          toID(d.Id()),
 		"name":        toString(d.Get("name")),
+		"description": (*graphql.String)(nil),
 		"body":        toString(d.Get("body")),
 		"labels":      (*[]graphql.String)(nil),
 		"space":       (*graphql.ID)(nil),
-		"description": toString(d.Get("description")),
+	}
+
+	if desc, ok := d.GetOk("description"); ok {
+		variables["description"] = graphql.String(desc.(string))
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
