@@ -109,10 +109,10 @@ func resourcePolicy() *schema.Resource {
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type, labels: $labels, space: $space, description: $description)"`
+		CreatePolicy structs.Policy `graphql:"policyCreatev2(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	input := map[string]interface{}{
 		"name":        toString(d.Get("name")),
 		"body":        toString(d.Get("body")),
 		"type":        structs.PolicyType(d.Get("type").(string)),
@@ -128,14 +128,16 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		variables["labels"] = &labels
+		input["labels"] = &labels
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
-		variables["space"] = graphql.NewID(spaceID)
+		input["space"] = graphql.NewID(spaceID)
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "PolicyCreate", &mutation, variables); err != nil {
+	variables := map[string]interface{}{"input": input}
+
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyCreateV2", &mutation, variables); err != nil {
 		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
 	}
 
@@ -184,11 +186,10 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body, labels: $labels, space: $space, description: $description)"`
+		UpdatePolicy structs.Policy `graphql:"policyUpdatev2(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
-		"id":          toID(d.Id()),
+	input := map[string]interface{}{
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
 		"body":        toString(d.Get("body")),
@@ -197,7 +198,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	if desc, ok := d.GetOk("description"); ok {
-		variables["description"] = graphql.String(desc.(string))
+		input["description"] = graphql.String(desc.(string))
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -207,16 +208,20 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		variables["labels"] = &labels
+		input["labels"] = &labels
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
-		variables["space"] = graphql.NewID(spaceID)
+		input["space"] = graphql.NewID(spaceID)
 	}
 
 	var ret diag.Diagnostics
+	variables := map[string]interface{}{
+		"id":    toID(d.Id()),
+		"input": input,
+	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "PolicyUpdate", &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "PolicyUpdateV2", &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update policy: %v", internal.FromSpaceliftError(err))
 	}
 
