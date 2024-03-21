@@ -112,14 +112,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		CreatePolicy structs.Policy `graphql:"policyCreatev2(input: $input)"`
 	}
 
-	input := map[string]interface{}{
-		"name":        toString(d.Get("name")),
-		"body":        toString(d.Get("body")),
-		"type":        structs.PolicyType(d.Get("type").(string)),
-		"labels":      (*[]graphql.String)(nil),
-		"space":       (*graphql.ID)(nil),
-		"description": toString(d.Get("description")),
-	}
+	input := structs.NewPolicyCreateInput(toString(d.Get("name")), toString(d.Get("body")), structs.PolicyType(d.Get("type").(string)))
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
 		var labels []graphql.String
@@ -128,11 +121,15 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		input["labels"] = &labels
+		input.Labels = &labels
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
-		input["space"] = graphql.NewID(spaceID)
+		input.Space = graphql.NewID(spaceID)
+	}
+
+	if description, ok := d.GetOk("description"); ok {
+		input.Description = toOptionalString(description)
 	}
 
 	variables := map[string]interface{}{"input": input}
@@ -189,16 +186,10 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		UpdatePolicy structs.Policy `graphql:"policyUpdatev2(id: $id, input: $input)"`
 	}
 
-	input := map[string]interface{}{
-		"name":        toString(d.Get("name")),
-		"description": (*graphql.String)(nil),
-		"body":        toString(d.Get("body")),
-		"labels":      (*[]graphql.String)(nil),
-		"space":       (*graphql.ID)(nil),
-	}
+	input := structs.NewPolicyUpdateInput(toString(d.Get("name")), toString(d.Get("body")))
 
 	if desc, ok := d.GetOk("description"); ok {
-		input["description"] = graphql.String(desc.(string))
+		input.Description = toOptionalString(desc)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -208,11 +199,11 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			labels = append(labels, graphql.String(label.(string)))
 		}
 
-		input["labels"] = &labels
+		input.Labels = &labels
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
-		input["space"] = graphql.NewID(spaceID)
+		input.Space = graphql.NewID(spaceID)
 	}
 
 	var ret diag.Diagnostics
