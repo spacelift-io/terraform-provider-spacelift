@@ -21,6 +21,7 @@ func TestPolicyResource(t *testing.T) {
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
 					labels = ["one", "two"]
+					description = "My awesome policy"
 					body = <<EOF
 					package spacelift
 					deny["%s"] { true }
@@ -39,6 +40,7 @@ func TestPolicyResource(t *testing.T) {
 					Attribute("body", Contains("boom")),
 					Attribute("type", Equals("PLAN")),
 					SetEquals("labels", "one", "two"),
+					Attribute("description", Equals("My awesome policy")),
 				),
 			},
 			{
@@ -99,6 +101,7 @@ func TestPolicyResourceSpace(t *testing.T) {
 				resource "spacelift_policy" "test" {
 					name = "My first policy %s"
 					labels = ["one", "two"]
+					description = "My awesome policy"
 					space_id = "root"
 					body = <<EOF
 					package spacelift
@@ -120,6 +123,7 @@ func TestPolicyResourceSpace(t *testing.T) {
 					Attribute("type", Equals("PLAN")),
 					SetEquals("labels", "one", "two"),
 					Attribute("space_id", Equals("root")),
+					Attribute("description", Equals("My awesome policy")),
 				),
 			},
 			{

@@ -97,21 +97,28 @@ func resourcePolicy() *schema.Resource {
 					false, // case-sensitive match
 				),
 			},
+			"description": {
+				Type:             schema.TypeString,
+				Description:      "Description of the policy",
+				Optional:         true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
+			},
 		},
 	}
 }
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type, labels: $labels, space: $space)"`
+		CreatePolicy structs.Policy `graphql:"policyCreate(name: $name, body: $body, type: $type, labels: $labels, space: $space, description: $description)"`
 	}
 
 	variables := map[string]interface{}{
-		"name":   toString(d.Get("name")),
-		"body":   toString(d.Get("body")),
-		"type":   structs.PolicyType(d.Get("type").(string)),
-		"labels": (*[]graphql.String)(nil),
-		"space":  (*graphql.ID)(nil),
+		"name":        toString(d.Get("name")),
+		"body":        toString(d.Get("body")),
+		"type":        structs.PolicyType(d.Get("type").(string)),
+		"labels":      (*[]graphql.String)(nil),
+		"space":       (*graphql.ID)(nil),
+		"description": toString(d.Get("description")),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -157,6 +164,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("body", policy.Body)
 	d.Set("type", policy.Type)
 	d.Set("space_id", policy.Space)
+	d.Set("description", policy.Description)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range policy.Labels {
@@ -176,15 +184,20 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body, labels: $labels, space: $space)"`
+		UpdatePolicy structs.Policy `graphql:"policyUpdate(id: $id, name: $name, body: $body, labels: $labels, space: $space, description: $description)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":     toID(d.Id()),
-		"name":   toString(d.Get("name")),
-		"body":   toString(d.Get("body")),
-		"labels": (*[]graphql.String)(nil),
-		"space":  (*graphql.ID)(nil),
+		"id":          toID(d.Id()),
+		"name":        toString(d.Get("name")),
+		"description": (*graphql.String)(nil),
+		"body":        toString(d.Get("body")),
+		"labels":      (*[]graphql.String)(nil),
+		"space":       (*graphql.ID)(nil),
+	}
+
+	if desc, ok := d.GetOk("description"); ok {
+		variables["description"] = graphql.String(desc.(string))
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
