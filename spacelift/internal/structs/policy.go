@@ -1,5 +1,7 @@
 package structs
 
+import "github.com/shurcooL/graphql"
+
 // PolicyType represents a policy type.
 type PolicyType string
 
@@ -12,4 +14,34 @@ type Policy struct {
 	Type        string   `graphql:"type"`
 	Space       string   `graphql:"space"`
 	Description string   `graphql:"description"`
+}
+
+type PolicyCreateInput struct {
+	PolicyUpdateInput
+	Type PolicyType `json:"type"`
+}
+
+func NewPolicyCreateInput(name, body graphql.String, policyType PolicyType) PolicyCreateInput {
+	return PolicyCreateInput{
+		PolicyUpdateInput: PolicyUpdateInput{
+			Name: name,
+			Body: body,
+		},
+		Type: policyType,
+	}
+}
+
+type PolicyUpdateInput struct {
+	Name        graphql.String    `json:"name"`
+	Body        graphql.String    `json:"body"`
+	Labels      *[]graphql.String `json:"labels"`
+	Space       *graphql.ID       `json:"space"`
+	Description *graphql.String   `json:"description"`
+}
+
+func NewPolicyUpdateInput(name, body graphql.String) PolicyUpdateInput {
+	return PolicyUpdateInput{
+		Name: name,
+		Body: body,
+	}
 }
