@@ -27,6 +27,7 @@ func TestPolicyResource(t *testing.T) {
 					deny["%s"] { true }
 					EOF
 					type = "PLAN"
+					description = "My awesome policy"
 				}
 			`, randomID, message)
 		}
@@ -109,6 +110,7 @@ func TestPolicyResourceSpace(t *testing.T) {
 					deny["%s"] { true }
 					EOF
 					type = "PLAN"
+					description = "My awesome policy"
 				}
 			`, randomID, message)
 		}
