@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"github.com/shurcooL/graphql"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -31,7 +32,7 @@ func resourceUser() *schema.Resource {
 			"invitation_email": {
 				Type:        schema.TypeString,
 				Description: "Email of the user. Used for sending an invitation.",
-				Required:    true,
+				Optional:    true,
 			},
 			"username": {
 				Type:        schema.TypeString,
@@ -69,9 +70,15 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface
 	var mutation struct {
 		User *structs.User `graphql:"managedUserInvite(input: $input)"`
 	}
+
+	var email *graphql.String
+	if d.Get("invitation_email") != "" {
+		email = toOptionalString(d.Get("invitation_email"))
+	}
+
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserInviteInput{
-			InvitationEmail: toString(d.Get("invitation_email")),
+			InvitationEmail: email,
 			Username:        toString(d.Get("username")),
 			AccessRules:     getAccessRules(d),
 		},
