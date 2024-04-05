@@ -17,9 +17,12 @@ description: |-
 
 ### Required
 
-- `invitation_email` (String) Email of the user. Used for sending an invitation.
 - `policy` (Block List, Min: 1) (see [below for nested schema](#nestedblock--policy))
 - `username` (String) Username of the user
+
+### Optional
+
+- `invitation_email` (String) `invitation_email` will be used to send an invitation to the specified email address. This property is required when creating a new user. This property is optional when importing an existing user.
 
 ### Read-Only
 

@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -28,15 +29,10 @@ func resourceUser() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
-			"invitation_email": {
-				Type:        schema.TypeString,
-				Description: "Email of the user. Used for sending an invitation.",
-				Required:    true,
-			},
 			"username": {
 				Type:        schema.TypeString,
-				Description: "Username of the user",
 				Required:    true,
+				Description: "Username of the user",
 			},
 			"policy": {
 				Type:     schema.TypeList,
@@ -60,6 +56,11 @@ func resourceUser() *schema.Resource {
 					},
 				},
 			},
+			"invitation_email": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "`invitation_email` will be used to send an invitation to the specified email address. This property is required when creating a new user. This property is optional when importing an existing user.",
+			},
 		},
 	}
 }
@@ -69,9 +70,19 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface
 	var mutation struct {
 		User *structs.User `graphql:"managedUserInvite(input: $input)"`
 	}
+
+	var email *graphql.String
+	if d.Get("invitation_email") != "" {
+		email = toOptionalString(d.Get("invitation_email"))
+	}
+
+	if email == nil || *email == "" {
+		return diag.Errorf("invitation_email is required for new users")
+	}
+
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserInviteInput{
-			InvitationEmail: toString(d.Get("invitation_email")),
+			InvitationEmail: email,
 			Username:        toString(d.Get("username")),
 			AccessRules:     getAccessRules(d),
 		},

@@ -3,7 +3,7 @@ package structs
 import "github.com/shurcooL/graphql"
 
 type ManagedUserInviteInput struct {
-	InvitationEmail graphql.String         `json:"invitationEmail"`
+	InvitationEmail *graphql.String        `json:"invitationEmail"`
 	Username        graphql.String         `json:"username"`
 	AccessRules     []SpaceAccessRuleInput `json:"accessRules"`
 }
