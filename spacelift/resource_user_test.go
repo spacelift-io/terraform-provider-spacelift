@@ -63,6 +63,24 @@ func TestUserResource(t *testing.T) {
 		})
 	})
 
+	t.Run("creates a user without invitation email returns an error", func(t *testing.T) {
+		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_user" "test" {
+					username = "%s"
+					policy {
+						space_id = "root"
+						role     = "ADMIN"
+					}
+				}`, randomUsername),
+				ExpectError: regexp.MustCompile(`invitation_email is required for new users`),
+			},
+		})
+	})
+
 	t.Run("can edit access list", func(t *testing.T) {
 		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
