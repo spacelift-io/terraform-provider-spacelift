@@ -57,12 +57,9 @@ func resourceUser() *schema.Resource {
 				},
 			},
 			"invitation_email": {
-				Type:     schema.TypeString,
-				Optional: true,
-				Description: "" +
-					"`invitation_email` will be used to send an invitation to specified email address" +
-					"This property is required, when creating a new user." +
-					"This property is optional, when importing an existing user.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "`invitation_email` will be used to send an invitation to the specified email address. This property is required when creating a new user. This property is optional when importing an existing user.",
 			},
 		},
 	}
