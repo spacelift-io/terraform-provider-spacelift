@@ -589,14 +589,14 @@ func resourceStack() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"terraform_version": {
 							Type:             schema.TypeString,
-							Description:      "Terraform version.",
+							Description:      "The Terraform version. Must not be provided when tool is set to MANUALLY_PROVISIONED. Defaults to the latest available OpenTofu/Terraform version.",
 							Optional:         true,
 							Computed:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
 						"terragrunt_version": {
 							Type:             schema.TypeString,
-							Description:      "Terragrunt version.",
+							Description:      "The Terragrunt version. Defaults to the latest Terragrunt version.",
 							Optional:         true,
 							Computed:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
@@ -612,6 +612,12 @@ func resourceStack() *schema.Resource {
 							Description: "Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
 							Optional:    true,
 							Default:     false,
+						},
+						"tool": {
+							Type:        schema.TypeString,
+							Description: "The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.",
+							Optional:    true,
+							Computed:    true,
 						},
 					},
 				},
@@ -943,13 +949,25 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	}
 
 	if terragrunt, ok := d.Get("terragrunt").([]interface{}); ok && len(terragrunt) > 0 {
+		terragruntConfig := structs.TerragruntInput{
+			UseRunAll:            toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
+			UseSmartSanitization: toBool(terragrunt[0].(map[string]interface{})["use_smart_sanitization"]),
+		}
+
+		if version, ok := terragrunt[0].(map[string]interface{})["terraform_version"]; ok && version.(string) != "" {
+			terragruntConfig.TerraformVersion = toOptionalString(version)
+		}
+
+		if version, ok := terragrunt[0].(map[string]interface{})["terragrunt_version"]; ok && version.(string) != "" {
+			terragruntConfig.TerragruntVersion = toOptionalString(version)
+		}
+
+		if tool, ok := terragrunt[0].(map[string]interface{})["tool"]; ok && tool.(string) != "" {
+			terragruntConfig.Tool = toOptionalString(tool)
+		}
+
 		return &structs.VendorConfigInput{
-			TerragruntInput: &structs.TerragruntInput{
-				TerraformVersion:     toString(terragrunt[0].(map[string]interface{})["terraform_version"]),
-				TerragruntVersion:    toString(terragrunt[0].(map[string]interface{})["terragrunt_version"]),
-				UseRunAll:            toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
-				UseSmartSanitization: toBool(terragrunt[0].(map[string]interface{})["use_smart_sanitization"]),
-			},
+			TerragruntInput: &terragruntConfig,
 		}
 	}
 

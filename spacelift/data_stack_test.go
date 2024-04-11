@@ -314,6 +314,131 @@ func TestStackData(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with Terragrunt stack (default tool)", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				terragrunt {
+					terraform_version      = "1.5.7"
+					terragrunt_version     = "0.55.15"
+					use_run_all            = false
+					use_smart_sanitization = true
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("terragrunt.0.terraform_version", Equals("1.5.7")),
+				Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+				Attribute("terragrunt.0.use_run_all", Equals("false")),
+				Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+				Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+			),
+		}})
+	})
+
+	t.Run("with Terragrunt stack (TERRAFORM_FOSS)", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				terragrunt {
+					terraform_version      = "1.5.7"
+					terragrunt_version     = "0.55.15"
+					use_run_all            = false
+					use_smart_sanitization = true
+					tool                   = "TERRAFORM_FOSS"
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("terragrunt.0.terraform_version", Equals("1.5.7")),
+				Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+				Attribute("terragrunt.0.use_run_all", Equals("false")),
+				Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+				Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+			),
+		}})
+	})
+
+	t.Run("with Terragrunt stack (OPEN_TOFU)", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				terragrunt {
+					terraform_version      = "1.6.2"
+					terragrunt_version     = "0.55.15"
+					use_run_all            = false
+					use_smart_sanitization = true
+					tool                   = "OPEN_TOFU"
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("terragrunt.0.terraform_version", Equals("1.6.2")),
+				Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+				Attribute("terragrunt.0.use_run_all", Equals("false")),
+				Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+				Attribute("terragrunt.0.tool", Equals("OPEN_TOFU")),
+			),
+		}})
+	})
+
+	t.Run("with Terragrunt stack (MANUALLY_PROVISIONED)", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				terragrunt {
+					terragrunt_version     = "0.55.15"
+					use_run_all            = false
+					use_smart_sanitization = true
+					tool                   = "MANUALLY_PROVISIONED"
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+				Attribute("terragrunt.0.use_run_all", Equals("false")),
+				Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+				Attribute("terragrunt.0.tool", Equals("MANUALLY_PROVISIONED")),
+			),
+		}})
+	})
 }
 
 func TestStackDataSpace(t *testing.T) {

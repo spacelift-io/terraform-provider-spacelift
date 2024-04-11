@@ -545,7 +545,7 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
-	t.Run("with GitHub and Terragrunt configuration", func(t *testing.T) {
+	t.Run("with GitHub and Terragrunt (default tool) configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: getConfig(`terragrunt {
@@ -562,6 +562,93 @@ func TestStackResource(t *testing.T) {
 					Attribute("terragrunt.0.terraform_version", Equals("1.4.0")),
 					Attribute("terragrunt.0.use_run_all", Equals("false")),
 					Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+					Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("kubernetes.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("ansible.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with GitHub and Terragrunt (TERRAFORM_FOSS) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`terragrunt {
+						terragrunt_version = "0.55.15"
+						terraform_version = "1.4.0"
+						use_run_all = false
+						use_smart_sanitization = true
+						tool = "TERRAFORM_FOSS"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+
+					Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+					Attribute("terragrunt.0.terraform_version", Equals("1.4.0")),
+					Attribute("terragrunt.0.use_run_all", Equals("false")),
+					Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+					Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("kubernetes.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("ansible.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with GitHub and Terragrunt (OPEN_TOFU) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`terragrunt {
+						terragrunt_version = "0.55.15"
+						terraform_version = "1.6.2"
+						use_run_all = false
+						use_smart_sanitization = true
+						tool = "OPEN_TOFU"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+
+					Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+					Attribute("terragrunt.0.terraform_version", Equals("1.6.2")),
+					Attribute("terragrunt.0.use_run_all", Equals("false")),
+					Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+					Attribute("terragrunt.0.tool", Equals("OPEN_TOFU")),
+
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("kubernetes.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("ansible.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with GitHub and Terragrunt (MANUALLY_PROVISIONED) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`terragrunt {
+						terragrunt_version = "0.55.15"
+						use_run_all = false
+						use_smart_sanitization = true
+						tool = "MANUALLY_PROVISIONED"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+
+					Attribute("terragrunt.0.terragrunt_version", Equals("0.55.15")),
+					Attribute("terragrunt.0.terraform_version", Equals("")),
+					Attribute("terragrunt.0.use_run_all", Equals("false")),
+					Attribute("terragrunt.0.use_smart_sanitization", Equals("true")),
+					Attribute("terragrunt.0.tool", Equals("MANUALLY_PROVISIONED")),
 
 					Attribute("cloudformation.#", Equals("0")),
 					Attribute("kubernetes.#", Equals("0")),

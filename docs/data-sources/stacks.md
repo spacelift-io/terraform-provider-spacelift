@@ -171,6 +171,7 @@ Read-Only:
 - `terraform_version` (String)
 - `terraform_workflow_tool` (String)
 - `terraform_workspace` (String)
+- `terragrunt` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--terragrunt))
 - `worker_pool_id` (String)
 
 <a id="nestedobjatt--stacks--ansible"></a>
@@ -275,3 +276,15 @@ Read-Only:
 Read-Only:
 
 - `namespace` (String)
+
+
+<a id="nestedobjatt--stacks--terragrunt"></a>
+### Nested Schema for `stacks.terragrunt`
+
+Read-Only:
+
+- `terraform_version` (String)
+- `terragrunt_version` (String)
+- `tool` (String)
+- `use_run_all` (Boolean)
+- `use_smart_sanitization` (Boolean)

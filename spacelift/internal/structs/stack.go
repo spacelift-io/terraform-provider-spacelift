@@ -20,6 +20,9 @@ const StackConfigVendorTerraform = "StackConfigVendorTerraform"
 // StackConfigVendorKubernetes is a graphql union typename.
 const StackConfigVendorKubernetes = "StackConfigVendorKubernetes"
 
+// StackConfigVendorTerragrunt is a graphql union typename.
+const StackConfigVendorTerragrunt = "StackConfigVendorTerragrunt"
+
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
 	ID                     string        `graphql:"id"`
@@ -87,6 +90,13 @@ type Stack struct {
 			Workspace                  *string `graphql:"workspace"`
 			ExternalStateAccessEnabled bool    `graphql:"externalStateAccessEnabled"`
 		} `graphql:"... on StackConfigVendorTerraform"`
+		Terragrunt struct {
+			TerraformVersion     *string `graphql:"terraformVersion"`
+			TerragruntVersion    *string `graphql:"terragruntVersion"`
+			UseRunAll            bool    `graphql:"useRunAll"`
+			UseSmartSanitization bool    `graphql:"useSmartSanitization"`
+			Tool                 string  `graphql:"tool"`
+		} `graphql:"... on StackConfigVendorTerragrunt"`
 	} `graphql:"vendorConfig"`
 	WorkerPool *struct {
 		ID string `graphql:"id"`
@@ -129,6 +139,14 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 		return "pulumi", map[string]interface{}{
 			"login_url":  s.VendorConfig.Pulumi.LoginURL,
 			"stack_name": s.VendorConfig.Pulumi.StackName,
+		}
+	case StackConfigVendorTerragrunt:
+		return "terragrunt", map[string]interface{}{
+			"terraform_version":      s.VendorConfig.Terragrunt.TerraformVersion,
+			"terragrunt_version":     s.VendorConfig.Terragrunt.TerragruntVersion,
+			"use_run_all":            s.VendorConfig.Terragrunt.UseRunAll,
+			"use_smart_sanitization": s.VendorConfig.Terragrunt.UseSmartSanitization,
+			"tool":                   s.VendorConfig.Terragrunt.Tool,
 		}
 	}
 
@@ -270,6 +288,17 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		}
 
 		d.Set("pulumi", []interface{}{m})
+	case StackConfigVendorTerragrunt:
+		m := map[string]interface{}{
+			"terraform_version":      stack.VendorConfig.Terragrunt.TerraformVersion,
+			"terragrunt_version":     stack.VendorConfig.Terragrunt.TerragruntVersion,
+			"use_run_all":            stack.VendorConfig.Terragrunt.UseRunAll,
+			"use_smart_sanitization": stack.VendorConfig.Terragrunt.UseSmartSanitization,
+			"tool":                   stack.VendorConfig.Terragrunt.Tool,
+		}
+
+		d.Set("terragrunt", []interface{}{m})
+
 	default:
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
 		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
