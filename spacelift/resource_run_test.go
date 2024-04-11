@@ -80,7 +80,7 @@ func TestRunResourceWait(t *testing.T) {
 					}
 
 					wait {
-						enabled             = true
+						disabled            = false
 						continue_on_timeout = true
 					}
 				}
