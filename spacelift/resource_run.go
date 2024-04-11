@@ -172,6 +172,9 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 				},
 				Target: []string{
 					"finished",
+					"unconfirmed", // Let's treat unconfirmed as the target state.
+					// It's not finished, but we don't want to wait for it because it requires confirmation from someone.
+
 				},
 				Refresh: checkStackStatusFunc(ctx, client, stackID, mutation.ID),
 				Timeout: d.Timeout(schema.TimeoutCreate),
@@ -238,6 +241,11 @@ func checkStackStatusFunc(ctx context.Context, client *internal.Client, stackID 
 		state = "running"
 		if finished {
 			state = "finished"
+		}
+		// Let's treat unconfirmed as the target state.
+		// It's not finished, but we don't want to wait for it because it requires confirmation from someone.
+		if result == "unconfirmed" {
+			state = "unconfirmed"
 		}
 		return
 	}
