@@ -174,7 +174,6 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 					"finished",
 					"unconfirmed", // Let's treat unconfirmed as the target state.
 					// It's not finished, but we don't want to wait for it because it requires confirmation from someone.
-
 				},
 				Refresh: checkStackStatusFunc(ctx, client, stackID, mutation.ID),
 				Timeout: d.Timeout(schema.TimeoutCreate),
@@ -254,11 +253,11 @@ func checkStackStatusFunc(ctx context.Context, client *internal.Client, stackID 
 func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID string, runID string) (string, bool, error) {
 	var query struct {
 		Stack struct {
-			Run struct {
+			RunResourceState struct {
 				ID       graphql.String
 				State    graphql.String
 				Finished graphql.Boolean
-			} `graphql:"run(id: $runId)"`
+			} `graphql:"runResourceState(id: $runId)"`
 		} `graphql:"stack(id: $stackId)"`
 	}
 
@@ -271,12 +270,14 @@ func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID 
 		return "", false, errors.Wrap(err, fmt.Sprintf("could not query for run %s of stack %s", runID, stackID))
 	}
 
-	currentState := strings.ToLower(string(query.Stack.Run.State))
+	rrs := query.Stack.RunResourceState
+
+	currentState := strings.ToLower(string(rrs.State))
 	tflog.Debug(ctx, "current state of run", map[string]interface{}{
 		"stackID":      stackID,
 		"runID":        runID,
 		"currentState": currentState,
-		"finished":     query.Stack.Run.Finished,
+		"finished":     rrs.Finished,
 	})
-	return currentState, bool(query.Stack.Run.Finished), nil
+	return currentState, bool(rrs.Finished), nil
 }

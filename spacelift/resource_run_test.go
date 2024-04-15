@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -59,37 +60,75 @@ func TestRunResourceWait(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				resource "spacelift_worker_pool" "test" {
-					name        = "Let's create a dummy worker pool to avoid running the job %s"
-				}
-
-				resource "spacelift_stack" "test" {
-					name           = "Test stack %s"
-					repository     = "demo"
-					branch         = "master"
-					worker_pool_id = spacelift_worker_pool.test.id
-				}
-
-				resource "spacelift_run" "test" {
-					stack_id = spacelift_stack.test.id
-
-					keepers = { "bacon" = "tasty" }
-
-					timeouts {
-						create = "30s"
+					resource "spacelift_worker_pool" "test" {
+						name        = "Let's create a dummy worker pool to avoid running the job %s"
 					}
 
-					wait {
-						disabled            = false
-						continue_on_timeout = true
+					resource "spacelift_stack" "test" {
+						name           = "Test stack %s"
+						repository     = "demo"
+						branch         = "master"
+						worker_pool_id = spacelift_worker_pool.test.id
 					}
-				}
-			`, randomIDwp, randomID),
+
+					resource "spacelift_run" "test" {
+						stack_id = spacelift_stack.test.id
+
+						keepers = { "bacon" = "tasty" }
+
+						timeouts {
+							create = "10s"
+						}
+
+						wait {
+							disabled            = false
+							continue_on_timeout = true
+						}
+					}`, randomIDwp, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("stack_id", Contains(randomID)),
 				),
+			},
+		})
+	})
+
+	t.Run("timed out run", func(t *testing.T) {
+		const resourceName = "spacelift_run.test"
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_worker_pool" "test" {
+						name        = "Let's create a dummy worker pool to avoid running the job %s"
+					}
+
+					resource "spacelift_stack" "test" {
+						name           = "Test stack %s"
+						repository     = "demo"
+						branch         = "master"
+						worker_pool_id = spacelift_worker_pool.test.id
+					}
+
+					resource "spacelift_run" "test" {
+						stack_id = spacelift_stack.test.id
+
+						keepers = { "bacon" = "tasty" }
+
+						timeouts {
+							create = "10s"
+						}
+
+						wait {
+							disabled            = false
+							continue_on_timeout = false
+						}
+					}`, randomIDwp, randomID),
+				ExpectError: regexp.MustCompile("run [0-9A-Z]* on stack test-stack-[a-z0-9]* has timed out"),
 			},
 		})
 	})
