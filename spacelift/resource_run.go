@@ -165,7 +165,7 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 		if !wait.disabled {
 			stateConf := &retry.StateChangeConf{
 				ContinuousTargetOccurence: 1,
-				Delay:                     10 * time.Second, // TODO: Delay must be a multiple of Timeout
+				Delay:                     10 * time.Second,
 				MinTimeout:                10 * time.Second,
 				Pending: []string{
 					"running",
@@ -205,7 +205,7 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 				if !wait.continueOnTimeout {
 					return diag.Errorf("run %s on stack %s has timed out", mutation.ID, stackID)
 				} else {
-					tflog.Info(ctx, "run timed out but continue_on_discarded=true",
+					tflog.Info(ctx, "run timed out but continue_on_timeout=true",
 						map[string]any{
 							"stackID": stackID,
 							"runID":   mutation.ID,
