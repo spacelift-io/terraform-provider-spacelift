@@ -146,10 +146,10 @@ func TestStackResource(t *testing.T) {
 					worker_pool_id       = spacelift_worker_pool.test.id
 				}
 				resource "spacelift_worker_pool" "test" {
-					name        = "Autoretryable worker pool."
+					name        = "Autoretryable worker pool (%s)."
 					description = "test worker pool"
 				}
-			`, description, randomID, randomID)
+			`, description, randomID, randomID, randomID)
 		}
 
 		testSteps(t, []resource.TestStep{
@@ -801,10 +801,10 @@ func TestStackResourceSpace(t *testing.T) {
 				}
 
 				resource "spacelift_worker_pool" "test" {
-					name        = "Autoretryable worker pool."
+					name        = "Autoretryable worker pool (%s)."
 					description = "test worker pool"
 				}
-			`, description, randomID, randomID)
+			`, description, randomID, randomID, randomID)
 		}
 
 		testSteps(t, []resource.TestStep{
