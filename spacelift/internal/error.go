@@ -46,3 +46,17 @@ func parseExtensions(ext map[string]interface{}) string {
 
 	return strings.Join(errorParts, ", ")
 }
+
+// AsError is an inline form of errors.As.
+func AsError[TError error](err error) (TError, bool) {
+	var as TError
+	ok := errors.As(err, &as)
+	return as, ok
+}
+
+// IsErrorType reports whether or not the type of any error in err's chain matches
+// the Error type.
+func IsErrorType[TError error](err error) bool {
+	_, ok := AsError[TError](err)
+	return ok
+}
