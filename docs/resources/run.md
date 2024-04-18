@@ -60,6 +60,6 @@ Optional:
 
 Optional:
 
-- `continue_on_state` (Set of String) Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`
+- `continue_on_state` (Set of String) Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`. You can use following states: `applying`, `canceled`, `confirmed`, `destroying`, `discarded`, `failed`, `finished`, `initializing`, `pending_review`, `performing`, `planning`, `preparing_apply`, `preparing_replan`, `preparing`, `queued`, `ready`, `replan_requested`, `skipped`, `stopped`, `unconfirmed`.
 - `continue_on_timeout` (Boolean) Continue if run timed out, i.e. did not reach any defined end state in time. Default: `false`
 - `disabled` (Boolean) Whether waiting for a job is disabled or not. Default: `false`

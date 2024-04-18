@@ -85,7 +85,7 @@ func resourceRun() *schema.Resource {
 							Elem: &schema.Schema{
 								Type: schema.TypeString,
 							},
-							Description: "Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`",
+							Description: "Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`. You can use following states: `applying`, `canceled`, `confirmed`, `destroying`, `discarded`, `failed`, `finished`, `initializing`, `pending_review`, `performing`, `planning`, `preparing_apply`, `preparing_replan`, `preparing`, `queued`, `ready`, `replan_requested`, `skipped`, `stopped`, `unconfirmed`.",
 							Optional:    true,
 						},
 						"continue_on_timeout": {
@@ -133,6 +133,72 @@ func expandWaitConfiguration(input []interface{}) *waitConfiguration {
 	return cfg
 }
 
+func (wait *waitConfiguration) Wait(ctx context.Context, d *schema.ResourceData, client *internal.Client, stackID, mutationID string) diag.Diagnostics {
+	if wait.disabled {
+		return nil
+	}
+
+	stateConf := &retry.StateChangeConf{
+		ContinuousTargetOccurence: 1,
+		Delay:                     10 * time.Second,
+		MinTimeout:                10 * time.Second,
+		Pending: []string{
+			"running",
+		},
+		Target: []string{
+			"finished",
+			"unconfirmed", // Let's treat unconfirmed as the target state.
+			// It's not finished, but we don't want to wait for it because it requires confirmation from someone.
+		},
+		Refresh: checkStackStatusFunc(ctx, client, stackID, mutationID),
+		Timeout: d.Timeout(schema.TimeoutCreate),
+	}
+
+	finalState, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		if timeoutErr, ok := internal.AsError[*retry.TimeoutError](err); ok {
+			tflog.Debug(ctx, "received retry.TimeoutError from WaitForStateContext", map[string]any{
+				"stackID":       stackID,
+				"runID":         mutationID,
+				"lastState":     timeoutErr.LastState,
+				"expectedState": timeoutErr.ExpectedState,
+			})
+			finalState = "__timeout__"
+		} else if err == context.DeadlineExceeded {
+			tflog.Debug(ctx, "received context.DeadlineExceeded from WaitForStateContext", map[string]any{
+				"stackID": stackID,
+				"runID":   mutationID,
+			})
+			finalState = "__timeout__"
+		} else {
+			return diag.Errorf("failed waiting for run %s on stack %s to finish. error(%T): %+v ", mutationID, stackID, err, err)
+		}
+	}
+
+	switch finalState.(string) {
+	case "__timeout__":
+		if !wait.continueOnTimeout {
+			return diag.Errorf("run %s on stack %s has timed out", mutationID, stackID)
+		}
+		tflog.Info(ctx, "run timed out but continue_on_timeout=true",
+			map[string]any{
+				"stackID": stackID,
+				"runID":   mutationID,
+			})
+	default:
+		if !slices.Contains[[]string](wait.continueOnState, finalState.(string)) {
+			return diag.Errorf("run %s on stack %s has ended with status %s. expected %v", mutationID, stackID, finalState, wait.continueOnState)
+		}
+		tflog.Debug(ctx, "run finished", map[string]any{
+			"stackID":    stackID,
+			"runID":      mutationID,
+			"finalState": finalState,
+		})
+	}
+
+	return nil
+}
+
 func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
 		ID string `graphql:"runResourceCreate(stack: $stack, commitSha: $sha, proposed: $proposed)"`
@@ -161,66 +227,8 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	if waitRaw, ok := d.GetOk("wait"); ok {
 		wait := expandWaitConfiguration(waitRaw.([]interface{}))
-
-		if !wait.disabled {
-			stateConf := &retry.StateChangeConf{
-				ContinuousTargetOccurence: 1,
-				Delay:                     10 * time.Second,
-				MinTimeout:                10 * time.Second,
-				Pending: []string{
-					"running",
-				},
-				Target: []string{
-					"finished",
-					"unconfirmed", // Let's treat unconfirmed as the target state.
-					// It's not finished, but we don't want to wait for it because it requires confirmation from someone.
-				},
-				Refresh: checkStackStatusFunc(ctx, client, stackID, mutation.ID),
-				Timeout: d.Timeout(schema.TimeoutCreate),
-			}
-
-			finalState, err := stateConf.WaitForStateContext(ctx)
-			if err != nil {
-				if timeoutErr, ok := internal.AsError[*retry.TimeoutError](err); ok {
-					tflog.Debug(ctx, "received retry.TimeoutError from WaitForStateContext", map[string]any{
-						"stackID":       stackID,
-						"runID":         mutation.ID,
-						"lastState":     timeoutErr.LastState,
-						"expectedState": timeoutErr.ExpectedState,
-					})
-					finalState = "__timeout__"
-				} else if err == context.DeadlineExceeded {
-					tflog.Debug(ctx, "received context.DeadlineExceeded from WaitForStateContext", map[string]any{
-						"stackID": stackID,
-						"runID":   mutation.ID,
-					})
-					finalState = "__timeout__"
-				} else {
-					return diag.Errorf("failed waiting for run %s on stack %s to finish. error(%T): %+v ", mutation.ID, stackID, err, err)
-				}
-			}
-
-			switch finalState.(string) {
-			case "__timeout__":
-				if !wait.continueOnTimeout {
-					return diag.Errorf("run %s on stack %s has timed out", mutation.ID, stackID)
-				} else {
-					tflog.Info(ctx, "run timed out but continue_on_timeout=true",
-						map[string]any{
-							"stackID": stackID,
-							"runID":   mutation.ID,
-						})
-				}
-			default:
-				if !slices.Contains[[]string](wait.continueOnState, finalState.(string)) {
-					return diag.Errorf("run %s on stack %s has ended with status %s. expected %v", mutation.ID, stackID, finalState, wait.continueOnState)
-				}
-				tflog.Debug(ctx, "run finished", map[string]any{
-					"stackID":    stackID,
-					"runID":      mutation.ID,
-					"finalState": finalState,
-				})
-			}
+		if diag := wait.Wait(ctx, d, client, stackID, mutation.ID); len(diag) > 0 {
+			return diag
 		}
 	}
 
