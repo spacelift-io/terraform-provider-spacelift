@@ -116,12 +116,10 @@ func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.Resourc
 	if nonExistenceWarning != "" {
 		d.SetId("")
 
-		return diag.Diagnostics{
-			diag.Diagnostic{
-				Severity: diag.Warning,
-				Summary:  nonExistenceWarning,
-			},
-		}
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  nonExistenceWarning,
+		}}
 	}
 
 	d.Set("stack_dependency_id", path.Join(stackID, depID))
