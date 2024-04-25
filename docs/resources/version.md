@@ -8,7 +8,7 @@ description: |-
 
 # spacelift_version (Resource)
 
-`spacelift_version` allows to programmatically trigger a module version creation in response to arbitrary changes in the keepers section.
+`spacelift_version` allows to programmatically trigger a *module* version creation in response to arbitrary changes in the keepers section.
 
 
 
