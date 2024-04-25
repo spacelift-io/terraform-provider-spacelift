@@ -3,7 +3,7 @@
 page_title: "spacelift_version Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_version allows to programmatically trigger a version creation in response to arbitrary changes in the keepers section.
+  spacelift_version allows to programmatically trigger a module version creation in response to arbitrary changes in the keepers section.
 ---
 
 # spacelift_version (Resource)
