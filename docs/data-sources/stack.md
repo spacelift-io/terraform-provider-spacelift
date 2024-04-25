@@ -74,6 +74,7 @@ data "spacelift_stack" "k8s-core" {
 - `terraform_version` (String) Terraform version to use
 - `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`.
 - `terraform_workspace` (String) Terraform workspace to select
+- `terragrunt` (List of Object) Terragrunt-specific configuration. Presence means this Stack is a Terragrunt Stack. (see [below for nested schema](#nestedatt--terragrunt))
 - `worker_pool_id` (String) ID of the worker pool to use
 
 <a id="nestedatt--ansible"></a>
@@ -178,3 +179,15 @@ Read-Only:
 Read-Only:
 
 - `namespace` (String)
+
+
+<a id="nestedatt--terragrunt"></a>
+### Nested Schema for `terragrunt`
+
+Read-Only:
+
+- `terraform_version` (String)
+- `terragrunt_version` (String)
+- `tool` (String)
+- `use_run_all` (Boolean)
+- `use_smart_sanitization` (Boolean)

@@ -444,6 +444,40 @@ func dataStack() *schema.Resource {
 				Description: "Terraform workspace to select",
 				Computed:    true,
 			},
+			"terragrunt": {
+				Type:        schema.TypeList,
+				Description: "Terragrunt-specific configuration. Presence means this Stack is a Terragrunt Stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"terraform_version": {
+							Type:        schema.TypeString,
+							Description: "The Terraform version.",
+							Computed:    true,
+						},
+						"terragrunt_version": {
+							Type:        schema.TypeString,
+							Description: "The Terragrunt version.",
+							Computed:    true,
+						},
+						"use_run_all": {
+							Type:        schema.TypeBool,
+							Description: "Whether to use `terragrunt run-all` instead of `terragrunt`.",
+							Computed:    true,
+						},
+						"use_smart_sanitization": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
+							Computed:    true,
+						},
+						"tool": {
+							Type:        schema.TypeString,
+							Description: "The IaC tool used by Terragrunt. Will be either OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED.",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the worker pool to use",
