@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"strings"
 
@@ -102,19 +103,29 @@ func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.Resourc
 		return diag.Errorf("could not query for stack dependency reference: %s", err)
 	}
 
+	var nonExistenceWarning string
+
 	if query.Stack == nil {
-		return diag.Errorf("could not find stack (%s), maybe it was deleted manually", stackID)
+		nonExistenceWarning = fmt.Sprintf("could not find stack (%s), maybe it was deleted manually", stackID)
+	} else if query.Stack.Dependency == nil {
+		nonExistenceWarning = fmt.Sprintf("could not find stack dependency (%s), maybe it was deleted manually", depID)
+	} else if query.Stack.Dependency.Reference == nil {
+		nonExistenceWarning = fmt.Sprintf("could not find stack dependency reference (%s), maybe it was deleted manually", refID)
 	}
-	if query.Stack.Dependency == nil {
-		return diag.Errorf("could not find stack dependency (%s), maybe it was deleted manually", depID)
-	}
-	if query.Stack.Dependency.Reference == nil {
-		return diag.Errorf("could not find stack dependency reference (%s), maybe it was deleted manually", refID)
+
+	if nonExistenceWarning != "" {
+		d.SetId("")
+
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  nonExistenceWarning,
+		}}
 	}
 
 	d.Set("stack_dependency_id", path.Join(stackID, depID))
 	d.Set("output_name", query.Stack.Dependency.Reference.OutputName)
 	d.Set("input_name", query.Stack.Dependency.Reference.InputName)
+
 	return nil
 }
 
