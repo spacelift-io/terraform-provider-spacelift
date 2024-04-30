@@ -15,7 +15,7 @@ import (
 func resourceVersion() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_version` allows to programmatically trigger a version creation " +
+			"`spacelift_version` allows to programmatically trigger a module version creation " +
 			"in response to arbitrary changes in the keepers section.",
 
 		CreateContext: resourceVersionCreate,
