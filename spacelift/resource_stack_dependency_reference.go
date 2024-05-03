@@ -46,6 +46,12 @@ func resourceStackDependencyReference() *schema.Resource {
 				Description: "Name of the input of the stack dependency reference",
 				Required:    true,
 			},
+			"trigger_always": {
+				Type:        schema.TypeBool,
+				Description: "Whether the dependents should be triggered even if the value of the reference did not change.",
+				Default:     false,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -63,9 +69,10 @@ func resourceStackDependencyReferenceCreate(ctx context.Context, d *schema.Resou
 	variables := map[string]interface{}{
 		"stackDependencyID": toID(depID),
 		"reference": structs.StackDependencyReferenceInput{
-			OutputName: toString(d.Get("output_name")),
-			InputName:  toString(d.Get("input_name")),
-			Type:       toString("ENVIRONMENT_VARIABLE"),
+			OutputName:    toString(d.Get("output_name")),
+			InputName:     toString(d.Get("input_name")),
+			Type:          toString("ENVIRONMENT_VARIABLE"),
+			TriggerAlways: toBool(d.Get("trigger_always")),
 		},
 	}
 
@@ -76,6 +83,8 @@ func resourceStackDependencyReferenceCreate(ctx context.Context, d *schema.Resou
 	d.SetId(path.Join(stackID, depID, query.StackDependencyReference.ID))
 	d.Set("output_name", query.StackDependencyReference.OutputName)
 	d.Set("input_name", query.StackDependencyReference.InputName)
+	d.Set("trigger_always", query.StackDependencyReference.TriggerAlways)
+
 	return nil
 }
 
@@ -125,6 +134,7 @@ func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.Resourc
 	d.Set("stack_dependency_id", path.Join(stackID, depID))
 	d.Set("output_name", query.Stack.Dependency.Reference.OutputName)
 	d.Set("input_name", query.Stack.Dependency.Reference.InputName)
+	d.Set("trigger_always", query.Stack.Dependency.Reference.TriggerAlways)
 
 	return nil
 }
@@ -141,10 +151,11 @@ func resourceStackDependencyReferenceUpdate(ctx context.Context, d *schema.Resou
 
 	variables := map[string]interface{}{
 		"reference": structs.StackDependencyReferenceUpdateInput{
-			ID:         toID(refID),
-			OutputName: toString(d.Get("output_name")),
-			InputName:  toString(d.Get("input_name")),
-			Type:       toString("ENVIRONMENT_VARIABLE"),
+			ID:            toID(refID),
+			OutputName:    toString(d.Get("output_name")),
+			InputName:     toString(d.Get("input_name")),
+			Type:          toString("ENVIRONMENT_VARIABLE"),
+			TriggerAlways: toBool(d.Get("trigger_always")),
 		},
 	}
 
@@ -155,6 +166,8 @@ func resourceStackDependencyReferenceUpdate(ctx context.Context, d *schema.Resou
 	d.Set("stack_dependency_id", path.Join(stackID, depID))
 	d.Set("output_name", query.StackDependencyReference.OutputName)
 	d.Set("input_name", query.StackDependencyReference.InputName)
+	d.Set("trigger_always", query.StackDependencyReference.TriggerAlways)
+
 	return nil
 }
 

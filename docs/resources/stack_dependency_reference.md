@@ -46,6 +46,10 @@ resource "spacelift_stack_dependency_reference" "test" {
 - `output_name` (String) Name of the output of stack to depend on
 - `stack_dependency_id` (String) Immutable ID of stack dependency
 
+### Optional
+
+- `trigger_always` (Boolean) Whether the dependents should be triggered even if the value of the reference did not change.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
