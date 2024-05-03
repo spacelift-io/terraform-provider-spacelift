@@ -204,7 +204,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 
 ### Required
 
-- `branch` (String) GitHub branch to apply changes to
+- `branch` (String) Git branch to apply changes to
 - `name` (String) Name of the stack - should be unique in one account
 - `repository` (String) Name of the repository, without the owner part
 

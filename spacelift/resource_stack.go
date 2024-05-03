@@ -208,7 +208,7 @@ func resourceStack() *schema.Resource {
 			},
 			"branch": {
 				Type:             schema.TypeString,
-				Description:      "GitHub branch to apply changes to",
+				Description:      "Git branch to apply changes to",
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
