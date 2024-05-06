@@ -1,0 +1,1 @@
+terraform import spacelift_gitlab_integration.example spacelift_gitlab_integration_id
