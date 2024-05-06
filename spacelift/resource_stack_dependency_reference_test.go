@@ -37,41 +37,45 @@ func TestStackDependencyReferenceResource(t *testing.T) {
 				}`, randomID, randomID)
 		}
 
-		configWithReference := func(outputName, inputName string) string {
+		configWithReference := func(outputName, inputName string, triggerAlways bool) string {
 			return configWithoutReference() + fmt.Sprintf(`
 				resource "spacelift_stack_dependency_reference" "test" {
 					stack_dependency_id = spacelift_stack_dependency.test.id
 					output_name = "%s"
 					input_name = "%s"
-				}`, outputName, inputName)
+					trigger_always = %v
+				}`, outputName, inputName, triggerAlways)
 		}
 
 		testSteps(t, []resource.TestStep{
 			{ // creates reference
-				Config: configWithReference("output_abc", "input_123"),
+				Config: configWithReference("output_abc", "input_123", false),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("output_name", Equals("output_abc")),
 					Attribute("input_name", Equals("input_123")),
+					Attribute("trigger_always", Equals("false")),
 				),
 			},
 			{ // updates input_name
-				Config: configWithReference("output_abc", "input_456"),
+				Config: configWithReference("output_abc", "input_456", true),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("output_name", Equals("output_abc")),
 					Attribute("input_name", Equals("input_456")),
+					Attribute("trigger_always", Equals("true")),
 				),
 			},
 			{ // updates output_name
-				Config: configWithReference("output_xyz", "input_456"),
+				Config: configWithReference("output_xyz", "input_456", true),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("output_name", Equals("output_xyz")),
 					Attribute("input_name", Equals("input_456")),
+					Attribute("trigger_always", Equals("true")),
 				),
 			},
 			{ // deletes reference
@@ -89,12 +93,13 @@ func TestStackDependencyReferenceResource(t *testing.T) {
 				},
 			},
 			{ // re-create reference
-				Config: configWithReference("output_final", "input_final"),
+				Config: configWithReference("output_final", "input_final", false),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("output_name", Equals("output_final")),
 					Attribute("input_name", Equals("input_final")),
+					Attribute("trigger_always", Equals("false")),
 				),
 			},
 			{
