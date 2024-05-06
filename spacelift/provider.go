@@ -113,6 +113,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_drift_detection":                  resourceDriftDetection(),
 				"spacelift_environment_variable":             resourceEnvironmentVariable(),
 				"spacelift_gcp_service_account":              resourceGCPServiceAccount(),
+				"spacelift_gitlab_integration":               resourceGitLabIntegration(),
 				"spacelift_idp_group_mapping":                resourceIdpGroupMapping(),
 				"spacelift_module":                           resourceModule(),
 				"spacelift_mounted_file":                     resourceMountedFile(),
