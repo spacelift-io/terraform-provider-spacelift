@@ -13,7 +13,6 @@ type GitLabIntegration struct {
 	Description    *string  `graphql:"description"`
 	APIHost        string   `graphql:"apiHost"`
 	UserFacingHost string   `graphql:"userFacingHost"`
-	Token          string   `graphql:"privateToken"`
 	WebhookSecret  string   `graphql:"webhookSecret"`
-	WebhookURL     string   `graphql:"webhookURL"`
+	WebhookURL     string   `graphql:"webhookUrl"`
 }
