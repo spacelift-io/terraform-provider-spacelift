@@ -85,6 +85,7 @@ func resourceGitLabIntegration() *schema.Resource {
 				Description: "Is the GitLab integration the default for all spaces? If set to `true` a a space must be specified in `" + gitLabSpaceID + "`",
 				Optional:    true,
 				Default:     false,
+				ForceNew:    true, // unable to update isDefault flag
 			},
 			gitLabWebhookSecret: {
 				Type:        schema.TypeString,
@@ -138,7 +139,7 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 
 func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		GitLabIntegration *structs.GitLabIntegration `graphql:"gitLabIntegration(id: $id)"`
+		GitLabIntegration *structs.GitLabIntegration `graphql:"gitlabIntegration(id: $id)"`
 	}
 
 	variables := map[string]interface{}{"id": d.Id()}
@@ -157,7 +158,7 @@ func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, 
 
 func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateGitLabIntegration structs.GitLabIntegration `graphql:"gitLabIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
+		UpdateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $privateToken, customInput: $customInput)"`
 	}
 
 	userFacingHost, hasUserFacingHost := d.GetOk(gitLabUserFacingHost)
@@ -190,7 +191,7 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 
 func resourceGitLabIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		DeleteGitLabIntegration *structs.GitLabIntegration `graphql:"gitLabIntegrationDelete(id: $id)"`
+		DeleteGitLabIntegration *structs.GitLabIntegration `graphql:"gitlabIntegrationDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{
@@ -214,7 +215,6 @@ func fillGitLabIntegrationResults(d *schema.ResourceData, gitLabIntegration *str
 	d.Set(gitLabDescription, gitLabIntegration.Description)
 	d.Set(gitLabAPIHost, gitLabIntegration.APIHost)
 	d.Set(gitLabUserFacingHost, gitLabIntegration.UserFacingHost)
-	d.Set(gitLabToken, gitLabIntegration.Token)
 	d.Set(gitLabWebhookURL, gitLabIntegration.WebhookURL)
 	d.Set(gitLabWebhookSecret, gitLabIntegration.WebhookSecret)
 
