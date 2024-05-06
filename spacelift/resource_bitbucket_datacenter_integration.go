@@ -8,6 +8,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/vcs"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
@@ -107,7 +108,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 	}
 
 	variables := map[string]interface{}{
-		"customInput": &structs.CustomVCSInput{
+		"customInput": &vcs.CustomVCSInput{
 			Name:        toString(d.Get(bitbucketDatacenterName)),
 			IsDefault:   toOptionalBool(d.Get(bitbucketDatacenterIsDefault)),
 			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
@@ -158,7 +159,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
 		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
 		"accessToken":    toOptionalString(d.Get(bitbucketDatacenterAccessToken)),
-		"customInput": &structs.CustomVCSUpdateInput{
+		"customInput": &vcs.CustomVCSUpdateInput{
 			ID:          toID(d.Id()),
 			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
 			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
