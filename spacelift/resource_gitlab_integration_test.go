@@ -12,7 +12,7 @@ import (
 func TestGitLabIntegrationResource(t *testing.T) {
 	const resourceName = "spacelift_gitlab_integration.test"
 
-	t.Run("creates and updates a bitbucket datacenter integration without an error", func(t *testing.T) {
+	t.Run("creates and updates a GitLab integration without an error", func(t *testing.T) {
 		random := func() string { return acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum) }
 
 		var (
@@ -29,7 +29,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					name              = "` + name + `"
 					api_host          = "` + host + `"
 					user_facing_host  = "` + host + `"
-					token             = "` + token + `"
+					private_token     = "` + token + `"
 					description       = "` + descr + `"
 					labels            = ` + labels + `
 				}
@@ -74,15 +74,15 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				Config: configGitLab(host, token, descr, "null"),
 				Check: Resource(
 					resourceName,
-					Attribute(gitLabID, Equals(name)),
-					Attribute(gitLabID, Equals(host)),
+					Attribute(gitLabName, Equals(name)),
+					Attribute(gitLabAPIHost, Equals(host)),
 					Attribute(gitLabUserFacingHost, Equals(host)),
 					Attribute(gitLabToken, Equals(token)),
 					Attribute(gitLabWebhookURL, IsNotEmpty()),
 					Attribute(gitLabWebhookSecret, IsNotEmpty()),
 					Attribute(gitLabIsDefault, Equals("false")),
 					Attribute(gitLabDescription, Equals(descr)),
-					Attribute("labels.#", Equals("0")),
+					AttributeNotPresent(gitLabLabels),
 				),
 			},
 			{
@@ -130,6 +130,64 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					"spacelift_run.test",
 					Attribute(gitLabID, IsNotEmpty()),
 					Attribute("stack_id", Equals("stack-for-"+name)),
+				),
+			},
+		})
+	})
+}
+
+func TestGitLabIntegrationClearLabels(t *testing.T) {
+	const resourceName = "spacelift_gitlab_integration.test"
+
+	t.Run("creates and updates a GitLab integration without an error", func(t *testing.T) {
+		random := func() string { return acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum) }
+
+		var (
+			name  = "my-test-gitlab-integration-" + random()
+			host  = "https://gitlab.com/" + random()
+			token = "access-" + random()
+			descr = "description " + random()
+		)
+
+		configGitLab := func(host, token, descr, labels string) string {
+			return `
+				resource "spacelift_gitlab_integration" "test" {
+					name              = "` + name + `"
+					api_host          = "` + host + `"
+					user_facing_host  = "` + host + `"
+					private_token     = "` + token + `"
+					description       = "` + descr + `"
+					labels            = ` + labels + `
+				}
+			`
+		}
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configGitLab(host, token, descr, "null"),
+				Check: Resource(
+					resourceName,
+					AttributeNotPresent(gitLabLabels),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{gitLabToken}, // specified only in the config
+			},
+			{
+				Config: configGitLab(host, token, "new descr", `["new label1"]`),
+				Check: Resource(
+					resourceName,
+					Attribute(gitLabLabels+".#", Equals("1")),
+					Attribute(gitLabLabels+".0", Equals("new label1")),
+				),
+			},
+			{
+				Config: configGitLab(host, host, descr, "null"),
+				Check: Resource(
+					resourceName,
+					AttributeNotPresent(gitLabLabels),
 				),
 			},
 		})
