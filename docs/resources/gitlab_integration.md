@@ -40,14 +40,14 @@ resource "spacelift_gitlab_integration" "private-example" {
 - `api_host` (String) API host URL
 - `name` (String) The friendly name of the integration
 - `private_token` (String) The GitLab API Token
+- `user_facing_host` (String) User facing host URL.
 
 ### Optional
 
 - `description` (String) The friendly name of the integration
-- `is_default` (Boolean) Is the GitLab integration the default for all spaces? If set to `true` a a space must be specified in `space_id`
+- `is_default` (Boolean) Is the GitLab integration the default for all spaces? If set to `true` the space must be set to `root` in `space_id` or left empty which uses the default
 - `labels` (Set of String) Labels to set on the integration
-- `space_id` (String) ID (slug) of the space the integration is in.
-- `user_facing_host` (String) User facing host URL. If not set defaults to `api_host`
+- `space_id` (String) ID (slug) of the space the integration is in; Default: `root`
 
 ### Read-Only
 
