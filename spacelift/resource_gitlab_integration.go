@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -20,6 +21,17 @@ func resourceGitLabIntegration() *schema.Resource {
 		ReadContext:   resourceGitLabIntegrationRead,
 		UpdateContext: resourceGitLabIntegrationUpdate,
 		DeleteContext: resourceGitLabIntegrationDelete,
+
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+			if diff.HasChange(gitLabIsDefault) {
+				isDefault := diff.Get(gitLabIsDefault).(bool)
+				spaceID := diff.Get(gitLabSpaceID).(string)
+				if isDefault && spaceID != "root" {
+					return fmt.Errorf(`The default integration must be in the space "root" not in %q`, spaceID)
+				}
+			}
+			return nil
+		},
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -52,9 +64,8 @@ func resourceGitLabIntegration() *schema.Resource {
 			},
 			gitLabUserFacingHost: {
 				Type:         schema.TypeString,
-				Optional:     true,
-				Computed:     true,
-				Description:  "User facing host URL. If not set defaults to `" + gitLabAPIHost + "`",
+				Required:     true,
+				Description:  "User facing host URL.",
 				ValidateFunc: validation.IsURLWithHTTPS,
 			},
 			gitLabToken: {
@@ -74,15 +85,15 @@ func resourceGitLabIntegration() *schema.Resource {
 			},
 			gitLabSpaceID: {
 				Type:             schema.TypeString,
-				Description:      "ID (slug) of the space the integration is in.",
+				Description:      "ID (slug) of the space the integration is in; Default: `root`",
 				Optional:         true,
-				Computed:         true,
 				ForceNew:         true,
+				Default:          "root",
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			gitLabIsDefault: {
 				Type:        schema.TypeBool,
-				Description: "Is the GitLab integration the default for all spaces? If set to `true` a a space must be specified in `" + gitLabSpaceID + "`",
+				Description: "Is the GitLab integration the default for all spaces? If set to `true` the space must be set to `root` in `" + gitLabSpaceID + "` or left empty which uses the default",
 				Optional:    true,
 				Default:     false,
 				ForceNew:    true, // unable to update isDefault flag
@@ -107,24 +118,16 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 		CreateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $token, customInput: $customInput)"`
 	}
 
-	spaceID, hasSpaceID := d.GetOk(gitLabSpaceID)
-	if !hasSpaceID {
-		spaceID = "root"
-	}
-	userFacingHost, hasUserFacingHost := d.GetOk(gitLabUserFacingHost)
-	if !hasUserFacingHost {
-		userFacingHost = d.Get(gitLabAPIHost)
-	}
 	variables := map[string]interface{}{
 		"customInput": &vcs.CustomVCSInput{
 			Name:        toString(d.Get(gitLabName)),
 			IsDefault:   toOptionalBool(d.Get(gitLabIsDefault)),
-			SpaceID:     toString(spaceID),
+			SpaceID:     toString(d.Get(gitLabSpaceID)),
 			Labels:      toOptionalStringList(d.Get(gitLabLabels)),
 			Description: toOptionalString(d.Get(gitLabDescription)),
 		},
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
-		"userFacingHost": toString(userFacingHost),
+		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
 		"token":          toString(d.Get(gitLabToken)),
 	}
 
@@ -161,15 +164,10 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 		UpdateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $privateToken, customInput: $customInput)"`
 	}
 
-	userFacingHost, hasUserFacingHost := d.GetOk(gitLabUserFacingHost)
-	if !hasUserFacingHost {
-		userFacingHost = d.Get(gitLabAPIHost)
-	}
-
 	variables := map[string]interface{}{
 		"privateToken":   toOptionalString(d.Get(gitLabToken)),
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
-		"userFacingHost": toString(userFacingHost),
+		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
 		"customInput": &vcs.CustomVCSUpdateInput{
 			ID:          toID(d.Id()),
 			SpaceID:     toString(d.Get(gitLabSpaceID)),
