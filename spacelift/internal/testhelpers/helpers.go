@@ -179,6 +179,17 @@ func Equals(expected string) ValueCheck {
 	}
 }
 
+// NotEquals checks for inequality against the unexpected value.
+func NotEquals(unexpected string) ValueCheck {
+	return func(actual string) error {
+		if actual != unexpected {
+			return nil
+		}
+
+		return errors.Errorf("unexpectedly got %q", actual)
+	}
+}
+
 // IsEmpty checks that the expected value is empty.
 func IsEmpty() ValueCheck {
 	return func(actual string) error {

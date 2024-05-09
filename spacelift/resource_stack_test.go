@@ -663,6 +663,114 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with GitHub and Terragrunt changing configuration scenarios", func(t *testing.T) {
+		name := "terragrunt-switch-testing-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(body string) string {
+			return `
+				resource "spacelift_stack" "test" {
+					administrative = true
+					branch = "master"
+					name = "` + name + `"
+					project_root = "root"
+					repository = "demo"
+					runner_image = "custom_image:runner"
+					autodeploy = true
+					terragrunt {
+						` + body + `
+					}
+				}
+			`
+		}
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(`
+					tool = "TERRAFORM_FOSS"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+					Attribute("terragrunt.0.terraform_version", IsNotEmpty()),
+				),
+			},
+			{ // Change to OPEN_TOFU
+				Config: config(`
+					tool = "OPEN_TOFU"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("OPEN_TOFU")),
+					Attribute("terragrunt.0.terraform_version", IsNotEmpty()),
+				),
+			},
+			{ // Change to TERRAFORM with specific version
+				Config: config(`
+					tool = "TERRAFORM_FOSS"
+					terraform_version = "1.5.6"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+					Attribute("terragrunt.0.terraform_version", Equals("1.5.6")),
+				),
+			},
+			{ // Change to OPEN_TOFU with specific version
+				Config: config(`
+					tool = "OPEN_TOFU"
+					terraform_version = "1.6.2"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("OPEN_TOFU")),
+					Attribute("terragrunt.0.terraform_version", Equals("1.6.2")),
+				),
+			},
+			{ // Change to TERRAFORM without version specified
+				Config: config(`
+					tool = "TERRAFORM_FOSS"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+					Attribute("terragrunt.0.terraform_version", NotEquals("1.6.2")),
+				),
+			},
+			{ // Change to OPEN_TODU with invalid version
+				Config: config(`
+					tool = "OPEN_TOFU"
+					terraform_version = "1.5.6"
+				`),
+				ExpectError: regexp.MustCompile(`could not update stack: stack has 1 error: terragrunt: no supported OpenTofu version ([^ ]* - [^ ]*) satisfies constraints "1.5.6"`),
+			},
+			{ // Change to TERRAFORM with invalid version
+				Config: config(`
+					tool = "TERRAFORM_FOSS"
+					terraform_version = "1.6.2"
+				`),
+				ExpectError: regexp.MustCompile(`could not update stack: stack has 1 error: terragrunt: no supported Terraform version ([^ ]* - [^ ]*) satisfies constraints "1.6.2"`),
+			},
+			{ // Change to MANUALLY PROVISIONED
+				Config: config(`
+					tool = "MANUALLY_PROVISIONED"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("MANUALLY_PROVISIONED")),
+					Attribute("terragrunt.0.terraform_version", IsEmpty()),
+				),
+			},
+			{ // Back to OPEN_TOFU
+				Config: config(`
+					tool = "OPEN_TOFU"
+				`),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("terragrunt.0.tool", Equals("OPEN_TOFU")),
+					Attribute("terragrunt.0.terraform_version", IsNotEmpty()),
+				),
+			},
+		})
+	})
+
 	t.Run("with GitHub and no vendor-specific configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{

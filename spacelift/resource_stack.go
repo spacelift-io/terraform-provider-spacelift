@@ -592,6 +592,17 @@ func resourceStack() *schema.Resource {
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{
+					/*CustomizeDiff: customdiff.All(
+						customdiff.ComputedIf("terraform_version", func(ctx context.Context, diff *schema.ResourceDiff, v interface{}) bool {
+							f, err := os.OpenFile("/Users/ptru/fabryka/spacelift/terraform-provider-spacelift-extras/test-terragrunt/terragrunt.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+							if err != nil {
+								panic(err)
+							}
+							defer f.Close()
+							fmt.Fprintf(f, "checked! %v\n", diff.HasChange("tool"))
+							return diff.HasChange("tool")
+						}),
+					),*/
 					Schema: map[string]*schema.Schema{
 						"terraform_version": {
 							Type:             schema.TypeString,
@@ -973,6 +984,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 			terragruntConfig.Tool = toOptionalString(tool)
 		}
 
+		if shouldWeReComputeTerraformVersion(d) {
+			terragruntConfig.TerraformVersion = nil
+		}
+
 		return &structs.VendorConfigInput{
 			TerragruntInput: &terragruntConfig,
 		}
@@ -1005,6 +1020,22 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	}
 
 	return &structs.VendorConfigInput{Terraform: terraformConfig}
+}
+
+func shouldWeReComputeTerraformVersion(d *schema.ResourceData) bool {
+	// When tool is changed, we need to recompute terraform version
+	oldTool, newTool := d.GetChange("terragrunt.0.tool")
+	if oldTool.(string) != newTool.(string) {
+		// but only if version isn't provided manually in the config
+		inConf := d.GetRawConfig().AsValueMap()["terragrunt"].AsValueSlice()[0].AsValueMap()
+		if value, ok := inConf["terraform_version"]; ok {
+			if value.IsNull() || value.AsString() == "" {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func getStrings(d *schema.ResourceData, fieldName string) []graphql.String {
