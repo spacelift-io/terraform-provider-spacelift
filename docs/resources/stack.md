@@ -247,7 +247,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
 - `slug` (String) Allows setting the custom ID (slug) for the stack
-- `space_id` (String) ID (slug) of the space the stack is in. Defaults to `legacy`.
+- `space_id` (String) ID (slug) of the space the stack is in. Defaults to `legacy` if it exists, otherwise `root`.
 - `terraform_external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.
 - `terraform_smart_sanitization` (Boolean) Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.
 - `terraform_version` (String) Terraform version to use
