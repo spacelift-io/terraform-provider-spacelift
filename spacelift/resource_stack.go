@@ -592,17 +592,6 @@ func resourceStack() *schema.Resource {
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{
-					/*CustomizeDiff: customdiff.All(
-						customdiff.ComputedIf("terraform_version", func(ctx context.Context, diff *schema.ResourceDiff, v interface{}) bool {
-							f, err := os.OpenFile("/Users/ptru/fabryka/spacelift/terraform-provider-spacelift-extras/test-terragrunt/terragrunt.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-							if err != nil {
-								panic(err)
-							}
-							defer f.Close()
-							fmt.Fprintf(f, "checked! %v\n", diff.HasChange("tool"))
-							return diff.HasChange("tool")
-						}),
-					),*/
 					Schema: map[string]*schema.Schema{
 						"terraform_version": {
 							Type:             schema.TypeString,
