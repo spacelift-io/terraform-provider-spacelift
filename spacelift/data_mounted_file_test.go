@@ -69,7 +69,7 @@ func TestMountedFileData(t *testing.T) {
 			`, randomID),
 			Check: Resource(
 				"data.spacelift_mounted_file.test",
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("content", Equals("YmFjb24gaXMgdGFzdHk=")),
 				Attribute("write_only", Equals("false")),
 				AttributeNotPresent("context_id"),

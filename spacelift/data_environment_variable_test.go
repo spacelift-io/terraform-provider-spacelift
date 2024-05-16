@@ -70,7 +70,7 @@ func TestEnvironmentVariableData(t *testing.T) {
 			`, randomID),
 			Check: Resource(
 				"data.spacelift_environment_variable.test",
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("value", Equals("is tasty")),
 				Attribute("write_only", Equals("false")),
 				AttributeNotPresent("context_id"),

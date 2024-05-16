@@ -77,13 +77,13 @@ func TestGCPServiceAccountResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
-					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+					Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("module/test-module-%s", randomID),
+				ImportStateId:     fmt.Sprintf("module/terraform-default-test-module-%s", randomID),
 				ImportStateVerify: true,
 			},
 		})
