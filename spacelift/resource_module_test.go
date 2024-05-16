@@ -95,7 +95,7 @@ func TestModuleResource(t *testing.T) {
 				Config: config("test-root/ab"),
 				Check: Resource(
 					"spacelift_module.test",
-					Attribute("id", Equals(fmt.Sprintf("project-root-%s", randomID))),
+					Attribute("id", Equals(fmt.Sprintf("terraform-papaya-project-root-%s", randomID))),
 					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("description")),
@@ -342,7 +342,7 @@ func TestModuleResourceSpace(t *testing.T) {
 				Config: config("test-root/ab"),
 				Check: Resource(
 					"spacelift_module.test",
-					Attribute("id", Equals(fmt.Sprintf("project-root-%s", randomID))),
+					Attribute("id", Equals(fmt.Sprintf("terraform-papaya-project-root-%s", randomID))),
 					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("description")),

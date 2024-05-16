@@ -87,7 +87,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("my-first-policy-%s/test-module-%s", randomID, randomID),
+				ImportStateId:     fmt.Sprintf("my-first-policy-%s/terraform-default-test-module-%s", randomID, randomID),
 				ImportStateVerify: true,
 			},
 		})

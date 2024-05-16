@@ -64,7 +64,7 @@ func TestGCPServiceAccountData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_gcp_service_account.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals(fmt.Sprintf("terraform-defautl-test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("service_account_email", IsNotEmpty()),
 				SetEquals("token_scopes", "https://www.googleapis.com/auth/compute"),
 				AttributeNotPresent("stack_id"),
