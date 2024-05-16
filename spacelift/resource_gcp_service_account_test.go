@@ -83,7 +83,7 @@ func TestGCPServiceAccountResource(t *testing.T) {
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
-				ImportStateId:     fmt.Sprintf("module/test-module-%s", randomID),
+				ImportStateId:     fmt.Sprintf("module/terraform-default-test-module-%s", randomID),
 				ImportStateVerify: true,
 			},
 		})
