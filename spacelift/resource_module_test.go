@@ -38,7 +38,7 @@ func TestModuleResource(t *testing.T) {
 				Config: config("old description", true, false),
 				Check: Resource(
 					"spacelift_module.test",
-					Attribute("id", Equals(fmt.Sprintf("github-module-%s", randomID))),
+					Attribute("id", Equals(fmt.Sprintf("terraform-default-github-module-%s", randomID))),
 					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
@@ -286,7 +286,7 @@ func TestModuleResourceSpace(t *testing.T) {
 				Config: config("old description", true),
 				Check: Resource(
 					"spacelift_module.test",
-					Attribute("id", Equals(fmt.Sprintf("github-module-%s", randomID))),
+					Attribute("id", Equals(fmt.Sprintf("terraform-default-github-module-%s", randomID))),
 					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),

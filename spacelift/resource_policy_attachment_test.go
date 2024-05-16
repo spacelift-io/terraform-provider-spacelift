@@ -81,7 +81,7 @@ func TestPolicyAttachmentResource(t *testing.T) {
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("policy_id", Contains(randomID)),
-					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+					Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				),
 			},
 			{

@@ -75,7 +75,7 @@ func TestMountedFileResource(t *testing.T) {
 			`, randomID),
 				Check: Resource(
 					resourceName,
-					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+					Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 					Attribute("write_only", Equals("true")),
 				),
 			},

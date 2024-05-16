@@ -83,7 +83,7 @@ func TestWebhookResource(t *testing.T) {
 			{
 				ResourceName:        resourceName,
 				ImportState:         true,
-				ImportStateIdPrefix: fmt.Sprintf("module/test-module-%s/", randomID),
+				ImportStateIdPrefix: fmt.Sprintf("module/terraform-default-test-module-%s/", randomID),
 				ImportStateVerify:   true,
 			},
 		})

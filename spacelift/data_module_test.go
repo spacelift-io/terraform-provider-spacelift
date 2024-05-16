@@ -117,7 +117,7 @@ func TestModuleDataSpace(t *testing.T) {
 		`, randomID),
 		Check: Resource(
 			"data.spacelift_module.test",
-			Attribute("id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+			Attribute("id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 			Attribute("administrative", Equals("true")),
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),

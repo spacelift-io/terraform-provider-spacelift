@@ -84,7 +84,7 @@ func TestAWSRoleResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
-					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+					Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 					Attribute("generate_credentials_in_worker", Equals("false")),
 					Attribute("duration_seconds", Equals("942")),
 					Attribute("external_id", IsEmpty()),
@@ -150,7 +150,7 @@ func TestAWSRoleResource(t *testing.T) {
 			Check: Resource(
 				"spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("generate_credentials_in_worker", Equals("true")),
 				Attribute("external_id", IsEmpty()),
 				AttributeNotPresent("stack_id"),
