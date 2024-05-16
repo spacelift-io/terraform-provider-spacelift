@@ -301,6 +301,11 @@ func dataStack() *schema.Resource {
 				Description: "Indicates whether local preview runs can be triggered on this Stack.",
 				Computed:    true,
 			},
+			"enable_well_known_secret_masking": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether well-known secret masking is enabled.",
+				Computed:    true,
+			},
 			"kubernetes": {
 				Type:        schema.TypeList,
 				Description: "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
@@ -522,6 +527,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
+	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
