@@ -232,6 +232,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 - `cloudformation` (Block List, Max: 1) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedblock--cloudformation))
 - `description` (String) Free-form stack description for users
 - `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack. Defaults to `false`.
+- `enable_well_known_secret_masking` (Boolean) Indicates whether well-known secret masking is enabled.
 - `github_action_deploy` (Boolean) Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.
 - `github_enterprise` (Block List, Max: 1) VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application) (see [below for nested schema](#nestedblock--github_enterprise))
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
