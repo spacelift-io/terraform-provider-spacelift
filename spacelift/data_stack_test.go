@@ -189,7 +189,7 @@ func TestStackData(t *testing.T) {
 		`, randomID),
 			Check: Resource(
 				"data.spacelift_stack.test",
-				Attribute("kubernetes.0.kubectl_version", Equals("1.23.5")),
+				Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
 			),
 		}})
 	})

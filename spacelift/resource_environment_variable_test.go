@@ -84,7 +84,7 @@ func TestEnvironmentVariableResource(t *testing.T) {
 			`, randomID),
 				Check: Resource(
 					resourceName,
-					Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+					Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
 					Attribute("write_only", Equals("true")),
 					AttributeNotPresent("context_id"),

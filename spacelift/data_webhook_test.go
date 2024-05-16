@@ -73,7 +73,7 @@ func TestWebhookData(t *testing.T) {
 				Attribute("endpoint", Equals("https://bacon.org")),
 				Attribute("enabled", Equals("true")),
 				Attribute("secret", Equals("very-very-secret")),
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				AttributeNotPresent("stack_id"),
 			),
 		}})

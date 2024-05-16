@@ -69,7 +69,7 @@ func TestAWSRoleData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				Attribute("generate_credentials_in_worker", Equals("false")),
 				Attribute("duration_seconds", Equals("931")),
@@ -138,7 +138,7 @@ func TestAWSRoleData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_aws_role.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("role_arn", Equals("custom_role_arn")),
 				Attribute("generate_credentials_in_worker", Equals("true")),
 				Attribute("external_id", Equals("external@id")),
