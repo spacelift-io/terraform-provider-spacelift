@@ -13,7 +13,7 @@ func TestSpacesData(t *testing.T) {
 		datasourceName := "data.spacelift_spaces.test"
 
 		testSteps(t, []resource.TestStep{{
-			// Should find at least the legacy and root spaces.
+			// Should find at least root space.
 			Config: `
 				data "spacelift_spaces" "test" {
 				}
