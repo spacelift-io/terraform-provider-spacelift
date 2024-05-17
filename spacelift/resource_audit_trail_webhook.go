@@ -47,7 +47,12 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				Description: "`secret` is a secret that Spacelift will send with the request",
+				Description: "`secret` is a secret that Spacelift will send with the request.",
+			},
+			"custom_headers": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Description: "`custom_headers` is a Map of key values strings, that will be passed as headers with audit trail call.",
 			},
 		},
 	}
@@ -59,10 +64,11 @@ func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceD
 	}
 	variables := map[string]interface{}{
 		"input": structs.AuditTrailWebhookInput{
-			Enabled:     toBool(data.Get("enabled")),
-			Endpoint:    toString(data.Get("endpoint")),
-			IncludeRuns: toBool(data.Get("include_runs")),
-			Secret:      toString(data.Get("secret")),
+			Enabled:       toBool(data.Get("enabled")),
+			Endpoint:      toString(data.Get("endpoint")),
+			IncludeRuns:   toBool(data.Get("include_runs")),
+			Secret:        toString(data.Get("secret")),
+			CustomHeaders: toOptionalStringMap(data.Get("custom_headers")),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookCreate", &mutation, variables); err != nil {
@@ -91,6 +97,7 @@ func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceDat
 	data.Set("endpoint", query.AuditTrailWebhook.Endpoint)
 	data.Set("include_runs", query.AuditTrailWebhook.IncludeRuns)
 	data.Set("secret", query.AuditTrailWebhook.Secret)
+	data.Set("custom_headers", query.AuditTrailWebhook.CustomHeaders.ToStdMap())
 
 	return nil
 }
@@ -101,10 +108,11 @@ func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceD
 	}
 	variables := map[string]interface{}{
 		"input": structs.AuditTrailWebhookInput{
-			Enabled:     toBool(data.Get("enabled")),
-			Endpoint:    toString(data.Get("endpoint")),
-			IncludeRuns: toBool(data.Get("include_runs")),
-			Secret:      toString(data.Get("secret")),
+			Enabled:       toBool(data.Get("enabled")),
+			Endpoint:      toString(data.Get("endpoint")),
+			IncludeRuns:   toBool(data.Get("include_runs")),
+			Secret:        toString(data.Get("secret")),
+			CustomHeaders: toOptionalStringMap(data.Get("custom_headers")),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookUpdate", &mutation, variables); err != nil {
