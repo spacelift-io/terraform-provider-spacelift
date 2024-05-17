@@ -77,7 +77,7 @@ func TestContextAttachmentData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_context_attachment.test",
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("priority", Equals("1")),
 				AttributeNotPresent("stack_id"),
 			),

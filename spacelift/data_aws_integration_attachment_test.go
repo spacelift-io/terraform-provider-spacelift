@@ -86,7 +86,7 @@ func TestAWSIntegrationAttachmentData(t *testing.T) {
 			Check: Resource(
 				resourceName,
 				Attribute("id", IsNotEmpty()),
-				Attribute("module_id", Equals(fmt.Sprintf("test-module-%s", randomID))),
+				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				AttributeNotPresent("stack_id"),
 			),
 		}})

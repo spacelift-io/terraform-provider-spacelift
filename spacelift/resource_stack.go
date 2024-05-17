@@ -322,6 +322,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"enable_well_known_secret_masking": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether well-known secret masking is enabled.",
+				Optional:    true,
+				Default:     false,
+			},
 			"github_action_deploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.",
@@ -761,15 +767,16 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
 	ret := structs.StackInput{
-		Administrative:      graphql.Boolean(d.Get("administrative").(bool)),
-		Autodeploy:          graphql.Boolean(d.Get("autodeploy").(bool)),
-		Autoretry:           graphql.Boolean(d.Get("autoretry").(bool)),
-		Branch:              toString(d.Get("branch")),
-		GitHubActionDeploy:  graphql.Boolean(d.Get("github_action_deploy").(bool)),
-		LocalPreviewEnabled: graphql.Boolean(d.Get("enable_local_preview").(bool)),
-		Name:                toString(d.Get("name")),
-		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
-		Repository:          toString(d.Get("repository")),
+		Administrative:               graphql.Boolean(d.Get("administrative").(bool)),
+		Autodeploy:                   graphql.Boolean(d.Get("autodeploy").(bool)),
+		Autoretry:                    graphql.Boolean(d.Get("autoretry").(bool)),
+		Branch:                       toString(d.Get("branch")),
+		GitHubActionDeploy:           graphql.Boolean(d.Get("github_action_deploy").(bool)),
+		LocalPreviewEnabled:          graphql.Boolean(d.Get("enable_local_preview").(bool)),
+		EnableWellKnownSecretMasking: graphql.Boolean(d.Get("enable_well_known_secret_masking").(bool)),
+		Name:                         toString(d.Get("name")),
+		ProtectFromDeletion:          graphql.Boolean(d.Get("protect_from_deletion").(bool)),
+		Repository:                   toString(d.Get("repository")),
 	}
 
 	afterApplies := getStrings(d, "after_apply")

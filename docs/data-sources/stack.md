@@ -54,6 +54,7 @@ data "spacelift_stack" "k8s-core" {
 - `cloudformation` (List of Object) CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack. (see [below for nested schema](#nestedatt--cloudformation))
 - `description` (String) free-form stack description for users
 - `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack.
+- `enable_well_known_secret_masking` (Boolean) Indicates whether well-known secret masking is enabled.
 - `github_enterprise` (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
 - `gitlab` (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
 - `id` (String) The ID of this resource.

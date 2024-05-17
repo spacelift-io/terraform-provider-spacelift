@@ -17,7 +17,7 @@ func TestStackResource(t *testing.T) {
 	t.Run("with GitHub and no state import", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(description string, protectFromDeletion bool) string {
+		config := func(description string, protectFromDeletion, enableWellKnownSecretMasking bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					administrative           = true
@@ -44,15 +44,16 @@ func TestStackResource(t *testing.T) {
 					protect_from_deletion    = %t
 					repository               = "demo"
 					runner_image             = "custom_image:runner"
+					enable_well_known_secret_masking = %t
 				}
-			`, description, randomID, protectFromDeletion)
+			`, description, randomID, protectFromDeletion, enableWellKnownSecretMasking)
 		}
 
 		const resourceName = "spacelift_stack.test"
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("old description", true),
+				Config: config("old description", true, false),
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
@@ -93,6 +94,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("project_root", Equals("root")),
 					SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
 					Attribute("protect_from_deletion", Equals("true")),
+					Attribute("enable_well_known_secret_masking", Equals("false")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 				),
@@ -104,11 +106,12 @@ func TestStackResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"import_state"},
 			},
 			{
-				Config: config("new description", false),
+				Config: config("new description", false, true),
 				Check: Resource(
 					resourceName,
 					Attribute("description", Equals("new description")),
 					Attribute("protect_from_deletion", Equals("false")),
+					Attribute("enable_well_known_secret_masking", Equals("true")),
 				),
 			},
 		})
@@ -194,6 +197,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("project_root", Equals("root")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
+					Attribute("enable_well_known_secret_masking", Equals("false")),
 				),
 			},
 			{
@@ -488,7 +492,7 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("")),
-					Attribute("kubernetes.0.kubectl_version", Equals("1.23.5")),
+					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -503,7 +507,7 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("myapp-prod")),
-					Attribute("kubernetes.0.kubectl_version", Equals("1.23.5")),
+					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),

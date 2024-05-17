@@ -25,42 +25,43 @@ const StackConfigVendorTerragrunt = "StackConfigVendorTerragrunt"
 
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
-	ID                     string        `graphql:"id"`
-	Administrative         bool          `graphql:"administrative"`
-	AfterApply             []string      `graphql:"afterApply"`
-	AfterDestroy           []string      `graphql:"afterDestroy"`
-	AfterInit              []string      `graphql:"afterInit"`
-	AfterPerform           []string      `graphql:"afterPerform"`
-	AfterPlan              []string      `graphql:"afterPlan"`
-	AfterRun               []string      `graphql:"afterRun"`
-	Autodeploy             bool          `graphql:"autodeploy"`
-	Autoretry              bool          `graphql:"autoretry"`
-	BeforeApply            []string      `graphql:"beforeApply"`
-	BeforeDestroy          []string      `graphql:"beforeDestroy"`
-	BeforeInit             []string      `graphql:"beforeInit"`
-	BeforePerform          []string      `graphql:"beforePerform"`
-	BeforePlan             []string      `graphql:"beforePlan"`
-	Branch                 string        `graphql:"branch"`
-	Deleting               bool          `graphql:"deleting"`
-	Description            *string       `graphql:"description"`
-	IsDisabled             bool          `graphql:"isDisabled"`
-	GitHubActionDeploy     bool          `graphql:"githubActionDeploy"`
-	Integrations           *Integrations `graphql:"integrations"`
-	Labels                 []string      `graphql:"labels"`
-	LocalPreviewEnabled    bool          `graphql:"localPreviewEnabled"`
-	ManagesStateFile       bool          `graphql:"managesStateFile"`
-	Name                   string        `graphql:"name"`
-	Namespace              string        `graphql:"namespace"`
-	ProjectRoot            *string       `graphql:"projectRoot"`
-	AdditionalProjectGlobs []string      `graphql:"additionalProjectGlobs"`
-	ProtectFromDeletion    bool          `graphql:"protectFromDeletion"`
-	Provider               VCSProvider   `graphql:"provider"`
-	Repository             string        `graphql:"repository"`
-	RepositoryURL          *string       `graphql:"repositoryURL"`
-	RunnerImage            *string       `graphql:"runnerImage"`
-	Space                  string        `graphql:"space"`
-	TerraformVersion       *string       `graphql:"terraformVersion"`
-	VCSIntegration         *struct {
+	ID                           string        `graphql:"id"`
+	Administrative               bool          `graphql:"administrative"`
+	AfterApply                   []string      `graphql:"afterApply"`
+	AfterDestroy                 []string      `graphql:"afterDestroy"`
+	AfterInit                    []string      `graphql:"afterInit"`
+	AfterPerform                 []string      `graphql:"afterPerform"`
+	AfterPlan                    []string      `graphql:"afterPlan"`
+	AfterRun                     []string      `graphql:"afterRun"`
+	Autodeploy                   bool          `graphql:"autodeploy"`
+	Autoretry                    bool          `graphql:"autoretry"`
+	BeforeApply                  []string      `graphql:"beforeApply"`
+	BeforeDestroy                []string      `graphql:"beforeDestroy"`
+	BeforeInit                   []string      `graphql:"beforeInit"`
+	BeforePerform                []string      `graphql:"beforePerform"`
+	BeforePlan                   []string      `graphql:"beforePlan"`
+	Branch                       string        `graphql:"branch"`
+	Deleting                     bool          `graphql:"deleting"`
+	Description                  *string       `graphql:"description"`
+	IsDisabled                   bool          `graphql:"isDisabled"`
+	GitHubActionDeploy           bool          `graphql:"githubActionDeploy"`
+	Integrations                 *Integrations `graphql:"integrations"`
+	Labels                       []string      `graphql:"labels"`
+	LocalPreviewEnabled          bool          `graphql:"localPreviewEnabled"`
+	EnableWellKnownSecretMasking bool          `graphql:"enableWellKnownSecretMasking"`
+	ManagesStateFile             bool          `graphql:"managesStateFile"`
+	Name                         string        `graphql:"name"`
+	Namespace                    string        `graphql:"namespace"`
+	ProjectRoot                  *string       `graphql:"projectRoot"`
+	AdditionalProjectGlobs       []string      `graphql:"additionalProjectGlobs"`
+	ProtectFromDeletion          bool          `graphql:"protectFromDeletion"`
+	Provider                     VCSProvider   `graphql:"provider"`
+	Repository                   string        `graphql:"repository"`
+	RepositoryURL                *string       `graphql:"repositoryURL"`
+	RunnerImage                  *string       `graphql:"runnerImage"`
+	Space                        string        `graphql:"space"`
+	TerraformVersion             *string       `graphql:"terraformVersion"`
+	VCSIntegration               *struct {
 		ID        string `graphql:"id"`
 		IsDefault bool   `graphql:"isDefault"`
 	} `graphql:"vcsIntegration"`
@@ -232,6 +233,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
+	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
 	d.Set("github_action_deploy", stack.GitHubActionDeploy)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)

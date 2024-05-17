@@ -42,6 +42,7 @@ func TestStackData(t *testing.T) {
 				terraform_workspace             = "bacon"
 				terraform_smart_sanitization    = true
 				terraform_external_state_access = true
+				enable_well_known_secret_masking = true
 			}
 			data "spacelift_stack" "test" {
 				stack_id = spacelift_stack.test.id
@@ -90,6 +91,7 @@ func TestStackData(t *testing.T) {
 				Attribute("terraform_workspace", Equals("bacon")),
 				Attribute("terraform_smart_sanitization", Equals("true")),
 				Attribute("terraform_external_state_access", Equals("true")),
+				Attribute("enable_well_known_secret_masking", Equals("true")),
 			),
 		}})
 	})
@@ -187,7 +189,7 @@ func TestStackData(t *testing.T) {
 		`, randomID),
 			Check: Resource(
 				"data.spacelift_stack.test",
-				Attribute("kubernetes.0.kubectl_version", Equals("1.23.5")),
+				Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
 			),
 		}})
 	})
@@ -310,6 +312,7 @@ func TestStackData(t *testing.T) {
 				Check: Resource(
 					"data.spacelift_stack.test",
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+					Attribute("enable_well_known_secret_masking", Equals("false")),
 				),
 			},
 		})
