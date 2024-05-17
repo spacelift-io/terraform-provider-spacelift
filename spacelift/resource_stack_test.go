@@ -1488,6 +1488,43 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
 				),
 			},
+			// Check to change from TERRAFORM_FOSS to CUSTOM with a specific version
+			// Actually, we don't need to specify the version, but when we don't do it, it will be
+			// evaluated on the first run. So, it's simpler just to specify a version for that test case.
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "terraform_workflow_tool_custom_with_run" {
+						branch                  = "master"
+						name                    = "Provider test stack workflow_tool with run %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "TERRAFORM_FOSS"
+						terraform_version       = "1.5.7"
+						autodeploy              = true
+					}
+				`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_custom_with_run",
+					Attribute("terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "terraform_workflow_tool_custom_with_run" {
+						branch                  = "master"
+						name                    = "Provider test stack workflow_tool with run %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "CUSTOM"
+						terraform_version       = ""
+						autodeploy              = true
+					}
+				`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_custom_with_run",
+					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
 		})
 	})
 }

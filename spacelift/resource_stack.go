@@ -973,7 +973,7 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 			terragruntConfig.Tool = toOptionalString(tool)
 		}
 
-		if shouldWeReComputeTerraformVersion(d) {
+		if shouldWeReComputeTerraformVersionForTerragrunt(d) {
 			terragruntConfig.TerraformVersion = nil
 		}
 
@@ -990,6 +990,9 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 	if terraformWorkflowTool, ok := d.GetOk("terraform_workflow_tool"); ok {
 		terraformConfig.WorkflowTool = toOptionalString(terraformWorkflowTool)
+		if shouldWeReComputeTerraformVersionForTerraformWorkflowTool(d) {
+			terraformConfig.Version = nil
+		}
 	}
 
 	if terraformWorkspace, ok := d.GetOk("terraform_workspace"); ok {
@@ -1011,13 +1014,29 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	return &structs.VendorConfigInput{Terraform: terraformConfig}
 }
 
-func shouldWeReComputeTerraformVersion(d *schema.ResourceData) bool {
+func shouldWeReComputeTerraformVersionForTerragrunt(d *schema.ResourceData) bool {
 	// When tool is changed, we need to recompute terraform version
 	oldTool, newTool := d.GetChange("terragrunt.0.tool")
 	if oldTool.(string) != newTool.(string) {
 		// but only if version isn't provided manually in the config
 		inConf := d.GetRawConfig().AsValueMap()["terragrunt"].AsValueSlice()[0].AsValueMap()
 		if value, ok := inConf["terraform_version"]; ok {
+			if value.IsNull() || value.AsString() == "" {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func shouldWeReComputeTerraformVersionForTerraformWorkflowTool(d *schema.ResourceData) bool {
+	// When tool is changed, we need to recompute terraform version
+	oldTool, newTool := d.GetChange("terraform_workflow_tool")
+	if oldTool.(string) != newTool.(string) {
+		// but only if version isn't provided manually in the config
+		inConfig := d.GetRawConfig().AsValueMap()
+		if value, ok := inConfig["terraform_version"]; ok {
 			if value.IsNull() || value.AsString() == "" {
 				return true
 			}
