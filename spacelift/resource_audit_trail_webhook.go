@@ -52,7 +52,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 			"custom_headers": {
 				Type:        schema.TypeMap,
 				Optional:    true,
-				Description: "`custom_headers` is a Map of key values strings, that will be passed as headers with audit trail call.",
+				Description: "`custom_headers` is a Map of key values strings, that will be passed as headers with audit trail requests.",
 			},
 		},
 	}

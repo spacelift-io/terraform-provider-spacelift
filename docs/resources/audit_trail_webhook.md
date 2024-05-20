@@ -31,7 +31,7 @@ resource "spacelift_audit_trail_webhook" "example" {
 
 ### Optional
 
-- `custom_headers` (Map of String) `custom_headers` is a Map of key values strings, that will be passed as headers with audit trail call.
+- `custom_headers` (Map of String) `custom_headers` is a Map of key values strings, that will be passed as headers with audit trail requests.
 - `include_runs` (Boolean) `include_runs` determines whether the webhook should include information about the run that triggered the event.
 
 ### Read-Only
