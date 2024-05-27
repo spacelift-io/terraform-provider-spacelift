@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -16,7 +15,7 @@ import (
 
 func resourceGitLabIntegration() *schema.Resource {
 	return &schema.Resource{
-		Description:   "`spacelift_gitlab_integration` represents an integration with an GitLab instance",
+		Description:   "`spacelift_gitlab_integration` represents an integration with a GitLab instance",
 		CreateContext: resourceGitLabIntegrationCreate,
 		ReadContext:   resourceGitLabIntegrationRead,
 		UpdateContext: resourceGitLabIntegrationUpdate,
@@ -52,26 +51,27 @@ func resourceGitLabIntegration() *schema.Resource {
 			},
 			gitLabDescription: {
 				Type:             schema.TypeString,
-				Description:      "The friendly name of the integration",
+				Description:      "Description of the integration",
 				Optional:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			gitLabAPIHost: {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "API host URL",
-				ValidateFunc: validation.IsURLWithHTTPS,
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "API host URL",
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			gitLabUserFacingHost: {
-				Type:         schema.TypeString,
-				Required:     true,
-				Description:  "User facing host URL.",
-				ValidateFunc: validation.IsURLWithHTTPS,
+				Type:             schema.TypeString,
+				Required:         true,
+				Description:      "User facing host URL.",
+				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			gitLabToken: {
 				Type:             schema.TypeString,
 				Description:      "The GitLab API Token",
 				Required:         true,
+				Sensitive:        true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			gitLabLabels: {
@@ -87,7 +87,6 @@ func resourceGitLabIntegration() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "ID (slug) of the space the integration is in; Default: `root`",
 				Optional:         true,
-				ForceNew:         true,
 				Default:          "root",
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
@@ -147,7 +146,7 @@ func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, 
 
 	variables := map[string]interface{}{"id": d.Id()}
 	if err := meta.(*internal.Client).Query(ctx, "GitLabIntegrationRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for the bitbucket datacenter integration: %v", err)
+		return diag.Errorf("could not query for the gitlab integration: %v", err)
 	}
 
 	if query.GitLabIntegration == nil {
