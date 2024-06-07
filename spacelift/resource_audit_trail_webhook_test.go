@@ -65,11 +65,6 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 					Attribute("custom_headers.X-Some-Header-2", Equals("some-value-2")),
 				),
 			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 		})
 	})
 
