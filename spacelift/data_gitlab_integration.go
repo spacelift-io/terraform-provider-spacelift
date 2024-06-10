@@ -9,19 +9,6 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
-const (
-	gitlabId            = "id"
-	gitlabName          = "name"
-	gitlabDescription   = "description"
-	gitlabIsDefault     = "is_default"
-	gitlabLabels        = "labels"
-	gitlabSpaceID       = "space_id"
-	gitlabAppID         = "app_id"
-	gitlabAPIHost       = "api_host"
-	gitlabWebhookSecret = "webhook_secret"
-	gitlabWebhookURL    = "webhook_url"
-)
-
 func dataGitlabIntegration() *schema.Resource {
 	return &schema.Resource{
 		Description: "`spacelift_gitlab_integration` returns details about Gitlab integration",
@@ -29,27 +16,27 @@ func dataGitlabIntegration() *schema.Resource {
 		ReadContext: dataGitlabIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			gitlabId: {
+			gitLabID: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration id. If not provided, the default integration will be returned",
 				Optional:    true,
 			},
-			gitlabName: {
+			gitLabName: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration name",
 				Computed:    true,
 			},
-			gitlabDescription: {
+			gitLabDescription: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration description",
 				Computed:    true,
 			},
-			gitlabIsDefault: {
+			gitLabIsDefault: {
 				Type:        schema.TypeBool,
 				Description: "Gitlab integration is default",
 				Computed:    true,
 			},
-			gitlabLabels: {
+			gitLabLabels: {
 				Type:        schema.TypeList,
 				Description: "Gitlab integration labels",
 				Computed:    true,
@@ -57,22 +44,22 @@ func dataGitlabIntegration() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			gitlabSpaceID: {
+			gitLabSpaceID: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration space id",
 				Computed:    true,
 			},
-			gitlabAPIHost: {
+			gitLabAPIHost: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration api host",
 				Computed:    true,
 			},
-			gitlabWebhookSecret: {
+			gitLabWebhookSecret: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration webhook secret",
 				Computed:    true,
 			},
-			gitlabWebhookURL: {
+			gitLabWebhookURL: {
 				Type:        schema.TypeString,
 				Description: "Gitlab integration webhook url",
 				Computed:    true,
@@ -101,7 +88,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	variables := map[string]interface{}{"id": ""}
 
-	if id, ok := d.GetOk(gitlabId); ok && id != "" {
+	if id, ok := d.GetOk(gitLabID); ok && id != "" {
 		variables["id"] = toID(id)
 	}
 
@@ -109,27 +96,27 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("could not query for gitlab integration: %v", err)
 	}
 
-	gitlabIntegration := query.GitlabIntegration
-	if gitlabIntegration == nil {
+	gitLabIntegration := query.GitlabIntegration
+	if gitLabIntegration == nil {
 		return diag.Errorf("gitlab integration not found")
 	}
 
-	d.SetId(gitlabIntegration.ID)
-	d.Set(gitlabAPIHost, gitlabIntegration.APIHost)
-	d.Set(gitlabWebhookSecret, gitlabIntegration.WebhookSecret)
-	d.Set(gitlabWebhookURL, gitlabIntegration.WebhookURL)
-	d.Set(gitlabId, gitlabIntegration.ID)
-	d.Set(gitlabName, gitlabIntegration.Name)
-	d.Set(gitlabDescription, gitlabIntegration.Description)
-	d.Set(gitlabIsDefault, gitlabIntegration.IsDefault)
-	d.Set(gitlabSpaceID, gitlabIntegration.Space.ID)
+	d.SetId(gitLabIntegration.ID)
+	d.Set(gitLabAPIHost, gitLabIntegration.APIHost)
+	d.Set(gitLabWebhookSecret, gitLabIntegration.WebhookSecret)
+	d.Set(gitLabWebhookURL, gitLabIntegration.WebhookURL)
+	d.Set(gitLabID, gitLabIntegration.ID)
+	d.Set(gitLabName, gitLabIntegration.Name)
+	d.Set(gitLabDescription, gitLabIntegration.Description)
+	d.Set(gitLabIsDefault, gitLabIntegration.IsDefault)
+	d.Set(gitLabSpaceID, gitLabIntegration.Space.ID)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
-	for _, label := range gitlabIntegration.Labels {
+	for _, label := range gitLabIntegration.Labels {
 		labels.Add(label)
 	}
 
-	d.Set(gitlabLabels, labels)
+	d.Set(gitLabLabels, labels)
 
 	return nil
 }

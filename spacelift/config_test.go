@@ -108,6 +108,7 @@ var testConfig struct {
 			Default struct {
 				Name          string
 				ID            string
+				Token         string
 				APIHost       string
 				WebhookSecret string
 				WebhookURL    string
@@ -117,6 +118,7 @@ var testConfig struct {
 				ID            string
 				Space         string
 				APIHost       string
+				Token         string
 				WebhookSecret string
 				WebhookURL    string
 			}

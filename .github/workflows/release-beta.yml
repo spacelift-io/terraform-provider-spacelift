@@ -36,20 +36,19 @@ jobs:
           echo -e "project_name: terraform-provider-${{ inputs.providerType }}\n$(cat .goreleaser.yml)" > .goreleaser.yml
 
       - name: Set up Go
-        uses: actions/setup-go@v4
-        with: { go-version: 1.21 }
+        uses: actions/setup-go@v5
+        with: { go-version-file: go.mod }
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         id: import_gpg
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Run GoReleaser to create draft release
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
-          version: latest
           args: release --clean --snapshot
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
@@ -57,8 +56,6 @@ jobs:
 
       - name: Install spacectl
         uses: spacelift-io/setup-spacectl@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release to Spacelift registry (preprod)
         run: spacectl provider create-version --type=${{ inputs.providerType }}
