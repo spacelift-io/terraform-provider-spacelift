@@ -2,7 +2,7 @@ package structs
 
 type AuditTrailWebhook struct {
 	AuditTrailWebhookRead
-	// CustomHeaders is used only for create/update, API doesn't return it back.
+	// CustomHeaders is used only for create/update, API doesn't return them back.
 	CustomHeaders StringMap `graphql:"customHeaders"`
 }
 
