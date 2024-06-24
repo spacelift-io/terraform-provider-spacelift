@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
-	github.com/hashicorp/go-retryablehttp v0.7.6
+	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.33.0
 	github.com/kelseyhightower/envconfig v1.4.0
