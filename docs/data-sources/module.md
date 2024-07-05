@@ -42,6 +42,7 @@ data "spacelift_module" "k8s-module" {
 - `name` (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
 - `project_root` (String) Project root is the optional directory relative to the repository root containing the module source code.
 - `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail.
+- `raw_git` (List of Object) One-way VCS integration using a raw Git repository link (see [below for nested schema](#nestedatt--raw_git))
 - `repository` (String) Name of the repository, without the owner part
 - `shared_accounts` (Set of String) List of the accounts (subdomains) which should have access to the Module
 - `space_id` (String) ID (slug) of the space the module is in
@@ -97,3 +98,12 @@ Read-Only:
 - `id` (String)
 - `is_default` (Boolean)
 - `namespace` (String)
+
+
+<a id="nestedatt--raw_git"></a>
+### Nested Schema for `raw_git`
+
+Read-Only:
+
+- `namespace` (String)
+- `url` (String)

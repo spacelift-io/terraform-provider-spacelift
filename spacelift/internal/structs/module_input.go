@@ -9,6 +9,7 @@ type ModuleCreateInput struct {
 	Namespace         *graphql.String   `json:"namespace"`
 	Provider          *graphql.String   `json:"provider"`
 	Repository        graphql.String    `json:"repository"`
+	RepositoryURL     *graphql.String   `json:"repositoryURL"`
 	TerraformProvider *graphql.String   `json:"terraformProvider"`
 	Space             *graphql.String   `json:"space"`
 	VCSIntegrationID  *graphql.ID       `json:"vcsIntegrationId"`
@@ -42,6 +43,7 @@ type ModuleUpdateV2Input struct {
 	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`
 	Provider            *graphql.String   `json:"provider"`
 	Repository          graphql.String    `json:"repository"`
+	RepositoryURL       *graphql.String   `json:"repositoryURL"`
 	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
 	Space               *graphql.String   `json:"space"`
 	VCSIntegrationID    *graphql.ID       `json:"vcsIntegrationId"`
