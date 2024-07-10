@@ -20,6 +20,7 @@ type Module struct {
 	ProtectFromDeletion bool         `graphql:"protectFromDeletion"`
 	Provider            VCSProvider  `graphql:"provider"`
 	Repository          string       `graphql:"repository"`
+	RepositoryURL       *string      `graphql:"repositoryURL"`
 	SharedAccounts      []string     `graphql:"sharedAccounts"`
 	Space               string       `graphql:"space"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
@@ -84,6 +85,12 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 			}
 		}
 		fieldName = "gitlab"
+	case VCSProviderRawGit:
+		vcsSettings = map[string]interface{}{
+			"namespace": m.Namespace,
+			"url":       m.RepositoryURL,
+		}
+		fieldName = "raw_git"
 	}
 
 	if fieldName != "" {
