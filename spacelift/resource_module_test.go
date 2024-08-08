@@ -69,6 +69,41 @@ func TestModuleResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with Raw Git", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func() string {
+			return fmt.Sprintf(`
+				resource "spacelift_module" "test" {
+					name           = "raw-git-%s"
+					administrative = false
+					branch         = "main"
+					repository     = "terraform-bacon-tasty"
+
+					raw_git {
+						namespace = "bacon"
+						url       = "https://gist.github.com/d8d18c7c2841b578de22be34cb5943f5.git"
+					}
+				}
+			`, randomID)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(),
+				Check: Resource(
+					"spacelift_module.test",
+					Nested("raw_git",
+						CheckInList(
+							Attribute("namespace", Equals("bacon")),
+							Attribute("url", Equals("https://gist.github.com/d8d18c7c2841b578de22be34cb5943f5.git")),
+						),
+					),
+				),
+			},
+		})
+	})
+
 	t.Run("project root and custom name", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

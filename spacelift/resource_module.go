@@ -247,6 +247,29 @@ func resourceModule() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"raw_git": {
+				Type:          schema.TypeList,
+				Description:   "One-way VCS integration using a raw Git repository link",
+				Optional:      true,
+				ConflictsWith: conflictingVCSProviders("raw_git"),
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"namespace": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "User-friendly namespace for the repository, this is for cosmetic purposes only",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+						"url": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "HTTPS URL of the Git repository",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+					},
+				},
+			},
 			"repository": {
 				Type:             schema.TypeString,
 				Description:      "Name of the repository, without the owner part",
@@ -404,7 +427,7 @@ func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace *graphql.String, vcsIntegrationID *graphql.ID) {
+func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace *graphql.String, repositoryURL *graphql.String, vcsIntegrationID *graphql.ID) {
 	provider = graphql.NewString("GITHUB")
 
 	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
@@ -460,6 +483,12 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		provider = graphql.NewString(graphql.String(structs.VCSProviderGitlab))
 	}
 
+	if rawGit, ok := d.Get("raw_git").([]interface{}); ok && len(rawGit) > 0 {
+		repositoryURL = toOptionalString(rawGit[0].(map[string]interface{})["url"])
+		namespace = toOptionalString(rawGit[0].(map[string]interface{})["namespace"])
+		provider = graphql.NewString(graphql.String(structs.VCSProviderRawGit))
+	}
+
 	return
 }
 
@@ -468,7 +497,7 @@ func moduleCreateInput(d *schema.ResourceData) structs.ModuleCreateInput {
 		UpdateInput: moduleUpdateInput(d),
 		Repository:  toString(d.Get("repository")),
 	}
-	ret.Provider, ret.Namespace, ret.VCSIntegrationID = getSourceData(d)
+	ret.Provider, ret.Namespace, ret.RepositoryURL, ret.VCSIntegrationID = getSourceData(d)
 
 	name, ok := d.GetOk("name")
 	if ok {
@@ -547,7 +576,7 @@ func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
 		ProtectFromDeletion: graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 		Repository:          toString(d.Get("repository")),
 	}
-	ret.Provider, ret.Namespace, ret.VCSIntegrationID = getSourceData(d)
+	ret.Provider, ret.Namespace, ret.RepositoryURL, ret.VCSIntegrationID = getSourceData(d)
 
 	description, ok := d.GetOk("description")
 	if ok {
