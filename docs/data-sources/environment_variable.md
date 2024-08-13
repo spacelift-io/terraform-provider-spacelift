@@ -48,6 +48,7 @@ data "spacelift_environment_variable" "core-kubeconfig" {
 ### Read-Only
 
 - `checksum` (String) SHA-256 checksum of the value
+- `description` (String) Description of the environment variable
 - `id` (String) The ID of this resource.
 - `value` (String, Sensitive) value of the environment variable
 - `write_only` (Boolean) indicates whether the value can be read back outside a Run

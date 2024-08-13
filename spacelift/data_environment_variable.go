@@ -61,6 +61,11 @@ func dataEnvironmentVariable() *schema.Resource {
 				Description: "indicates whether the value can be read back outside a Run",
 				Computed:    true,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "Description of the environment variable",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -192,5 +197,11 @@ func populateEnvironmentVariable(d *schema.ResourceData, el *structs.ConfigEleme
 		d.Set("value", *el.Value)
 	} else {
 		d.Set("value", nil)
+	}
+
+	if el.Description != nil {
+		d.Set("description", *el.Description)
+	} else {
+		d.Set("description", nil)
 	}
 }
