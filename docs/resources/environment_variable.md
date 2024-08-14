@@ -15,26 +15,29 @@ description: |-
 ```terraform
 # For a context
 resource "spacelift_environment_variable" "ireland-kubeconfig" {
-  context_id = "prod-k8s-ie"
-  name       = "KUBECONFIG"
-  value      = "/project/spacelift/kubeconfig"
-  write_only = false
+  context_id  = "prod-k8s-ie"
+  name        = "KUBECONFIG"
+  value       = "/project/spacelift/kubeconfig"
+  write_only  = false
+  description = "Kubeconfig for Ireland Kubernetes cluster"
 }
 
 # For a module
 resource "spacelift_environment_variable" "module-kubeconfig" {
-  module_id  = "k8s-module"
-  name       = "KUBECONFIG"
-  value      = "/project/spacelift/kubeconfig"
-  write_only = false
+  module_id   = "k8s-module"
+  name        = "KUBECONFIG"
+  value       = "/project/spacelift/kubeconfig"
+  write_only  = false
+  description = "Kubeconfig for the module"
 }
 
 # For a stack
 resource "spacelift_environment_variable" "core-kubeconfig" {
-  stack_id   = "k8s-core"
-  name       = "KUBECONFIG"
-  value      = "/project/spacelift/kubeconfig"
-  write_only = false
+  stack_id    = "k8s-core"
+  name        = "KUBECONFIG"
+  value       = "/project/spacelift/kubeconfig"
+  write_only  = false
+  description = "Kubeconfig for the core stack"
 }
 ```
 
@@ -48,6 +51,7 @@ resource "spacelift_environment_variable" "core-kubeconfig" {
 ### Optional
 
 - `context_id` (String) ID of the context on which the environment variable is defined
+- `description` (String) Description of the environment variable
 - `module_id` (String) ID of the module on which the environment variable is defined
 - `stack_id` (String) ID of the stack on which the environment variable is defined
 - `value` (String, Sensitive) Value of the environment variable. Defaults to an empty string.

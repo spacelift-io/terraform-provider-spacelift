@@ -82,6 +82,12 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Default:     true,
 				ForceNew:    true,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "Description of the environment variable",
+				Optional:    true,
+				ForceNew:    true,
+			},
 		},
 	}
 }
@@ -89,10 +95,11 @@ func resourceEnvironmentVariable() *schema.Resource {
 func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
-			ID:        toID(d.Get("name")),
-			Type:      structs.ConfigType("ENVIRONMENT_VARIABLE"),
-			Value:     toString(d.Get("value")),
-			WriteOnly: graphql.Boolean(d.Get("write_only").(bool)),
+			ID:          toID(d.Get("name")),
+			Type:        structs.ConfigType("ENVIRONMENT_VARIABLE"),
+			Value:       toString(d.Get("value")),
+			WriteOnly:   graphql.Boolean(d.Get("write_only").(bool)),
+			Description: toOptionalString(d.Get("description")),
 		},
 	}
 
@@ -202,6 +209,12 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 		d.Set("value", *value)
 	} else {
 		d.Set("value", element.Checksum)
+	}
+
+	if description := element.Description; description != nil {
+		d.Set("description", *description)
+	} else {
+		d.Set("description", nil)
 	}
 
 	return nil

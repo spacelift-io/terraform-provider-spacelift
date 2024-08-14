@@ -22,14 +22,15 @@ func TestEnvironmentVariableData(t *testing.T) {
 
 				resource "spacelift_environment_variable" "test" {
 					context_id = spacelift_context.test.id
-					name       = "BACON"
-					value      = "is tasty"
-					write_only = true
+					name        = "BACON"
+					value       = "is tasty"
+					write_only  = true
+					description = "Bacon is tasty"
 				}
 
 				data "spacelift_environment_variable" "test" {
-					context_id = spacelift_environment_variable.test.context_id
-					name       = "BACON"
+					context_id  = spacelift_environment_variable.test.context_id
+					name        = "BACON"
 				}
 			`, randomID),
 			Check: Resource(
@@ -39,6 +40,7 @@ func TestEnvironmentVariableData(t *testing.T) {
 				Attribute("name", Equals("BACON")),
 				Attribute("value", IsEmpty()),
 				Attribute("write_only", Equals("true")),
+				Attribute("description", Equals("Bacon is tasty")),
 				AttributeNotPresent("module_id"),
 				AttributeNotPresent("stack_id"),
 			),
@@ -57,10 +59,10 @@ func TestEnvironmentVariableData(t *testing.T) {
 				}
 	
 				resource "spacelift_environment_variable" "test" {
-					module_id  = spacelift_module.test.id
-					name       = "BACON"
-					value      = "is tasty"
-					write_only = false
+					module_id   = spacelift_module.test.id
+					name        = "BACON"
+					value       = "is tasty"
+					write_only  = false
 				}
 
 				data "spacelift_environment_variable" "test" {
@@ -73,6 +75,7 @@ func TestEnvironmentVariableData(t *testing.T) {
 				Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 				Attribute("value", Equals("is tasty")),
 				Attribute("write_only", Equals("false")),
+				Attribute("description", IsEmpty()),
 				AttributeNotPresent("context_id"),
 				AttributeNotPresent("stack_id"),
 			),
@@ -92,8 +95,9 @@ func TestEnvironmentVariableData(t *testing.T) {
 	
 				resource "spacelift_environment_variable" "test" {
 					stack_id = spacelift_stack.test.id
-					value    = "is tasty"
-					name     = "BACON"
+					value       = "is tasty"
+					name        = "BACON"
+					description = "Bacon is tasty"
 				}
 
 				data "spacelift_environment_variable" "test" {
@@ -105,6 +109,7 @@ func TestEnvironmentVariableData(t *testing.T) {
 				"data.spacelift_environment_variable.test",
 				Attribute("stack_id", StartsWith("test-stack-")),
 				Attribute("stack_id", Contains(randomID)),
+				Attribute("description", Equals("Bacon is tasty")),
 				AttributeNotPresent("context_id"),
 				AttributeNotPresent("module_id"),
 			),
