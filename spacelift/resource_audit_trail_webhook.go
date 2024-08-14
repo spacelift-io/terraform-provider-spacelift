@@ -47,7 +47,12 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
-				Description: "`secret` is a secret that Spacelift will send with the request",
+				Description: "`secret` is a secret that Spacelift will send with the request.",
+			},
+			"custom_headers": {
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Description: "`custom_headers` is a Map of key-value strings, that will be passed as headers with audit trail requests.",
 			},
 		},
 	}
@@ -55,14 +60,15 @@ func resourceAuditTrailWebhook() *schema.Resource {
 
 func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var mutation struct {
-		AuditTrailWebhook *structs.AuditTrailWebhook `graphql:"auditTrailSetWebhook(input: $input)"`
+		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailSetWebhook(input: $input)"`
 	}
 	variables := map[string]interface{}{
 		"input": structs.AuditTrailWebhookInput{
-			Enabled:     toBool(data.Get("enabled")),
-			Endpoint:    toString(data.Get("endpoint")),
-			IncludeRuns: toBool(data.Get("include_runs")),
-			Secret:      toString(data.Get("secret")),
+			Enabled:       toBool(data.Get("enabled")),
+			Endpoint:      toString(data.Get("endpoint")),
+			IncludeRuns:   toBool(data.Get("include_runs")),
+			Secret:        toString(data.Get("secret")),
+			CustomHeaders: toOptionalStringMap(data.Get("custom_headers")),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookCreate", &mutation, variables); err != nil {
@@ -76,7 +82,7 @@ func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceD
 
 func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var query struct {
-		AuditTrailWebhook *structs.AuditTrailWebhook `graphql:"auditTrailWebhook"`
+		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailWebhook"`
 	}
 	if err := i.(*internal.Client).Query(ctx, "AuditTrailWebhookRead", &query, nil); err != nil {
 		return diag.Errorf("could not query for audit trail webhook: %v", internal.FromSpaceliftError(err))
@@ -97,14 +103,15 @@ func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceDat
 
 func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var mutation struct {
-		AuditTrailWebhook *structs.AuditTrailWebhook `graphql:"auditTrailSetWebhook(input: $input)"`
+		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailSetWebhook(input: $input)"`
 	}
 	variables := map[string]interface{}{
 		"input": structs.AuditTrailWebhookInput{
-			Enabled:     toBool(data.Get("enabled")),
-			Endpoint:    toString(data.Get("endpoint")),
-			IncludeRuns: toBool(data.Get("include_runs")),
-			Secret:      toString(data.Get("secret")),
+			Enabled:       toBool(data.Get("enabled")),
+			Endpoint:      toString(data.Get("endpoint")),
+			IncludeRuns:   toBool(data.Get("include_runs")),
+			Secret:        toString(data.Get("secret")),
+			CustomHeaders: toOptionalStringMap(data.Get("custom_headers")),
 		},
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookUpdate", &mutation, variables); err != nil {
@@ -116,7 +123,7 @@ func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceD
 
 func resourceAuditTrailWebhookDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
 	var mutation struct {
-		AuditTrailWebhook *structs.AuditTrailWebhook `graphql:"auditTrailDeleteWebhook"`
+		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailDeleteWebhook"`
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookDelete", &mutation, nil); err != nil {
 		return diag.Errorf("could not delete audit trail webhook: %v", internal.FromSpaceliftError(err))

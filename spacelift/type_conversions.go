@@ -3,6 +3,7 @@ package spacelift
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/shurcooL/graphql"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func toBool(input interface{}) graphql.Boolean {
@@ -25,6 +26,10 @@ func toString(input interface{}) graphql.String {
 	return graphql.String(input.(string))
 }
 
+func toMap(input interface{}) map[string]interface{} {
+	return input.(map[string]interface{})
+}
+
 func toOptionalInt(input interface{}) *graphql.Int {
 	v := graphql.Int(input.(int))
 	return graphql.NewInt(v)
@@ -44,4 +49,18 @@ func toOptionalStringList(input interface{}) *[]graphql.String {
 	}
 
 	return nil
+}
+
+func toOptionalStringMap(input interface{}) *structs.StringMap {
+	var customHeaders structs.StringMap
+	for k, v := range toMap(input) {
+		customHeaders.Entries = append(customHeaders.Entries, structs.KeyValuePair{
+			Key:   k,
+			Value: v.(string),
+		})
+	}
+	if len(customHeaders.Entries) == 0 {
+		return nil
+	}
+	return &customHeaders
 }
