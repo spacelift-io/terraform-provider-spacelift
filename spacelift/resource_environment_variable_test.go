@@ -11,37 +11,41 @@ import (
 )
 
 func TestEnvironmentVariableResource(t *testing.T) {
+	const resourceName = "spacelift_environment_variable.test"
+
 	t.Run("with a context", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(writeOnly bool) string {
+		config := func(writeOnly bool, description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_context" "test" {
 					name = "My first context %s"
 				}
 
 				resource "spacelift_environment_variable" "test" {
-					context_id = spacelift_context.test.id
-					name       = "BACON"
-					value      = "is tasty"
-					write_only = %t
+					context_id  = spacelift_context.test.id
+					name        = "BACON"
+					value       = "is tasty"
+					write_only  = %t
+					description = %s
 				}
-			`, randomID, writeOnly)
+			`, randomID, writeOnly, description)
 		}
 
 		const resourceName = "spacelift_environment_variable.test"
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config(true),
+				Config: config(true, `"Bacon is tasty"`),
 				Check: Resource(
-					"spacelift_environment_variable.test",
+					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("checksum", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
 					Attribute("context_id", Contains(randomID)),
 					Attribute("name", Equals("BACON")),
 					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
 					Attribute("write_only", Equals("true")),
+					Attribute("description", Equals("Bacon is tasty")),
 					AttributeNotPresent("module_id"),
 					AttributeNotPresent("stack_id"),
 				),
@@ -52,11 +56,12 @@ func TestEnvironmentVariableResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config(false),
+				Config: config(false, "null"),
 				Check: Resource(
-					"spacelift_environment_variable.test",
+					resourceName,
 					Attribute("value", Equals("is tasty")),
 					Attribute("write_only", Equals("false")),
+					Attribute("description", IsEmpty()),
 				),
 			},
 		})
@@ -64,8 +69,6 @@ func TestEnvironmentVariableResource(t *testing.T) {
 
 	t.Run("with a module", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
-		const resourceName = "spacelift_environment_variable.test"
 
 		testSteps(t, []resource.TestStep{
 			{
@@ -77,9 +80,10 @@ func TestEnvironmentVariableResource(t *testing.T) {
 				}
 	
 				resource "spacelift_environment_variable" "test" {
-					module_id = spacelift_module.test.id
-					name      = "BACON"
-					value     = "is tasty"
+					module_id  = spacelift_module.test.id
+					name       = "BACON"
+					value      = "is tasty"
+					description = "Bacon is tasty"
 				}
 			`, randomID),
 				Check: Resource(
@@ -87,6 +91,7 @@ func TestEnvironmentVariableResource(t *testing.T) {
 					Attribute("module_id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
 					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
 					Attribute("write_only", Equals("true")),
+					Attribute("description", Equals("Bacon is tasty")),
 					AttributeNotPresent("context_id"),
 					AttributeNotPresent("stack_id"),
 				),
@@ -100,8 +105,6 @@ func TestEnvironmentVariableResource(t *testing.T) {
 	})
 
 	t.Run("with a stack", func(t *testing.T) {
-		const resourceName = "spacelift_environment_variable.test"
-
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
@@ -114,16 +117,18 @@ func TestEnvironmentVariableResource(t *testing.T) {
 				}
 	
 				resource "spacelift_environment_variable" "test" {
-					stack_id = spacelift_stack.test.id
-					value    = "is tasty"
-					name     = "BACON"
+					stack_id    = spacelift_stack.test.id
+					value       = "is tasty"
+					name        = "BACON"
+					description = "Bacon is tasty"
 				}
 			`, randomID),
 				Check: Resource(
-					"spacelift_environment_variable.test",
+					resourceName,
 					Attribute("stack_id", StartsWith("test-stack-")),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("value", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
+					Attribute("description", Equals("Bacon is tasty")),
 					AttributeNotPresent("context_id"),
 					AttributeNotPresent("module_id"),
 				),
