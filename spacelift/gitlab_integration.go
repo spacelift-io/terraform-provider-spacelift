@@ -13,4 +13,5 @@ const (
 	gitLabToken          = "private_token"
 	gitLabWebhookURL     = "webhook_url"
 	gitLabWebhookSecret  = "webhook_secret"
+	gitLabVCSChecks      = "vcs_checks"
 )

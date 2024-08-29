@@ -15,4 +15,5 @@ type GitLabIntegration struct {
 	UserFacingHost string   `graphql:"userFacingHost"`
 	WebhookSecret  string   `graphql:"webhookSecret"`
 	WebhookURL     string   `graphql:"webhookUrl"`
+	VCSChecks      string   `graphql:"vcsChecks"`
 }

@@ -31,5 +31,6 @@ data "spacelift_gitlab_integration" "gitlab_integration" {}
 - `labels` (List of String) Gitlab integration labels
 - `name` (String) Gitlab integration name
 - `space_id` (String) Gitlab integration space id
+- `vcs_checks` (String) VCS checks configured for GitLab repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 - `webhook_secret` (String) Gitlab integration webhook secret
 - `webhook_url` (String) Gitlab integration webhook url

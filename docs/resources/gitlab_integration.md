@@ -46,6 +46,7 @@ resource "spacelift_gitlab_integration" "private-example" {
 - `is_default` (Boolean) Is the GitLab integration the default for all spaces? If set to `true` the space must be set to `root` in `space_id` or left empty which uses the default
 - `labels` (Set of String) Labels to set on the integration
 - `space_id` (String) ID (slug) of the space the integration is in; Default: `root`
+- `vcs_checks` (String) VCS checks configured for GitLab repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 
 ### Read-Only
 

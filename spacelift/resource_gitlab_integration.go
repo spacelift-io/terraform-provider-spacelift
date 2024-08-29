@@ -108,6 +108,12 @@ func resourceGitLabIntegration() *schema.Resource {
 				Description: "URL for webhooks originating from GitLab repositories",
 				Computed:    true,
 			},
+			gitLabVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for GitLab repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Optional:    true,
+				Default:     vcs.CheckTypeDefault,
+			},
 		},
 	}
 }
@@ -124,6 +130,7 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 			SpaceID:     toString(d.Get(gitLabSpaceID)),
 			Labels:      toOptionalStringList(d.Get(gitLabLabels)),
 			Description: toOptionalString(d.Get(gitLabDescription)),
+			VCSChecks:   toOptionalString(d.Get(gitLabVCSChecks)),
 		},
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
@@ -172,6 +179,7 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 			SpaceID:     toString(d.Get(gitLabSpaceID)),
 			Description: toOptionalString(d.Get(gitLabDescription)),
 			Labels:      toOptionalStringList(d.Get(gitLabLabels)),
+			VCSChecks:   toOptionalString(d.Get(gitLabVCSChecks)),
 		},
 	}
 
@@ -214,6 +222,7 @@ func fillGitLabIntegrationResults(d *schema.ResourceData, gitLabIntegration *str
 	d.Set(gitLabUserFacingHost, gitLabIntegration.UserFacingHost)
 	d.Set(gitLabWebhookURL, gitLabIntegration.WebhookURL)
 	d.Set(gitLabWebhookSecret, gitLabIntegration.WebhookSecret)
+	d.Set(gitLabVCSChecks, gitLabIntegration.VCSChecks)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range gitLabIntegration.Labels {

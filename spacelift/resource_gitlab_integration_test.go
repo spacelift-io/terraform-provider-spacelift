@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/vcs"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -23,7 +24,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 			labels = `["label1", "label2"]`
 		)
 
-		configGitLab := func(host, token, descr, labels string) string {
+		configGitLab := func(host, token, descr, labels, vcsChecks string) string {
 			return `
 				resource "spacelift_gitlab_integration" "test" {
 					name              = "` + name + `"
@@ -32,6 +33,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					private_token     = "` + token + `"
 					description       = "` + descr + `"
 					labels            = ` + labels + `
+					vcs_checks       = ` + vcsChecks + `
 				}
 			`
 		}
@@ -71,7 +73,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: configGitLab(host, token, descr, "null"),
+				Config: configGitLab(host, token, descr, "null", "null"),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabName, Equals(name)),
@@ -83,6 +85,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					Attribute(gitLabIsDefault, Equals("false")),
 					Attribute(gitLabDescription, Equals(descr)),
 					AttributeNotPresent(gitLabLabels),
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeDefault)),
 				),
 			},
 			{
@@ -92,7 +95,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{gitLabToken}, // specified only in the config
 			},
 			{
-				Config: configGitLab(host, token, "new descr", `["new label1"]`),
+				Config: configGitLab(host, token, "new descr", `["new label1"]`, "null"),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabAPIHost, Equals(host)),
@@ -101,10 +104,11 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					Attribute(gitLabDescription, Equals("new descr")),
 					Attribute(gitLabLabels+".#", Equals("1")),
 					Attribute(gitLabLabels+".0", Equals("new label1")),
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeDefault)),
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null"),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabAPIHost, Equals(spaceLevel.APIHost)),
@@ -115,21 +119,43 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					Attribute(gitLabLabels+".#", Equals("2")),
 					Attribute(gitLabLabels+".0", Equals("label1")),
 					Attribute(gitLabLabels+".1", Equals("label2")),
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeDefault)),
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels) + configStack(),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null") + configStack(),
 				Check: Resource(
 					"spacelift_stack.test",
 					Attribute("gitlab.0.id", Equals(name)),
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels) + configStack() + configRun(),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null") + configStack() + configRun(),
 				Check: Resource(
 					"spacelift_run.test",
 					Attribute(gitLabID, IsNotEmpty()),
 					Attribute("stack_id", Equals("stack-for-"+name)),
+				),
+			},
+			{
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeAggregated+`"`),
+				Check: Resource(
+					resourceName,
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeAggregated)),
+				),
+			},
+			{
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeAll+`"`),
+				Check: Resource(
+					resourceName,
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeAll)),
+				),
+			},
+			{
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeIndividual+`"`),
+				Check: Resource(
+					resourceName,
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeIndividual)),
 				),
 			},
 		})

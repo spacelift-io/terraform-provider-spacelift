@@ -24,6 +24,7 @@ func TestGitlabIntegrationData(t *testing.T) {
 				Attribute("api_host", Equals(cfg.APIHost)),
 				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute("vcs_checks", Equals(cfg.VCSChecks)),
 			),
 		}})
 	})
@@ -45,6 +46,7 @@ func TestGitlabIntegrationData(t *testing.T) {
 				Attribute("api_host", Equals(cfg.APIHost)),
 				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute("vcs_checks", Equals(cfg.VCSChecks)),
 			),
 		}})
 	})
