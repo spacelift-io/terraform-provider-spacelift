@@ -98,6 +98,12 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 				Description: "URL for webhooks originating from Bitbucket repositories",
 				Computed:    true,
 			},
+			bitbucketDatacenterVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for Bitbucket Datacenter repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Optional:    true,
+				Default:     vcs.CheckTypeDefault,
+			},
 		},
 	}
 }
@@ -114,6 +120,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
 			Labels:      toOptionalStringList(d.Get(bitbucketDatacenterLabels)),
 			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
+			VCSChecks:   toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
 		},
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
@@ -164,6 +171,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
 			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
 			Labels:      toOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+			VCSChecks:   toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
 		},
 	}
 
@@ -214,4 +222,5 @@ func fillBitbucketDatacenterIntegrationResults(d *schema.ResourceData, bitbucket
 		labels.Add(label)
 	}
 	d.Set(bitbucketDatacenterLabels, labels)
+	d.Set(bitbucketDatacenterVCSChecks, bitbucketDatacenterIntegration.VCSChecks)
 }

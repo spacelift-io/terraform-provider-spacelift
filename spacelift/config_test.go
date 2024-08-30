@@ -64,6 +64,7 @@ var testConfig struct {
 				APIHost        string
 				WebhookSecret  string
 				WebhookURL     string
+				VCSChecks      string
 			}
 			SpaceLevel struct {
 				Name           string
@@ -75,6 +76,7 @@ var testConfig struct {
 				WebhookSecret  string
 				WebhookURL     string
 				AccessToken    string
+				VCSChecks      string
 			}
 			Repository struct {
 				Name      string

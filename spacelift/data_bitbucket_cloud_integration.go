@@ -73,7 +73,7 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 			},
 			bitbucketCloudVCSChecks: {
 				Type:        schema.TypeString,
-				Description: "VCS checks configured for GitLab repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Description: "VCS checks configured for Bitbucket Cloud repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
 				Computed:    true,
 			},
 		},

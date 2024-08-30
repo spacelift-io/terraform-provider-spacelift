@@ -25,6 +25,7 @@ func TestBitbucketDataCenterIntegrationData(t *testing.T) {
 				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("user_facing_host", Equals(cfg.UserFacingHost)),
+				Attribute(bitbucketDatacenterVCSChecks, Equals(cfg.VCSChecks)),
 			),
 		}})
 	})
@@ -47,6 +48,7 @@ func TestBitbucketDataCenterIntegrationData(t *testing.T) {
 				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("user_facing_host", Equals(cfg.UserFacingHost)),
+				Attribute(bitbucketDatacenterVCSChecks, Equals(cfg.VCSChecks)),
 			),
 		}})
 	})

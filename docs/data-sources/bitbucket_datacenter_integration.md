@@ -33,5 +33,6 @@ data "spacelift_bitbucket_datacenter_integration" "bitbucket_datacenter_integrat
 - `space_id` (String) Bitbucket Datacenter integration space id
 - `user_facing_host` (String) Bitbucket Datacenter integration user facing host
 - `username` (String) Username which will be used to authenticate requests for cloning repositories
+- `vcs_checks` (String) VCS checks configured for Bitbucket Datacenter repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 - `webhook_secret` (String) Bitbucket Datacenter integration webhook secret
 - `webhook_url` (String) Bitbucket Datacenter integration webhook URL
