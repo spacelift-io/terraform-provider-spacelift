@@ -24,6 +24,7 @@ func TestBitbucketCloudIntegrationData(t *testing.T) {
 					Attribute("space_id", Equals("root")),
 					Attribute("username", Equals(cfg.Username)),
 					Attribute("webhook_url", Equals(cfg.WebhookURL)),
+					Attribute("vcs_checks", Equals(cfg.VCSChecks)),
 				),
 			},
 		})
@@ -46,6 +47,7 @@ func TestBitbucketCloudIntegrationData(t *testing.T) {
 					Attribute("space_id", Equals(cfg.Space)),
 					Attribute("username", Equals(cfg.Username)),
 					Attribute("webhook_url", Equals(cfg.WebhookURL)),
+					Attribute("vcs_checks", Equals(cfg.VCSChecks)),
 				),
 			},
 		})

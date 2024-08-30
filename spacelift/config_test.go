@@ -39,6 +39,7 @@ var testConfig struct {
 				ID         string
 				Username   string
 				WebhookURL string
+				VCSChecks  string
 			}
 			SpaceLevel struct {
 				Name       string
@@ -46,6 +47,7 @@ var testConfig struct {
 				Space      string
 				Username   string
 				WebhookURL string
+				VCSChecks  string
 			}
 			Repository struct {
 				Name      string
