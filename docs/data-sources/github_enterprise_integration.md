@@ -32,5 +32,6 @@ data "spacelift_github_enterprise_integration" "github_enterprise_integration" {
 - `labels` (List of String) Github integration labels
 - `name` (String) Github integration name
 - `space_id` (String) Github integration space id
+- `vcs_checks` (String) VCS checks configured for Github repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 - `webhook_secret` (String) Github integration webhook secret
 - `webhook_url` (String) Github integration webhook url
