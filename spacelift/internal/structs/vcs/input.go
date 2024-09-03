@@ -9,4 +9,5 @@ type CustomVCSInput struct {
 	Labels      *[]graphql.String `json:"labels"`
 	Description *graphql.String   `json:"description"`
 	IsDefault   *graphql.Boolean  `json:"isDefault"`
+	VCSChecks   *graphql.String   `json:"vcsChecks"`
 }

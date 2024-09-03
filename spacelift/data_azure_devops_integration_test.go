@@ -24,6 +24,7 @@ func TestAzureDevOpsIntegrationData(t *testing.T) {
 				Attribute("organization_url", Equals(cfg.OrganizationURL)),
 				Attribute("webhook_password", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute(azureDevopsVCSChecks, Equals(cfg.VCSChecks)),
 			),
 		}})
 	})
@@ -45,6 +46,7 @@ func TestAzureDevOpsIntegrationData(t *testing.T) {
 				Attribute("organization_url", Equals(cfg.OrganizationURL)),
 				Attribute("webhook_password", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
+				Attribute(azureDevopsVCSChecks, Equals(cfg.VCSChecks)),
 			),
 		}})
 	})

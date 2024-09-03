@@ -31,5 +31,6 @@ data "spacelift_azure_devops_integration" "azure_devops_integration" {}
 - `name` (String) Azure DevOps integration name
 - `organization_url` (String) Azure DevOps integration organization url
 - `space_id` (String) Azure DevOps integration space id
+- `vcs_checks` (String) VCS checks configured for Azure DevOps repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 - `webhook_password` (String) Azure DevOps integration webhook password
 - `webhook_url` (String) Azure DevOps integration webhook url

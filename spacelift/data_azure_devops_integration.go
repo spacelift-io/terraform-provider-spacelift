@@ -19,6 +19,7 @@ const (
 	azureDevopsOrganizationURL = "organization_url"
 	azureDevopsWebhookPassword = "webhook_password"
 	azureDevopsWebhookURL      = "webhook_url"
+	azureDevopsVCSChecks       = "vcs_checks"
 )
 
 func dataAzureDevopsIntegration() *schema.Resource {
@@ -76,6 +77,11 @@ func dataAzureDevopsIntegration() *schema.Resource {
 				Description: "Azure DevOps integration webhook url",
 				Computed:    true,
 			},
+			azureDevopsVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for Azure DevOps repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -94,6 +100,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 			OrganizationURL string   `graphql:"organizationURL"`
 			WebhookPassword string   `graphql:"webhookPassword"`
 			WebhookURL      string   `graphql:"webhookUrl"`
+			VCSChecks       string   `graphql:"vcsChecks"`
 		} `graphql:"azureDevOpsRepoIntegration(id: $id)"`
 	}
 
@@ -128,6 +135,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	d.Set(azureDevopsLabels, labels)
+	d.Set(azureDevopsVCSChecks, azureDevopsIntegration.VCSChecks)
 
 	return nil
 }

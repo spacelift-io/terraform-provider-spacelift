@@ -21,6 +21,7 @@ const (
 	bitbucketDatacenterUsername       = "username"
 	bitbucketDatacenterWebhookURL     = "webhook_url"
 	bitbucketDatacenterWebhookSecret  = "webhook_secret"
+	bitbucketDatacenterVCSChecks      = "vcs_checks"
 )
 
 func dataBitbucketDatacenterIntegration() *schema.Resource {
@@ -88,6 +89,11 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 				Description: "Bitbucket Datacenter integration user facing host",
 				Computed:    true,
 			},
+			bitbucketDatacenterVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for Bitbucket Datacenter repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -108,6 +114,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 			UserFacingHost string   `graphql:"userFacingHost"`
 			WebhookURL     string   `graphql:"webhookURL"`
 			Username       string   `graphql:"username"`
+			VCSChecks      string   `graphql:"vcsChecks"`
 		} `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
@@ -143,6 +150,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 	}
 
 	d.Set(bitbucketDatacenterLabels, labels)
+	d.Set(bitbucketDatacenterVCSChecks, bitbucketDatacenterIntegration.VCSChecks)
 
 	return nil
 }

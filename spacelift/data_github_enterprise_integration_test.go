@@ -25,6 +25,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("app_id", Equals(cfg.AppID)),
+				Attribute(ghEnterpriseVCSChecks, Equals(cfg.VCSChecks)),
 			),
 		}})
 	})
@@ -47,6 +48,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 				Attribute("webhook_secret", Equals(cfg.WebhookSecret)),
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("app_id", Equals(cfg.AppID)),
+				Attribute(ghEnterpriseVCSChecks, Equals(cfg.VCSChecks)),
 			),
 		}})
 	})

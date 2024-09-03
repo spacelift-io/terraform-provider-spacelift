@@ -20,6 +20,7 @@ const (
 	ghEnterpriseAPIHost       = "api_host"
 	ghEnterpriseWebhookSecret = "webhook_secret"
 	ghEnterpriseWebhookURL    = "webhook_url"
+	ghEnterpriseVCSChecks     = "vcs_checks"
 )
 
 func dataGithubEnterpriseIntegration() *schema.Resource {
@@ -82,6 +83,11 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 				Description: "Github integration app id",
 				Computed:    true,
 			},
+			ghEnterpriseVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for Github repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -100,7 +106,8 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 			Space         struct {
 				ID string `graphql:"id"`
 			} `graphql:"space"`
-			Labels []string `graphql:"labels"`
+			Labels    []string `graphql:"labels"`
+			VCSChecks string   `graphql:"vcsChecks"`
 		} `graphql:"githubEnterpriseIntegration(id: $id)"`
 	}
 
@@ -136,6 +143,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 	}
 
 	d.Set(ghEnterpriseLabels, labels)
+	d.Set(ghEnterpriseVCSChecks, githubEnterpriseIntegration.VCSChecks)
 
 	return nil
 }

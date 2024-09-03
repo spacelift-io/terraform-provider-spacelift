@@ -18,6 +18,7 @@ const (
 	bitbucketCloudSpaceID     = "space_id"
 	bitbucketCloudUsername    = "username"
 	bitbucketCloudWebhookURL  = "webhook_url"
+	bitbucketCloudVCSChecks   = "vcs_checks"
 )
 
 func dataBitbucketCloudIntegration() *schema.Resource {
@@ -70,6 +71,11 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 				Description: "Bitbucket Cloud integration webhook URL",
 				Computed:    true,
 			},
+			bitbucketCloudVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for Bitbucket Cloud repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -87,6 +93,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 			Labels     []string `graphql:"labels"`
 			Username   string   `graphql:"username"`
 			WebhookURL string   `graphql:"webhookUrl"`
+			VCSChecks  string   `graphql:"vcsChecks"`
 		} `graphql:"bitbucketCloudIntegration(id: $id)"`
 	}
 
@@ -120,6 +127,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.Set(bitbucketCloudLabels, labels)
+	d.Set(bitbucketCloudVCSChecks, bitbucketCloudIntegration.VCSChecks)
 
 	return nil
 }

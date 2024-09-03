@@ -64,6 +64,11 @@ func dataGitlabIntegration() *schema.Resource {
 				Description: "Gitlab integration webhook url",
 				Computed:    true,
 			},
+			gitLabVCSChecks: {
+				Type:        schema.TypeString,
+				Description: "VCS checks configured for GitLab repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -83,6 +88,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 			APIHost       string   `graphql:"apiHost"`
 			WebhookSecret string   `graphql:"webhookSecret"`
 			WebhookURL    string   `graphql:"webhookUrl"`
+			VCSChecks     string   `graphql:"vcsChecks"`
 		} `graphql:"gitlabIntegration(id: $id)"`
 	}
 
@@ -117,6 +123,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	d.Set(gitLabLabels, labels)
+	d.Set(gitLabVCSChecks, gitLabIntegration.VCSChecks)
 
 	return nil
 }

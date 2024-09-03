@@ -17,6 +17,7 @@ var testConfig struct {
 				OrganizationURL string
 				WebhookSecret   string
 				WebhookURL      string
+				VCSChecks       string
 			}
 			SpaceLevel struct {
 				Name            string
@@ -26,6 +27,7 @@ var testConfig struct {
 				OrganizationURL string
 				WebhookSecret   string
 				WebhookURL      string
+				VCSChecks       string
 			}
 			Repository struct {
 				Name      string
@@ -39,6 +41,7 @@ var testConfig struct {
 				ID         string
 				Username   string
 				WebhookURL string
+				VCSChecks  string
 			}
 			SpaceLevel struct {
 				Name       string
@@ -46,6 +49,7 @@ var testConfig struct {
 				Space      string
 				Username   string
 				WebhookURL string
+				VCSChecks  string
 			}
 			Repository struct {
 				Name      string
@@ -62,6 +66,7 @@ var testConfig struct {
 				APIHost        string
 				WebhookSecret  string
 				WebhookURL     string
+				VCSChecks      string
 			}
 			SpaceLevel struct {
 				Name           string
@@ -73,6 +78,7 @@ var testConfig struct {
 				WebhookSecret  string
 				WebhookURL     string
 				AccessToken    string
+				VCSChecks      string
 			}
 			Repository struct {
 				Name      string
@@ -88,6 +94,7 @@ var testConfig struct {
 				AppID         string
 				WebhookSecret string
 				WebhookURL    string
+				VCSChecks     string
 			}
 			SpaceLevel struct {
 				Name          string
@@ -97,6 +104,7 @@ var testConfig struct {
 				AppID         string
 				WebhookSecret string
 				WebhookURL    string
+				VCSChecks     string
 			}
 			Repository struct {
 				Name      string
@@ -112,6 +120,7 @@ var testConfig struct {
 				APIHost       string
 				WebhookSecret string
 				WebhookURL    string
+				VCSChecks     string
 			}
 			SpaceLevel struct {
 				Name          string
@@ -121,6 +130,7 @@ var testConfig struct {
 				Token         string
 				WebhookSecret string
 				WebhookURL    string
+				VCSChecks     string
 			}
 			Repository struct {
 				Name      string

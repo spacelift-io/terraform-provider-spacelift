@@ -15,4 +15,5 @@ type BitbucketDatacenterIntegration struct {
 	UserFacingHost string   `graphql:"userFacingHost"`
 	WebhookSecret  string   `graphql:"webhookSecret"`
 	WebhookURL     string   `graphql:"webhookURL"`
+	VCSChecks      string   `graphql:"vcsChecks"`
 }

@@ -8,4 +8,5 @@ type CustomVCSUpdateInput struct {
 	SpaceID     graphql.ID        `json:"space"`
 	Labels      *[]graphql.String `json:"labels"`
 	Description *graphql.String   `json:"description"`
+	VCSChecks   *graphql.String   `json:"vcsChecks"`
 }
