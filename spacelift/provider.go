@@ -225,7 +225,15 @@ func buildClientFromToken(token string) (*internal.Client, error) {
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error) {
 	// Since validation runs first, we can safely assume that the data is there.
-	endpoint := fmt.Sprintf("%s/graphql", d.Get("api_key_endpoint").(string))
+	
+	// Handle / at api_key_endpoint
+	endpoint := d.Get("api_key_endpoint").(string)
+	if endpoint[len(api_key_endpoint)-1:] == "/" {
+		endpoint := fmt.Sprintf("%sgraphql", endpoint)
+	} else {
+		endpoint := fmt.Sprintf("%s/graphql", endpoint)
+	}
+	
 	apiKeyID := d.Get("api_key_id").(string)
 	apiKeySecret := d.Get("api_key_secret").(string)
 
