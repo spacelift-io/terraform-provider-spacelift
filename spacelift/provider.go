@@ -229,9 +229,9 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 	// Handle / at api_key_endpoint
 	endpoint := d.Get("api_key_endpoint").(string)
 	if endpoint[len(api_key_endpoint)-1:] == "/" {
-		endpoint := fmt.Sprintf("%sgraphql", endpoint)
+		endpoint = fmt.Sprintf("%sgraphql", endpoint)
 	} else {
-		endpoint := fmt.Sprintf("%s/graphql", endpoint)
+		endpoint = fmt.Sprintf("%s/graphql", endpoint)
 	}
 	
 	apiKeyID := d.Get("api_key_id").(string)
