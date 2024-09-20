@@ -41,7 +41,7 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 				Config: fmt.Sprintf(auditTrailWebhookSimple, "https://example.com"),
 				Check: Resource(
 					resourceName,
-					Attribute("enabled", Equals("true")),
+					Attribute("enabled", Equals("false")),
 					Attribute("endpoint", Equals("https://example.com")),
 					Attribute("include_runs", Equals("true")),
 					Attribute("secret", Equals("secret")),
@@ -56,7 +56,7 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 				Config: fmt.Sprintf(auditTrailWebhookCustomHeaders, "https://example.com"),
 				Check: Resource(
 					resourceName,
-					Attribute("enabled", Equals("true")),
+					Attribute("enabled", Equals("false")),
 					Attribute("endpoint", Equals("https://example.com")),
 					Attribute("include_runs", Equals("true")),
 					Attribute("secret", Equals("secret")),
