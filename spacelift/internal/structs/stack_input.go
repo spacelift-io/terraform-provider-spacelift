@@ -24,6 +24,7 @@ type StackInput struct {
 	Labels                       *[]graphql.String  `json:"labels"`
 	LocalPreviewEnabled          graphql.Boolean    `json:"localPreviewEnabled"`
 	EnableWellKnownSecretMasking graphql.Boolean    `json:"enableWellKnownSecretMasking"`
+	EnableSensitiveOutputUpload  graphql.Boolean    `json:"enableSensitiveOutputUpload"`
 	Name                         graphql.String     `json:"name"`
 	Namespace                    *graphql.String    `json:"namespace"`
 	ProjectRoot                  *graphql.String    `json:"projectRoot"`

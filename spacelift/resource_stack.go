@@ -328,6 +328,12 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"enable_sensitive_outputs_upload": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether sensitive outputs created by this stack can be uploaded to Spacelift to be used by Stack Dependency references. Triggered only when corresponding option is enabled on the Worker Pool used by the Stack as well. Defaults to `true`.",
+				Optional:    true,
+				Default:     true,
+			},
 			"github_action_deploy": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.",
@@ -774,6 +780,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		GitHubActionDeploy:           graphql.Boolean(d.Get("github_action_deploy").(bool)),
 		LocalPreviewEnabled:          graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		EnableWellKnownSecretMasking: graphql.Boolean(d.Get("enable_well_known_secret_masking").(bool)),
+		EnableSensitiveOutputUpload:  graphql.Boolean(d.Get("enable_sensitive_outputs_upload").(bool)),
 		Name:                         toString(d.Get("name")),
 		ProtectFromDeletion:          graphql.Boolean(d.Get("protect_from_deletion").(bool)),
 		Repository:                   toString(d.Get("repository")),

@@ -95,6 +95,7 @@ func TestStackResource(t *testing.T) {
 					SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("enable_well_known_secret_masking", Equals("false")),
+					Attribute("enable_sensitive_output_upload", Equals("true")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 				),
@@ -1377,6 +1378,26 @@ func TestStackResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_stack.test",
 					SetEquals("labels"),
+				),
+			},
+		})
+	})
+
+	t.Run("can set false to enabling sensitive output", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`resource "spacelift_stack" "test" {
+					name                  			= "Provider test stack %s"
+					branch                			= "master"
+					labels                			= ["one", "two"]
+					repository            			= "demo"
+					enable_sensitive_output_upload  = false
+				}`, randomID),
+				Check: Resource(
+					"spacelift_stack.test",
+					Attribute("enable_sensitive_output_upload", Equals("false")),
 				),
 			},
 		})
