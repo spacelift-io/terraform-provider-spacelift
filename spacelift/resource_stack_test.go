@@ -95,7 +95,7 @@ func TestStackResource(t *testing.T) {
 					SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("enable_well_known_secret_masking", Equals("false")),
-					Attribute("enable_sensitive_output_upload", Equals("true")),
+					Attribute("enable_sensitive_outputs_upload", Equals("true")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 				),
@@ -1393,11 +1393,11 @@ func TestStackResourceSpace(t *testing.T) {
 					branch                			= "master"
 					labels                			= ["one", "two"]
 					repository            			= "demo"
-					enable_sensitive_output_upload  = false
+					enable_sensitive_outputs_upload  = false
 				}`, randomID),
 				Check: Resource(
 					"spacelift_stack.test",
-					Attribute("enable_sensitive_output_upload", Equals("false")),
+					Attribute("enable_sensitive_outputs_upload", Equals("false")),
 				),
 			},
 		})
