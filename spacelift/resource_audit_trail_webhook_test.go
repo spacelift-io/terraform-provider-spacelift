@@ -68,11 +68,11 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 		})
 	})
 
-	t.Run("endpoint has to exist", func(t *testing.T) {
+	t.Run("endpoint has to be valid", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
-				Config:      fmt.Sprintf(auditTrailWebhookSimple, "https://invalidendpoint.com/"),
-				ExpectError: regexp.MustCompile(`could not send webhook to given endpoint`),
+				Config:      fmt.Sprintf(auditTrailWebhookSimple, "https:/invalidendpoint.com/"),
+				ExpectError: regexp.MustCompile(`endpoint must be a valid URL`),
 			},
 		})
 	})
