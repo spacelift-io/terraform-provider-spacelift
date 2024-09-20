@@ -12,7 +12,7 @@ import (
 
 const auditTrailWebhookSimple = `
 resource "spacelift_audit_trail_webhook" "test" {
-	enabled = true
+	enabled = false
 	endpoint = "%s"
 	include_runs = true
 	secret = "secret"
@@ -21,7 +21,7 @@ resource "spacelift_audit_trail_webhook" "test" {
 
 const auditTrailWebhookCustomHeaders = `
 resource "spacelift_audit_trail_webhook" "test" {
-	enabled = true
+	enabled = false
 	endpoint = "%s"
 	include_runs = true
 	secret = "secret"
