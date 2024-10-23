@@ -119,5 +119,5 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 	}
 
-	return diag.Errorf("could not find stack or module with ID %s", stackID)
+	return nil
 }
