@@ -99,7 +99,7 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 
 	d.SetId(space.ID)
 	d.Set("name", space.Name)
-	d.Set("description", space.Name)
+	d.Set("description", space.Description)
 	d.Set("inherit_entities", space.InheritEntities)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
