@@ -50,7 +50,7 @@ func TestSpaceByPathData(t *testing.T) {
 						space_path = "root123"
 					}
 				`,
-				ExpectError: regexp.MustCompile("space path must start with `root`"),
+				ExpectError: regexp.MustCompile("couldn't identify the run: unexpected token issuer api-key, is this a Spacelift run?"),
 			},
 			{
 				Config: `
@@ -58,7 +58,15 @@ func TestSpaceByPathData(t *testing.T) {
 						space_path = "test123/test"
 					}
 				`,
-				ExpectError: regexp.MustCompile("space path must start with `root`"),
+				ExpectError: regexp.MustCompile("couldn't identify the run: unexpected token issuer api-key, is this a Spacelift run?"),
+			},
+			{
+				Config: `
+					data "spacelift_space_by_path" "test" {
+						space_path = "/my-space"
+					}
+				`,
+				ExpectError: regexp.MustCompile("path must not start with a slash"),
 			},
 		})
 	})
