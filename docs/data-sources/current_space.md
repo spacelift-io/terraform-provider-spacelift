@@ -27,4 +27,9 @@ resource "spacelift_context" "prod-k8s-ie" {
 
 ### Read-Only
 
+- `description` (String) free-form space description for users
 - `id` (String) The ID of this resource.
+- `inherit_entities` (Boolean) indication whether access to this space inherits read access to entities from the parent space
+- `labels` (Set of String) list of labels describing a space
+- `name` (String) name of the space
+- `parent_space_id` (String) immutable ID (slug) of parent space

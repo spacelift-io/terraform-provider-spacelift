@@ -22,6 +22,35 @@ func dataCurrentSpace() *schema.Resource {
 			"Spacelift by a stack or module. This  makes it easier to create resources " +
 			"within the same space.",
 		ReadContext: dataCurrentSpaceRead,
+
+		Schema: map[string]*schema.Schema{
+			"parent_space_id": {
+				Type:        schema.TypeString,
+				Description: "immutable ID (slug) of parent space",
+				Computed:    true,
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "free-form space description for users",
+				Computed:    true,
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "name of the space",
+				Computed:    true,
+			},
+			"inherit_entities": {
+				Type:        schema.TypeBool,
+				Description: "indication whether access to this space inherits read access to entities from the parent space",
+				Computed:    true,
+			},
+			"labels": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "list of labels describing a space",
+				Computed:    true,
+			},
+		},
 	}
 }
 
@@ -57,15 +86,31 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
-	if stack := query.Stack; stack != nil {
-		d.SetId(stack.Space)
-		return nil
+	var space structs.Space
+
+	switch {
+	case query.Stack != nil:
+		space = query.Stack.SpaceDetails
+	case query.Module != nil:
+		space = query.Module.SpaceDetails
+	default:
+		return diag.Errorf("could not find stack or module with ID %s", stackID)
 	}
 
-	if module := query.Module; module != nil {
-		d.SetId(module.Space)
-		return nil
+	d.SetId(space.ID)
+	d.Set("name", space.Name)
+	d.Set("description", space.Description)
+	d.Set("inherit_entities", space.InheritEntities)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range space.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
+	if space.ParentSpace != nil {
+		d.Set("parent_space_id", *space.ParentSpace)
 	}
 
-	return diag.Errorf("could not find stack or module with ID %s", stackID)
+	return nil
 }

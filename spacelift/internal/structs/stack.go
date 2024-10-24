@@ -60,6 +60,7 @@ type Stack struct {
 	RepositoryURL                *string       `graphql:"repositoryURL"`
 	RunnerImage                  *string       `graphql:"runnerImage"`
 	Space                        string        `graphql:"space"`
+	SpaceDetails                 Space         `graphql:"spaceDetails"`
 	TerraformVersion             *string       `graphql:"terraformVersion"`
 	VCSIntegration               *struct {
 		ID        string `graphql:"id"`
