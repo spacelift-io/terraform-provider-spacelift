@@ -18,6 +18,7 @@ func dataSpaceByPath() *schema.Resource {
 		Description: "`spacelift_space_by_path` represents a Spacelift **space** - " +
 			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to `spacelift_space`, this resource is identified by a path, not by an ID. " +
 			"For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail. \n" +
+			"This data source can be used either with absolute paths (starting with `root`) or relative paths. In the latter case, the path is relative to the current space the spacelift run is. \n" +
 			"**Disclaimer:** \n" +
 			"This datasource can only be used in a stack that resides in a space with inheritance enabled. In addition, the parent spaces (excluding root) must also have inheritance enabled.",
 
@@ -62,8 +63,9 @@ func dataSpaceByPath() *schema.Resource {
 
 func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	path := d.Get("space_path").(string)
-	if !strings.HasPrefix(path, "root/") && path != "root" {
-		return diag.Errorf("space path must start with `root`")
+
+	if strings.HasPrefix(path, "/") {
+		return diag.Errorf("path must not start with a slash")
 	}
 
 	var query struct {
@@ -74,7 +76,25 @@ func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.Errorf("could not query for spaces: %v", err)
 	}
 
-	space, err := findSpaceByPath(query.Spaces, path)
+	startingSpace := "root"
+	if !strings.HasPrefix(path, "root/") && path != "root" {
+		// if path does not start with root, we think it's a relative path. In this case it's relative to the current space the spacelift run is in
+
+		stackID, err := getStackIDFromToken(meta.(*internal.Client).Token)
+		if err != nil {
+			return diag.Errorf("couldn't identify the run: %v", err)
+		}
+
+		space, err := getSpaceForStack(ctx, stackID, meta)
+		if err != nil {
+			return diag.Errorf("couldn't determine current space: %v", err)
+		}
+
+		startingSpace = space.ID
+		path = space.Name + "/" + path // to be consistent with full path search where root is always included in the path
+	}
+
+	space, err := findSpaceByPath(query.Spaces, path, startingSpace)
 	if err != nil {
 		return diag.Errorf("error while traversing space path: %v", err)
 	}
@@ -97,12 +117,12 @@ func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func findSpaceByPath(spaces []*structs.Space, path string) (*structs.Space, error) {
+func findSpaceByPath(spaces []*structs.Space, path, startingSpace string) (*structs.Space, error) {
 	childrenMap := make(map[string][]*structs.Space, len(spaces))
 	var currentSpace *structs.Space
 
 	for _, space := range spaces {
-		if space.ID == "root" {
+		if space.ID == startingSpace {
 			currentSpace = space
 		}
 		if space.ParentSpace != nil {
@@ -111,7 +131,7 @@ func findSpaceByPath(spaces []*structs.Space, path string) (*structs.Space, erro
 	}
 
 	if currentSpace == nil {
-		return nil, fmt.Errorf("root space not found")
+		return nil, fmt.Errorf("%v space not found", startingSpace)
 	}
 
 	pathSplit := strings.Split(path, "/")
