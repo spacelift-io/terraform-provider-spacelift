@@ -23,6 +23,7 @@ type Module struct {
 	RepositoryURL       *string      `graphql:"repositoryURL"`
 	SharedAccounts      []string     `graphql:"sharedAccounts"`
 	Space               string       `graphql:"space"`
+	SpaceDetails        Space        `graphql:"spaceDetails"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
 	VCSIntegration      *struct {
 		ID        string `graphql:"id"`

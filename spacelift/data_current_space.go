@@ -86,37 +86,30 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
-	spaceID := ""
+	var space structs.Space
 
 	switch {
 	case query.Stack != nil:
-		spaceID = query.Stack.Space
+		space = query.Stack.SpaceDetails
 	case query.Module != nil:
-		spaceID = query.Module.Space
+		space = query.Module.SpaceDetails
 	default:
 		return diag.Errorf("could not find stack or module with ID %s", stackID)
 	}
-	d.SetId(spaceID)
 
-	space, err := queryForSpace(ctx, meta.(*internal.Client), spaceID)
-	if err != nil {
-		return diag.Errorf("could not query for space: %v", err)
+	d.SetId(space.ID)
+	d.Set("name", space.Name)
+	d.Set("description", space.Name)
+	d.Set("inherit_entities", space.InheritEntities)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range space.Labels {
+		labels.Add(label)
 	}
+	d.Set("labels", labels)
 
-	if space != nil {
-		d.Set("name", space.Name)
-		d.Set("description", space.Description)
-		d.Set("inherit_entities", space.InheritEntities)
-
-		labels := schema.NewSet(schema.HashString, []interface{}{})
-		for _, label := range space.Labels {
-			labels.Add(label)
-		}
-		d.Set("labels", labels)
-
-		if space.ParentSpace != nil {
-			d.Set("parent_space_id", *space.ParentSpace)
-		}
+	if space.ParentSpace != nil {
+		d.Set("parent_space_id", *space.ParentSpace)
 	}
 
 	return nil
