@@ -66,8 +66,9 @@ func TestSpaceByPathData(t *testing.T) {
 
 func Test_findSpaceByPath(t *testing.T) {
 	type args struct {
-		spaces []*structs.Space
-		path   string
+		spaces        []*structs.Space
+		path          string
+		startingSpace string
 	}
 
 	var root = &structs.Space{
@@ -108,7 +109,8 @@ func Test_findSpaceByPath(t *testing.T) {
 				spaces: []*structs.Space{
 					root,
 				},
-				path: "root",
+				startingSpace: "root",
+				path:          "root",
 			},
 			want:    root,
 			wantErr: false,
@@ -121,7 +123,8 @@ func Test_findSpaceByPath(t *testing.T) {
 					rootChild,
 					rootChild2,
 				},
-				path: "root/rootChild",
+				startingSpace: "root",
+				path:          "root/rootChild",
 			},
 			want:    rootChild,
 			wantErr: false,
@@ -135,7 +138,8 @@ func Test_findSpaceByPath(t *testing.T) {
 					rootChild2,
 					rootChildSameName,
 				},
-				path: "root/rootChild",
+				startingSpace: "root",
+				path:          "root/rootChild",
 			},
 			want:    nil,
 			wantErr: true,
@@ -149,7 +153,8 @@ func Test_findSpaceByPath(t *testing.T) {
 					rootChild2,
 					rootGrandchild,
 				},
-				path: "root/rootChild/rootGrandchild",
+				startingSpace: "root",
+				path:          "root/rootChild/rootGrandchild",
 			},
 			want:    rootGrandchild,
 			wantErr: false,
@@ -163,15 +168,31 @@ func Test_findSpaceByPath(t *testing.T) {
 					rootChild2,
 					rootGrandchild,
 				},
-				path: "root/rootGrandchild",
+				startingSpace: "root",
+				path:          "root/rootGrandchild",
 			},
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "grandchild should be found if starting from child",
+			args: args{
+				spaces: []*structs.Space{
+					root,
+					rootChild,
+					rootChild2,
+					rootGrandchild,
+				},
+				startingSpace: rootChild.ID,
+				path:          "rootChild/rootGrandchild",
+			},
+			want:    rootGrandchild,
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := findSpaceByPath(tt.args.spaces, tt.args.path)
+			got, err := findSpaceByPath(tt.args.spaces, tt.args.path, tt.args.startingSpace)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("findSpaceByPath() error = %v, wantErr %v", err, tt.wantErr)
 				return
