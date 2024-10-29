@@ -151,7 +151,7 @@ func findSpaceByPath(spaces []*structs.Space, path, startingSpace string) (*stru
 			}
 		}
 		if !found {
-			return nil, fmt.Errorf("could not find a space identified by path: %s", strings.Join(pathSplit[:i+1], "/"))
+			return nil, fmt.Errorf("space does not exist")
 		}
 	}
 
