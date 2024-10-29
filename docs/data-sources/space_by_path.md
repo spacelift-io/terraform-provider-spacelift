@@ -4,7 +4,7 @@ page_title: "spacelift_space_by_path Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_space_by_path represents a Spacelift space - a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to spacelift_space, this resource is identified by a path, not by an ID. For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail.
-  This data source can be used either with absolute paths (starting with root) or relative paths. In the latter case, the path is relative to the space the stack for which the current run is executing is in.
+  This data source can be used either with absolute paths (starting with root) or relative paths. When using a relative path, the path is relative to the current run's space.
   Disclaimer:
   This datasource can only be used in a stack that resides in a space with inheritance enabled. In addition, the parent spaces (excluding root) must also have inheritance enabled.
 ---
@@ -27,7 +27,7 @@ output "space_description" {
   value = data.spacelift_space_by_path.space.description
 }
 
-// Assuming this data source is created in a run that belongs to a stack in a space located at following path - "root", then the following data source shall be equal to the one above.
+// The following example shows how to use a relative path. If this is used in a stack in the root space, this is identical to using a path of `root/second space/my space`.
 data "spacelift_space_by_relative_path" "space" {
   space_path = "second space/my space"
 }
