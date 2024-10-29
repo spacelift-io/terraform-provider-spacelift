@@ -104,6 +104,11 @@ func Test_findSpaceByPath(t *testing.T) {
 		Name:        "rootChild",
 		ParentSpace: &root.ID,
 	}
+	var rootGrandchildAmbiguous = &structs.Space{
+		ID:          "rootGrandchild-randomsuffix5",
+		Name:        "rootGrandchild",
+		ParentSpace: &rootChild.ID,
+	}
 
 	tests := []struct {
 		name    string
@@ -196,6 +201,20 @@ func Test_findSpaceByPath(t *testing.T) {
 			},
 			want:    rootGrandchild,
 			wantErr: false,
+		},
+		{
+			name: "ambiguous path should return error",
+			args: args{
+				spaces: []*structs.Space{
+					root,
+					rootChild,
+					rootGrandchild,
+					rootGrandchildAmbiguous,
+				},
+				startingSpace: rootChild.ID,
+				path:          "rootChild/rootGrandchild",
+			},
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
