@@ -6,7 +6,7 @@ output "space_description" {
   value = data.spacelift_space_by_path.space.description
 }
 
-// Assuming this data source is created in a run that belongs to a stack in a space located at following path - "root", then the following data source shall be equal to the one above.
+// The following example shows how to use a relative path. If this is used in a stack in the root space, this is identical to using a path of `root/second space/my space`.
 data "spacelift_space_by_relative_path" "space" {
   space_path = "second space/my space"
 }

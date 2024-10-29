@@ -18,7 +18,7 @@ func dataSpaceByPath() *schema.Resource {
 		Description: "`spacelift_space_by_path` represents a Spacelift **space** - " +
 			"a collection of resources such as stacks, modules, policies, etc. Allows for more granular access control. Can have a parent space. In contrary to `spacelift_space`, this resource is identified by a path, not by an ID. " +
 			"For this data source to work, path must be unique. If there are multiple spaces with the same path, this datasource will fail. \n" +
-			"This data source can be used either with absolute paths (starting with `root`) or relative paths. In the latter case, the path is relative to the space the stack for which the current run is executing is in. \n" +
+			"This data source can be used either with absolute paths (starting with root) or relative paths. When using a relative path, the path is relative to the current run's space. \n" +
 			"**Disclaimer:** \n" +
 			"This datasource can only be used in a stack that resides in a space with inheritance enabled. In addition, the parent spaces (excluding root) must also have inheritance enabled.",
 
