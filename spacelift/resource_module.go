@@ -247,6 +247,13 @@ func resourceModule() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"public": {
+				Type:        schema.TypeBool,
+				Description: "Make this module publicly accessible. Can only be set at creation time. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+				ForceNew:    true,
+			},
 			"raw_git": {
 				Type:          schema.TypeList,
 				Description:   "One-way VCS integration using a raw Git repository link",
@@ -325,6 +332,18 @@ func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	d.SetId(mutation.CreateModule.ID)
 
+	if d.Get("public").(bool) {
+		var publicMutation struct {
+			MakeModulePublic *structs.Module `graphql:"modulePublish(id: $id)"`
+		}
+
+		publicVariables := map[string]interface{}{"id": graphql.ID(mutation.CreateModule.ID)}
+
+		if err := meta.(*internal.Client).Mutate(ctx, "ModulePublish", &publicMutation, publicVariables); err != nil {
+			return diag.Errorf("could not make module public: %v", internal.FromSpaceliftError(err))
+		}
+	}
+
 	return resourceModuleRead(ctx, d, meta)
 }
 
@@ -351,6 +370,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("name", module.Name)
 	d.Set("enable_local_preview", module.LocalPreviewEnabled)
 	d.Set("protect_from_deletion", module.ProtectFromDeletion)
+	d.Set("public", module.Public)
 	d.Set("repository", module.Repository)
 	d.Set("terraform_provider", module.TerraformProvider)
 	d.Set("space_id", module.Space)

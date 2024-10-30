@@ -47,6 +47,7 @@ func TestModuleResource(t *testing.T) {
 					AttributeNotPresent("project_root"),
 					Attribute("enable_local_preview", Equals("false")),
 					Attribute("protect_from_deletion", Equals("true")),
+					Attribute("public", Equals("false")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
 					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 					Attribute("terraform_provider", Equals("default")),
@@ -64,6 +65,7 @@ func TestModuleResource(t *testing.T) {
 					Attribute("description", Equals("new description")),
 					Attribute("enable_local_preview", Equals("true")),
 					Attribute("protect_from_deletion", Equals("false")),
+					Attribute("public", Equals("false")),
 				),
 			},
 		})
@@ -99,6 +101,37 @@ func TestModuleResource(t *testing.T) {
 							Attribute("url", Equals("https://gist.github.com/d8d18c7c2841b578de22be34cb5943f5.git")),
 						),
 					),
+				),
+			},
+		})
+	})
+
+	t.Run("with public", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func() string {
+			return fmt.Sprintf(`
+				resource "spacelift_module" "test" {
+					name           = "public-test-%s"
+					administrative = false
+					branch         = "main"
+					repository     = "terraform-bacon-tasty"
+					public         = true
+
+					raw_git {
+						namespace = "bacon"
+						url       = "https://gist.github.com/d8d18c7c2841b578de22be34cb5943f5.git"
+					}
+				}
+			`, randomID)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("public", Equals("true")),
 				),
 			},
 		})
