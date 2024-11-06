@@ -90,6 +90,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_scheduled_delete_stack":                 dataScheduledDeleteStack(),
 				"spacelift_stack":                                  dataStack(),
 				"spacelift_stacks":                                 dataStacks(),
+				"spacelift_tool_versions":                          dataToolVersions(),
 				"spacelift_webhook":                                dataWebhook(),
 				"spacelift_named_webhook":                          dataNamedWebhook(),
 				"spacelift_stack_aws_role":                         dataStackAWSRole(),           // deprecated

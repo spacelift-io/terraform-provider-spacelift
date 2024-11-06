@@ -301,6 +301,24 @@ func SetContains(name string, values ...string) AttributeCheck {
 	}
 }
 
+// SetLengthGreaterThanZero ensures the given attribute is a set and has a length greater than zero
+func SetLengthGreaterThanZero(name string) AttributeCheck {
+	return func(attributes map[string]string) error {
+
+		_, ok := attributes[fmt.Sprintf("%s.#", name)]
+		if !ok {
+			return errors.Errorf("%q does not appear to be a set", name)
+		}
+
+		_, ok = attributes[fmt.Sprintf("%s.0", name)]
+		if !ok {
+			return errors.Errorf("%q has no length", name)
+		}
+
+		return nil
+	}
+}
+
 // SetDoesNotContain checks the set does not contain any of the specified values
 func SetDoesNotContain(name string, values ...string) AttributeCheck {
 	return func(attributes map[string]string) error {
