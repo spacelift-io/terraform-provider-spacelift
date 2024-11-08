@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"strings"
 
@@ -54,25 +55,28 @@ func dataCurrentSpace() *schema.Resource {
 	}
 }
 
-func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func getStackIDFromToken(token string) (string, error) {
 	var claims jwt.StandardClaims
 
-	_, _, err := (&jwt.Parser{}).ParseUnverified(meta.(*internal.Client).Token, &claims)
+	_, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
 	if err != nil {
 		// Don't care about validation errors, we don't actually validate those
 		// tokens, we only parse them.
 		var unverifiable *jwt.UnverfiableTokenError
 		if !errors.As(err, &unverifiable) {
-			return diag.Errorf("could not parse client token: %v", err)
+			return "", fmt.Errorf("could not parse client token: %v", err)
 		}
 	}
 
 	if issuer := claims.Issuer; issuer != "spacelift" {
-		return diag.Errorf("unexpected token issuer %s, is this a Spacelift run?", issuer)
+		return "", fmt.Errorf("unexpected token issuer %s, is this a Spacelift run?", issuer)
 	}
 
 	stackID, _ := path.Split(claims.Subject)
+	return stackID, nil
+}
 
+func getSpaceForStack(ctx context.Context, stackID string, meta interface{}) (structs.Space, error) {
 	var query struct {
 		Stack  *structs.Stack  `graphql:"stack(id: $id)"`
 		Module *structs.Module `graphql:"module(id: $id)"`
@@ -81,9 +85,9 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 	variables := map[string]interface{}{"id": toID(strings.TrimRight(stackID, "/"))}
 	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		if strings.Contains(err.Error(), "denied") {
-			return diag.Errorf("could not query for stack: %v, is this stack administrative?", err)
+			return structs.Space{}, fmt.Errorf("could not query for stack: %v, is this stack administrative?", err)
 		}
-		return diag.Errorf("could not query for stack: %v", err)
+		return structs.Space{}, fmt.Errorf("could not query for stack: %v", err)
 	}
 
 	var space structs.Space
@@ -94,7 +98,20 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 	case query.Module != nil:
 		space = query.Module.SpaceDetails
 	default:
-		return diag.Errorf("could not find stack or module with ID %s", stackID)
+		return structs.Space{}, fmt.Errorf("could not find stack or module with ID %s", stackID)
+	}
+	return space, nil
+}
+
+func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	stackID, err := getStackIDFromToken(meta.(*internal.Client).Token)
+	if err != nil {
+		return diag.Errorf("%v", err)
+	}
+
+	space, err := getSpaceForStack(ctx, stackID, meta)
+	if err != nil {
+		return diag.Errorf("%v", err)
 	}
 
 	d.SetId(space.ID)
