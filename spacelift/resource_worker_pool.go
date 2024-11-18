@@ -53,6 +53,7 @@ func resourceWorkerPool() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
+				ForceNew:    true,
 			},
 			"description": {
 				Type:        schema.TypeString,
