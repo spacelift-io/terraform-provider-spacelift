@@ -137,6 +137,7 @@ func resourceContext() *schema.Resource {
 			},
 			"labels": {
 				Type: schema.TypeSet,
+				Description: "To leverage the `autoattach` magic label, ensure your label follows the naming convention: `autoattach:<your-label-name>`"
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					ValidateDiagFunc: validations.DisallowEmptyString,
