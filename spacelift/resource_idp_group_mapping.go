@@ -43,7 +43,7 @@ func resourceIdpGroupMapping() *schema.Resource {
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"policy": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				MinItems: 1,
 				Required: true,
 				Elem: &schema.Resource{
@@ -63,6 +63,7 @@ func resourceIdpGroupMapping() *schema.Resource {
 						},
 					},
 				},
+				Set: userPolicyHash,
 			},
 		},
 	}
@@ -163,12 +164,15 @@ func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, 
 
 func getAccessRules(d *schema.ResourceData) []structs.SpaceAccessRuleInput {
 	var accessRules []structs.SpaceAccessRuleInput
-	for _, a := range d.Get("policy").([]interface{}) {
-		access := a.(map[string]interface{})
-		accessRules = append(accessRules, structs.SpaceAccessRuleInput{
-			Space:            toID(access["space_id"]),
-			SpaceAccessLevel: structs.SpaceAccessLevel(access["role"].(string)),
-		})
+	if policies, ok := d.Get("policy").(*schema.Set); ok {
+		for _, a := range policies.List() {
+			access := a.(map[string]interface{})
+			accessRules = append(accessRules, structs.SpaceAccessRuleInput{
+				Space:            toID(access["space_id"]),
+				SpaceAccessLevel: structs.SpaceAccessLevel(access["role"].(string)),
+			})
+		}
 	}
+
 	return accessRules
 }

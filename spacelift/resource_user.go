@@ -35,7 +35,7 @@ func resourceUser() *schema.Resource {
 				Description: "Username of the user",
 			},
 			"policy": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				MinItems: 1,
 				Required: true,
 				Elem: &schema.Resource{
@@ -55,6 +55,7 @@ func resourceUser() *schema.Resource {
 						},
 					},
 				},
+				Set: userPolicyHash,
 			},
 			"invitation_email": {
 				Type:        schema.TypeString,
@@ -63,6 +64,19 @@ func resourceUser() *schema.Resource {
 			},
 		},
 	}
+}
+
+func userPolicyHash(v interface{}) int {
+	m, ok := v.(map[string]interface{})
+	if !ok {
+		return 0
+	}
+
+	spaceID, _ := m["space_id"].(string)
+	role, _ := m["role"].(string)
+
+	key := spaceID + "-" + role
+	return schema.HashString(key)
 }
 
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
