@@ -40,7 +40,7 @@ resource "spacelift_context" "prod-k8s-ie" {
 - `before_perform` (List of String) List of before-perform scripts
 - `before_plan` (List of String) List of before-plan scripts
 - `description` (String) Free-form context description for users
-- `labels` (Set of String)
+- `labels` (Set of String) The labels of the context. To leverage the `autoattach` magic label, ensure your label follows the naming convention: `autoattach:<your-label-name>`
 - `space_id` (String) ID (slug) of the space the context is in
 
 ### Read-Only
