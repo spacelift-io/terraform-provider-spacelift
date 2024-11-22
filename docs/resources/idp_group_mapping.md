@@ -28,7 +28,7 @@ resource "spacelift_idp_group_mapping" "test" {
 ### Required
 
 - `name` (String) Name of the user group - should be unique in one account
-- `policy` (Block List, Min: 1) (see [below for nested schema](#nestedblock--policy))
+- `policy` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--policy))
 
 ### Read-Only
 
