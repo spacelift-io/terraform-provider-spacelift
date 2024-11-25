@@ -17,6 +17,17 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
+func resourceStackResourceV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"import_state": {
+				Type:             schema.TypeString,
+			},
+		},
+	}
+}
+
+
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
@@ -32,6 +43,19 @@ func resourceStack() *schema.Resource {
 
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceStackImport,
+		},
+
+		SchemaVersion: 1,
+
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:   resourceStackResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: func(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error){
+					rawState["import_state"] = ""
+					return rawState, nil
+				},
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -405,6 +429,9 @@ func resourceStack() *schema.Resource {
 				Optional:         true,
 				DiffSuppressFunc: ignoreOnceCreated,
 				Sensitive:        true,
+				StateFunc:        func(v interface{}) string {
+					return ""
+				},
 			},
 			"import_state_file": {
 				Type:             schema.TypeString,

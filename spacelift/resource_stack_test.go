@@ -331,7 +331,7 @@ func TestStackResource(t *testing.T) {
 					name                  = "labelled-module-%s"
 					branch                = "master"
 					labels                = []
-					repository            = "terraform-bacon-tasty"
+					repository            = "demo"
 				}`, randomID),
 				Check: Resource(
 					"spacelift_stack.test",
@@ -1482,7 +1482,7 @@ func TestStackResourceSpace(t *testing.T) {
 					name                  = "labelled-module-%s"
 					branch                = "master"
 					labels                = []
-					repository            = "terraform-bacon-tasty"
+					repository            = "demo"
 				}`, randomID),
 				Check: Resource(
 					"spacelift_stack.test",
@@ -1633,6 +1633,27 @@ func TestStackResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_stack.terraform_workflow_tool_custom_with_run",
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
+
+	t.Run("with import_state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "state_import" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					import_state            = "{}"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.state_import",
+					Attribute("import_state", Equals("")),
 				),
 			},
 		})
