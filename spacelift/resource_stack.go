@@ -17,6 +17,16 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
+func resourceStackResourceV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"import_state": {
+				Type: schema.TypeString,
+			},
+		},
+	}
+}
+
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
@@ -32,6 +42,19 @@ func resourceStack() *schema.Resource {
 
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceStackImport,
+		},
+
+		SchemaVersion: 1,
+
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceStackResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: func(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+					rawState["import_state"] = ""
+					return rawState, nil
+				},
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -662,6 +685,7 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		return diag.Errorf(`"import_state" requires "manage_state" to be true`)
 	} else if ok {
 		stateContent = content.(string)
+		d.Set("import_state", "")
 	}
 
 	path, ok := d.GetOk("import_state_file")
