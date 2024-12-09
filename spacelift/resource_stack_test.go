@@ -1637,6 +1637,27 @@ func TestStackResourceSpace(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with import_state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "state_import" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					import_state            = "{}"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.state_import",
+					Attribute("import_state", Equals("")),
+				),
+			},
+		})
+	})
 }
 
 // getConfig returns a stack config with injected vendor config
