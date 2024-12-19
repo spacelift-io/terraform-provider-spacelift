@@ -148,7 +148,6 @@ func resourceContext() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "Name of the context - should be unique in one account",
 				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"space_id": {
