@@ -230,7 +230,6 @@ func TestStackData(t *testing.T) {
 				name                = "Test stack %s"
 				repository          = "demo"
 				kubernetes {
-					kubectl_version = "1.2.3"
 					kubernetes_workflow_tool = "CUSTOM"
 				}
 			}
@@ -240,7 +239,6 @@ func TestStackData(t *testing.T) {
 		`, randomID),
 			Check: Resource(
 				"data.spacelift_stack.test",
-				Attribute("kubernetes.0.kubectl_version", Equals("1.2.3")),
 				Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("CUSTOM")),
 			),
 		}})
