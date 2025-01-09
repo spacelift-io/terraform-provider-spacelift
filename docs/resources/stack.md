@@ -367,6 +367,7 @@ Read-Only:
 Optional:
 
 - `kubectl_version` (String) Kubectl version.
+- `kubernetes_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `KUBERNETES` or `CUSTOM`. Defaults to `KUBERNETES`.
 - `namespace` (String) Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.
 
 
