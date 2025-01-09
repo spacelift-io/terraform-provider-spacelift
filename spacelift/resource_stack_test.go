@@ -493,6 +493,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("")),
 					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+					Attribute("kubernetes.0.kubernetes_workflow_version", Equals("KUBERNETES")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -508,6 +509,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("myapp-prod")),
 					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+					Attribute("kubernetes.0.kubernetes_workflow_version", Equals("KUBERNETES")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -522,6 +524,22 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("")),
 					Attribute("kubernetes.0.kubectl_version", Equals("1.2.3")),
+					Attribute("kubernetes.0.kubernetes_workflow_version", Equals("KUBERNETES")),
+					Attribute("ansible.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("cloudformation.#", Equals("0")),
+				),
+			},
+			{
+				Config: getConfig(`kubernetes {
+						kubernetes_workflow_version = "CUSTOM"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+					Attribute("kubernetes.0.namespace", Equals("")),
+					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+					Attribute("kubernetes.0.kubernetes_workflow_version", Equals("CUSTOM")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
