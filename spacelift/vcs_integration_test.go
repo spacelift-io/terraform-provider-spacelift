@@ -726,7 +726,7 @@ func TestVCSIntegration(t *testing.T) {
 					// },
 					// GitLab
 					{
-						name:       "gitlab-with-changing-vcs-id-" + randomID(),
+						name:       "gitlab-with-different-changing-vcs-id-" + randomID(),
 						repository: testConfig.SourceCode.Gitlab.Repository.Name,
 						branch:     testConfig.SourceCode.Gitlab.Repository.Branch,
 						space:      testConfig.SourceCode.Gitlab.SpaceLevel.Space,
