@@ -80,6 +80,7 @@ type Stack struct {
 		Kubernetes struct {
 			Namespace      string  `graphql:"namespace"`
 			KubectlVersion *string `graphql:"kubectlVersion"`
+			KubernetesWorkflowTool *string `graphql:"kubernetesWorkflowTool"`
 		} `graphql:"... on StackConfigVendorKubernetes"`
 		Pulumi struct {
 			LoginURL  string `graphql:"loginURL"`
@@ -136,6 +137,7 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 		return "kubernetes", map[string]interface{}{
 			"namespace":       s.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version": s.VendorConfig.Kubernetes.KubectlVersion,
+			"kubernetes_workflow_tool": s.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 	case StackConfigVendorPulumi:
 		return "pulumi", map[string]interface{}{
@@ -281,6 +283,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		m := map[string]interface{}{
 			"namespace":       stack.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version": stack.VendorConfig.Kubernetes.KubectlVersion,
+			"kubernetes_workflow_tool": stack.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 
 		d.Set("kubernetes", []interface{}{m})
