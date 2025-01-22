@@ -458,6 +458,13 @@ func resourceStack() *schema.Resource {
 							Computed:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
+						"kubernetes_workflow_tool": {
+							Type:             schema.TypeString,
+							Description: "Defines the tool that will be used to execute the workflow. This can be one of `KUBERNETES` or `CUSTOM`. Defaults to `KUBERNETES`.",
+							Optional:         true,
+							Computed:         true,
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
 					},
 				},
 			},
@@ -960,6 +967,9 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 			vendorConfig.Kubernetes.Namespace = toString(kubernetesSettings["namespace"])
 			if s := toOptionalString(kubernetesSettings["kubectl_version"]); *s != "" {
 				vendorConfig.Kubernetes.KubectlVersion = s
+			}
+			if s := toOptionalString(kubernetesSettings["kubernetes_workflow_tool"]); *s != "" {
+				vendorConfig.Kubernetes.KubernetesWorkflowTool = s
 			}
 		}
 		return vendorConfig
