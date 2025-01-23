@@ -21,6 +21,12 @@ jobs:
         uses: actions/setup-go@v5
         with: { go-version-file: go.mod }
 
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+          terraform_wrapper: false
+
       - name: Generate documentation
         run: cd tools && go generate ./...
 
