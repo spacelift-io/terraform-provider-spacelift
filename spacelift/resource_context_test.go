@@ -16,7 +16,7 @@ func TestContextResource(t *testing.T) {
 	t.Run("creates and updates contexts without an error", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(description string) string {
+		config := func(name, description string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_context" "test" {
 					name        = "Provider test context %s"
@@ -34,16 +34,16 @@ func TestContextResource(t *testing.T) {
 					before_perform = ["before_perform"]
 					before_plan = ["before_plan"]
 				}
-			`, randomID, description)
+			`, name+randomID, description)
 		}
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("old description"),
+				Config: config("foo", "old description"),
 				Check: Resource(
 					resourceName,
-					Attribute("id", Equals("provider-test-context-old-description")),
-					Attribute("name", Equals("Provider test context old description")),
+					Attribute("id", StartsWith("provider-test-context-foo")),
+					Attribute("name", StartsWith("Provider test context foo")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
 					Attribute("after_apply.#", Equals("1")),
@@ -76,11 +76,11 @@ func TestContextResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config("new description"),
+				Config: config("bar", "new description"),
 				Check: Resource(
 					resourceName,
-					Attribute("id", Equals("provider-test-context-old-description")),   // ID shouldn't change on rename
-					Attribute("name", Equals("Provider test context new description")), // but the name should
+					Attribute("id", StartsWith("provider-test-context-foo")),   // ID shouldn't change on rename
+					Attribute("name", StartsWith("Provider test context bar")), // but the name should
 					Attribute("description", Equals("new description")),
 				),
 			},
