@@ -42,8 +42,8 @@ func TestContextResource(t *testing.T) {
 				Config: config("old description"),
 				Check: Resource(
 					resourceName,
-					Attribute("id", StartsWith("provider-test-context-")),
-					Attribute("name", StartsWith("Provider test context")),
+					Attribute("id", Equals("provider-test-context-old-description")),
+					Attribute("name", Equals("Provider test context old description")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
 					Attribute("after_apply.#", Equals("1")),
@@ -79,6 +79,8 @@ func TestContextResource(t *testing.T) {
 				Config: config("new description"),
 				Check: Resource(
 					resourceName,
+					Attribute("id", Equals("provider-test-context-old-description")),   // ID shouldn't change on rename
+					Attribute("name", Equals("Provider test context new description")), // but the name should
 					Attribute("description", Equals("new description")),
 				),
 			},
