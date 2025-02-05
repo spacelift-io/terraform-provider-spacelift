@@ -10,8 +10,6 @@ jobs:
   check-documentation:
     name: Check documentation
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
 
     steps:
       - name: Checkout
