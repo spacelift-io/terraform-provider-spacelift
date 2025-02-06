@@ -44,7 +44,7 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 					Attribute("enabled", Equals("false")),
 					Attribute("endpoint", Equals("https://example.com")),
 					Attribute("include_runs", Equals("true")),
-					Attribute("secret", Equals("secret")),
+					Attribute("secret", Equals("")),
 				),
 			},
 			{
@@ -59,7 +59,7 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 					Attribute("enabled", Equals("false")),
 					Attribute("endpoint", Equals("https://example.com")),
 					Attribute("include_runs", Equals("true")),
-					Attribute("secret", Equals("secret")),
+					Attribute("secret", Equals("")),
 					Attribute("custom_headers.%", Equals("2")),
 					Attribute("custom_headers.X-Some-Header", Equals("some-value")),
 					Attribute("custom_headers.X-Some-Header-2", Equals("some-value-2")),
