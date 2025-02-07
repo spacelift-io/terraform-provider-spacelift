@@ -36,11 +36,6 @@ func dataWebhook() *schema.Resource {
 				Optional:     true,
 				ExactlyOneOf: []string{"module_id", "stack_id"},
 			},
-			"secret": {
-				Type:        schema.TypeString,
-				Description: "secret used to sign each POST request so you're able to verify that the request comes from us",
-				Computed:    true,
-			},
 			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
@@ -96,7 +91,6 @@ func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId(webhookID)
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
-	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
 
 	return nil
 }
@@ -132,7 +126,6 @@ func dataStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.SetId(webhookID)
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
-	d.Set("secret", stack.Integrations.Webhooks[webhookIndex].Secret)
 
 	return nil
 }

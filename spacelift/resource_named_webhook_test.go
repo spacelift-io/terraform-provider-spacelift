@@ -36,7 +36,7 @@ func TestNamedWebhookResource(t *testing.T) {
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("endpoint", Equals("https://bacon.net")),
-					Attribute("secret", Equals("super-secret")),
+					Attribute("secret", Equals("")),
 					Attribute("space_id", Equals("root")),
 					Attribute("name", Equals(fmt.Sprintf("testing-named-%s", randomID))),
 					Attribute("enabled", Equals("true")),
