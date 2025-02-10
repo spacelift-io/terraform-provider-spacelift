@@ -73,6 +73,12 @@ func resourceMountedFile() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "Free-form description of the mounted file",
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"write_only": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the content can be read back outside a Run. Defaults to `true`.",
@@ -87,10 +93,11 @@ func resourceMountedFile() *schema.Resource {
 func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
-			ID:        toID(d.Get("relative_path")),
-			Type:      structs.ConfigType("FILE_MOUNT"),
-			Value:     toString(d.Get("content")),
-			WriteOnly: graphql.Boolean(d.Get("write_only").(bool)),
+			ID:          toID(d.Get("relative_path")),
+			Type:        structs.ConfigType("FILE_MOUNT"),
+			Value:       toString(d.Get("content")),
+			WriteOnly:   graphql.Boolean(d.Get("write_only").(bool)),
+			Description: toOptionalString(d.Get("description")),
 		},
 	}
 
@@ -194,6 +201,10 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.Set("checksum", element.Checksum)
 	d.Set("relative_path", relativePath)
 	d.Set("write_only", element.WriteOnly)
+
+	if element.Description != nil {
+		d.Set("description", *element.Description)
+	}
 
 	if value := element.Value; value != nil {
 		d.Set("content", *value)

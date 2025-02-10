@@ -26,6 +26,7 @@ func TestMountedFileResource(t *testing.T) {
 					context_id    = spacelift_context.test.id
 					content       = base64encode("bacon is tasty")
 					relative_path = "bacon.txt"
+					description   = "description text"
 					write_only    = %t
 				}
 			`, randomID, writeOnly)
@@ -40,6 +41,7 @@ func TestMountedFileResource(t *testing.T) {
 					Attribute("checksum", Equals("fb13e7977b7548a324b598e155b5b5ba3dcca2dad5789abe1411a88fa544be9b")),
 					Attribute("context_id", Contains(randomID)),
 					Attribute("relative_path", Equals("bacon.txt")),
+					Attribute("description", Equals("description text")),
 					Attribute("write_only", Equals("true")),
 				),
 			},
