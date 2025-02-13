@@ -12,7 +12,7 @@ import (
 // In this case an unauthorized error.
 func FromSpaceliftError(err error) error {
 	if err != nil && strings.Contains(err.Error(), "unauthorized") {
-		return fmt.Errorf("%w - is it an administrative stack in the appropriate space?", err)
+		return fmt.Errorf("%w - Is it an administrative stack in the appropriate space? Additionally, have you ensured that you provided the correct space ID rather than the space name?", err)
 	}
 
 	var graphErrs graphql.GraphQLErrors
