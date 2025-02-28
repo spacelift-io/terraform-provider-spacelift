@@ -1,4 +1,4 @@
-name: Check Documentation
+name: 📚 Documentation
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   check-documentation:
-    name: Check documentation
+    name: Check documentation is up to date
     runs-on: ubuntu-latest
 
     steps:

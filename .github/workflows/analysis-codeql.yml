@@ -1,4 +1,4 @@
-name: CodeQL
+name: 🤓 Code quality
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze
+    name: Run CodeQL
     runs-on: ubuntu-latest
 
     steps:

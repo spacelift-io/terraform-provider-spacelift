@@ -6,6 +6,7 @@
 
 - [ ] Bug fix (non-breaking change that fixes an issue)
 - [ ] New feature (non-breaking change that adds functionality)
+- [ ] Chore (maintenance work, dependency bumps, refactors, not supposed to break existing functionalities)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation (non-breaking change that adds documentation)
 
