@@ -1,4 +1,4 @@
-name: Golangci-lint
+name: 🤓 Lint
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
 
 jobs:
   lint:
-    name: Run linter
+    name: Run golangci-lint
     runs-on: ubuntu-latest
 
     steps:

@@ -3,7 +3,6 @@ version: 2
 builds:
   - env:
       - CGO_ENABLED=0
-      - GOPRIVATE="github.com/spacelift-io"
     mod_timestamp: '{{ .CommitTimestamp }}'
     flags: [-trimpath, -v]
     goos:
@@ -16,7 +15,7 @@ builds:
     binary: '{{ .ProjectName }}_v{{ .Version }}'
 
 archives:
-  - format: zip
+  - formats: [zip]
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
 
 checksum:

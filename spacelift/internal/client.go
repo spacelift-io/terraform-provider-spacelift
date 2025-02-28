@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/shurcooL/graphql"
-	"golang.org/x/oauth2"
 	"golang.org/x/time/rate"
 )
 
@@ -43,20 +42,20 @@ func NewClient(endpoint string, token string, requestsPerSecond, maxBurst *int) 
 
 // Mutate runs a GraphQL mutation.
 func (c *Client) Mutate(ctx context.Context, mutationName string, m interface{}, variables map[string]interface{}) error {
-	client := c.client(ctx)
+	client := c.client()
 
 	return client.Mutate(ctx, m, variables, graphql.WithHeader("Spacelift-GraphQL-Mutation", mutationName))
 }
 
 // Query runs a GraphQL query.
 func (c *Client) Query(ctx context.Context, queryName string, q interface{}, variables map[string]interface{}) error {
-	client := c.client(ctx)
+	client := c.client()
 
 	return client.Query(ctx, q, variables, graphql.WithHeader("Spacelift-GraphQL-Query", queryName))
 }
 
-func (c *Client) client(ctx context.Context) *graphql.Client {
-	client := oauth2.NewClient(ctx, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: c.Token}))
+func (c *Client) client() *graphql.Client {
+	client := &http.Client{Transport: http.DefaultTransport}
 
 	if c.limiter != nil {
 		client = &http.Client{
@@ -85,6 +84,7 @@ func (c *Client) url() string {
 
 func (c *Client) getRequestOptions() []graphql.RequestOption {
 	options := []graphql.RequestOption{
+		graphql.WithHeader("Authorization", fmt.Sprintf("Bearer %s", c.Token)),
 		graphql.WithHeader("Spacelift-Client-Type", "provider"),
 		graphql.WithHeader("Spacelift-Provider-Commit", c.Commit),
 		graphql.WithHeader("Spacelift-Provider-Version", c.Version)}
