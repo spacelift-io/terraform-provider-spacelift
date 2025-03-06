@@ -152,7 +152,7 @@ func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.Resourc
 
 func resourceAWSIntegrationAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		awsIntegrationAttachmentUpdate structs.AWSIntegrationAttachment `graphql:"awsIntegrationAttachmentUpdate(id: $id, read: $read, write: $write)"`
+		AWSIntegrationAttachmentUpdate structs.AWSIntegrationAttachment `graphql:"awsIntegrationAttachmentUpdate(id: $id, read: $read, write: $write)"`
 	}
 
 	variables := map[string]interface{}{

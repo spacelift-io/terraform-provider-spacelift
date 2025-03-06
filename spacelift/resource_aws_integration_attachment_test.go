@@ -83,4 +83,63 @@ func TestAWSIntegrationAttachmentResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("update attachment", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch     = "master"
+						repository = "demo"
+						name       = "Test stack %s"
+					}
+
+					resource "spacelift_aws_integration" "test" {
+						name                           = "test-aws-integration-%s"
+						role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+						generate_credentials_in_worker = false
+					}
+
+					resource "spacelift_aws_integration_attachment" "test" {
+						stack_id       = spacelift_stack.test.id
+						integration_id = spacelift_aws_integration.test.id
+						read           = true
+						write          = false
+					}
+				`, randomID, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("write", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch     = "master"
+						repository = "demo"
+						name       = "Test stack %s"
+					}
+
+					resource "spacelift_aws_integration" "test" {
+						name                           = "test-aws-integration-%s"
+						role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+						generate_credentials_in_worker = false
+					}
+
+					resource "spacelift_aws_integration_attachment" "test" {
+						stack_id       = spacelift_stack.test.id
+						integration_id = spacelift_aws_integration.test.id
+						read           = true
+						write          = true
+					}
+				`, randomID, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("write", Equals("true")),
+				),
+			},
+		})
+	})
 }
