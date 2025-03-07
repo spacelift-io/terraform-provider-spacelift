@@ -2,16 +2,34 @@ package spacelift
 
 import (
 	"context"
+	_ "embed"
+	"encoding/json"
+	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
+
+//go:embed blueprint_schema.json
+var jsonSchema string
+var compiledSchema *jsonschema.Schema
+
+func init() {
+	sch, err := jsonschema.CompileString("schema.json", jsonSchema)
+	if err != nil {
+		panic(err)
+	}
+	compiledSchema = sch
+}
 
 func resourceBlueprint() *schema.Resource {
 	return &schema.Resource{
@@ -65,13 +83,104 @@ func resourceBlueprint() *schema.Resource {
 				Optional: true,
 			},
 			"template": {
-				Type:        schema.TypeString,
-				Description: "Body of the blueprint. If `state` is set to `PUBLISHED`, this field is required.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:             schema.TypeString,
+				Description:      "Body of the blueprint. If `state` is set to `PUBLISHED`, this field is required.",
+				Optional:         true,
+				ForceNew:         true,
+				ValidateDiagFunc: validateTemplateMap,
 			},
 		},
 	}
+}
+
+func validateTemplateMap(in interface{}, path cty.Path) diag.Diagnostics {
+	blueprint, ok := in.(string)
+	if !ok {
+		return diag.Errorf("template_map map must be a map")
+	}
+
+	var j map[string]interface{}
+	err := json.Unmarshal([]byte(blueprint), &j)
+	if err != nil {
+		return diag.Errorf("Unknown error")
+	}
+
+	err = compiledSchema.Validate(j)
+	if err == nil {
+		return nil
+	}
+
+	validationErr, ok := err.(*jsonschema.ValidationError)
+	if !ok {
+		return diag.Errorf("Unknown error")
+	}
+
+	var ignoredFields map[string]any
+	ignoredFields = getIgnoredFields([]string{}, j, map[string]any{})
+
+	flatten := flattenCauses(validationErr, ignoredFields)
+
+	messag := fmt.Sprintf("Validation failed for %d fields", len(flatten))
+	for _, err := range flatten {
+		messag += fmt.Sprintf("\n%s: %s", err.InstanceLocation, err.Message)
+	}
+
+	return diag.Diagnostics{
+		diag.Diagnostic{
+			Severity: diag.Error,
+			Summary:  messag,
+		},
+	}
+}
+
+func getIgnoredFields(propertyDepth []string, blueprint, ignoredFields map[string]interface{}) map[string]interface{} {
+	for key, val := range blueprint {
+		switch v := val.(type) {
+		case map[string]interface{}:
+			ignoredFields = getIgnoredFields(append(propertyDepth, key), v, ignoredFields)
+		case []interface{}:
+			for i, item := range v {
+				switch it := item.(type) {
+				case map[string]interface{}:
+					ignoredFields = getIgnoredFields(append(propertyDepth, key, strconv.Itoa(i)), it, ignoredFields)
+				default:
+					ignoredFields = getIgnoredFields(append(propertyDepth, key, strconv.Itoa(i)), map[string]interface{}{"": it}, ignoredFields)
+				}
+			}
+		case string:
+			if strings.Contains(v, "{{") && strings.Contains(v, "}}") {
+				instanceLocation := "/" + strings.Join(append(propertyDepth, key), "/")
+				ignoredFields[instanceLocation] = nil
+			}
+		}
+	}
+
+	return ignoredFields
+}
+
+func flattenCauses(cause *jsonschema.ValidationError, ignoredFields map[string]any) []*jsonschema.ValidationError {
+	errors := make([]*jsonschema.ValidationError, 0, len(cause.Causes))
+
+	for _, c := range cause.Causes {
+		if len(c.Causes) > 0 {
+			errors = append(errors, flattenCauses(c, ignoredFields)...)
+		} else {
+			if c.Message == "expected string, but got null" && len(ignoredFields) == 0 {
+				// This typically happens when the user doesn't provide a value. Example:
+				// description: ${{ inputs.description }}
+				// becomes
+				// description:
+				// We shouldn't get an error, the emptiness/gap is a valid value.
+				continue
+			}
+
+			if _, ok := ignoredFields[c.InstanceLocation]; !ok {
+				errors = append(errors, c)
+			}
+		}
+	}
+
+	return errors
 }
 
 func validateStateEnum(in interface{}, path cty.Path) diag.Diagnostics {
