@@ -888,6 +888,56 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with terraform_version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "this" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.this",
+					AttributeNotPresent("terraform_version"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "this" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_version       = null
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.this",
+					AttributeNotPresent("terraform_version"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "this" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_version       = "1.5.7"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.this",
+					Attribute("terraform_version", Equals("1.5.7")),
+				),
+			},
+		})
+	})
 }
 
 func TestStackResourceSpace(t *testing.T) {
