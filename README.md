@@ -5,7 +5,7 @@ The Spacelift Terraform provider is used to programmatically interact with its G
 ## Documentation
 
 You can browse the documentation on the following registries:
-- [Terraform provider registry](https://registry.terraform.io/providers/spacelift-io/spacelift/latest/docs)
+- [Terraform registry](https://registry.terraform.io/providers/spacelift-io/spacelift/latest/docs)
 - [Opentofu registry](https://search.opentofu.org/provider/spacelift-io/spacelift/)
 
 ## Using the Provider
