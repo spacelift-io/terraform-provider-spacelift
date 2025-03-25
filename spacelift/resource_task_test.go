@@ -67,7 +67,7 @@ func TestTaskResourceWait(t *testing.T) {
 					resource "spacelift_stack" "test" {
 						name           = "Test stack %s"
 						repository     = "demo"
-						branch         = "main"
+						branch         = "master"
 						worker_pool_id = spacelift_worker_pool.test.id
 					}
 
@@ -110,7 +110,7 @@ func TestTaskResourceWait(t *testing.T) {
 					resource "spacelift_stack" "test" {
 						name           = "Test stack %s"
 						repository     = "demo"
-						branch         = "main"
+						branch         = "master"
 						worker_pool_id = spacelift_worker_pool.test.id
 					}
 
@@ -144,7 +144,7 @@ func TestTaskResourceWait(t *testing.T) {
 					resource "spacelift_stack" "test" {
 						name           = "Test stack %s"
 						repository     = "demo"
-						branch         = "main"
+						branch         = "master"
 						autodeploy     = true
 					}
 
