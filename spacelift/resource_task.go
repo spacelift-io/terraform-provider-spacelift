@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -13,16 +14,17 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
-func resourceRun() *schema.Resource {
+func resourceTask() *schema.Resource {
 	return &schema.Resource{
-		Description: "" +
-			"`spacelift_run` allows programmatically triggering runs in response " +
-			"to arbitrary changes in the keepers section.",
+		Description: "`spacelift_task` represents a task in Spacelift.",
 
-		CreateContext: resourceRunCreate,
+		CreateContext: resourceTaskCreate,
 		ReadContext:   schema.NoopContext,
-		Delete:        schema.RemoveFromState,
-		UpdateContext: schema.NoopContext,
+		DeleteContext: schema.NoopContext,
+
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(30 * time.Minute),
@@ -30,16 +32,23 @@ func resourceRun() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"stack_id": {
+				Type:        schema.TypeString,
+				Description: "ID of the stack for which to run the task",
+				Required:    true,
+				ForceNew:    true,
+			},
+			"command": {
 				Type:             schema.TypeString,
-				Description:      "ID of the stack on which the run is to be triggered.",
+				Description:      "Command that will be run.",
+				ValidateDiagFunc: validations.DisallowEmptyString,
 				Required:         true,
 				ForceNew:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
-			"commit_sha": {
-				Description: "The commit SHA for which to trigger a run.",
-				Type:        schema.TypeString,
+			"init": {
+				Type:        schema.TypeBool,
+				Description: "Whether to initialize the stack or not. Default: `true`",
 				Optional:    true,
+				Default:     true,
 				ForceNew:    true,
 			},
 			"keepers": {
@@ -50,30 +59,20 @@ func resourceRun() *schema.Resource {
 				Optional: true,
 				ForceNew: true,
 			},
-			"proposed": {
-				Type:        schema.TypeBool,
-				Description: "Whether the run is a proposed run. Defaults to `false`.",
-				Optional:    true,
-				ForceNew:    true,
-				Default:     false,
-			},
-			"id": {
-				Description: "The ID of the triggered run.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 			"wait": {
 				Type:        schema.TypeList,
 				Optional:    true,
 				Description: "Wait for the run to finish",
 				MaxItems:    1,
+				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"disabled": {
 							Type:        schema.TypeBool,
-							Description: "Whether waiting for a job is disabled or not. Default: `false`",
+							Description: "Whether waiting for the task is disabled or not. Default: `false`",
 							Optional:    true,
 							Default:     false,
+							ForceNew:    true,
 						},
 						"continue_on_state": {
 							Type: schema.TypeSet,
@@ -82,12 +81,14 @@ func resourceRun() *schema.Resource {
 							},
 							Description: "Continue on the specified states of a finished run. If not specified, the default is `[ 'finished' ]`. You can use following states: `applying`, `canceled`, `confirmed`, `destroying`, `discarded`, `failed`, `finished`, `initializing`, `pending_review`, `performing`, `planning`, `preparing_apply`, `preparing_replan`, `preparing`, `queued`, `ready`, `replan_requested`, `skipped`, `stopped`, `unconfirmed`.",
 							Optional:    true,
+							ForceNew:    true,
 						},
 						"continue_on_timeout": {
 							Type:        schema.TypeBool,
-							Description: "Continue if run timed out, i.e. did not reach any defined end state in time. Default: `false`",
+							Description: "Continue if task timed out, i.e. did not reach any defined end state in time. Default: `false`",
 							Optional:    true,
 							Default:     false,
+							ForceNew:    true,
 						},
 					},
 				},
@@ -96,39 +97,35 @@ func resourceRun() *schema.Resource {
 	}
 }
 
-func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var mutation struct {
-		ID string `graphql:"runResourceCreate(stack: $stack, commitSha: $sha, proposed: $proposed)"`
+func resourceTaskCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	task, err := structs.NewTaskInput(d)
+	if err != nil {
+		return diag.Errorf("could not extract task: %s", err)
 	}
 
-	stackID := d.Get("stack_id").(string)
+	var mutation struct {
+		CreateTask structs.Task `graphql:"taskCreate(stack: $stack, command: $command, skipInitialization: $skipInitialization)"`
+	}
 
 	variables := map[string]interface{}{
-		"stack":    toID(stackID),
-		"sha":      (*graphql.String)(nil),
-		"proposed": (*graphql.Boolean)(nil),
-	}
-
-	if sha, ok := d.GetOk("commit_sha"); ok {
-		variables["sha"] = graphql.NewString(graphql.String(sha.(string)))
-	}
-
-	if proposed, ok := d.GetOk("proposed"); ok {
-		variables["proposed"] = graphql.NewBoolean(graphql.Boolean(proposed.(bool)))
+		"stack":              graphql.ID(task.StackID),
+		"command":            graphql.String(task.Command),
+		"skipInitialization": graphql.Boolean(!task.Init),
 	}
 
 	client := meta.(*internal.Client)
-	if err := client.Mutate(ctx, "ResourceRunCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not trigger run for stack %s: %v", stackID, internal.FromSpaceliftError(err))
+	if err := client.Mutate(ctx, "TaskCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create task: %v", internal.FromSpaceliftError(err))
 	}
 
 	if waitRaw, ok := d.GetOk("wait"); ok {
 		wait := structs.NewWaitConfiguration(waitRaw.([]interface{}))
-		if diag := wait.Wait(ctx, d, client, stackID, mutation.ID); len(diag) > 0 {
-			return diag
+		if d := wait.Wait(ctx, d, client, task.StackID, mutation.CreateTask.ID.(string)); len(d) > 0 {
+			return d
 		}
 	}
 
-	d.SetId(mutation.ID)
+	d.SetId(fmt.Sprintf("%s/%s", d.Get("stack_id"), mutation.CreateTask.ID))
+
 	return nil
 }
