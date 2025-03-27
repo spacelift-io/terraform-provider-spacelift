@@ -41,7 +41,6 @@ func TestNamedWebhookData(t *testing.T) {
 			Attribute("webhook_id", IsNotEmpty()),
 			Attribute("endpoint", Equals("https://bacon.org")),
 			Attribute("enabled", Equals("true")),
-			Attribute("secret", Equals("super-secret")),
 			SetContains("secret_header_keys", "thisisakey"),
 		),
 	}})

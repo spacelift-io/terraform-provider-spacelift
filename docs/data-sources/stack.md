@@ -154,6 +154,7 @@ Read-Only:
 Read-Only:
 
 - `kubectl_version` (String)
+- `kubernetes_workflow_tool` (String)
 - `namespace` (String)
 
 

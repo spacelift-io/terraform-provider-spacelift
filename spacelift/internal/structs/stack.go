@@ -61,6 +61,7 @@ type Stack struct {
 	RepositoryURL                *string       `graphql:"repositoryURL"`
 	RunnerImage                  *string       `graphql:"runnerImage"`
 	Space                        string        `graphql:"space"`
+	SpaceDetails                 Space         `graphql:"spaceDetails"`
 	TerraformVersion             *string       `graphql:"terraformVersion"`
 	VCSIntegration               *struct {
 		ID        string `graphql:"id"`
@@ -80,6 +81,7 @@ type Stack struct {
 		Kubernetes struct {
 			Namespace      string  `graphql:"namespace"`
 			KubectlVersion *string `graphql:"kubectlVersion"`
+			KubernetesWorkflowTool *string `graphql:"kubernetesWorkflowTool"`
 		} `graphql:"... on StackConfigVendorKubernetes"`
 		Pulumi struct {
 			LoginURL  string `graphql:"loginURL"`
@@ -136,6 +138,7 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 		return "kubernetes", map[string]interface{}{
 			"namespace":       s.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version": s.VendorConfig.Kubernetes.KubectlVersion,
+			"kubernetes_workflow_tool": s.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 	case StackConfigVendorPulumi:
 		return "pulumi", map[string]interface{}{
@@ -282,6 +285,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		m := map[string]interface{}{
 			"namespace":       stack.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version": stack.VendorConfig.Kubernetes.KubectlVersion,
+			"kubernetes_workflow_tool": stack.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 
 		d.Set("kubernetes", []interface{}{m})
@@ -305,7 +309,9 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 
 	default:
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
-		d.Set("terraform_version", stack.VendorConfig.Terraform.Version)
+		if stack.VendorConfig.Terraform.Version != nil {
+			d.Set("terraform_version", *stack.VendorConfig.Terraform.Version)
+		}
 		d.Set("terraform_workflow_tool", stack.VendorConfig.Terraform.WorkflowTool)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
 		d.Set("terraform_external_state_access", stack.VendorConfig.Terraform.ExternalStateAccessEnabled)

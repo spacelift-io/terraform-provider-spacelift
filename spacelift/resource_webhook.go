@@ -72,11 +72,13 @@ func resourceWebhook() *schema.Resource {
 				ExactlyOneOf: []string{"module_id", "stack_id"},
 			},
 			"secret": {
-				Type:        schema.TypeString,
-				Description: "secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value.",
-				Optional:    true,
-				Sensitive:   true,
-				Default:     "",
+				Type:             schema.TypeString,
+				Description:      "secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.",
+				Optional:         true,
+				Sensitive:        true,
+				ForceNew:         true,
+				Default:          "",
+				DiffSuppressFunc: ignoreOnceCreated,
 			},
 			"stack_id": {
 				Type:        schema.TypeString,
@@ -128,7 +130,7 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.SetId(mutation.WebhooksIntegration.ID)
 
-	return nil
+	return resourceWebhookRead(ctx, d, meta)
 }
 
 func resourceWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -175,7 +177,7 @@ func resourceModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(webhookID)
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
-	d.Set("secret", module.Integrations.Webhooks[webhookIndex].Secret)
+	d.Set("secret", "")
 
 	return nil
 }
@@ -216,7 +218,7 @@ func resourceStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(webhookID)
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
-	d.Set("secret", stack.Integrations.Webhooks[webhookIndex].Secret)
+	d.Set("secret", "")
 
 	return nil
 }
@@ -224,7 +226,6 @@ func resourceStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	enabled := d.Get("enabled").(bool)
 	endpoint := d.Get("endpoint").(string)
-	secret := d.Get("secret").(string)
 	webhookID := d.Id()
 
 	var mutation struct {
@@ -239,7 +240,6 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		"input": structs.WebhooksIntegrationInput{
 			Enabled:  graphql.Boolean(enabled),
 			Endpoint: graphql.String(endpoint),
-			Secret:   graphql.String(secret),
 		},
 	}
 

@@ -19,10 +19,12 @@ type Module struct {
 	ProjectRoot         *string      `graphql:"projectRoot"`
 	ProtectFromDeletion bool         `graphql:"protectFromDeletion"`
 	Provider            VCSProvider  `graphql:"provider"`
+	Public              bool         `graphql:"public"`
 	Repository          string       `graphql:"repository"`
 	RepositoryURL       *string      `graphql:"repositoryURL"`
 	SharedAccounts      []string     `graphql:"sharedAccounts"`
 	Space               string       `graphql:"space"`
+	SpaceDetails        Space        `graphql:"spaceDetails"`
 	TerraformProvider   string       `graphql:"terraformProvider"`
 	VCSIntegration      *struct {
 		ID        string `graphql:"id"`

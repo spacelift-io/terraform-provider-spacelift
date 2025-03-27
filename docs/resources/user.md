@@ -17,7 +17,7 @@ description: |-
 
 ### Required
 
-- `policy` (Block List, Min: 1) (see [below for nested schema](#nestedblock--policy))
+- `policy` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--policy))
 - `username` (String) Username of the user
 
 ### Optional

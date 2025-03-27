@@ -1,4 +1,4 @@
-name: GoSec
+name: 🔐 GoSec
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    name: Analyze
+    name: Run GoSec
     runs-on: ubuntu-latest
     env:
       GO111MODULE: on

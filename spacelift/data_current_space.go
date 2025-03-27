@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"strings"
 
@@ -22,28 +23,60 @@ func dataCurrentSpace() *schema.Resource {
 			"Spacelift by a stack or module. This  makes it easier to create resources " +
 			"within the same space.",
 		ReadContext: dataCurrentSpaceRead,
+
+		Schema: map[string]*schema.Schema{
+			"parent_space_id": {
+				Type:        schema.TypeString,
+				Description: "immutable ID (slug) of parent space",
+				Computed:    true,
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "free-form space description for users",
+				Computed:    true,
+			},
+			"name": {
+				Type:        schema.TypeString,
+				Description: "name of the space",
+				Computed:    true,
+			},
+			"inherit_entities": {
+				Type:        schema.TypeBool,
+				Description: "indication whether access to this space inherits read access to entities from the parent space",
+				Computed:    true,
+			},
+			"labels": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "list of labels describing a space",
+				Computed:    true,
+			},
+		},
 	}
 }
 
-func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func getStackIDFromToken(token string) (string, error) {
 	var claims jwt.StandardClaims
 
-	_, _, err := (&jwt.Parser{}).ParseUnverified(meta.(*internal.Client).Token, &claims)
+	_, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
 	if err != nil {
 		// Don't care about validation errors, we don't actually validate those
 		// tokens, we only parse them.
 		var unverifiable *jwt.UnverfiableTokenError
 		if !errors.As(err, &unverifiable) {
-			return diag.Errorf("could not parse client token: %v", err)
+			return "", fmt.Errorf("could not parse client token: %v", err)
 		}
 	}
 
 	if issuer := claims.Issuer; issuer != "spacelift" {
-		return diag.Errorf("unexpected token issuer %s, is this a Spacelift run?", issuer)
+		return "", fmt.Errorf("unexpected token issuer %s, is this a Spacelift run?", issuer)
 	}
 
 	stackID, _ := path.Split(claims.Subject)
+	return stackID, nil
+}
 
+func getSpaceForStack(ctx context.Context, stackID string, meta interface{}) (structs.Space, error) {
 	var query struct {
 		Stack  *structs.Stack  `graphql:"stack(id: $id)"`
 		Module *structs.Module `graphql:"module(id: $id)"`
@@ -52,20 +85,49 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 	variables := map[string]interface{}{"id": toID(strings.TrimRight(stackID, "/"))}
 	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		if strings.Contains(err.Error(), "denied") {
-			return diag.Errorf("could not query for stack: %v, is this stack administrative?", err)
+			return structs.Space{}, fmt.Errorf("could not query for stack: %v, is this stack administrative?", err)
 		}
-		return diag.Errorf("could not query for stack: %v", err)
+		return structs.Space{}, fmt.Errorf("could not query for stack: %v", err)
 	}
 
-	if stack := query.Stack; stack != nil {
-		d.SetId(stack.Space)
-		return nil
+	var space structs.Space
+
+	switch {
+	case query.Stack != nil:
+		space = query.Stack.SpaceDetails
+	case query.Module != nil:
+		space = query.Module.SpaceDetails
+	default:
+		return structs.Space{}, fmt.Errorf("could not find stack or module with ID %s", stackID)
+	}
+	return space, nil
+}
+
+func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	stackID, err := getStackIDFromToken(meta.(*internal.Client).Token)
+	if err != nil {
+		return diag.Errorf("%v", err)
 	}
 
-	if module := query.Module; module != nil {
-		d.SetId(module.Space)
-		return nil
+	space, err := getSpaceForStack(ctx, stackID, meta)
+	if err != nil {
+		return diag.Errorf("%v", err)
 	}
 
-	return diag.Errorf("could not find stack or module with ID %s", stackID)
+	d.SetId(space.ID)
+	d.Set("name", space.Name)
+	d.Set("description", space.Description)
+	d.Set("inherit_entities", space.InheritEntities)
+
+	labels := schema.NewSet(schema.HashString, []interface{}{})
+	for _, label := range space.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
+
+	if space.ParentSpace != nil {
+		d.Set("parent_space_id", *space.ParentSpace)
+	}
+
+	return nil
 }

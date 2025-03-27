@@ -192,6 +192,7 @@ func TestStackData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_stack.test",
 				Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+				Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("KUBERNETES")),
 			),
 		}})
 	})
@@ -216,6 +217,31 @@ func TestStackData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_stack.test",
 				Attribute("kubernetes.0.kubectl_version", Equals("1.2.3")),
+				Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("KUBERNETES")),
+			),
+		}})
+	})
+
+	t.Run("with Kubernetes stack with a kubernetes workflow tool", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch              = "master"
+				name                = "Test stack %s"
+				repository          = "demo"
+				kubernetes {
+					kubernetes_workflow_tool = "CUSTOM"
+				}
+			}
+			data "spacelift_stack" "test" {
+				stack_id = spacelift_stack.test.id
+			}
+		`, randomID),
+			Check: Resource(
+				"data.spacelift_stack.test",
+				Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("CUSTOM")),
 			),
 		}})
 	})

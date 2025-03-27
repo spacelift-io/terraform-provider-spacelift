@@ -9,7 +9,7 @@ type NamedWebhooksIntegration struct {
 	Endpoint      string   `graphql:"endpoint" json:"endpoint"`
 	Space         Space    `graphql:"space" json:"space"`
 	Name          string   `graphql:"name" json:"name"`
-	Secret        string   `graphql:"secret" json:"secret"`
+	Secret        *string  `graphql:"secret" json:"secret"`
 	SecretHeaders []string `graphql:"secretHeaders" json:"secretHeaders"`
 	Labels        []string `graphql:"labels" json:"labels"`
 }
@@ -20,7 +20,7 @@ type NamedWebhooksIntegrationInput struct {
 	Endpoint graphql.String   `json:"endpoint"`
 	Space    graphql.ID       `json:"space"`
 	Name     graphql.String   `json:"name"`
-	Secret   graphql.String   `json:"secret"`
+	Secret   *graphql.String  `json:"secret"`
 	Labels   []graphql.String `json:"labels"`
 }
 

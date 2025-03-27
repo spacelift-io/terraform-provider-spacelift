@@ -37,6 +37,21 @@ resource "spacelift_user" "test" {
 }
 `
 
+var userWithTwoAccessesDifferentOrder = `
+resource "spacelift_user" "test" {
+  invitation_email = "%s"
+  username = "%s"
+  policy {
+    space_id = "legacy"
+    role     = "READ"
+  }
+  policy {
+    space_id = "root"
+    role     = "ADMIN"
+  }
+}
+`
+
 func TestUserResource(t *testing.T) {
 	const resourceName = "spacelift_user.test"
 
@@ -157,4 +172,30 @@ func TestUserResource(t *testing.T) {
 		})
 	})
 
+	t.Run("can change policy order without update", func(t *testing.T) {
+		randomUsername := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		exampleEmail := fmt.Sprintf("%s@example.com", randomUsername)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(userWithTwoAccesses, exampleEmail, randomUsername),
+				Check: Resource(
+					resourceName,
+					Attribute("invitation_email", Equals(exampleEmail)),
+					Attribute("username", Equals(randomUsername)),
+					SetContains("policy", "root", "ADMIN"),
+					SetContains("policy", "legacy", "READ")),
+			},
+			{
+				Config: fmt.Sprintf(userWithTwoAccessesDifferentOrder, exampleEmail, randomUsername),
+				Check: Resource(
+					resourceName,
+					Attribute("invitation_email", Equals(exampleEmail)),
+					Attribute("username", Equals(randomUsername)),
+					SetContains("policy", "root", "ADMIN"),
+					SetContains("policy", "legacy", "READ")),
+			},
+		})
+
+	})
 }

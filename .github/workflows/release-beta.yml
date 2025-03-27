@@ -1,4 +1,4 @@
-name: Release beta
+name: 🚀 Release beta
 
 # Beta releases are triggered manually to a specific provider from spacelift-io inputs
 on:
@@ -47,7 +47,7 @@ jobs:
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
       - name: Run GoReleaser to create draft release
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           args: release --clean --snapshot
         env:

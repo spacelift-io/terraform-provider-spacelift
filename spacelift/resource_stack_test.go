@@ -485,7 +485,7 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
-	t.Run("with GitHub and Kubernetes configuration", func(t *testing.T) {
+	t.Run("with GitHub and Kubernetes (default tool) configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: getConfig(`kubernetes {}`),
@@ -494,6 +494,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("")),
 					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+					Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("KUBERNETES")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -509,6 +510,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("myapp-prod")),
 					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+					Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("KUBERNETES")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -523,6 +525,27 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 					Attribute("kubernetes.0.namespace", Equals("")),
 					Attribute("kubernetes.0.kubectl_version", Equals("1.2.3")),
+					Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("KUBERNETES")),
+					Attribute("ansible.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("cloudformation.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with GitHub and Kubernetes (CUSTOM) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`kubernetes {
+						namespace = "myapp-prod"
+						kubernetes_workflow_tool = "CUSTOM"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+					Attribute("kubernetes.0.namespace", Equals("myapp-prod")),
+					Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("CUSTOM")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -866,6 +889,56 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with terraform_version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "this" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.this",
+					AttributeNotPresent("terraform_version"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "this" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_version       = null
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.this",
+					AttributeNotPresent("terraform_version"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "this" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					terraform_version       = "1.5.7"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.this",
+					Attribute("terraform_version", Equals("1.5.7")),
+				),
+			},
+		})
+	})
 }
 
 func TestStackResourceSpace(t *testing.T) {
@@ -1286,6 +1359,8 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 					Attribute("kubernetes.0.namespace", Equals("myapp-prod")),
+					Attribute("kubernetes.0.kubectl_version", IsNotEmpty()),
+					Attribute("kubernetes.0.kubernetes_workflow_tool", Equals("KUBERNETES")),
 					Attribute("ansible.#", Equals("0")),
 					Attribute("pulumi.#", Equals("0")),
 					Attribute("cloudformation.#", Equals("0")),
@@ -1654,6 +1729,27 @@ func TestStackResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_stack.terraform_workflow_tool_custom_with_run",
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
+
+	t.Run("with import_state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "state_import" {
+					branch                  = "master"
+					name                    = "Provider test stack workflow_tool default %s"
+					project_root            = "root"
+					repository              = "demo"
+					import_state            = "{}"
+				}
+			`, randomID),
+				Check: Resource(
+					"spacelift_stack.state_import",
+					Attribute("import_state", Equals("")),
 				),
 			},
 		})
