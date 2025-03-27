@@ -1,4 +1,4 @@
-name: Release beta
+name: 🚀 Release beta
 
 # Beta releases are triggered manually to a specific provider from spacelift-io inputs
 on:

@@ -61,10 +61,12 @@ func resourceNamedWebhook() *schema.Resource {
 				Optional: true,
 			},
 			"secret": {
-				Type:        schema.TypeString,
-				Description: "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value.",
-				Optional:    true,
-				Sensitive:   true,
+				Type:             schema.TypeString,
+				Description:      "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.",
+				Optional:         true,
+				Sensitive:        true,
+				ForceNew:         true,
+				DiffSuppressFunc: ignoreOnceCreated,
 			},
 		},
 	}
@@ -82,7 +84,7 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		Endpoint: graphql.String(d.Get("endpoint").(string)),
 		Space:    graphql.ID(d.Get("space_id").(string)),
 		Name:     graphql.String(d.Get("name").(string)),
-		Secret:   graphql.String(d.Get("secret").(string)),
+		Secret:   toOptionalString(d.Get("secret").(string)),
 		Labels:   []graphql.String{},
 	}
 
@@ -121,9 +123,9 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.SetId(wh.ID)
 	d.Set("name", wh.Name)
 	d.Set("endpoint", wh.Endpoint)
-	d.Set("secret", wh.Secret)
 	d.Set("enabled", wh.Enabled)
 	d.Set("space_id", wh.Space.ID)
+	d.Set("secret", "")
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range wh.Labels {
@@ -159,7 +161,7 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 		"input": structs.NamedWebhooksIntegrationInput{
 			Enabled:  graphql.Boolean(enabled),
 			Endpoint: graphql.String(endpoint),
-			Secret:   graphql.String(secret),
+			Secret:   toOptionalString(secret),
 			Name:     graphql.String(name),
 			Space:    graphql.String(spaceID),
 			Labels:   labels,

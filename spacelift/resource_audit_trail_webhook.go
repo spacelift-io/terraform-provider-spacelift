@@ -44,10 +44,12 @@ func resourceAuditTrailWebhook() *schema.Resource {
 					"information about the run that triggered the event.",
 			},
 			"secret": {
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
-				Description: "`secret` is a secret that Spacelift will send with the request.",
+				Type:             schema.TypeString,
+				Required:         true,
+				Sensitive:        true,
+				ForceNew:         true,
+				Description:      "`secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.",
+				DiffSuppressFunc: ignoreOnceCreated,
 			},
 			"custom_headers": {
 				Type:        schema.TypeMap,
@@ -96,7 +98,7 @@ func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceDat
 	data.Set("enabled", query.AuditTrailWebhook.Enabled)
 	data.Set("endpoint", query.AuditTrailWebhook.Endpoint)
 	data.Set("include_runs", query.AuditTrailWebhook.IncludeRuns)
-	data.Set("secret", query.AuditTrailWebhook.Secret)
+	data.Set("secret", "")
 
 	return nil
 }
@@ -110,7 +112,6 @@ func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceD
 			Enabled:       toBool(data.Get("enabled")),
 			Endpoint:      toString(data.Get("endpoint")),
 			IncludeRuns:   toBool(data.Get("include_runs")),
-			Secret:        toString(data.Get("secret")),
 			CustomHeaders: toOptionalStringMap(data.Get("custom_headers")),
 		},
 	}

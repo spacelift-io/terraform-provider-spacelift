@@ -39,7 +39,7 @@ func TestWebhookResource(t *testing.T) {
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("endpoint", Equals("https://bacon.org")),
-					Attribute("secret", Equals("very-very-secret")),
+					Attribute("secret", Equals("")),
 				),
 			},
 			{
@@ -77,7 +77,7 @@ func TestWebhookResource(t *testing.T) {
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("endpoint", Equals("https://bacon.org")),
-					Attribute("secret", Equals("very-very-secret")),
+					Attribute("secret", Equals("")),
 				),
 			},
 			{

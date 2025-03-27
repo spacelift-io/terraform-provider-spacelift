@@ -136,7 +136,8 @@ func resourceContext() *schema.Resource {
 				Optional:    true,
 			},
 			"labels": {
-				Type: schema.TypeSet,
+				Type:        schema.TypeSet,
+				Description: "The labels of the context. To leverage the `autoattach` magic label, ensure your label follows the naming convention: `autoattach:<your-label-name>`",
 				Elem: &schema.Schema{
 					Type:             schema.TypeString,
 					ValidateDiagFunc: validations.DisallowEmptyString,
@@ -147,7 +148,6 @@ func resourceContext() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "Name of the context - should be unique in one account",
 				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"space_id": {

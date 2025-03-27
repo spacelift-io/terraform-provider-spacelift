@@ -48,12 +48,6 @@ func dataNamedWebhook() *schema.Resource {
 				},
 				Computed: true,
 			},
-			"secret": {
-				Type:        schema.TypeString,
-				Description: "secret used to sign each request so you're able to verify that the request comes from us.",
-				Computed:    true,
-				Sensitive:   true,
-			},
 			"secret_header_keys": {
 				Type: schema.TypeSet,
 				Elem: &schema.Schema{
@@ -92,7 +86,6 @@ func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.SetId(wh.ID)
 	d.Set("name", wh.Name)
 	d.Set("endpoint", wh.Endpoint)
-	d.Set("secret", wh.Secret)
 	d.Set("enabled", wh.Enabled)
 	d.Set("space_id", wh.Space.ID)
 

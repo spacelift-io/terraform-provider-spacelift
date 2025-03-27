@@ -1,4 +1,4 @@
-name: Check Documentation
+name: 📚 Documentation
 
 on:
   push:
@@ -8,10 +8,8 @@ on:
 
 jobs:
   check-documentation:
-    name: Check documentation
+    name: Check documentation is up to date
     runs-on: ubuntu-latest
-    env:
-      GO111MODULE: on
 
     steps:
       - name: Checkout
@@ -20,6 +18,12 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with: { go-version-file: go.mod }
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.10.5"
+          terraform_wrapper: false
 
       - name: Generate documentation
         run: cd tools && go generate ./...

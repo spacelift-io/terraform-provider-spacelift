@@ -27,7 +27,7 @@ resource "spacelift_audit_trail_webhook" "example" {
 
 - `enabled` (Boolean) `enabled` determines whether the webhook is enabled. If it is not, Spacelift will not send any requests to the endpoint.
 - `endpoint` (String) `endpoint` is the URL to which Spacelift will send POST requests about audit events.
-- `secret` (String, Sensitive) `secret` is a secret that Spacelift will send with the request.
+- `secret` (String, Sensitive) `secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.
 
 ### Optional
 
