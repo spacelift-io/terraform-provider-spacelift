@@ -133,6 +133,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack_aws_role":                   resourceStackAWSRole(),           // deprecated
 				"spacelift_stack_gcp_service_account":        resourceStackGCPServiceAccount(), // deprecated
 				"spacelift_saved_filter":                     resourceSavedFilter(),
+				"spacelift_task":                             resourceTask(),
 				"spacelift_terraform_provider":               resourceTerraformProvider(),
 				"spacelift_user":                             resourceUser(),
 				"spacelift_vcs_agent_pool":                   resourceVCSAgentPool(),
