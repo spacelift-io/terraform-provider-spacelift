@@ -108,6 +108,8 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_azure_integration":                resourceAzureIntegration(),
 				"spacelift_azure_integration_attachment":     resourceAzureIntegrationAttachment(),
 				"spacelift_blueprint":                        resourceBlueprint(),
+				"spacelift_blueprint_versioned_group":        resourceBlueprintVersionedGroup(),
+				"spacelift_blueprint_version":                resourceBlueprintVersion(),
 				"spacelift_bitbucket_datacenter_integration": resourceBitbucketDatacenterIntegration(),
 				"spacelift_context_attachment":               resourceContextAttachment(),
 				"spacelift_context":                          resourceContext(),

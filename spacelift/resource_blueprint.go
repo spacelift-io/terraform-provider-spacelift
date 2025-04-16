@@ -15,6 +15,7 @@ import (
 
 func resourceBlueprint() *schema.Resource {
 	return &schema.Resource{
+		DeprecationMessage: "This resource is deprecated. Please use `spacelift_blueprint_version` instead.",
 		Description: "" +
 			"`spacelift_blueprint` represents a Spacelift blueprint, which allows you " +
 			"to easily create stacks using a templating engine. " +
