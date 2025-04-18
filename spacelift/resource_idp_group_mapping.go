@@ -65,6 +65,11 @@ func resourceIdpGroupMapping() *schema.Resource {
 				},
 				Set: userPolicyHash,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "Description of the user group",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -77,6 +82,7 @@ func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, 
 	variables := map[string]interface{}{
 		"input": structs.ManagedUserGroupCreateInput{
 			Name:        toString(d.Get("name")),
+			Description: toString(d.Get("description")),
 			AccessRules: getAccessRules(d),
 		},
 	}
@@ -118,7 +124,7 @@ func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, me
 		})
 	}
 	d.Set("policy", accessList)
-
+	d.Set("description", userGroup.Description)
 	return nil
 
 }
@@ -134,6 +140,7 @@ func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, 
 		"input": structs.ManagedUserGroupUpdateInput{
 			ID:          toID(d.Id()),
 			AccessRules: getAccessRules(d),
+			Description: toString(d.Get("description")),
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupUpdate", &mutation, variables); err != nil {
