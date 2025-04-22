@@ -49,6 +49,7 @@ type Stack struct {
 	Labels                       []string      `graphql:"labels"`
 	LocalPreviewEnabled          bool          `graphql:"localPreviewEnabled"`
 	EnableWellKnownSecretMasking bool          `graphql:"enableWellKnownSecretMasking"`
+	EnableSensitiveOutputUpload  bool          `graphql:"enableSensitiveOutputUpload"`
 	ManagesStateFile             bool          `graphql:"managesStateFile"`
 	Name                         string        `graphql:"name"`
 	Namespace                    string        `graphql:"namespace"`
@@ -237,6 +238,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
 	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
+	d.Set("enable_sensitive_outputs_upload", stack.EnableSensitiveOutputUpload)
 	d.Set("github_action_deploy", stack.GitHubActionDeploy)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)

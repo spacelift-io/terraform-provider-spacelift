@@ -306,6 +306,11 @@ func dataStack() *schema.Resource {
 				Description: "Indicates whether well-known secret masking is enabled.",
 				Computed:    true,
 			},
+			"enable_sensitive_outputs_upload": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether sensitive outputs created by this stack can be uploaded to Spacelift to be used by Stack Dependency references. Triggered only when corresponding option is enabled on the Worker Pool used by the Stack as well. Defaults to `true`.",
+				Computed:    true,
+			},
 			"kubernetes": {
 				Type:        schema.TypeList,
 				Description: "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
@@ -533,6 +538,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)
 	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
+	d.Set("enable_sensitive_outputs_upload", stack.EnableSensitiveOutputUpload)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)

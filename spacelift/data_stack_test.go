@@ -42,7 +42,8 @@ func TestStackData(t *testing.T) {
 				terraform_workspace             = "bacon"
 				terraform_smart_sanitization    = true
 				terraform_external_state_access = true
-				enable_well_known_secret_masking = true
+				enable_well_known_secret_masking= true
+				enable_sensitive_outputs_upload  = false
 			}
 			data "spacelift_stack" "test" {
 				stack_id = spacelift_stack.test.id
@@ -92,6 +93,7 @@ func TestStackData(t *testing.T) {
 				Attribute("terraform_smart_sanitization", Equals("true")),
 				Attribute("terraform_external_state_access", Equals("true")),
 				Attribute("enable_well_known_secret_masking", Equals("true")),
+				Attribute("enable_sensitive_outputs_upload", Equals("false")),
 			),
 		}})
 	})
@@ -339,6 +341,7 @@ func TestStackData(t *testing.T) {
 					"data.spacelift_stack.test",
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
 					Attribute("enable_well_known_secret_masking", Equals("false")),
+					Attribute("enable_sensitive_outputs_upload", Equals("true")),
 				),
 			},
 		})
