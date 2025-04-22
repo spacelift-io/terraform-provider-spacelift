@@ -19,6 +19,7 @@ resource "spacelift_idp_group_mapping" "test" {
     space_id = "root"
     role     = "ADMIN"
   }
+  description = "test description"
 }
 ```
 
@@ -29,6 +30,10 @@ resource "spacelift_idp_group_mapping" "test" {
 
 - `name` (String) Name of the user group - should be unique in one account
 - `policy` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--policy))
+
+### Optional
+
+- `description` (String) Description of the user group
 
 ### Read-Only
 

@@ -17,6 +17,7 @@ resource "spacelift_idp_group_mapping" "test" {
     space_id = "root"
     role     = "ADMIN"
   }
+  description = "%s"
 }
 `
 
@@ -39,14 +40,17 @@ func TestIdpGroupMappingResource(t *testing.T) {
 
 	t.Run("creates and updates a user group mapping without an error", func(t *testing.T) {
 		oldName := "old name"
+		oldDescription := "old description"
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		randomDescription := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: fmt.Sprintf(withOneAccess, oldName),
+				Config: fmt.Sprintf(withOneAccess, oldName, oldDescription),
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(oldName)),
+					Attribute("description", Equals(oldDescription)),
 					SetContains("policy", "root"),
 					SetContains("policy", "ADMIN"),
 				),
@@ -57,10 +61,11 @@ func TestIdpGroupMappingResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: fmt.Sprintf(withOneAccess, randomID),
+				Config: fmt.Sprintf(withOneAccess, randomID, randomDescription),
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(randomID)),
+					Attribute("description", Equals(randomDescription)),
 				),
 			},
 		})

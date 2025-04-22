@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -51,7 +52,11 @@ func (c *Client) Mutate(ctx context.Context, mutationName string, m interface{},
 func (c *Client) Query(ctx context.Context, queryName string, q interface{}, variables map[string]interface{}) error {
 	client := c.client()
 
-	return client.Query(ctx, q, variables, graphql.WithHeader("Spacelift-GraphQL-Query", queryName))
+	err := client.Query(ctx, q, variables, graphql.WithHeader("Spacelift-GraphQL-Query", queryName))
+	if err != nil && strings.Contains(err.Error(), "not found") {
+		return nil
+	}
+	return err
 }
 
 func (c *Client) client() *graphql.Client {
