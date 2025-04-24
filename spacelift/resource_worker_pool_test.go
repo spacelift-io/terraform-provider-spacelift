@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -33,6 +35,7 @@ func TestWorkerPoolResource(t *testing.T) {
 					Attribute("description", Equals("old description")),
 					Attribute("name", Equals(fmt.Sprintf("My first worker pool %s", randomID))),
 					Attribute("private_key", IsNotEmpty()),
+					Attribute("config", IsNotEmpty()),
 				),
 			},
 			{
@@ -47,6 +50,21 @@ func TestWorkerPoolResource(t *testing.T) {
 					resourceName,
 					Attribute("description", Equals("new description")),
 				),
+			},
+			{
+				Config: config("new description"),
+				Check: func(s *terraform.State) error {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return fmt.Errorf("resource not found: %s", resourceName)
+					}
+
+					previousConfig := rs.Primary.Attributes["config"]
+					return Resource(
+						resourceName,
+						Attribute("config", Equals(previousConfig)),
+					)(s)
+				},
 			},
 		})
 	})
