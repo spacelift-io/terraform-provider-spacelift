@@ -29,7 +29,14 @@ func resourceWorkerPool() *schema.Resource {
 		ReadContext:   resourceWorkerPoolRead,
 		UpdateContext: resourceWorkerPoolUpdate,
 		DeleteContext: resourceWorkerPoolDelete,
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, _ any) error {
+			// Force the config to be recomputed if the CSR changes. Otherwise, it will ignore changes event if we `Set` new value.
+			if diff.HasChange("csr") {
+				diff.SetNewComputed("config")
+			}
 
+			return nil
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -226,13 +233,6 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 		// Update the config with the new token info
 		d.Set("config", resetMutation.WorkerPool.Config)
-
-		// Also update the name, space_id and other properties from the response
-		d.Set("name", resetMutation.WorkerPool.Name)
-		d.Set("space_id", resetMutation.WorkerPool.Space)
-		if description := resetMutation.WorkerPool.Description; description != nil {
-			d.Set("description", *description)
-		}
 
 		// Return early if we only had a CSR change
 		if !d.HasChanges("name", "description", "labels", "space_id") {
