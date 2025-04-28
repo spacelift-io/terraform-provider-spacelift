@@ -231,11 +231,9 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.Errorf("could not reset worker pool token: %v", internal.FromSpaceliftError(err))
 		}
 
-		// Update the config with the new token info
 		d.Set("config", resetMutation.WorkerPool.Config)
 
-		// Return early if we only had a CSR change
-		if !d.HasChanges("name", "description", "labels", "space_id") {
+		if !d.HasChangeExcept("csr") {
 			return nil
 		}
 	}
