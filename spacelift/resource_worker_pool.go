@@ -30,7 +30,7 @@ func resourceWorkerPool() *schema.Resource {
 		UpdateContext: resourceWorkerPoolUpdate,
 		DeleteContext: resourceWorkerPoolDelete,
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, _ any) error {
-			// Force the config to be recomputed if the CSR changes. Otherwise, it will ignore changes event if we `Set` new value.
+			// Force the config to be recomputed if the CSR changes. Otherwise, it will ignore changes even if we `Set` new value.
 			if diff.HasChange("csr") {
 				diff.SetNewComputed("config")
 			}
