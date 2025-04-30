@@ -234,7 +234,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		d.Set("config", resetMutation.WorkerPool.Config)
 
 		if !d.HasChangeExcept("csr") {
-			return nil
+			return resourceWorkerPoolRead(ctx, d, meta)
 		}
 	}
 
