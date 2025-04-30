@@ -228,7 +228,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		if err := meta.(*internal.Client).Mutate(ctx, "WorkerPoolReset", &resetMutation, resetVariables); err != nil {
-			return diag.Errorf("could not reset worker pool token: %v", internal.FromSpaceliftError(err))
+			return diag.Errorf("could not reset worker pool: %v", internal.FromSpaceliftError(err))
 		}
 
 		d.Set("config", resetMutation.WorkerPool.Config)
