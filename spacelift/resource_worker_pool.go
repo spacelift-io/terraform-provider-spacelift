@@ -29,7 +29,14 @@ func resourceWorkerPool() *schema.Resource {
 		ReadContext:   resourceWorkerPoolRead,
 		UpdateContext: resourceWorkerPoolUpdate,
 		DeleteContext: resourceWorkerPoolDelete,
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, _ any) error {
+			// Force the config to be recomputed if the CSR changes. Otherwise, it will ignore changes even if we `Set` new value.
+			if diff.HasChange("csr") {
+				diff.SetNewComputed("config")
+			}
 
+			return nil
+		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -49,11 +56,10 @@ func resourceWorkerPool() *schema.Resource {
 			},
 			"csr": {
 				Type:        schema.TypeString,
-				Description: "certificate signing request in base64",
+				Description: "certificate signing request in base64. Changing this value will trigger a token reset.",
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				ForceNew:    true,
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -114,8 +120,8 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 		variables["description"] = graphql.String(desc.(string))
 	}
 
-	if desc, ok := d.GetOk("csr"); ok {
-		variables["csr"] = graphql.String(desc.(string))
+	if csrValue, ok := d.GetOk("csr"); ok {
+		variables["csr"] = graphql.String(csrValue.(string))
 	} else {
 		privateKey, err := rsa.GenerateKey(rand.Reader, 4096)
 		if err != nil {
@@ -209,6 +215,30 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	name := d.Get("name").(string)
 
+	// If CSR has changed, use workerPoolReset mutation
+	if d.HasChange("csr") {
+		var resetMutation struct {
+			WorkerPool structs.WorkerPool `graphql:"workerPoolReset(id: $id, certificateSigningRequest: $csr)"`
+		}
+
+		csrString := d.Get("csr").(string)
+		resetVariables := map[string]interface{}{
+			"id":  toID(d.Id()),
+			"csr": graphql.String(csrString),
+		}
+
+		if err := meta.(*internal.Client).Mutate(ctx, "WorkerPoolReset", &resetMutation, resetVariables); err != nil {
+			return diag.Errorf("could not reset worker pool: %v", internal.FromSpaceliftError(err))
+		}
+
+		d.Set("config", resetMutation.WorkerPool.Config)
+
+		if !d.HasChangeExcept("csr") {
+			return resourceWorkerPoolRead(ctx, d, meta)
+		}
+	}
+
+	// Handle regular update for other attributes
 	var mutation struct {
 		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space)"`
 	}
