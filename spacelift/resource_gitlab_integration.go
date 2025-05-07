@@ -26,7 +26,7 @@ func resourceGitLabIntegration() *schema.Resource {
 				isDefault := diff.Get(gitLabIsDefault).(bool)
 				spaceID := diff.Get(gitLabSpaceID).(string)
 				if isDefault && spaceID != "root" {
-					return fmt.Errorf(`The default integration must be in the space "root" not in %q`, spaceID)
+					return fmt.Errorf(`the default integration must be in the space "root" not in %q`, spaceID)
 				}
 			}
 			return nil

@@ -328,9 +328,9 @@ func dataStack() *schema.Resource {
 							Computed:    true,
 						},
 						"kubernetes_workflow_tool": {
-							Type:             schema.TypeString,
+							Type:        schema.TypeString,
 							Description: "Defines the tool that will be used to execute the workflow. This can be one of `KUBERNETES` or `CUSTOM`. Defaults to `KUBERNETES`.",
-							Computed:         true,
+							Computed:    true,
 						},
 					},
 				},

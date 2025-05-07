@@ -65,12 +65,12 @@ func dataGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		d.SetId(stackID.(string))
 		ret = resourceStackGCPServiceAccountReadWithHooks(ctx, d, meta, func(message string) diag.Diagnostics {
-			return diag.Errorf(message)
+			return diag.Errorf("%s", message)
 		})
 	} else {
 		d.SetId(d.Get("module_id").(string))
 		ret = resourceModuleGCPServiceAccountReadWithHooks(ctx, d, meta, func(message string) diag.Diagnostics {
-			return diag.Errorf(message)
+			return diag.Errorf("%s", message)
 		})
 	}
 

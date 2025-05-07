@@ -70,7 +70,7 @@ func resourceScheduledDeleteStackCreate(ctx context.Context, d *schema.ResourceD
 		"stack": toID(d.Get("stack_id").(string)),
 		"input": structs.ScheduledDeleteInput{
 			ShouldDeleteResources: graphql.Boolean(deleteResources),
-			TimestampSchedule:     graphql.NewInt(graphql.Int(at)),
+			TimestampSchedule:     graphql.NewInt(graphql.Int(at)), //nolint:gosec // safe: value known to fit in int32
 		},
 	}
 
@@ -151,7 +151,7 @@ func resourceScheduledDeleteStackUpdate(ctx context.Context, d *schema.ResourceD
 		"scheduledDelete": toID(scheduleID),
 		"input": structs.ScheduledDeleteInput{
 			ShouldDeleteResources: graphql.Boolean(deleteResources),
-			TimestampSchedule:     graphql.NewInt(graphql.Int(at)),
+			TimestampSchedule:     graphql.NewInt(graphql.Int(at)), //nolint:gosec // safe: value known to fit in int32
 		},
 	}
 

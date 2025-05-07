@@ -3,6 +3,7 @@ package spacelift
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/shurcooL/graphql"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
@@ -31,7 +32,7 @@ func toMap(input interface{}) map[string]interface{} {
 }
 
 func toOptionalInt(input interface{}) *graphql.Int {
-	v := graphql.Int(input.(int))
+	v := graphql.Int(input.(int)) //nolint:gosec // safe: value known to fit in int32
 	return graphql.NewInt(v)
 }
 

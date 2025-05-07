@@ -466,7 +466,7 @@ func resourceStack() *schema.Resource {
 						},
 						"kubernetes_workflow_tool": {
 							Type:             schema.TypeString,
-							Description: "Defines the tool that will be used to execute the workflow. This can be one of `KUBERNETES` or `CUSTOM`. Defaults to `KUBERNETES`.",
+							Description:      "Defines the tool that will be used to execute the workflow. This can be one of `KUBERNETES` or `CUSTOM`. Defaults to `KUBERNETES`.",
 							Optional:         true,
 							Computed:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,

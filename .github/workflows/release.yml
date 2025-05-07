@@ -32,7 +32,7 @@ jobs:
       - name: Run GoReleaser to create draft release
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: ~> v2
           args: release --clean
         env:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}

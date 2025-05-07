@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ghEnterpriseId            = "id"
+	ghEnterpriseID            = "id"
 	ghEnterpriseName          = "name"
 	ghEnterpriseDescription   = "description"
 	ghEnterpriseIsDefault     = "is_default"
@@ -30,7 +30,7 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 		ReadContext: dataGithubEnterpriseIntegrationRead,
 
 		Schema: map[string]*schema.Schema{
-			ghEnterpriseId: {
+			ghEnterpriseID: {
 				Type:        schema.TypeString,
 				Description: "Github integration id. If not provided, the default integration will be returned",
 				Optional:    true,
@@ -113,7 +113,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 
 	variables := map[string]interface{}{"id": ""}
 
-	if id, ok := d.GetOk(ghEnterpriseId); ok && id != "" {
+	if id, ok := d.GetOk(ghEnterpriseID); ok && id != "" {
 		variables["id"] = toID(id)
 	}
 
@@ -131,7 +131,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 	d.Set(ghEnterpriseWebhookSecret, githubEnterpriseIntegration.WebhookSecret)
 	d.Set(ghEnterpriseWebhookURL, githubEnterpriseIntegration.WebhookURL)
 	d.Set(ghEnterpriseAppID, githubEnterpriseIntegration.AppID)
-	d.Set(ghEnterpriseId, githubEnterpriseIntegration.ID)
+	d.Set(ghEnterpriseID, githubEnterpriseIntegration.ID)
 	d.Set(ghEnterpriseName, githubEnterpriseIntegration.Name)
 	d.Set(ghEnterpriseDescription, githubEnterpriseIntegration.Description)
 	d.Set(ghEnterpriseIsDefault, githubEnterpriseIntegration.IsDefault)

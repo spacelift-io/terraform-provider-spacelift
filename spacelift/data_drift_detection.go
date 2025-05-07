@@ -57,7 +57,7 @@ func dataDriftDetectionRead(ctx context.Context, d *schema.ResourceData, meta in
 	stackID := d.Get("stack_id")
 	d.SetId(stackID.(string))
 	ret = resourceStackDriftDetectionReadWithHooks(ctx, d, meta, func(message string) diag.Diagnostics {
-		return diag.Errorf(message)
+		return diag.Errorf("%s", message)
 	})
 
 	if ret.HasError() {

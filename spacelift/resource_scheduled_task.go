@@ -97,7 +97,7 @@ func resourceScheduledTaskCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if scheduledTask.At != nil {
-		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledTask.At))
+		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledTask.At)) //nolint:gosec // safe: value known to fit in int32
 	} else {
 		var scheduleExpressions []graphql.String
 		for _, expr := range scheduledTask.Every {
@@ -194,7 +194,7 @@ func resourceScheduledTaskUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if scheduledTask.At != nil {
-		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledTask.At))
+		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledTask.At)) //nolint:gosec // safe: value known to fit in int32
 	} else {
 		var scheduleExpressions []graphql.String
 		for _, expr := range scheduledTask.Every {
