@@ -10,6 +10,7 @@ import (
 )
 
 func TestScheduledDeleteStackResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_scheduled_delete_stack.test"
 
 	t.Run("for scheduled delete_stack", func(t *testing.T) {

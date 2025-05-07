@@ -13,6 +13,8 @@ import (
 )
 
 func TestAzureIntegrationsData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("when looking up integrations", func(t *testing.T) {
 		subId1 := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 		subId2 := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)

@@ -11,6 +11,7 @@ import (
 )
 
 func TestTerraformProviderResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_terraform_provider.test"
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

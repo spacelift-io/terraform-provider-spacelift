@@ -11,6 +11,7 @@ import (
 )
 
 func TestPolicyResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_policy.test"
 
 	t.Run("creates and updates a policy", func(t *testing.T) {

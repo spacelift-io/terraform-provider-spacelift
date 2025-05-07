@@ -11,6 +11,7 @@ import (
 )
 
 func TestContextResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_context.test"
 
 	t.Run("creates and updates contexts without an error", func(t *testing.T) {
@@ -116,6 +117,7 @@ func TestContextResource(t *testing.T) {
 }
 
 func TestContextResourceSpace(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_context.test"
 
 	t.Run("creates and updates contexts without an error", func(t *testing.T) {

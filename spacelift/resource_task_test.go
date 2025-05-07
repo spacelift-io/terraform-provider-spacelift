@@ -12,6 +12,7 @@ import (
 )
 
 func TestTaskResource(t *testing.T) {
+	t.Parallel()
 
 	t.Run("on a new stack", func(t *testing.T) {
 		const resourceName = "spacelift_task.test"

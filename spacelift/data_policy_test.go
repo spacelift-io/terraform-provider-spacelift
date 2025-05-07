@@ -11,6 +11,8 @@ import (
 )
 
 func TestPolicyData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("creates and updates a policy", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -43,6 +45,8 @@ func TestPolicyData(t *testing.T) {
 }
 
 func TestPolicyDataSpace(t *testing.T) {
+	t.Parallel()
+
 	t.Run("creates and updates a policy", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

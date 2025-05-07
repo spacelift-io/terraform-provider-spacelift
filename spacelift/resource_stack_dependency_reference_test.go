@@ -13,6 +13,8 @@ import (
 )
 
 func TestStackDependencyReferenceResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack_dependency_reference.test"
 
 	t.Run("creates, updates and deletes stack dependency reference", func(t *testing.T) {

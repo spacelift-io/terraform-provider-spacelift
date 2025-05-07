@@ -11,6 +11,8 @@ import (
 )
 
 func TestScheduledDeleteStack(t *testing.T) {
+	t.Parallel()
+
 	t.Run("scheduled delete_stack", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		at := "123"

@@ -12,6 +12,7 @@ import (
 )
 
 func TestAWSIntegrationAttachmentExternalIDData(t *testing.T) {
+	t.Parallel()
 	const resourceName = "data.spacelift_aws_integration_attachment_external_id.test"
 
 	t.Run("with a stack", func(t *testing.T) {

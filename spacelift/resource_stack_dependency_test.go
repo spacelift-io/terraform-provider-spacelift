@@ -11,6 +11,7 @@ import (
 )
 
 func TestStackDependencyResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_stack_dependency.test"
 
 	t.Run("creates and updates stack dependency", func(t *testing.T) {

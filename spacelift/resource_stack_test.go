@@ -12,6 +12,7 @@ import (
 )
 
 func TestStackResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_stack.test"
 
 	t.Run("with GitHub and no state import", func(t *testing.T) {

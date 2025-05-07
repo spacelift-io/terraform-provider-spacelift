@@ -10,6 +10,7 @@ import (
 )
 
 func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_bitbucket_datacenter_integration.test"
 
 	t.Run("creates and updates a bitbucket datacenter integration without an error", func(t *testing.T) {

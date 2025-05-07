@@ -14,6 +14,8 @@ import (
 // But if we use the same type, tests could fail (for example listing saved filters - ).
 
 func TestSavedFiltersData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("load all saved filters", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		datasourceName := "data.spacelift_saved_filters.all"

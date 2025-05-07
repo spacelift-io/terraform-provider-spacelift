@@ -12,6 +12,8 @@ import (
 )
 
 func TestAWSIntegrationData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without generating AWS creds in the worker", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		testSteps(t, []resource.TestStep{{
@@ -132,6 +134,8 @@ func TestAWSIntegrationData(t *testing.T) {
 }
 
 func TestAWSIntegrationDataSpace(t *testing.T) {
+	t.Parallel()
+	
 	t.Run("without generating AWS creds in the worker", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		testSteps(t, []resource.TestStep{{

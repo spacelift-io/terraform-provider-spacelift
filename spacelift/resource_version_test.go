@@ -11,6 +11,8 @@ import (
 )
 
 func TestVersionResource(t *testing.T) {
+	t.Parallel()
+
 	t.Run("on a new module", func(t *testing.T) {
 		const resourceName = "spacelift_version.test"
 

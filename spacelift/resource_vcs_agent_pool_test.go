@@ -11,6 +11,7 @@ import (
 )
 
 func TestVCSAgentPoolResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_vcs_agent_pool.test"
 
 	t.Run("creates and updates a VCS agent pool without an error", func(t *testing.T) {

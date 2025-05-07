@@ -25,7 +25,6 @@ func testProvider() *schema.Provider {
 }
 
 func testSteps(t *testing.T, steps []resource.TestStep) {
-	t.Parallel()
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{

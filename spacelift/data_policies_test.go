@@ -10,6 +10,8 @@ import (
 )
 
 func TestPoliciesData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("load all policies", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

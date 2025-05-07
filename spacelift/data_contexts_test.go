@@ -11,6 +11,8 @@ import (
 )
 
 func TestContextsData(t *testing.T) {
+	t.Parallel()
+
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	resourceName := "spacelift_context.test"

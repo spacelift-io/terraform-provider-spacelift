@@ -9,6 +9,8 @@ import (
 )
 
 func TestGithubEnterpriseIntegrationData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without the ID specified", func(t *testing.T) {
 		cfg := testConfig.SourceCode.GithubEnterprise.Default
 		testSteps(t, []resource.TestStep{{

@@ -13,6 +13,8 @@ import (
 )
 
 func TestAWSIntegrationsData(t *testing.T) {
+	t.Parallel()
+
 	first := &structs.AWSIntegration{
 		DurationSeconds:             1234,
 		GenerateCredentialsInWorker: false,

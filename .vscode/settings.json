@@ -1,5 +1,10 @@
 {
     "go.testEnvFile": "${workspaceFolder}/test.env",
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+        "--path-mode=abs",
+        "--fast-only"
+    ],
     "cSpell.words": [
         "autoretry",
         "datacenter",

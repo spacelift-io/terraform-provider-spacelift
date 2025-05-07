@@ -9,6 +9,8 @@ import (
 )
 
 func TestAccountData(t *testing.T) {
+	t.Parallel()
+
 	testSteps(t, []resource.TestStep{{
 		Config: `data "spacelift_account" "test" {}`,
 		Check: Resource(

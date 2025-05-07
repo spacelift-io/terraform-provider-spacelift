@@ -11,6 +11,7 @@ import (
 )
 
 func TestGCPServiceAccountResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_gcp_service_account.test"
 
 	t.Run("with a stack", func(t *testing.T) {

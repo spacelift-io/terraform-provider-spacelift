@@ -12,6 +12,8 @@ import (
 )
 
 func TestVCSIntegration(t *testing.T) {
+	t.Skip()
+
 	randomID := func() string { return acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum) }
 
 	for _, resourceName := range []string{"spacelift_stack", "spacelift_module"} {

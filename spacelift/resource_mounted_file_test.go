@@ -11,6 +11,7 @@ import (
 )
 
 func TestMountedFileResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_mounted_file.test"
 
 	t.Run("with a context", func(t *testing.T) {

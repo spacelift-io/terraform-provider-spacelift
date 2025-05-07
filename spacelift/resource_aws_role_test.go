@@ -11,6 +11,7 @@ import (
 )
 
 func TestAWSRoleResource(t *testing.T) {
+	t.Parallel()
 	t.Run("with a stack", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

@@ -11,6 +11,7 @@ import (
 )
 
 func TestEnvironmentVariableResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_environment_variable.test"
 
 	t.Run("with a context", func(t *testing.T) {

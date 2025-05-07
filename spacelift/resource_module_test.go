@@ -12,6 +12,8 @@ import (
 )
 
 func TestModuleResource(t *testing.T) {
+	t.Parallel()
+
 	t.Run("with GitHub", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

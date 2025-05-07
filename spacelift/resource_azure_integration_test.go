@@ -11,6 +11,7 @@ import (
 )
 
 func TestAzureIntegrationResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_azure_integration.test"
 
 	t.Run("Creates and updates an integration", func(t *testing.T) {
@@ -92,6 +93,7 @@ func TestAzureIntegrationResource(t *testing.T) {
 }
 
 func TestAzureIntegrationResourceSpace(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_azure_integration.test"
 
 	t.Run("Creates and updates an integration", func(t *testing.T) {

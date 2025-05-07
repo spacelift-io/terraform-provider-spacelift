@@ -11,6 +11,7 @@ import (
 )
 
 func TestStackData(t *testing.T) {
+	t.Parallel()
 	t.Run("with Terraform stack", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -474,6 +475,7 @@ func TestStackData(t *testing.T) {
 }
 
 func TestStackDataSpace(t *testing.T) {
+	t.Parallel()
 	t.Run("with Terraform stack", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

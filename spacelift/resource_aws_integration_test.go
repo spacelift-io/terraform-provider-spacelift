@@ -11,6 +11,7 @@ import (
 )
 
 func TestAWSIntegrationResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_aws_integration.test"
 
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
@@ -66,6 +67,7 @@ func TestAWSIntegrationResource(t *testing.T) {
 }
 
 func TestAWSIntegrationResourceSpace(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_aws_integration.test"
 
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)

@@ -10,6 +10,8 @@ import (
 )
 
 func TestToolVersionsData(t *testing.T) {
+	t.Parallel()
+
 	testSteps(t, []resource.TestStep{
 		{
 			Config: `

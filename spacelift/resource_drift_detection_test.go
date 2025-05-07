@@ -12,6 +12,7 @@ import (
 )
 
 func TestDriftDetectionResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_drift_detection.test"
 
 	t.Run("with a stack", func(t *testing.T) {

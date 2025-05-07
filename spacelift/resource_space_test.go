@@ -11,6 +11,7 @@ import (
 )
 
 func TestSpaceResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_space.test"
 
 	t.Run("creates and updates a space", func(t *testing.T) {

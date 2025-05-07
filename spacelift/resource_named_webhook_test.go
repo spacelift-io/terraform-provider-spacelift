@@ -11,6 +11,7 @@ import (
 )
 
 func TestNamedWebhookResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_named_webhook.test"
 
 	t.Run("attach a webhook to root space with all fields filled", func(t *testing.T) {

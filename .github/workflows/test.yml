@@ -26,7 +26,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Test with coverage
-        run: go test -parallel 20 -timeout 30m -coverprofile=coverage.txt -coverpkg=./... ./...
+        run: go test -parallel 60 -timeout 30m -coverprofile=coverage.txt -coverpkg=./... ./...
         env:
           SPACELIFT_API_KEY_ENDPOINT: ${{ vars.preprod_SPACELIFT_API_KEY_ENDPOINT }}
           SPACELIFT_API_KEY_ID: ${{ secrets.PREPROD_SPACELIFT_API_KEY_ID }}

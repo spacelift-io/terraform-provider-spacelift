@@ -33,6 +33,8 @@ resource "spacelift_audit_trail_webhook" "test" {
 `
 
 func Test_resourceAuditTrailWebhook(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_audit_trail_webhook.test"
 
 	t.Run("creates an audit trail webhook without an error", func(t *testing.T) {

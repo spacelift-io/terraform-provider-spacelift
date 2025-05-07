@@ -11,6 +11,7 @@ import (
 )
 
 func TestScheduledTaskResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_scheduled_task.test"
 
 	t.Run("for scheduled task", func(t *testing.T) {

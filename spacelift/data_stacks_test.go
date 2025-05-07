@@ -11,6 +11,7 @@ import (
 )
 
 func TestStacksData(t *testing.T) {
+	t.Parallel()
 	t.Run("reads the stacks collection", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

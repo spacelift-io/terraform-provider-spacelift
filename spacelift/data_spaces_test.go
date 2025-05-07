@@ -9,6 +9,7 @@ import (
 )
 
 func TestSpacesData(t *testing.T) {
+	t.Parallel()
 	t.Run("load all spaces", func(t *testing.T) {
 		datasourceName := "data.spacelift_spaces.test"
 

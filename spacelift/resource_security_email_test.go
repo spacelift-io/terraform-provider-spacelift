@@ -17,6 +17,7 @@ resource "spacelift_security_email" "test" {
 `
 
 func Test_resourceSecurityEmail(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_security_email.test"
 
 	t.Run("creates and updates a security email without an error", func(t *testing.T) {

@@ -36,6 +36,7 @@ resource "spacelift_idp_group_mapping" "test" {
 `
 
 func TestIdpGroupMappingResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_idp_group_mapping.test"
 
 	t.Run("creates and updates a user group mapping without an error", func(t *testing.T) {

@@ -12,6 +12,8 @@ import (
 )
 
 func TestSavedFilterData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("creates and updates a filter", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

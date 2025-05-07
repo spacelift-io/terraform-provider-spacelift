@@ -11,6 +11,8 @@ import (
 )
 
 func TestWebhookResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_webhook.test"
 
 	t.Run("with a stack", func(t *testing.T) {

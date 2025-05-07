@@ -11,6 +11,7 @@ import (
 )
 
 func TestNamedWebhookSecretHeaderResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_named_webhook_secret_header.test-secret"
 
 	t.Run("attach a webhook to root space with all fields filled", func(t *testing.T) {

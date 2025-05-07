@@ -11,6 +11,7 @@ import (
 )
 
 func TestAWSIntegrationAttachmentResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_aws_integration_attachment.test"
 
 	t.Run("with a stack", func(t *testing.T) {

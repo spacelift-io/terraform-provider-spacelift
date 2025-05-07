@@ -12,6 +12,8 @@ import (
 )
 
 func TestAzureIntegrationData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("when looking up integration by ID", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -106,6 +108,7 @@ func TestAzureIntegrationData(t *testing.T) {
 }
 
 func TestAzureIntegrationDataSpace(t *testing.T) {
+	t.Parallel()
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	testSteps(t, []resource.TestStep{

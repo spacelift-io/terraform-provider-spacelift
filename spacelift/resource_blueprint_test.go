@@ -11,6 +11,7 @@ import (
 )
 
 func TestBlueprintResource(t *testing.T) {
+	t.Parallel()
 	const resourceName = "spacelift_blueprint.test"
 
 	t.Run("Creates and updates a blueprint in DRAFT state", func(t *testing.T) {
