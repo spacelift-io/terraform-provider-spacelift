@@ -79,8 +79,8 @@ type Stack struct {
 			TemplateBucket    string `graphql:"templateBucket"`
 		} `graphql:"... on StackConfigVendorCloudFormation"`
 		Kubernetes struct {
-			Namespace      string  `graphql:"namespace"`
-			KubectlVersion *string `graphql:"kubectlVersion"`
+			Namespace              string  `graphql:"namespace"`
+			KubectlVersion         *string `graphql:"kubectlVersion"`
 			KubernetesWorkflowTool *string `graphql:"kubernetesWorkflowTool"`
 		} `graphql:"... on StackConfigVendorKubernetes"`
 		Pulumi struct {
@@ -136,8 +136,8 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 		}
 	case StackConfigVendorKubernetes:
 		return "kubernetes", map[string]interface{}{
-			"namespace":       s.VendorConfig.Kubernetes.Namespace,
-			"kubectl_version": s.VendorConfig.Kubernetes.KubectlVersion,
+			"namespace":                s.VendorConfig.Kubernetes.Namespace,
+			"kubectl_version":          s.VendorConfig.Kubernetes.KubectlVersion,
 			"kubernetes_workflow_tool": s.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 	case StackConfigVendorPulumi:
@@ -283,8 +283,8 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		d.Set("cloudformation", []interface{}{m})
 	case StackConfigVendorKubernetes:
 		m := map[string]interface{}{
-			"namespace":       stack.VendorConfig.Kubernetes.Namespace,
-			"kubectl_version": stack.VendorConfig.Kubernetes.KubectlVersion,
+			"namespace":                stack.VendorConfig.Kubernetes.Namespace,
+			"kubectl_version":          stack.VendorConfig.Kubernetes.KubectlVersion,
 			"kubernetes_workflow_tool": stack.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 

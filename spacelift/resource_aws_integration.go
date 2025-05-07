@@ -99,7 +99,7 @@ func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, m
 		"roleArn":                     toString(d.Get("role_arn")),
 		"externalID":                  toString(d.Get("external_id")),
 		"labels":                      labels,
-		"durationSeconds":             graphql.Int(d.Get("duration_seconds").(int)),
+		"durationSeconds":             graphql.Int(d.Get("duration_seconds").(int)), //nolint:gosec // safe: value known to fit in int32
 		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),
 		"space":                       (*graphql.ID)(nil),
 	}
@@ -155,7 +155,7 @@ func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, m
 		"roleArn":                     toString(d.Get("role_arn")),
 		"externalID":                  toString(d.Get("external_id")),
 		"labels":                      labels,
-		"durationSeconds":             graphql.Int(d.Get("duration_seconds").(int)),
+		"durationSeconds":             graphql.Int(d.Get("duration_seconds").(int)), //nolint:gosec // safe: value known to fit in int32
 		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),
 		"space":                       (*graphql.ID)(nil),
 	}

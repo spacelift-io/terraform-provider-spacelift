@@ -28,7 +28,7 @@ func PopulateTaskSchedule(d *schema.ResourceData, t *ScheduledTask) error {
 		return errors.Wrap(err, "could not set \"command\" attribute")
 	}
 
-	if t.CronSchedule != nil && len(t.CronSchedule) != 0 {
+	if len(t.CronSchedule) != 0 {
 		if err := d.Set("every", t.CronSchedule); err != nil {
 			return errors.Wrap(err, "could not set \"every\" attribute")
 		}

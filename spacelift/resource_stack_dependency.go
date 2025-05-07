@@ -68,7 +68,7 @@ func resourceStackDependencyDelete(ctx context.Context, d *schema.ResourceData, 
 		StackDependency *structs.StackDependency `graphql:"stackDependencyDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": getStackDependencyId(d)}
+	variables := map[string]interface{}{"id": getStackDependencyID(d)}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDependencyDelete", &query, variables); err != nil {
 		return diag.Errorf("could not delete stack dependency: %s", err)
@@ -87,7 +87,7 @@ func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	variables := map[string]interface{}{
-		"id":    getStackDependencyId(d),
+		"id":    getStackDependencyID(d),
 		"stack": toID(d.Get("stack_id")),
 	}
 
@@ -115,7 +115,7 @@ func resourceStackDependencyImport(ctx context.Context, d *schema.ResourceData, 
 	return []*schema.ResourceData{d}, nil
 }
 
-func getStackDependencyId(d *schema.ResourceData) graphql.ID {
+func getStackDependencyID(d *schema.ResourceData) graphql.ID {
 	idParts := strings.Split(d.Id(), "/")
 
 	return graphql.ID(idParts[1])

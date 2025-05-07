@@ -71,7 +71,7 @@ func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData
 
 	variables := map[string]interface{}{
 		"id":       toID(contextID),
-		"priority": graphql.Int(d.Get("priority").(int)),
+		"priority": graphql.Int(d.Get("priority").(int)), //nolint:gosec // safe: value known to fit in int32
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
