@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,6 +24,12 @@ func dataIPs() *schema.Resource {
 			"ips": {
 				Type:        schema.TypeSet,
 				Description: "the list of spacelift.io outgoing IP addresses",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
+			"cidrs": {
+				Type:        schema.TypeList,
+				Description: "list of Spacelift IP addresses in CIDR notation (/32) for easy use in security group rules",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
@@ -48,6 +55,13 @@ func ipsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag
 	}
 
 	d.Set("ips", ips)
+
+	// Create CIDR list by appending /32 to each IP
+	cidrs := make([]string, len(query.IPs))
+	for i, ip := range query.IPs {
+		cidrs[i] = fmt.Sprintf("%s/32", ip)
+	}
+	d.Set("cidrs", cidrs)
 
 	return nil
 }
