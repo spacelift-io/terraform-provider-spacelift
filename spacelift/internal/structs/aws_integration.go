@@ -12,6 +12,7 @@ type AWSIntegration struct {
 	Name                        string   `graphql:"name"`
 	RoleARN                     string   `graphql:"roleArn"`
 	Space                       string   `graphql:"space"`
+	Region                      *string  `graphql:"region"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
@@ -31,6 +32,7 @@ func (i *AWSIntegration) ToMap() map[string]interface{} {
 		"role_arn":                       i.RoleARN,
 		"space_id":                       i.Space,
 		"labels":                         i.getLabelsSet(),
+		"region":                         i.Region,
 	}
 }
 

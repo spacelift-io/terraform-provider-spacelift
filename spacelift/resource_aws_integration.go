@@ -65,6 +65,11 @@ func resourceAWSIntegration() *schema.Resource {
 				Default:     900,
 				Optional:    true,
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Description: "AWS region to select a regional AWS STS endpoint.",
+				Optional:    true,
+			},
 			"labels": {
 				Type:        schema.TypeSet,
 				Description: "Labels to set on the integration",
@@ -83,7 +88,7 @@ func resourceAWSIntegration() *schema.Resource {
 
 func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationCreate(name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space)"`
+		CreateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationCreate(name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region)"`
 	}
 
 	labels := []graphql.String{}
@@ -102,10 +107,15 @@ func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, m
 		"durationSeconds":             graphql.Int(d.Get("duration_seconds").(int)), //nolint:gosec // safe: value known to fit in int32
 		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),
 		"space":                       (*graphql.ID)(nil),
+		"region":                      (*graphql.String)(nil),
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
 		variables["space"] = graphql.NewID(spaceID)
+	}
+
+	if region, ok := d.GetOk("region"); ok {
+		variables["region"] = toOptionalString(region)
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "AWSIntegrationCreate", &mutation, variables); err != nil {
@@ -138,7 +148,7 @@ func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, met
 
 func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationUpdate(id: $id, name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space)"`
+		UpdateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationUpdate(id: $id, name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region)"`
 	}
 
 	labels := []graphql.String{}
@@ -158,10 +168,15 @@ func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, m
 		"durationSeconds":             graphql.Int(d.Get("duration_seconds").(int)), //nolint:gosec // safe: value known to fit in int32
 		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),
 		"space":                       (*graphql.ID)(nil),
+		"region":                      (*graphql.String)(nil),
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
 		variables["space"] = graphql.NewID(spaceID)
+	}
+
+	if region, ok := d.GetOk("region"); ok {
+		variables["region"] = toOptionalString(region)
 	}
 
 	var ret diag.Diagnostics

@@ -28,6 +28,7 @@ func TestAWSIntegrationsData(t *testing.T) {
 		Name:                        acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
 		RoleARN:                     "arn:aws:iam::039653571618:role/empty-test-role-2",
 		Space:                       "legacy",
+		Region:                      &[]string{"us-east-1"}[0],
 	}
 
 	terraformConfig := fmt.Sprintf(`
@@ -53,16 +54,21 @@ func TestAWSIntegrationsData(t *testing.T) {
 }
 
 func awsIntegrationToResource(i *structs.AWSIntegration) string {
+	var regionAttr string
+	if i.Region != nil {
+		regionAttr = fmt.Sprintf(`region = "%s"`, *i.Region)
+	}
 	return fmt.Sprintf(`
  resource "spacelift_aws_integration" "%s" {
         	name                           = "%s"
-        	role_arn                       = "%s"	
-			space_id 					   = "%s" 
+        	role_arn                       = "%s"
+		space_id		       = "%s" 
         	labels                         =  %s
         	duration_seconds               =  %d
         	generate_credentials_in_worker =  %t
+		%s
       	 }
-`, i.Name, i.Name, i.RoleARN, i.Space, labelsAsString(i.Labels), i.DurationSeconds, i.GenerateCredentialsInWorker)
+`, i.Name, i.Name, i.RoleARN, i.Space, labelsAsString(i.Labels), i.DurationSeconds, i.GenerateCredentialsInWorker, regionAttr)
 }
 
 func labelsAsString(labels []string) string {
@@ -70,18 +76,24 @@ func labelsAsString(labels []string) string {
 }
 
 func awsIntegrationChecks(i *structs.AWSIntegration) []resource.TestCheckFunc {
+	checks := []AttributeCheck{
+		Attribute("name", Equals(i.Name)),
+		Attribute("integration_id", IsNotEmpty()),
+		Attribute("role_arn", Equals(i.RoleARN)),
+		Attribute("space_id", Equals(i.Space)),
+		Attribute("duration_seconds", Equals(fmt.Sprintf("%d", i.DurationSeconds))),
+		Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", i.GenerateCredentialsInWorker))),
+		SetEquals("labels", i.Labels...),
+	}
+	if i.Region != nil {
+		checks = append(checks, Attribute("region", Equals(*i.Region)))
+	} else {
+		checks = append(checks, Attribute("region", IsEmpty()))
+	}
 	return []resource.TestCheckFunc{
 		Resource("data.spacelift_aws_integrations.test",
 			Nested("integrations",
-				CheckInList(
-					Attribute("name", Equals(i.Name)),
-					Attribute("integration_id", IsNotEmpty()),
-					Attribute("role_arn", Equals(i.RoleARN)),
-					Attribute("space_id", Equals(i.Space)),
-					Attribute("duration_seconds", Equals(fmt.Sprintf("%d", i.DurationSeconds))),
-					Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", i.GenerateCredentialsInWorker))),
-					SetEquals("labels", i.Labels...),
-				),
+				CheckInList(),
 			),
 		),
 	}
