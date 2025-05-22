@@ -60,6 +60,11 @@ func dataAWSIntegrations() *schema.Resource {
 							Elem:     &schema.Schema{Type: schema.TypeString},
 							Computed: true,
 						},
+						"region": {
+							Type:        schema.TypeString,
+							Description: "AWS region to select a regional AWS STS endpoint.",
+							Computed:    true,
+						},
 					},
 				},
 			},
