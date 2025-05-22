@@ -123,3 +123,95 @@ func TestAWSIntegrationResourceSpace(t *testing.T) {
 		},
 	})
 }
+
+func TestAWSIntegrationResourceRegion(t *testing.T) {
+	const resourceName = "spacelift_aws_integration.test"
+
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+	testSteps(t, []resource.TestStep{
+		{
+			// Test without region set
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        generate_credentials_in_worker = false
+			}
+		`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", IsEmpty()),
+			),
+		},
+		{
+			ResourceName:      resourceName,
+			ImportState:       true,
+			ImportStateVerify: true,
+		},
+		{
+			// Test adding region
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        region                         = "us-west-2"
+        generate_credentials_in_worker = false
+			}
+			`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", Equals("us-west-2")),
+			),
+		},
+		{
+			// Test changing region
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        region                         = "eu-central-1"
+        generate_credentials_in_worker = false
+			}
+			`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", Equals("eu-central-1")),
+			),
+		},
+		{
+			// Test removing region
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        generate_credentials_in_worker = false
+			}
+			`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", IsEmpty()),
+			),
+		},
+	})
+}

@@ -34,6 +34,7 @@ data "spacelift_aws_integration" "example" {
 
 - `integration_id` (String) Immutable ID of the integration. Either `integration_id` or `name` must be specified.
 - `name` (String) Name of the AWS integration. Either `integration_id` or `name` must be specified.
+- `region` (String) AWS region to select a regional AWS STS endpoint.
 
 ### Read-Only
 

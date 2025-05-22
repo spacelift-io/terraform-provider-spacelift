@@ -52,6 +52,12 @@ func dataAWSIntegration() *schema.Resource {
 				Description: "Duration in seconds for which the assumed role credentials should be valid",
 				Computed:    true,
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Description: "AWS region to select a regional AWS STS endpoint.",
+				Optional:    true,
+				Computed:    true,
+			},
 			"generate_credentials_in_worker": {
 				Type:        schema.TypeBool,
 				Description: "Generate AWS credentials in the private worker",

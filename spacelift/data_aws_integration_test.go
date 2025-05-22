@@ -194,3 +194,82 @@ func TestAWSIntegrationDataSpace(t *testing.T) {
 		}})
 	})
 }
+
+func TestAWSIntegrationDataRegion(t *testing.T) {
+	t.Run("without region specified", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+      resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        generate_credentials_in_worker = false
+      }
+
+      data "spacelift_aws_integration" "test" {
+        integration_id = spacelift_aws_integration.test.id
+      }
+      `, randomID),
+			Check: Resource(
+				"data.spacelift_aws_integration.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", Equals("")),
+			),
+		}})
+	})
+
+	t.Run("with region specified", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+      resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        region                         = "us-west-2"
+        generate_credentials_in_worker = false
+      }
+
+      data "spacelift_aws_integration" "test" {
+        integration_id = spacelift_aws_integration.test.id
+      }
+      `, randomID),
+			Check: Resource(
+				"data.spacelift_aws_integration.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", Equals("us-west-2")),
+			),
+		}})
+	})
+
+	t.Run("with region specified and lookup by name", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+      resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        region                         = "eu-central-1"
+        generate_credentials_in_worker = false
+      }
+
+      data "spacelift_aws_integration" "test" {
+        name = spacelift_aws_integration.test.name
+      }
+      `, randomID),
+			Check: Resource(
+				"data.spacelift_aws_integration.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("region", Equals("eu-central-1")),
+			),
+		}})
+	})
+}
