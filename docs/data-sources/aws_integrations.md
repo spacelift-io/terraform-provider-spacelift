@@ -31,5 +31,6 @@ Read-Only:
 - `integration_id` (String)
 - `labels` (Set of String)
 - `name` (String)
+- `region` (String)
 - `role_arn` (String)
 - `space_id` (String)
