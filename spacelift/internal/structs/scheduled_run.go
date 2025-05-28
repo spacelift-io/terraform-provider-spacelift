@@ -8,13 +8,13 @@ import (
 
 // ScheduledRun represents a scheduled run.
 type ScheduledRun struct {
-	ID                  string           `json:"id"`
-	Name                graphql.String   `json:"name"`
-	CronSchedule        []graphql.String `json:"cronSchedule"`
-	TimestampSchedule   *graphql.Float   `json:"timestampSchedule"`
-	NextSchedule        *graphql.Int     `json:"nextSchedule"`
-	Timezone            *graphql.String  `json:"timezone"`
-	CustomRuntimeConfig *RuntimeConfig   `json:"customRuntimeConfig"`
+	ID                string           `json:"id"`
+	Name              graphql.String   `json:"name"`
+	CronSchedule      []graphql.String `json:"cronSchedule"`
+	TimestampSchedule *graphql.Float   `json:"timestampSchedule"`
+	NextSchedule      *graphql.Int     `json:"nextSchedule"`
+	Timezone          *graphql.String  `json:"timezone"`
+	RuntimeConfig     *RuntimeConfig   `json:"customRuntimeConfig"`
 }
 
 // ScheduledRunInput represents the input for creating/updating a scheduled run.
@@ -24,16 +24,6 @@ type ScheduledRunInput struct {
 	TimestampSchedule *graphql.Int        `json:"timestampSchedule"`
 	Timezone          *graphql.String     `json:"timezone"`
 	RuntimeConfig     *RuntimeConfigInput `json:"runtimeConfig"`
-}
-
-// RuntimeConfig represents a runtime configuration.
-type RuntimeConfig struct {
-	YamlConfig graphql.String `json:"yamlConfig"`
-}
-
-// RuntimeConfigInput represents the input for runtime configuration.
-type RuntimeConfigInput struct {
-	YamlConfig *graphql.String `json:"yamlConfig"`
 }
 
 func PopulateRunSchedule(d *schema.ResourceData, r *ScheduledRun) error {
@@ -61,8 +51,8 @@ func PopulateRunSchedule(d *schema.ResourceData, r *ScheduledRun) error {
 		}
 	}
 
-	if r.CustomRuntimeConfig != nil {
-		if err := d.Set("runtime_config", r.CustomRuntimeConfig.YamlConfig); err != nil {
+	if r.RuntimeConfig != nil {
+		if err := d.Set("runtime_config", r.RuntimeConfig.YamlConfig); err != nil {
 			return errors.Wrap(err, "could not set \"runtime_config\" attribute")
 		}
 	}
