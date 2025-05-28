@@ -11,100 +11,99 @@ import (
 )
 
 func TestScheduledRunResource(t *testing.T) {
-	const resourceName = "spacelift_scheduled_run.test"
+	resourceName := "spacelift_scheduled_run.test"
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-	t.Run("for scheduled run", func(t *testing.T) {
-		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+	runConfig := func(name string, every []string, timezone string) string {
+		everyStrs := make([]string, len(every))
+		for i := range every {
+			everyStrs[i] = `"` + every[i] + `"`
+		}
 
-		runConfig := func(name string, every []string, timezone string) string {
-			everyStrs := make([]string, len(every))
-			for i := range every {
-				everyStrs[i] = `"` + every[i] + `"`
+		return fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch     = "master"
+				repository = "demo"
+				name       = "Test stack %s"
+			}
+	
+			resource "spacelift_scheduled_run" "test" {
+				stack_id = spacelift_stack.test.id
+	
+				name       = "%s"
+				every      = [%s]
+				timezone   = "%s"
+			}
+		`, randomID, name, strings.Join(everyStrs, ", "), timezone)
+	}
+
+	runConfigWithoutTimezone := func(name string, every []string) string {
+		everyStrs := make([]string, len(every))
+		for i := range every {
+			everyStrs[i] = `"` + every[i] + `"`
+		}
+
+		return fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch     = "master"
+				repository = "demo"
+				name       = "Test stack %s"
+			}
+	
+			resource "spacelift_scheduled_run" "test" {
+				stack_id = spacelift_stack.test.id
+	
+				name  = "%s"
+				every = [%s]
+			}
+		`, randomID, name, strings.Join(everyStrs, ", "))
+	}
+
+	runConfigWithAt := func(name string, at string) string {
+		return fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch     = "master"
+				repository = "demo"
+				name       = "Test stack %s"
+			}
+	
+			resource "spacelift_scheduled_run" "test" {
+				stack_id = spacelift_stack.test.id
+	
+				name = "%s"
+				at   = "%s"
+			}
+		`, randomID, name, at)
+	}
+
+	runConfigWithRuntimeConfig := func(name string, every []string, runtimeConfig string) string {
+		everyStrs := make([]string, len(every))
+		for i := range every {
+			everyStrs[i] = `"` + every[i] + `"`
+		}
+
+		return fmt.Sprintf(`
+			resource "spacelift_stack" "test" {
+				branch     = "master"
+				repository = "demo"
+				name       = "Test stack %s"
 			}
 
-			return fmt.Sprintf(`
-				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
-				}
-		
-				resource "spacelift_scheduled_run" "test" {
-					stack_id = spacelift_stack.test.id
-		
-					name       = "%s"
-					every      = [%s]
-					timezone   = "%s"
-				}
-			`, randomID, name, strings.Join(everyStrs, ", "), timezone)
-		}
+			resource "spacelift_scheduled_run" "test" {
+				stack_id = spacelift_stack.test.id
 
-		runConfigWithoutTimezone := func(name string, every []string) string {
-			everyStrs := make([]string, len(every))
-			for i := range every {
-				everyStrs[i] = `"` + every[i] + `"`
+				name           = "%s"
+				every          = [%s]
+				runtime_config = "%s"
 			}
+		`, randomID, name, strings.Join(everyStrs, ", "), runtimeConfig)
+	}
 
-			return fmt.Sprintf(`
-				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
-				}
-		
-				resource "spacelift_scheduled_run" "test" {
-					stack_id = spacelift_stack.test.id
-		
-					name  = "%s"
-					every = [%s]
-				}
-			`, randomID, name, strings.Join(everyStrs, ", "))
-		}
-
-		runConfigWithAt := func(name string, at string) string {
-			return fmt.Sprintf(`
-				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
-				}
-		
-				resource "spacelift_scheduled_run" "test" {
-					stack_id = spacelift_stack.test.id
-		
-					name = "%s"
-					at   = "%s"
-				}
-			`, randomID, name, at)
-		}
-
-		runConfigWithRuntimeConfig := func(name string, every []string, runtimeConfig string) string {
-			everyStrs := make([]string, len(every))
-			for i := range every {
-				everyStrs[i] = `"` + every[i] + `"`
-			}
-
-			return fmt.Sprintf(`
-				resource "spacelift_stack" "test" {
-					branch     = "master"
-					repository = "demo"
-					name       = "Test stack %s"
-				}
-		
-				resource "spacelift_scheduled_run" "test" {
-					stack_id = spacelift_stack.test.id
-		
-					name           = "%s"
-					every          = [%s]
-					runtime_config = "%s"
-				}
-			`, randomID, name, strings.Join(everyStrs, ", "), runtimeConfig)
-		}
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config: runConfig("test-run-apply", []string{"*/3 * * * *", "*/4 * * * *"}, "CET"),
-				Check: Resource(
+	testSteps(t, []resource.TestStep{
+		{
+			Config: runConfig("test-run-apply", []string{"*/3 * * * *", "*/4 * * * *"}, "CET"),
+			Check: resource.ComposeTestCheckFunc(
+				Resource(
 					resourceName,
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
@@ -115,15 +114,17 @@ func TestScheduledRunResource(t *testing.T) {
 					Attribute("every.0", Equals("*/3 * * * *")),
 					Attribute("every.1", Equals("*/4 * * * *")),
 				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				Config: runConfigWithoutTimezone("test-run-apply", []string{"*/5 * * * *"}),
-				Check: Resource(
+			),
+		},
+		{
+			ResourceName:      resourceName,
+			ImportState:       true,
+			ImportStateVerify: true,
+		},
+		{
+			Config: runConfigWithoutTimezone("test-run-apply", []string{"*/5 * * * *"}),
+			Check: resource.ComposeTestCheckFunc(
+				Resource(
 					resourceName,
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
@@ -133,20 +134,24 @@ func TestScheduledRunResource(t *testing.T) {
 					Attribute("every.#", Equals("1")),
 					Attribute("every.0", Equals("*/5 * * * *")),
 				),
-			},
-			{
-				Config: runConfigWithAt("test-run-apply", "1234567"),
-				Check: Resource(
+			),
+		},
+		{
+			Config: runConfigWithAt("test-run-apply", "1234567"),
+			Check: resource.ComposeTestCheckFunc(
+				Resource(
 					resourceName,
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("name", Equals("test-run-apply")),
 					Attribute("at", Equals("1234567")),
 				),
-			},
-			{
-				Config: runConfigWithRuntimeConfig("test-run-apply", []string{"0 7 * * 1-5"}, "terraform_version: \"1.0\""),
-				Check: Resource(
+			),
+		},
+		{
+			Config: runConfigWithRuntimeConfig("test-run-apply", []string{"0 7 * * 1-5"}, "terraform_version: \"1.0\""),
+			Check: resource.ComposeTestCheckFunc(
+				Resource(
 					resourceName,
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
@@ -155,7 +160,7 @@ func TestScheduledRunResource(t *testing.T) {
 					Attribute("every.0", Equals("0 7 * * 1-5")),
 					Attribute("runtime_config", Equals("terraform_version: \"1.0\"")),
 				),
-			},
-		})
+			),
+		},
 	})
 }
