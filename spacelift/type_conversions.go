@@ -23,6 +23,13 @@ func toOptionalString(input interface{}) *graphql.String {
 	return graphql.NewString(toString(input))
 }
 
+func toOptionalNullableString(input interface{}) *graphql.String {
+	if input == nil {
+		return nil
+	}
+	return graphql.NewString(toString(input))
+}
+
 func toString(input interface{}) graphql.String {
 	return graphql.String(input.(string))
 }

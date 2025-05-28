@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/shurcooL/graphql"
 )
 
@@ -88,5 +89,87 @@ type RuntimeConfigInput struct {
 	BeforeInit    *[]graphql.String  `json:"beforeInit,omitempty"`
 	BeforePerform *[]graphql.String  `json:"beforePerform,omitempty"`
 	BeforePlan    *[]graphql.String  `json:"beforePlan,omitempty"`
+}
+
+func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Diagnostics) {
+	result := make(map[string]interface{})
+
+	if r.Yaml != "" {
+		result["yaml"] = r.Yaml
+	}
+
+	if r.ProjectRoot != "" {
+		result["project_root"] = r.ProjectRoot
+	}
+
+	if r.RunnerImage != "" {
+		result["runner_image"] = r.RunnerImage
+	}
+
+	if r.TerraformVersion != "" {
+		result["terraform_version"] = r.TerraformVersion
+	}
+
+	if r.TerraformWorkflowTool != "" {
+		result["terraform_workflow_tool"] = r.TerraformWorkflowTool
+	}
+
+	if len(r.Environment) > 0 {
+		result["environment"] = r.Environment
+	}
+
+	if len(r.AfterApply) > 0 {
+		result["after_apply"] = r.AfterApply
+	}
+
+	if len(r.AfterDestroy) > 0 {
+		result["after_destroy"] = r.AfterDestroy
+	}
+
+	if len(r.AfterInit) > 0 {
+		result["after_init"] = r.AfterInit
+	}
+
+	if len(r.AfterPerform) > 0 {
+		result["after_perform"] = r.AfterPerform
+	}
+
+	if len(r.AfterPlan) > 0 {
+		result["after_plan"] = r.AfterPlan
+	}
+
+	if len(r.AfterRun) > 0 {
+		result["after_run"] = r.AfterRun
+	}
+
+	if len(r.BeforeApply) > 0 {
+		result["before_apply"] = r.BeforeApply
+	}
+
+	if len(r.BeforeDestroy) > 0 {
+		result["before_destroy"] = r.BeforeDestroy
+	}
+
+	if len(r.BeforeInit) > 0 {
+		result["before_init"] = r.BeforeInit
+	}
+
+	if len(r.BeforePerform) > 0 {
+		result["before_perform"] = r.BeforePerform
+	}
+
+	if len(r.BeforePlan) > 0 {
+		result["before_plan"] = r.BeforePlan
+	}
+
+	if r.Terragrunt != nil {
+		result["terragrunt"] = r.Terragrunt
+	}
+
+	if r.Terraform != nil {
+		result["terraform"] = r.Terraform
+	}
+
+	return result, nil
 }
 

@@ -62,7 +62,7 @@ func dataScheduledRun() *schema.Resource {
 				Computed:    true,
 			},
 			"runtime_config": {
-				Type:        schema.TypeString,
+				Type:        schema.TypeMap,
 				Description: "Customer provided runtime configuration for this scheduled run.",
 				Computed:    true,
 			},
@@ -96,7 +96,10 @@ func dataScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta inte
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	variables := map[string]interface{}{"stack": toID(stackID), "id": toID(scheduleID)}
+	variables := map[string]interface{}{
+		"stack": toID(stackID),
+		"id":    toID(scheduleID),
+	}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackScheduledRunRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for scheduled_run: %v", internal.FromSpaceliftError(err))
@@ -106,9 +109,9 @@ func dataScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("could not find scheduled run: %s", scheduledRunID)
 	}
 
-	if err := structs.PopulateRunSchedule(d, query.Stack.ScheduledRun); err != nil {
-		return diag.Errorf("could not populate scheduled run config: %v", err)
-	}
+	// if err := structs.PopulateRunSchedule(d, query.Stack.ScheduledRun); err != nil {
+	// 	return diag.Errorf("could not populate scheduled run config: %v", err)
+	// }
 
 	d.SetId(scheduledRunID)
 

@@ -15,14 +15,6 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
-type ScheduledRun struct {
-	At                  *int
-	Name                string
-	Every               []string
-	Timezone            string
-	CustomRuntimeConfig *string
-}
-
 func resourceScheduledRun() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
@@ -54,7 +46,7 @@ func resourceScheduledRun() *schema.Resource {
 			"name": {
 				Type:             schema.TypeString,
 				Description:      "Name of the scheduled run",
-				Required:         true,
+				Optional:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"at": {
@@ -84,16 +76,203 @@ func resourceScheduledRun() *schema.Resource {
 				Computed:    true,
 			},
 			"runtime_config": {
-				Type:        schema.TypeString,
-				Description: "Customer provided runtime configuration for this scheduled run.",
-				Optional:    true,
+				Type:          schema.TypeList,
+				Description:   "Customer provided runtime configuration for this scheduled run.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						// "yaml": {
+						// 	Type:        schema.TypeString,
+						// 	Description: "YAML representation of the runtime configuration.",
+						// 	Optional:    true,
+						// },
+						"project_root": {
+							Type:        schema.TypeString,
+							Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
+							Optional:    true,
+						},
+						"runner_image": {
+							Type:        schema.TypeString,
+							Description: "Name of the Docker image used to process Runs",
+							Optional:    true,
+						},
+						"terraform_version": {
+							Type:        schema.TypeString,
+							Description: "Terraform version to use",
+							Optional:    true,
+						},
+						"terraform_workflow_tool": {
+							Type:        schema.TypeString,
+							Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
+							Optional:    true,
+						},
+						"environment": {
+							Type:        schema.TypeList,
+							Description: "Environment variables for the run",
+							Optional:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:        schema.TypeString,
+										Description: "Environment variable key",
+										Required:    true,
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Description: "Environment variable value",
+										Required:    true,
+									},
+								},
+							},
+						},
+						"after_apply": {
+							Type:        schema.TypeList,
+							Description: "List of after-apply scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"after_destroy": {
+							Type:        schema.TypeList,
+							Description: "List of after-destroy scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"after_init": {
+							Type:        schema.TypeList,
+							Description: "List of after-init scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"after_perform": {
+							Type:        schema.TypeList,
+							Description: "List of after-perform scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"after_plan": {
+							Type:        schema.TypeList,
+							Description: "List of after-plan scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"after_run": {
+							Type:        schema.TypeList,
+							Description: "List of after-run scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"before_apply": {
+							Type:        schema.TypeList,
+							Description: "List of before-apply scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"before_destroy": {
+							Type:        schema.TypeList,
+							Description: "List of before-destroy scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"before_init": {
+							Type:        schema.TypeList,
+							Description: "List of before-init scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"before_perform": {
+							Type:        schema.TypeList,
+							Description: "List of before-perform scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"before_plan": {
+							Type:        schema.TypeList,
+							Description: "List of before-plan scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+						},
+						"terragrunt": {
+							Type:        schema.TypeList,
+							Description: "Terragrunt-specific configuration",
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"terraform_version": {
+										Type:        schema.TypeString,
+										Description: "Terraform version to use with Terragrunt",
+										Optional:    true,
+									},
+									"terragrunt_version": {
+										Type:        schema.TypeString,
+										Description: "Terragrunt version to use",
+										Optional:    true,
+									},
+									"use_run_all": {
+										Type:        schema.TypeBool,
+										Description: "Whether to use `terragrunt run-all` for execution",
+										Optional:    true,
+									},
+									"tool": {
+										Type:        schema.TypeString,
+										Description: "Tool to use for Terragrunt execution (TERRAFORM_FOSS, OPEN_TOFU, MANUALLY_PROVISIONED)",
+										Optional:    true,
+									},
+								},
+							},
+						},
+						"terraform": {
+							Type:        schema.TypeList,
+							Description: "Terraform-specific configuration",
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"workflow_tool": {
+										Type:        schema.TypeString,
+										Description: "Workflow tool to use (TERRAFORM_FOSS, OPEN_TOFU, CUSTOM)",
+										Optional:    true,
+									},
+									"version": {
+										Type:        schema.TypeString,
+										Description: "Terraform version to use",
+										Optional:    true,
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
 func resourceScheduledRunCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	scheduledRun, err := getScheduledRun(d)
+	parsedScheduledRun, err := parseScheduledRunInput(d)
 	if err != nil {
 		return diag.Errorf("could not extract scheduled run: %s", err)
 	}
@@ -102,31 +281,9 @@ func resourceScheduledRunCreate(ctx context.Context, d *schema.ResourceData, met
 		CreateRunSchedule structs.ScheduledRun `graphql:"stackScheduledRunCreate(stack: $stack, input: $input)"`
 	}
 
-	input := structs.ScheduledRunInput{
-		Name: graphql.String(scheduledRun.Name),
-	}
-
-	if scheduledRun.At != nil {
-		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledRun.At)) //nolint:gosec // safe: value known to fit in int32
-	} else {
-		var scheduleExpressions []graphql.String
-		for _, expr := range scheduledRun.Every {
-			scheduleExpressions = append(scheduleExpressions, graphql.String(expr))
-		}
-
-		input.CronSchedule = scheduleExpressions
-		input.Timezone = graphql.NewString(graphql.String(scheduledRun.Timezone))
-	}
-
-	if scheduledRun.CustomRuntimeConfig != nil {
-		input.RuntimeConfig = &structs.RuntimeConfigInput{
-			YamlConfig: graphql.NewString(graphql.String(*scheduledRun.CustomRuntimeConfig)),
-		}
-	}
-
 	variables := map[string]interface{}{
 		"stack": toID(d.Get("stack_id").(string)),
-		"input": input,
+		"input": *parsedScheduledRun,
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledRunCreate", &mutation, variables); err != nil {
@@ -181,7 +338,7 @@ func resourceScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceScheduledRunUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	scheduledRun, err := getScheduledRun(d)
+	scheduledRun, err := parseScheduledRunInput(d)
 	if err != nil {
 		return diag.Errorf("could not extract scheduled run: %s", err)
 	}
@@ -209,23 +366,23 @@ func resourceScheduledRunUpdate(ctx context.Context, d *schema.ResourceData, met
 		Name: graphql.String(scheduledRun.Name),
 	}
 
-	if scheduledRun.At != nil {
-		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledRun.At)) //nolint:gosec // safe: value known to fit in int32
-	} else {
-		var scheduleExpressions []graphql.String
-		for _, expr := range scheduledRun.Every {
-			scheduleExpressions = append(scheduleExpressions, graphql.String(expr))
-		}
-
-		input.CronSchedule = scheduleExpressions
-		input.Timezone = graphql.NewString(graphql.String(scheduledRun.Timezone))
-	}
-
-	if scheduledRun.CustomRuntimeConfig != nil {
-		input.RuntimeConfig = &structs.RuntimeConfigInput{
-			YamlConfig: graphql.NewString(graphql.String(*scheduledRun.CustomRuntimeConfig)),
-		}
-	}
+	// if scheduledRun.At != nil {
+	// 	input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledRun.At)) //nolint:gosec // safe: value known to fit in int32
+	// } else {
+	// 	var scheduleExpressions []graphql.String
+	// 	for _, expr := range scheduledRun.Every {
+	// 		scheduleExpressions = append(scheduleExpressions, graphql.String(expr))
+	// 	}
+	//
+	// 	input.CronSchedule = scheduleExpressions
+	// 	input.Timezone = graphql.NewString(graphql.String(scheduledRun.Timezone))
+	// }
+	//
+	// if scheduledRun.CustomRuntimeConfig != nil {
+	// 	input.RuntimeConfig = &structs.RuntimeConfigInput{
+	// 		Yaml: graphql.NewString(graphql.String(*scheduledRun.CustomRuntimeConfig)),
+	// 	}
+	// }
 
 	variables := map[string]interface{}{
 		"stack":        toID(stackID),
@@ -270,18 +427,45 @@ func resourceScheduledRunDelete(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func getScheduledRun(d *schema.ResourceData) (*ScheduledRun, error) {
-	cfg := &ScheduledRun{}
+func parseScheduledRunInput(d *schema.ResourceData) (*structs.ScheduledRunInput, error) {
+	cfg := &structs.ScheduledRunInput{}
 
 	name, ok := d.GetOk("name")
 	if ok && name != nil {
-		cfg.Name = name.(string)
+		cfg.Name = *graphql.NewString(toString(name))
 	}
 
-	runtimeConfig, ok := d.GetOk("runtime_config")
-	if ok && runtimeConfig != nil {
-		config := runtimeConfig.(string)
-		cfg.CustomRuntimeConfig = &config
+	runtimeConfig, ok := d.Get("runtime_config").([]interface{})
+	if ok && len(runtimeConfig) > 0 {
+		mapped := runtimeConfig[0].(map[string]interface{})
+
+		environment := []structs.EnvVarInput{}
+		for _, e := range mapped["environment"].([]interface{}){
+			envMap := e.(map[string]interface{})
+			environment = append(environment, structs.EnvVarInput{
+				Key:   toString(envMap["key"]),
+				Value: toString(envMap["value"]),
+			})
+		}
+
+
+		cfg.RuntimeConfig = &structs.RuntimeConfigInput{
+			Yaml: toOptionalNullableString(mapped["yaml"]),
+			ProjectRoot: toOptionalNullableString(mapped["project_root"]),
+			RunnerImage: toOptionalNullableString(mapped["runner_image"]),
+			AfterApply: toOptionalStringList(mapped["after_apply"]),
+			AfterDestroy: toOptionalStringList(mapped["after_destroy"]),
+			AfterInit: toOptionalStringList(mapped["after_init"]),
+			AfterPerform: toOptionalStringList(mapped["after_perform"]),
+			AfterPlan: toOptionalStringList(mapped["after_plan"]),
+			AfterRun: toOptionalStringList(mapped["after_run"]),
+			BeforeApply: toOptionalStringList(mapped["before_apply"]),
+			BeforeDestroy: toOptionalStringList(mapped["before_destroy"]),
+			BeforeInit: toOptionalStringList(mapped["before_init"]),
+			BeforePerform: toOptionalStringList(mapped["before_perform"]),
+			BeforePlan: toOptionalStringList(mapped["before_plan"]),
+			Environment: &environment,
+		}
 	}
 
 	every, everyOk := d.GetOk("every")
@@ -290,21 +474,19 @@ func getScheduledRun(d *schema.ResourceData) (*ScheduledRun, error) {
 	if everyOk && every != nil {
 		v := every.([]interface{})
 		if len(v) > 0 {
-			var scheduleExpressions []string
+			var scheduleExpressions []graphql.String
 			for _, expr := range v {
-				scheduleExpressions = append(scheduleExpressions, expr.(string))
+				scheduleExpressions = append(scheduleExpressions, toString(expr))
 			}
-			cfg.Every = scheduleExpressions
+			cfg.CronSchedule = scheduleExpressions
 		}
 
-		timezone, ok := d.GetOk("timezone")
-		if ok && timezone != nil {
-			cfg.Timezone = timezone.(string)
+		timezone, getOk := d.GetOk("timezone")
+		if getOk && timezone != nil {
+			cfg.Timezone = toOptionalString(timezone)
 		}
-
 	} else if atOk && at != nil {
-		a := at.(int)
-		cfg.At = &a
+		cfg.TimestampSchedule = toOptionalInt(at)
 	} else {
 		return nil, errors.New("Either `at` or `every` attribute is required")
 	}
