@@ -29,20 +29,6 @@ type EnvVar struct {
 	Value string `json:"value"`
 }
 
-// TerragruntRuntimeConfig represents Terragrunt-specific runtime configuration.
-type TerragruntRuntimeConfig struct {
-	TerraformVersion  *string        `json:"terraformVersion"`
-	TerragruntVersion string         `json:"terragruntVersion"`
-	UseRunAll         bool           `json:"useRunAll"`
-	Tool              TerragruntTool `json:"tool"`
-}
-
-// TerraformRuntimeConfig represents Terraform-specific runtime configuration.
-type TerraformRuntimeConfig struct {
-	WorkflowTool TerraformWorkflowTool `json:"workflowTool"`
-	Version      *string               `json:"version"`
-}
-
 // RuntimeConfig represents the runtime configuration for a run.
 type RuntimeConfig struct {
 	Environment           []EnvVar                 `json:"environment"`
@@ -61,8 +47,6 @@ type RuntimeConfig struct {
 	AfterDestroy          []string                 `json:"afterDestroy"`
 	AfterRun              []string                 `json:"afterRun"`
 	BeforeDestroy         []string                 `json:"beforeDestroy"`
-	Terragrunt            *TerragruntRuntimeConfig `json:"terragrunt"`
-	Terraform             *TerraformRuntimeConfig  `json:"terraform"`
 	Yaml                  *string                  `json:"yaml"`
 }
 
@@ -167,14 +151,6 @@ func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Di
 
 	if len(r.BeforePlan) > 0 {
 		result["before_plan"] = r.BeforePlan
-	}
-
-	if r.Terragrunt != nil {
-		result["terragrunt"] = r.Terragrunt
-	}
-
-	if r.Terraform != nil {
-		result["terraform"] = r.Terraform
 	}
 
 	return result, nil

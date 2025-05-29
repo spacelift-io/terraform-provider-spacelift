@@ -215,54 +215,6 @@ func resourceScheduledRun() *schema.Resource {
 							},
 							Optional: true,
 						},
-						"terragrunt": {
-							Type:        schema.TypeList,
-							Description: "Terragrunt-specific configuration",
-							Computed:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"terraform_version": {
-										Type:        schema.TypeString,
-										Description: "Terraform version to use with Terragrunt",
-										Optional:    true,
-									},
-									"terragrunt_version": {
-										Type:        schema.TypeString,
-										Description: "Terragrunt version to use",
-										Optional:    true,
-									},
-									"use_run_all": {
-										Type:        schema.TypeBool,
-										Description: "Whether to use `terragrunt run-all` for execution",
-										Optional:    true,
-									},
-									"tool": {
-										Type:        schema.TypeString,
-										Description: "Tool to use for Terragrunt execution (TERRAFORM_FOSS, OPEN_TOFU, MANUALLY_PROVISIONED)",
-										Optional:    true,
-									},
-								},
-							},
-						},
-						"terraform": {
-							Type:        schema.TypeList,
-							Description: "Terraform-specific configuration",
-							Computed:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"workflow_tool": {
-										Type:        schema.TypeString,
-										Description: "Workflow tool to use (TERRAFORM_FOSS, OPEN_TOFU, CUSTOM)",
-										Optional:    true,
-									},
-									"version": {
-										Type:        schema.TypeString,
-										Description: "Terraform version to use",
-										Optional:    true,
-									},
-								},
-							},
-						},
 					},
 				},
 			},
