@@ -14,29 +14,6 @@ func TestScheduledRunResource_WhenEveryDefinedAndUpdate_OK(t *testing.T) {
 	resourceName := "test"
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-	// runConfigWithRuntimeConfig := func(name string, every []string, runtimeConfig string) string {
-	// 	everyStrs := make([]string, len(every))
-	// 	for i := range every {
-	// 		everyStrs[i] = `"` + every[i] + `"`
-	// 	}
-	//
-	// 	return fmt.Sprintf(`
-	// 		resource "spacelift_stack" "test" {
-	// 			branch     = "master"
-	// 			repository = "demo"
-	// 			name       = "Test stack %s"
-	// 		}
-	//
-	// 		resource "spacelift_scheduled_run" "test" {
-	// 			stack_id = spacelift_stack.test.id
-	//
-	// 			name           = "%s"
-	// 			every          = [%s]
-	// 			runtime_config = "%s"
-	// 		}
-	// 	`, randomID, name, strings.Join(everyStrs, ", "), runtimeConfig)
-	// }
-
 	testSteps(t, []resource.TestStep{
 		{
 			Config: fmt.Sprintf(`
@@ -97,20 +74,6 @@ func TestScheduledRunResource_WhenEveryDefinedAndUpdate_OK(t *testing.T) {
 				),
 			),
 		},
-		// {
-		// 	Config: runConfigWithRuntimeConfig("test-run-apply", []string{"0 7 * * 1-5"}, "terraform_version: \"1.0\""),
-		// 	Check: resource.ComposeTestCheckFunc(
-		// 		Resource(
-		// 			resourceName,
-		// 			Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
-		// 			Attribute("stack_id", Contains(randomID)),
-		// 			Attribute("name", Equals("test-run-apply")),
-		// 			Attribute("every.#", Equals("1")),
-		// 			Attribute("every.0", Equals("0 7 * * 1-5")),
-		// 			// Attribute("runtime_config.environment", Equals("terraform_version: \"1.0\"")),
-		// 		),
-		// 	),
-		// },
 	})
 }
 
@@ -205,6 +168,17 @@ func TestScheduledRunResource_WhenRuntimeConfigDefined_OK(t *testing.T) {
 
 					runtime_config {
 						project_root = "root"
+						runner_image = "image"
+						after_apply = [ "cmd1", "cmd2" ]
+
+						environment { 
+							key = "ENV_1"
+							value = "ENV_1_VAL"
+						}
+						environment { 
+							key = "ENV_2"
+							value = "ENV_2_VAL"
+						}
 				    }
 				}
 			`, randomID, resourceType, resourceName),
@@ -218,6 +192,17 @@ func TestScheduledRunResource_WhenRuntimeConfigDefined_OK(t *testing.T) {
 					Attribute("every.#", Equals("2")),
 					Attribute("every.0", Equals("*/3 * * * *")),
 					Attribute("every.1", Equals("*/4 * * * *")),
+					Attribute("runtime_config.#", Equals("1")),
+					Nested("runtime_config.0", Attribute("project_root", Equals("root"))),
+					Nested("runtime_config.0", Attribute("runner_image", Equals("image"))),
+					Nested("runtime_config.0", Attribute("after_apply.#", Equals("2"))),
+					Nested("runtime_config.0", Attribute("after_apply.0", Equals("cmd1"))),
+					Nested("runtime_config.0", Attribute("after_apply.1", Equals("cmd2"))),
+					Nested("runtime_config.0", Attribute("environment.#", Equals("2"))),
+					Nested("runtime_config.0", Attribute("environment.0.key", Equals("ENV_1"))),
+					Nested("runtime_config.0", Attribute("environment.0.value", Equals("ENV_1_VAL"))),
+					Nested("runtime_config.0", Attribute("environment.1.key", Equals("ENV_2"))),
+					Nested("runtime_config.0", Attribute("environment.1.value", Equals("ENV_2_VAL"))),
 				),
 			),
 		},

@@ -18,9 +18,9 @@ const (
 type TerragruntTool string
 
 const (
-	TerragruntToolTerraformFoss        TerragruntTool = "TERRAFORM_FOSS"
-	TerragruntToolOpenTofu             TerragruntTool = "OPEN_TOFU"
-	TerragruntToolManuallyProvisioned  TerragruntTool = "MANUALLY_PROVISIONED"
+	TerragruntToolTerraformFoss       TerragruntTool = "TERRAFORM_FOSS"
+	TerragruntToolOpenTofu            TerragruntTool = "OPEN_TOFU"
+	TerragruntToolManuallyProvisioned TerragruntTool = "MANUALLY_PROVISIONED"
 )
 
 // EnvVar represents an environment variable.
@@ -63,7 +63,7 @@ type RuntimeConfig struct {
 	BeforeDestroy         []string                 `json:"beforeDestroy"`
 	Terragrunt            *TerragruntRuntimeConfig `json:"terragrunt"`
 	Terraform             *TerraformRuntimeConfig  `json:"terraform"`
-	Yaml                  string                   `json:"yaml"`
+	Yaml                  *string                  `json:"yaml"`
 }
 
 // EnvVarInput represents input for an environment variable.
@@ -74,29 +74,25 @@ type EnvVarInput struct {
 
 // RuntimeConfigInput represents input for creating or updating runtime configuration.
 type RuntimeConfigInput struct {
-	Yaml          *graphql.String    `json:"yaml,omitempty"`
-	Environment   *[]EnvVarInput     `json:"environment,omitempty"`
-	ProjectRoot   *graphql.String    `json:"projectRoot,omitempty"`
-	RunnerImage   *graphql.String    `json:"runnerImage,omitempty"`
-	AfterApply    *[]graphql.String  `json:"afterApply,omitempty"`
-	AfterDestroy  *[]graphql.String  `json:"afterDestroy,omitempty"`
-	AfterInit     *[]graphql.String  `json:"afterInit,omitempty"`
-	AfterPerform  *[]graphql.String  `json:"afterPerform,omitempty"`
-	AfterPlan     *[]graphql.String  `json:"afterPlan,omitempty"`
-	AfterRun      *[]graphql.String  `json:"afterRun,omitempty"`
-	BeforeApply   *[]graphql.String  `json:"beforeApply,omitempty"`
-	BeforeDestroy *[]graphql.String  `json:"beforeDestroy,omitempty"`
-	BeforeInit    *[]graphql.String  `json:"beforeInit,omitempty"`
-	BeforePerform *[]graphql.String  `json:"beforePerform,omitempty"`
-	BeforePlan    *[]graphql.String  `json:"beforePlan,omitempty"`
+	Yaml          *graphql.String   `json:"yaml,omitempty"`
+	Environment   *[]EnvVarInput    `json:"environment,omitempty"`
+	ProjectRoot   *graphql.String   `json:"projectRoot,omitempty"`
+	RunnerImage   *graphql.String   `json:"runnerImage,omitempty"`
+	AfterApply    *[]graphql.String `json:"afterApply,omitempty"`
+	AfterDestroy  *[]graphql.String `json:"afterDestroy,omitempty"`
+	AfterInit     *[]graphql.String `json:"afterInit,omitempty"`
+	AfterPerform  *[]graphql.String `json:"afterPerform,omitempty"`
+	AfterPlan     *[]graphql.String `json:"afterPlan,omitempty"`
+	AfterRun      *[]graphql.String `json:"afterRun,omitempty"`
+	BeforeApply   *[]graphql.String `json:"beforeApply,omitempty"`
+	BeforeDestroy *[]graphql.String `json:"beforeDestroy,omitempty"`
+	BeforeInit    *[]graphql.String `json:"beforeInit,omitempty"`
+	BeforePerform *[]graphql.String `json:"beforePerform,omitempty"`
+	BeforePlan    *[]graphql.String `json:"beforePlan,omitempty"`
 }
 
 func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Diagnostics) {
 	result := make(map[string]interface{})
-
-	if r.Yaml != "" {
-		result["yaml"] = r.Yaml
-	}
 
 	if r.ProjectRoot != "" {
 		result["project_root"] = r.ProjectRoot
@@ -115,7 +111,14 @@ func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Di
 	}
 
 	if len(r.Environment) > 0 {
-		result["environment"] = r.Environment
+		l := make([]map[string]interface{}, 0, len(r.Environment))
+		for _, e := range r.Environment {
+			l = append(l, map[string]interface{}{
+				"key":   e.Key,
+				"value": e.Value,
+			})
+		}
+		result["environment"] = l
 	}
 
 	if len(r.AfterApply) > 0 {
@@ -172,4 +175,3 @@ func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Di
 
 	return result, nil
 }
-

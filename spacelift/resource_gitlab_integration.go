@@ -128,7 +128,7 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 			Name:        toString(d.Get(gitLabName)),
 			IsDefault:   toOptionalBool(d.Get(gitLabIsDefault)),
 			SpaceID:     toString(d.Get(gitLabSpaceID)),
-			Labels:      toOptionalStringList(d.Get(gitLabLabels)),
+			Labels:      setToOptionalStringList(d.Get(gitLabLabels)),
 			Description: toOptionalString(d.Get(gitLabDescription)),
 			VCSChecks:   toOptionalString(d.Get(gitLabVCSChecks)),
 		},
@@ -178,7 +178,7 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 			ID:          toID(d.Id()),
 			SpaceID:     toString(d.Get(gitLabSpaceID)),
 			Description: toOptionalString(d.Get(gitLabDescription)),
-			Labels:      toOptionalStringList(d.Get(gitLabLabels)),
+			Labels:      setToOptionalStringList(d.Get(gitLabLabels)),
 			VCSChecks:   toOptionalString(d.Get(gitLabVCSChecks)),
 		},
 	}

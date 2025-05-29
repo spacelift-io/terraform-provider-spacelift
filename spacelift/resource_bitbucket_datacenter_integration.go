@@ -118,7 +118,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 			Name:        toString(d.Get(bitbucketDatacenterName)),
 			IsDefault:   toOptionalBool(d.Get(bitbucketDatacenterIsDefault)),
 			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
-			Labels:      toOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+			Labels:      setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
 			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
 			VCSChecks:   toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
 		},
@@ -170,7 +170,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 			ID:          toID(d.Id()),
 			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
 			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
-			Labels:      toOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+			Labels:      setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
 			VCSChecks:   toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
 		},
 	}
