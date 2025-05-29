@@ -89,10 +89,8 @@ Optional:
 
 Read-Only:
 
-- `terraform` (List of Object) Terraform-specific configuration (see [below for nested schema](#nestedatt--runtime_config--terraform))
 - `terraform_version` (String) Terraform version to use
 - `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.
-- `terragrunt` (List of Object) Terragrunt-specific configuration (see [below for nested schema](#nestedatt--runtime_config--terragrunt))
 
 <a id="nestedblock--runtime_config--environment"></a>
 ### Nested Schema for `runtime_config.environment`
@@ -101,26 +99,6 @@ Required:
 
 - `key` (String) Environment variable key
 - `value` (String) Environment variable value
-
-
-<a id="nestedatt--runtime_config--terraform"></a>
-### Nested Schema for `runtime_config.terraform`
-
-Read-Only:
-
-- `version` (String)
-- `workflow_tool` (String)
-
-
-<a id="nestedatt--runtime_config--terragrunt"></a>
-### Nested Schema for `runtime_config.terragrunt`
-
-Read-Only:
-
-- `terraform_version` (String)
-- `terragrunt_version` (String)
-- `tool` (String)
-- `use_run_all` (Boolean)
 
 ## Import
 

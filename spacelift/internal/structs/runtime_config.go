@@ -14,15 +14,6 @@ const (
 	TerraformWorkflowToolOpenTofu      TerraformWorkflowTool = "OPEN_TOFU"
 )
 
-// TerragruntTool represents the tool used by Terragrunt.
-type TerragruntTool string
-
-const (
-	TerragruntToolTerraformFoss       TerragruntTool = "TERRAFORM_FOSS"
-	TerragruntToolOpenTofu            TerragruntTool = "OPEN_TOFU"
-	TerragruntToolManuallyProvisioned TerragruntTool = "MANUALLY_PROVISIONED"
-)
-
 // EnvVar represents an environment variable.
 type EnvVar struct {
 	Key   string `json:"key"`
