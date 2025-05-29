@@ -22,7 +22,7 @@ func dataScheduledRun() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"scheduled_run_id": {
 				Type:        schema.TypeString,
-				Description: "ID of the scheduled delete_stack (stack_id/schedule_id)",
+				Description: "ID of the scheduled run (stack_id/schedule_id)",
 				Required:    true,
 			},
 			"schedule_id": {
