@@ -23,16 +23,75 @@ data "spacelift_scheduled_run" "example" {
 
 ### Required
 
-- `scheduled_run_id` (String) ID of the scheduled run (stack_id/schedule_id)
+- `scheduled_run_id` (String) ID of the scheduled delete_stack (stack_id/schedule_id)
+
+### Optional
+
+- `at` (Number) Timestamp (unix timestamp) at which time the scheduled run should happen.
+- `every` (List of String) List of cron schedule expressions based on which the scheduled run should be triggered.
+- `name` (String) Name of the scheduled run
+- `runtime_config` (Block List) Customer provided runtime configuration for this scheduled run. (see [below for nested schema](#nestedblock--runtime_config))
+- `timezone` (String) Timezone in which the schedule is expressed. Defaults to `UTC`.
 
 ### Read-Only
 
-- `at` (Number) Timestamp (unix timestamp) at which time the scheduling should happen.
-- `every` (List of String) List of cron schedule expressions based on which the scheduled run should be triggered.
 - `id` (String) The ID of this resource.
-- `name` (String) Name of the scheduled run
 - `next_schedule` (Number) Timestamp (unix timestamp) of when the next run will be scheduled.
-- `runtime_config` (String) Customer provided runtime configuration for this scheduled run.
 - `schedule_id` (String) ID of the schedule
-- `stack_id` (String) Stack ID of the scheduled run
-- `timezone` (String) Timezone in which the schedule is expressed. Defaults to `UTC`.
+- `stack_id` (String) Stack ID of the scheduling config
+
+<a id="nestedblock--runtime_config"></a>
+### Nested Schema for `runtime_config`
+
+Optional:
+
+- `after_apply` (List of String) List of after-apply scripts
+- `after_destroy` (List of String) List of after-destroy scripts
+- `after_init` (List of String) List of after-init scripts
+- `after_perform` (List of String) List of after-perform scripts
+- `after_plan` (List of String) List of after-plan scripts
+- `after_run` (List of String) List of after-run scripts
+- `before_apply` (List of String) List of before-apply scripts
+- `before_destroy` (List of String) List of before-destroy scripts
+- `before_init` (List of String) List of before-init scripts
+- `before_perform` (List of String) List of before-perform scripts
+- `before_plan` (List of String) List of before-plan scripts
+- `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
+- `runner_image` (String) Name of the Docker image used to process Runs
+- `yaml` (String) YAML representation of the runtime configuration.
+
+Read-Only:
+
+- `environment` (Block Set) Environment variables for the run (see [below for nested schema](#nestedblock--runtime_config--environment))
+- `terraform` (List of Object) Terraform-specific configuration (see [below for nested schema](#nestedatt--runtime_config--terraform))
+- `terraform_version` (String) Terraform version to use
+- `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.
+- `terragrunt` (List of Object) Terragrunt-specific configuration (see [below for nested schema](#nestedatt--runtime_config--terragrunt))
+
+<a id="nestedblock--runtime_config--environment"></a>
+### Nested Schema for `runtime_config.environment`
+
+Read-Only:
+
+- `key` (String) Environment variable key
+- `value` (String) Environment variable value
+
+
+<a id="nestedatt--runtime_config--terraform"></a>
+### Nested Schema for `runtime_config.terraform`
+
+Read-Only:
+
+- `version` (String)
+- `workflow_tool` (String)
+
+
+<a id="nestedatt--runtime_config--terragrunt"></a>
+### Nested Schema for `runtime_config.terragrunt`
+
+Read-Only:
+
+- `terraform_version` (String)
+- `terragrunt_version` (String)
+- `tool` (String)
+- `use_run_all` (Boolean)

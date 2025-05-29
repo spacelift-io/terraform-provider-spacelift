@@ -50,14 +50,14 @@ resource "spacelift_scheduled_run" "k8s-core-custom" {
 
 ### Required
 
-- `name` (String) Name of the scheduled run
 - `stack_id` (String) ID of the stack for which to set up the scheduled run
 
 ### Optional
 
 - `at` (Number) Timestamp (unix timestamp) at which time the scheduled run should happen.
 - `every` (List of String) List of cron schedule expressions based on which the scheduled run should be triggered.
-- `runtime_config` (String) Customer provided runtime configuration for this scheduled run.
+- `name` (String) Name of the scheduled run
+- `runtime_config` (Block List, Max: 1) Customer provided runtime configuration for this scheduled run. (see [below for nested schema](#nestedblock--runtime_config))
 - `schedule_id` (String) ID of the schedule
 - `timezone` (String) Timezone in which the schedule is expressed. Defaults to `UTC`.
 
@@ -65,6 +65,62 @@ resource "spacelift_scheduled_run" "k8s-core-custom" {
 
 - `id` (String) The ID of this resource.
 - `next_schedule` (Number) Timestamp (unix timestamp) of when the next run will be scheduled.
+
+<a id="nestedblock--runtime_config"></a>
+### Nested Schema for `runtime_config`
+
+Optional:
+
+- `after_apply` (List of String) List of after-apply scripts
+- `after_destroy` (List of String) List of after-destroy scripts
+- `after_init` (List of String) List of after-init scripts
+- `after_perform` (List of String) List of after-perform scripts
+- `after_plan` (List of String) List of after-plan scripts
+- `after_run` (List of String) List of after-run scripts
+- `before_apply` (List of String) List of before-apply scripts
+- `before_destroy` (List of String) List of before-destroy scripts
+- `before_init` (List of String) List of before-init scripts
+- `before_perform` (List of String) List of before-perform scripts
+- `before_plan` (List of String) List of before-plan scripts
+- `environment` (Block Set) Environment variables for the run (see [below for nested schema](#nestedblock--runtime_config--environment))
+- `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
+- `runner_image` (String) Name of the Docker image used to process Runs
+- `yaml` (String) YAML representation of the runtime configuration.
+
+Read-Only:
+
+- `terraform` (List of Object) Terraform-specific configuration (see [below for nested schema](#nestedatt--runtime_config--terraform))
+- `terraform_version` (String) Terraform version to use
+- `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.
+- `terragrunt` (List of Object) Terragrunt-specific configuration (see [below for nested schema](#nestedatt--runtime_config--terragrunt))
+
+<a id="nestedblock--runtime_config--environment"></a>
+### Nested Schema for `runtime_config.environment`
+
+Required:
+
+- `key` (String) Environment variable key
+- `value` (String) Environment variable value
+
+
+<a id="nestedatt--runtime_config--terraform"></a>
+### Nested Schema for `runtime_config.terraform`
+
+Read-Only:
+
+- `version` (String)
+- `workflow_tool` (String)
+
+
+<a id="nestedatt--runtime_config--terragrunt"></a>
+### Nested Schema for `runtime_config.terragrunt`
+
+Read-Only:
+
+- `terraform_version` (String)
+- `terragrunt_version` (String)
+- `tool` (String)
+- `use_run_all` (Boolean)
 
 ## Import
 
