@@ -10,8 +10,6 @@ import (
 )
 
 func TestScheduledRunResource_WhenEveryDefinedAndUpdate_OK(t *testing.T) {
-	resourceType := "spacelift_scheduled_run"
-	resourceName := "test"
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	testSteps(t, []resource.TestStep{
@@ -23,17 +21,17 @@ func TestScheduledRunResource_WhenEveryDefinedAndUpdate_OK(t *testing.T) {
 					name       = "Test stack %s"
 				}
 		
-				resource "%s" "%s" {
+				resource "spacelift_scheduled_run" "test" {
 					stack_id = spacelift_stack.test.id
 					name = "test-run-apply"
 		
 					every      = [ "*/3 * * * *", "*/4 * * * *" ]
 					timezone   = "CET"
 				}
-			`, randomID, resourceType, resourceName),
+			`, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(
-					fmt.Sprintf("%s.%s", resourceType, resourceName),
+					"spacelift_scheduled_run.test",
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("schedule_id", IsNotEmpty()),
@@ -53,17 +51,17 @@ func TestScheduledRunResource_WhenEveryDefinedAndUpdate_OK(t *testing.T) {
 					name       = "Test stack %s"
 				}
 		
-				resource "%s" "%s" {
+				resource "spacelift_scheduled_run" "test" {
 					stack_id = spacelift_stack.test.id
 					name = "test-run-apply"
 		
 					every      = [ "*/3 * * * *" ]
 					timezone   = "CET"
 				}
-			`, randomID, resourceType, resourceName),
+			`, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(
-					fmt.Sprintf("%s.%s", resourceType, resourceName),
+					"spacelift_scheduled_run.test",
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("schedule_id", IsNotEmpty()),
@@ -78,8 +76,6 @@ func TestScheduledRunResource_WhenEveryDefinedAndUpdate_OK(t *testing.T) {
 }
 
 func TestScheduledRunResource_WhenAtDefined_OK(t *testing.T) {
-	resourceType := "spacelift_scheduled_run"
-	resourceName := "test"
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	testSteps(t, []resource.TestStep{
@@ -91,15 +87,15 @@ func TestScheduledRunResource_WhenAtDefined_OK(t *testing.T) {
 					name       = "Test stack %s"
 				}
 		
-				resource "%s" "%s" {
+				resource "spacelift_scheduled_run" "test" {
 					stack_id = spacelift_stack.test.id
 		
 					at      = 1234
 				}
-			`, randomID, resourceType, resourceName),
+			`, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(
-					fmt.Sprintf("%s.%s", resourceType, resourceName),
+					"spacelift_scheduled_run.test",
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("schedule_id", IsNotEmpty()),
@@ -112,8 +108,6 @@ func TestScheduledRunResource_WhenAtDefined_OK(t *testing.T) {
 }
 
 func TestScheduledRunResource_WhenTimezoneNotDefined_OK(t *testing.T) {
-	resourceType := "spacelift_scheduled_run"
-	resourceName := "test"
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	testSteps(t, []resource.TestStep{
@@ -125,15 +119,15 @@ func TestScheduledRunResource_WhenTimezoneNotDefined_OK(t *testing.T) {
 					name       = "Test stack %s"
 				}
 		
-				resource "%s" "%s" {
+				resource "spacelift_scheduled_run" "test" {
 					stack_id = spacelift_stack.test.id
 		
 					every      = [ "*/3 * * * *", "*/4 * * * *" ]
 				}
-			`, randomID, resourceType, resourceName),
+			`, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(
-					fmt.Sprintf("%s.%s", resourceType, resourceName),
+					"spacelift_scheduled_run.test",
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("schedule_id", IsNotEmpty()),
@@ -148,8 +142,6 @@ func TestScheduledRunResource_WhenTimezoneNotDefined_OK(t *testing.T) {
 }
 
 func TestScheduledRunResource_WhenRuntimeConfigDefined_OK(t *testing.T) {
-	resourceType := "spacelift_scheduled_run"
-	resourceName := "test"
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 	testSteps(t, []resource.TestStep{
@@ -161,7 +153,7 @@ func TestScheduledRunResource_WhenRuntimeConfigDefined_OK(t *testing.T) {
 					name       = "Test stack %s"
 				}
 		
-				resource "%s" "%s" {
+				resource "spacelift_scheduled_run" "test" {
 					stack_id = spacelift_stack.test.id
 		
 					every      = [ "*/3 * * * *", "*/4 * * * *" ]
@@ -181,28 +173,32 @@ func TestScheduledRunResource_WhenRuntimeConfigDefined_OK(t *testing.T) {
 						}
 				    }
 				}
-			`, randomID, resourceType, resourceName),
+			`, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(
-					fmt.Sprintf("%s.%s", resourceType, resourceName),
+					"spacelift_scheduled_run.test",
 					Attribute("id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("schedule_id", IsNotEmpty()),
 					Attribute("timezone", Equals("UTC")),
+					Attribute("next_schedule", IsNotEmpty()),
 					Attribute("every.#", Equals("2")),
 					Attribute("every.0", Equals("*/3 * * * *")),
 					Attribute("every.1", Equals("*/4 * * * *")),
 					Attribute("runtime_config.#", Equals("1")),
-					Nested("runtime_config.0", Attribute("project_root", Equals("root"))),
-					Nested("runtime_config.0", Attribute("runner_image", Equals("image"))),
-					Nested("runtime_config.0", Attribute("after_apply.#", Equals("2"))),
-					Nested("runtime_config.0", Attribute("after_apply.0", Equals("cmd1"))),
-					Nested("runtime_config.0", Attribute("after_apply.1", Equals("cmd2"))),
-					Nested("runtime_config.0", Attribute("environment.#", Equals("2"))),
-					Nested("runtime_config.0", Attribute("environment.0.key", Equals("ENV_1"))),
-					Nested("runtime_config.0", Attribute("environment.0.value", Equals("ENV_1_VAL"))),
-					Nested("runtime_config.0", Attribute("environment.1.key", Equals("ENV_2"))),
-					Nested("runtime_config.0", Attribute("environment.1.value", Equals("ENV_2_VAL"))),
+					Attribute("runtime_config.0.project_root", Equals("root")),
+					Attribute("runtime_config.0.runner_image", Equals("image")),
+					Attribute("runtime_config.0.after_apply.#", Equals("2")),
+					Attribute("runtime_config.0.after_apply.0", Equals("cmd1")),
+					Attribute("runtime_config.0.after_apply.1", Equals("cmd2")),
+					Attribute("runtime_config.0.environment.#", Equals("2")),
+					Attribute("runtime_config.0.environment.0.key", Equals("ENV_1")),
+					Attribute("runtime_config.0.environment.0.value", Equals("ENV_1_VAL")),
+					Attribute("runtime_config.0.environment.1.key", Equals("ENV_2")),
+					Attribute("runtime_config.0.environment.1.value", Equals("ENV_2_VAL")),
+					Attribute("runtime_config.0.yaml", IsNotEmpty()),
+					Attribute("runtime_config.0.terraform_version", IsNotEmpty()),
+					Attribute("runtime_config.0.terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
 				),
 			),
 		},

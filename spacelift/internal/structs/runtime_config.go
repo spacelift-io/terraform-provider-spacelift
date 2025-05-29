@@ -94,6 +94,10 @@ type RuntimeConfigInput struct {
 func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Diagnostics) {
 	result := make(map[string]interface{})
 
+	if r.Yaml != nil && *r.Yaml != "" {
+		result["yaml"] = *r.Yaml
+	}
+
 	if r.ProjectRoot != "" {
 		result["project_root"] = r.ProjectRoot
 	}

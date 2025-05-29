@@ -86,6 +86,7 @@ func resourceScheduledRun() *schema.Resource {
 							Type:        schema.TypeString,
 							Description: "YAML representation of the runtime configuration.",
 							Optional:    true,
+							Computed: 	 true,
 						},
 						"project_root": {
 							Type:        schema.TypeString,

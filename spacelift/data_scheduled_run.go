@@ -22,38 +22,42 @@ func dataScheduledRun() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"scheduled_run_id": {
 				Type:        schema.TypeString,
-				Description: "ID of the scheduled run (stack_id/schedule_id)",
+				Description: "ID of the scheduled delete_stack (stack_id/schedule_id)",
 				Required:    true,
-			},
-			"stack_id": {
-				Type:        schema.TypeString,
-				Description: "Stack ID of the scheduled run",
-				Computed:    true,
 			},
 			"schedule_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the schedule",
 				Computed:    true,
 			},
+			"stack_id": {
+				Type:        schema.TypeString,
+				Description: "Stack ID of the scheduling config",
+				Computed:    true,
+			},
 			"name": {
 				Type:        schema.TypeString,
 				Description: "Name of the scheduled run",
+				Optional:    true,
 				Computed:    true,
 			},
 			"at": {
 				Type:        schema.TypeInt,
-				Description: "Timestamp (unix timestamp) at which time the scheduling should happen.",
+				Description: "Timestamp (unix timestamp) at which time the scheduled run should happen.",
+				Optional:    true,
 				Computed:    true,
 			},
 			"every": {
 				Type:        schema.TypeList,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "List of cron schedule expressions based on which the scheduled run should be triggered.",
+				Optional:    true,
 				Computed:    true,
 			},
 			"timezone": {
 				Type:        schema.TypeString,
 				Description: "Timezone in which the schedule is expressed. Defaults to `UTC`.",
+				Optional:    true,
 				Computed:    true,
 			},
 			"next_schedule": {
@@ -62,9 +66,215 @@ func dataScheduledRun() *schema.Resource {
 				Computed:    true,
 			},
 			"runtime_config": {
-				Type:        schema.TypeMap,
+				Type:        schema.TypeList,
 				Description: "Customer provided runtime configuration for this scheduled run.",
+				Optional:    true,
 				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"yaml": {
+							Type:        schema.TypeString,
+							Description: "YAML representation of the runtime configuration.",
+							Optional:    true,
+							Computed:    true,
+						},
+						"project_root": {
+							Type:        schema.TypeString,
+							Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
+							Optional:    true,
+							Computed:    true,
+						},
+						"runner_image": {
+							Type:        schema.TypeString,
+							Description: "Name of the Docker image used to process Runs",
+							Optional:    true,
+							Computed:    true,
+						},
+						"terraform_version": {
+							Type:        schema.TypeString,
+							Description: "Terraform version to use",
+							Computed:    true,
+						},
+						"terraform_workflow_tool": {
+							Type:        schema.TypeString,
+							Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
+							Computed:    true,
+						},
+						"environment": {
+							Type:        schema.TypeSet,
+							Description: "Environment variables for the run",
+							Optional:    true,
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"key": {
+										Type:        schema.TypeString,
+										Description: "Environment variable key",
+										Computed:    true,
+									},
+									"value": {
+										Type:        schema.TypeString,
+										Description: "Environment variable value",
+										Computed:    true,
+									},
+								},
+							},
+						},
+						"after_apply": {
+							Type:        schema.TypeList,
+							Description: "List of after-apply scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"after_destroy": {
+							Type:        schema.TypeList,
+							Description: "List of after-destroy scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"after_init": {
+							Type:        schema.TypeList,
+							Description: "List of after-init scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"after_perform": {
+							Type:        schema.TypeList,
+							Description: "List of after-perform scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"after_plan": {
+							Type:        schema.TypeList,
+							Description: "List of after-plan scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"after_run": {
+							Type:        schema.TypeList,
+							Description: "List of after-run scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"before_apply": {
+							Type:        schema.TypeList,
+							Description: "List of before-apply scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"before_destroy": {
+							Type:        schema.TypeList,
+							Description: "List of before-destroy scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"before_init": {
+							Type:        schema.TypeList,
+							Description: "List of before-init scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"before_perform": {
+							Type:        schema.TypeList,
+							Description: "List of before-perform scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"before_plan": {
+							Type:        schema.TypeList,
+							Description: "List of before-plan scripts",
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+							Optional: true,
+							Computed: true,
+						},
+						"terragrunt": {
+							Type:        schema.TypeList,
+							Description: "Terragrunt-specific configuration",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"terraform_version": {
+										Type:        schema.TypeString,
+										Description: "Terraform version to use with Terragrunt",
+										Optional:    true,
+										Computed:    true,
+									},
+									"terragrunt_version": {
+										Type:        schema.TypeString,
+										Description: "Terragrunt version to use",
+										Optional:    true,
+										Computed:    true,
+									},
+									"use_run_all": {
+										Type:        schema.TypeBool,
+										Description: "Whether to use `terragrunt run-all` for execution",
+										Optional:    true,
+										Computed:    true,
+									},
+									"tool": {
+										Type:        schema.TypeString,
+										Description: "Tool to use for Terragrunt execution (TERRAFORM_FOSS, OPEN_TOFU, MANUALLY_PROVISIONED)",
+										Optional:    true,
+										Computed:    true,
+									},
+								},
+							},
+						},
+						"terraform": {
+							Type:        schema.TypeList,
+							Description: "Terraform-specific configuration",
+							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"workflow_tool": {
+										Type:        schema.TypeString,
+										Description: "Workflow tool to use (TERRAFORM_FOSS, OPEN_TOFU, CUSTOM)",
+										Optional:    true,
+										Computed:    true,
+									},
+									"version": {
+										Type:        schema.TypeString,
+										Description: "Terraform version to use",
+										Optional:    true,
+										Computed:    true,
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -109,9 +319,9 @@ func dataScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("could not find scheduled run: %s", scheduledRunID)
 	}
 
-	// if err := structs.PopulateRunSchedule(d, query.Stack.ScheduledRun); err != nil {
-	// 	return diag.Errorf("could not populate scheduled run config: %v", err)
-	// }
+	if err := structs.PopulateRunSchedule(d, query.Stack.ScheduledRun); err != nil {
+		return diag.Errorf("could not populate scheduled run config: %v", err)
+	}
 
 	d.SetId(scheduledRunID)
 
