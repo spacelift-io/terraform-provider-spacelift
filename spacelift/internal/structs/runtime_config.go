@@ -22,23 +22,23 @@ type EnvVar struct {
 
 // RuntimeConfig represents the runtime configuration for a run.
 type RuntimeConfig struct {
-	Environment           []EnvVar                 `json:"environment"`
-	ProjectRoot           string                   `json:"projectRoot"`
-	RunnerImage           string                   `json:"runnerImage"`
-	TerraformVersion      string                   `json:"terraformVersion"`
-	TerraformWorkflowTool TerraformWorkflowTool    `json:"terraformWorkflowTool"`
-	AfterApply            []string                 `json:"afterApply"`
-	BeforeApply           []string                 `json:"beforeApply"`
-	AfterInit             []string                 `json:"afterInit"`
-	BeforeInit            []string                 `json:"beforeInit"`
-	AfterPlan             []string                 `json:"afterPlan"`
-	BeforePlan            []string                 `json:"beforePlan"`
-	AfterPerform          []string                 `json:"afterPerform"`
-	BeforePerform         []string                 `json:"beforePerform"`
-	AfterDestroy          []string                 `json:"afterDestroy"`
-	AfterRun              []string                 `json:"afterRun"`
-	BeforeDestroy         []string                 `json:"beforeDestroy"`
-	Yaml                  *string                  `json:"yaml"`
+	Environment           []EnvVar              `json:"environment"`
+	ProjectRoot           string                `json:"projectRoot"`
+	RunnerImage           string                `json:"runnerImage"`
+	TerraformVersion      string                `json:"terraformVersion"`
+	TerraformWorkflowTool TerraformWorkflowTool `json:"terraformWorkflowTool"`
+	AfterApply            []string              `json:"afterApply"`
+	BeforeApply           []string              `json:"beforeApply"`
+	AfterInit             []string              `json:"afterInit"`
+	BeforeInit            []string              `json:"beforeInit"`
+	AfterPlan             []string              `json:"afterPlan"`
+	BeforePlan            []string              `json:"beforePlan"`
+	AfterPerform          []string              `json:"afterPerform"`
+	BeforePerform         []string              `json:"beforePerform"`
+	AfterDestroy          []string              `json:"afterDestroy"`
+	AfterRun              []string              `json:"afterRun"`
+	BeforeDestroy         []string              `json:"beforeDestroy"`
+	Yaml                  *string               `json:"yaml"`
 }
 
 // EnvVarInput represents input for an environment variable.
