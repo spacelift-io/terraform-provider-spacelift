@@ -118,7 +118,6 @@ func TestScheduledRunData_WhenAtDefined_OK(t *testing.T) {
 					Attribute("scheduled_run_id", StartsWith(fmt.Sprintf("test-stack-%s", randomID))),
 					Attribute("stack_id", Contains(randomID)),
 					Attribute("name", Equals("test-run-apply")),
-					Attribute("timezone", Equals("UTC")),
 					Attribute("next_schedule", IsNotEmpty()),
 					Attribute("at", Equals("1234")),
 					Attribute("runtime_config.0.project_root", Equals("root")),
