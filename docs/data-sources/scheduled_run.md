@@ -23,7 +23,7 @@ data "spacelift_scheduled_run" "example" {
 
 ### Required
 
-- `scheduled_run_id` (String) ID of the scheduled delete_stack (stack_id/schedule_id)
+- `scheduled_run_id` (String) ID of the scheduled run (stack_id/schedule_id)
 
 ### Optional
 
