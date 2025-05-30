@@ -58,7 +58,6 @@ Optional:
 - `before_plan` (List of String) List of before-plan scripts
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `runner_image` (String) Name of the Docker image used to process Runs
-- `yaml` (String) YAML representation of the runtime configuration.
 
 Read-Only:
 

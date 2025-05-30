@@ -85,7 +85,6 @@ Optional:
 - `environment` (Block Set) Environment variables for the run (see [below for nested schema](#nestedblock--runtime_config--environment))
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `runner_image` (String) Name of the Docker image used to process Runs
-- `yaml` (String) YAML representation of the runtime configuration.
 
 Read-Only:
 

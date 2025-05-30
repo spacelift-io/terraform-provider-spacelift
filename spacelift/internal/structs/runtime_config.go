@@ -38,7 +38,6 @@ type RuntimeConfig struct {
 	AfterDestroy          []string              `json:"afterDestroy"`
 	AfterRun              []string              `json:"afterRun"`
 	BeforeDestroy         []string              `json:"beforeDestroy"`
-	Yaml                  *string               `json:"yaml"`
 }
 
 // EnvVarInput represents input for an environment variable.
@@ -49,7 +48,6 @@ type EnvVarInput struct {
 
 // RuntimeConfigInput represents input for creating or updating runtime configuration.
 type RuntimeConfigInput struct {
-	Yaml          *graphql.String   `json:"yaml,omitempty"`
 	Environment   *[]EnvVarInput    `json:"environment,omitempty"`
 	ProjectRoot   *graphql.String   `json:"projectRoot,omitempty"`
 	RunnerImage   *graphql.String   `json:"runnerImage,omitempty"`
@@ -68,10 +66,6 @@ type RuntimeConfigInput struct {
 
 func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Diagnostics) {
 	result := make(map[string]interface{})
-
-	if r.Yaml != nil && *r.Yaml != "" {
-		result["yaml"] = *r.Yaml
-	}
 
 	if r.ProjectRoot != "" {
 		result["project_root"] = r.ProjectRoot

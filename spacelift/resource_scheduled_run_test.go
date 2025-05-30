@@ -196,7 +196,6 @@ func TestScheduledRunResource_WhenRuntimeConfigDefined_OK(t *testing.T) {
 					Attribute("runtime_config.0.environment.0.value", Equals("ENV_1_VAL")),
 					Attribute("runtime_config.0.environment.1.key", Equals("ENV_2")),
 					Attribute("runtime_config.0.environment.1.value", Equals("ENV_2_VAL")),
-					Attribute("runtime_config.0.yaml", IsNotEmpty()),
 					Attribute("runtime_config.0.terraform_version", IsNotEmpty()),
 					Attribute("runtime_config.0.terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
 				),

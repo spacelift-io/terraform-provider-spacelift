@@ -72,12 +72,6 @@ func dataScheduledRun() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"yaml": {
-							Type:        schema.TypeString,
-							Description: "YAML representation of the runtime configuration.",
-							Optional:    true,
-							Computed:    true,
-						},
 						"project_root": {
 							Type:        schema.TypeString,
 							Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
