@@ -36,7 +36,30 @@ func toOptionalInt(input interface{}) *graphql.Int {
 	return graphql.NewInt(v)
 }
 
-func toOptionalStringList(input interface{}) *[]graphql.String {
+func listToStringList(input interface{}) []graphql.String {
+	if input == nil {
+		return nil
+	}
+
+	v := input.([]interface{})
+	var arr []graphql.String
+	if len(v) > 0 {
+		for _, expr := range v {
+			arr = append(arr, toString(expr))
+		}
+	}
+	return arr
+}
+
+func listToOptionalStringList(input interface{}) *[]graphql.String {
+	l := listToStringList(input)
+	if l == nil {
+		return nil
+	}
+	return &l
+}
+
+func setToOptionalStringList(input interface{}) *[]graphql.String {
 	if input == nil {
 		return nil
 	}

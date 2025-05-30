@@ -1,0 +1,1 @@
+terraform import spacelift_scheduled_run.k8s-core-apply $STACK_ID/$SCHEDULED_RUN_ID
