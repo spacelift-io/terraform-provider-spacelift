@@ -44,4 +44,5 @@ data "spacelift_aws_role" "k8s-core" {
 - `external_id` (String) Custom external ID (works only for private workers).
 - `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker
 - `id` (String) The ID of this resource.
+- `region` (String) AWS region to select a regional AWS STS endpoint.
 - `role_arn` (String) ARN of the AWS IAM role to attach

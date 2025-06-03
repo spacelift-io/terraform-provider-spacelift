@@ -40,6 +40,7 @@ func TestAWSRoleData(t *testing.T) {
 					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 					Attribute("generate_credentials_in_worker", Equals("false")),
 					Attribute("duration_seconds", Equals("942")),
+					Attribute("region", IsEmpty()),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -146,5 +147,42 @@ func TestAWSRoleData(t *testing.T) {
 				AttributeNotPresent("stack_id"),
 			),
 		}})
+	})
+
+	t.Run("with a region", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch     = "master"
+						repository = "demo"
+						name       = "Test stack %s"
+					}
+
+					resource "spacelift_aws_role" "test" {
+						stack_id         = spacelift_stack.test.id
+						role_arn         = "arn:aws:iam::039653571618:role/empty-test-role"
+						duration_seconds = 942
+						region           = "us-east-2"
+					}
+
+					data "spacelift_aws_role" "test" {
+						stack_id = spacelift_aws_role.test.stack_id
+					}
+				`, randomID),
+				Check: Resource(
+					"data.spacelift_aws_role.test",
+					Attribute("id", IsNotEmpty()),
+					Attribute("stack_id", Contains(randomID)),
+					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+					Attribute("generate_credentials_in_worker", Equals("false")),
+					Attribute("duration_seconds", Equals("942")),
+					Attribute("region", Equals("us-east-2")),
+					AttributeNotPresent("module_id"),
+				),
+			},
+		})
 	})
 }

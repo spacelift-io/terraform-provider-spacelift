@@ -8,6 +8,7 @@ type Integrations struct {
 		ExternalID                  *string `graphql:"externalID"`
 		GenerateCredentialsInWorker bool    `graphql:"generateCredentialsInWorker"`
 		DurationSeconds             *int    `graphql:"durationSeconds"`
+		Region                      *string `graphql:"region"`
 	} `graphql:"aws"`
 	DriftDetection struct {
 		IgnoreState bool     `graphql:"ignoreState"`

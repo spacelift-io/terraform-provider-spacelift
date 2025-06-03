@@ -29,6 +29,22 @@ func TestAWSRoleResource(t *testing.T) {
 			`, randomID, roleARN)
 		}
 
+		configWithRegion := func(roleARN, region string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch     = "master"
+					repository = "demo"
+					name       = "Test stack %s"
+				}
+
+				resource "spacelift_aws_role" "test" {
+					stack_id = spacelift_stack.test.id
+					role_arn = "%s"
+					region   = "%s"
+				}
+			`, randomID, roleARN, region)
+		}
+
 		const resourceName = "spacelift_aws_role.test"
 
 		testSteps(t, []resource.TestStep{
@@ -42,6 +58,7 @@ func TestAWSRoleResource(t *testing.T) {
 					Attribute("generate_credentials_in_worker", Equals("false")),
 					Attribute("duration_seconds", IsNotEmpty()),
 					Attribute("external_id", IsEmpty()),
+					Attribute("region", IsEmpty()),
 					AttributeNotPresent("module_id"),
 				),
 			},
@@ -56,6 +73,13 @@ func TestAWSRoleResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/another-empty-test-role")),
+				),
+			},
+			{
+				Config: configWithRegion("arn:aws:iam::039653571618:role/empty-test-role", "us-east-2"),
+				Check: Resource(
+					resourceName,
+					Attribute("region", Equals("us-east-2")),
 				),
 			},
 		})
