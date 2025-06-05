@@ -88,6 +88,11 @@ func resourceAWSRole() *schema.Resource {
 				Computed:    true,
 				Optional:    true,
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Description: "AWS region to select a regional AWS STS endpoint.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -229,13 +234,14 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
-		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds)"`
+		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, region: $region)"`
 	}
 
 	variables := map[string]interface{}{
 		"id":                          toID(id),
 		"roleArn":                     graphql.String(d.Get("role_arn").(string)),
 		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),
+		"region":                      (*graphql.String)(nil),
 	}
 
 	if externalID, ok := d.GetOk("external_id"); ok {
@@ -248,6 +254,10 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 		variables["durationSeconds"] = toOptionalInt(durationSeconds)
 	} else {
 		variables["durationSeconds"] = (*graphql.Int)(nil)
+	}
+
+	if region, ok := d.GetOk("region"); ok {
+		variables["region"] = toOptionalString(region)
 	}
 
 	if err := client.Mutate(ctx, "AWSRoleSet", &mutation, variables); err != nil {
@@ -273,4 +283,6 @@ func resourceAWSRoleSetIntegration(d *schema.ResourceData, integrations *structs
 	d.Set("external_id", integrations.AWS.ExternalID)
 
 	d.Set("duration_seconds", integrations.AWS.DurationSeconds)
+
+	d.Set("region", integrations.AWS.Region)
 }

@@ -71,6 +71,11 @@ func dataAWSRole() *schema.Resource {
 				Description: "AWS IAM role session duration in seconds",
 				Computed:    true,
 			},
+			"region": {
+				Type:        schema.TypeString,
+				Description: "AWS region to select a regional AWS STS endpoint.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -110,6 +115,7 @@ func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("generate_credentials_in_worker", query.Module.Integrations.AWS.GenerateCredentialsInWorker)
 	d.Set("external_id", module.Integrations.AWS.ExternalID)
 	d.Set("duration_seconds", module.Integrations.AWS.DurationSeconds)
+	d.Set("region", module.Integrations.AWS.Region)
 
 	return nil
 }
@@ -141,5 +147,6 @@ func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("generate_credentials_in_worker", query.Stack.Integrations.AWS.GenerateCredentialsInWorker)
 	d.Set("external_id", stack.Integrations.AWS.ExternalID)
 	d.Set("duration_seconds", stack.Integrations.AWS.DurationSeconds)
+	d.Set("region", stack.Integrations.AWS.Region)
 	return nil
 }
