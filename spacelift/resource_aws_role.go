@@ -43,11 +43,11 @@ func resourceAWSRole() *schema.Resource {
 			"Note: when assuming credentials for **shared worker**, Spacelift will use `$accountName@$stackID` " +
 			"or `$accountName@$moduleID` as [external ID](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create_for-user_externalid.html) " +
 			"and `$runID@$stackID@$accountName` truncated to 64 characters as [session ID](https://docs.aws.amazon.com/STS/latest/APIReference/API_AssumeRole).",
-
-		CreateContext: resourceAWSRoleCreate,
-		ReadContext:   resourceAWSRoleRead,
-		UpdateContext: resourceAWSRoleUpdate,
-		DeleteContext: resourceAWSRoleDelete,
+		DeprecationMessage: "Use `spacelift_aws_integration` in combination with `spacelift_aws_integration_attachment` instead.",
+		CreateContext:      resourceAWSRoleCreate,
+		ReadContext:        resourceAWSRoleRead,
+		UpdateContext:      resourceAWSRoleUpdate,
+		DeleteContext:      resourceAWSRoleDelete,
 
 		Importer: &schema.ResourceImporter{StateContext: importIntegration},
 
