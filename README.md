@@ -54,7 +54,7 @@ This involves the following steps:
 To build the provider, run the following command:
 
 ```shell
-goreleaser build --clean --snapshot
+goreleaser build --clean --snapshot --skip=sign
 ```
 
 This will produce a number of binaries in subfolders of the `dist` folder for each supported

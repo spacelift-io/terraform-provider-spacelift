@@ -311,6 +311,8 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
 		if stack.VendorConfig.Terraform.Version != nil {
 			d.Set("terraform_version", *stack.VendorConfig.Terraform.Version)
+		} else {
+			d.Set("terraform_version", nil)
 		}
 		d.Set("terraform_workflow_tool", stack.VendorConfig.Terraform.WorkflowTool)
 		d.Set("terraform_workspace", stack.VendorConfig.Terraform.Workspace)
