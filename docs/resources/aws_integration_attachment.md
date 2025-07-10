@@ -63,6 +63,8 @@ resource "spacelift_aws_integration_attachment" "this" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import spacelift_aws_integration_attachment.read_write_my_stack $INTEGRATION_ID/$PROJECT_ID
 ```

@@ -63,6 +63,8 @@ resource "google_project_iam_member" "k8s-core" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import spacelift_gcp_service_account.k8s-core stack/$STACK_ID
 

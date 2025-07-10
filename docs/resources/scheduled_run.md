@@ -103,6 +103,8 @@ Required:
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import spacelift_scheduled_run.k8s-core-apply $STACK_ID/$SCHEDULED_RUN_ID
 ```
