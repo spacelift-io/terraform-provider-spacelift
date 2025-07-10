@@ -606,10 +606,10 @@ func resourceStack() *schema.Resource {
 				Default:     false,
 			},
 			"terraform_version": {
-				Type:             schema.TypeString,
-				Description:      "Terraform version to use",
-				Optional:         true,
-				DiffSuppressFunc: onceTheVersionIsSetDoNotUnset,
+				Type:        schema.TypeString,
+				Description: "Terraform version to use",
+				Optional:    true,
+				Computed:    true,
 			},
 			"terraform_workflow_tool": {
 				Type:        schema.TypeString,
@@ -1032,6 +1032,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 		terraformConfig.Version = toOptionalString(terraformVersion)
 	}
 
+	if d.GetRawConfig().GetAttr("terraform_version").IsNull() {
+		terraformConfig.Version = nil
+	}
+
 	if terraformWorkflowTool, ok := d.GetOk("terraform_workflow_tool"); ok {
 		terraformConfig.WorkflowTool = toOptionalString(terraformWorkflowTool)
 		if shouldWeReComputeTerraformVersionForTerraformWorkflowTool(d) {
@@ -1128,10 +1132,6 @@ func uploadStateFile(ctx context.Context, content string, meta interface{}) (str
 	}
 
 	return mutation.StateUploadURL.ObjectID, nil
-}
-
-func onceTheVersionIsSetDoNotUnset(_, _, new string, _ *schema.ResourceData) bool {
-	return new == ""
 }
 
 func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {

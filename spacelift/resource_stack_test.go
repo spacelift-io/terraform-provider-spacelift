@@ -303,7 +303,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),
 					Attribute("runner_image", IsEmpty()),
-					Attribute("terraform_version", Equals("1.0.1")),
+					Attribute("terraform_version", IsEmpty()),
 					Attribute("terraform_workspace", IsEmpty()),
 					Attribute("terraform_smart_sanitization", Equals("false")),
 				),
@@ -904,7 +904,7 @@ func TestStackResource(t *testing.T) {
 			`, randomID),
 				Check: Resource(
 					"spacelift_stack.this",
-					AttributeNotPresent("terraform_version"),
+					Attribute("terraform_version", IsEmpty()),
 				),
 			},
 			{
@@ -919,7 +919,7 @@ func TestStackResource(t *testing.T) {
 			`, randomID),
 				Check: Resource(
 					"spacelift_stack.this",
-					AttributeNotPresent("terraform_version"),
+					Attribute("terraform_version", IsEmpty()),
 				),
 			},
 			{
@@ -1530,7 +1530,7 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("labels.#", Equals("0")),
 					Attribute("project_root", IsEmpty()),
 					Attribute("runner_image", IsEmpty()),
-					Attribute("terraform_version", Equals("0.12.5")),
+					Attribute("terraform_version", IsEmpty()),
 					Attribute("terraform_workspace", IsEmpty()),
 				),
 			},
@@ -1729,6 +1729,66 @@ func TestStackResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_stack.terraform_workflow_tool_custom_with_run",
 					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+				),
+			},
+		})
+	})
+
+	t.Run("can change TERRAFORM_FOSS to CUSTOM and unset terraform_version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "terraform_workflow_tool_custom_unset_version" {
+						branch                  = "master"
+						name                    = "Provider test stack workflow_tool unset version %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "TERRAFORM_FOSS"
+						terraform_version       = "1.5.7"
+						autodeploy              = true
+					}
+				`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_custom_unset_version",
+					Attribute("terraform_workflow_tool", Equals("TERRAFORM_FOSS")),
+					Attribute("terraform_version", Equals("1.5.7")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "terraform_workflow_tool_custom_unset_version" {
+						branch                  = "master"
+						name                    = "Provider test stack workflow_tool unset version %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "CUSTOM"
+						autodeploy              = true
+					}
+				`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_custom_unset_version",
+					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+					Attribute("terraform_version", IsEmpty()),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "terraform_workflow_tool_custom_unset_version" {
+						branch                  = "master"
+						name                    = "Provider test stack workflow_tool unset version %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "CUSTOM"
+						labels                  = ["one", "two"]
+						autodeploy              = true
+					}
+				`, randomID),
+				Check: Resource(
+					"spacelift_stack.terraform_workflow_tool_custom_unset_version",
+					Attribute("terraform_workflow_tool", Equals("CUSTOM")),
+					Attribute("terraform_version", IsEmpty()),
+					SetEquals("labels", "one", "two"),
 				),
 			},
 		})
