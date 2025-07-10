@@ -47,6 +47,8 @@ resource "spacelift_scheduled_delete_stack" "k8s-core-delete" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import spacelift_scheduled_delete_stack.ireland-kubeconfig $STACK_ID/$SCHEDULED_DELETE_STACK_ID
 ```

@@ -26,4 +26,4 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           reporter: github-pr-review
-          golangci_lint_version: v2.1.6
+          golangci_lint_version: v2.2.1
