@@ -40,6 +40,7 @@ resource "spacelift_stack_destructor" "k8s-core" {
 ### Optional
 
 - `deactivated` (Boolean) If set to true, destruction won't delete the stack
+- `discard_runs` (Boolean) If set to true, destruction will also discard all runs on the stack that are eligible for discarding (e.g. not in progress runs)
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
