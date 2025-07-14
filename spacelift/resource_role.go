@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -48,12 +49,11 @@ func resourceRole() *schema.Resource {
 			},
 			"actions": {
 				Type:        schema.TypeSet,
-				Description: "List of actions (permissions) associated with the role.",
+				Description: "List of actions (permissions) associated with the role. For example: `SPACE_READ`, `SPACE_WRITE`, `SPACE_ADMIN`, `RUN_TRIGGER`. All possible actions can be listed using the `spacelift_role_actions` data source.",
 				Required:    true,
 				MinItems:    1,
 				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: validations.ValidateAction,
+					Type: schema.TypeString,
 				},
 			},
 		},
@@ -65,9 +65,14 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		CreateRole structs.Role `graphql:"roleCreate(input: $input)"`
 	}
 
+	actions, diagErr := actionsToGraphQLStringList(ctx, meta.(*internal.Client), d.Get("actions").(*schema.Set))
+	if diagErr.HasError() {
+		return diagErr
+	}
+
 	input := structs.RoleInput{
 		Name:    toString(d.Get("name")),
-		Actions: actionsToGraphQLStringList(d.Get("actions").(*schema.Set)),
+		Actions: actions,
 	}
 
 	if description, ok := d.GetOk("description"); ok {
@@ -130,7 +135,11 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	if d.HasChange("actions") {
-		actions := actionsToGraphQLStringList(d.Get("actions").(*schema.Set))
+		actions, diag := actionsToGraphQLStringList(ctx, meta.(*internal.Client), d.Get("actions").(*schema.Set))
+		if diag.HasError() {
+			return diag
+		}
+
 		input.Actions = &actions
 	}
 
@@ -162,12 +171,33 @@ func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	return nil
 }
 
-func actionsToGraphQLStringList(actionSet *schema.Set) []graphql.String {
+func actionsToGraphQLStringList(ctx context.Context, client *internal.Client, actionSet *schema.Set) ([]graphql.String, diag.Diagnostics) {
 	ret := []graphql.String{}
 
 	for _, action := range actionSet.List() {
 		ret = append(ret, graphql.String(action.(string)))
 	}
 
-	return ret
+	return validateActions(ctx, client, ret)
+}
+
+func validateActions(ctx context.Context, client *internal.Client, actions []graphql.String) ([]graphql.String, diag.Diagnostics) {
+	if len(actions) == 0 {
+		return nil, diag.Errorf("actions must not be empty")
+	}
+
+	introspectionClient := internal.NewIntrospectionClient(client)
+
+	enumValues, err := introspectionClient.GetEnumValues(ctx, "Action")
+	if err != nil {
+		return nil, diag.Errorf("could not fetch action enum values: %v", err)
+	}
+
+	for _, action := range actions {
+		if !slices.Contains(enumValues, string(action)) {
+			return nil, diag.Errorf("action %s is not a valid action. valid actions are: %v", action, enumValues)
+		}
+	}
+
+	return actions, nil
 }

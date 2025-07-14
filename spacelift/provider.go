@@ -84,6 +84,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_policies":                               dataPolicies(),
 				"spacelift_policy":                                 dataPolicy(),
 				"spacelift_role":                                   dataRole(),
+				"spacelift_role_actions":                           dataRoleActions(),
 				"spacelift_space":                                  dataSpace(),
 				"spacelift_spaces":                                 dataSpaces(),
 				"spacelift_space_by_path":                          dataSpaceByPath(),

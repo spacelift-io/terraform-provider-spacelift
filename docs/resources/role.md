@@ -28,7 +28,7 @@ resource "spacelift_role" "readonly" {
 
 ### Required
 
-- `actions` (Set of String) List of actions (permissions) associated with the role.
+- `actions` (Set of String) List of actions (permissions) associated with the role. For example: `SPACE_READ`, `SPACE_WRITE`, `SPACE_ADMIN`, `RUN_TRIGGER`. All possible actions can be listed using the `spacelift_role_actions` data source.
 - `name` (String) Human-readable, free-form name of the role
 
 ### Optional

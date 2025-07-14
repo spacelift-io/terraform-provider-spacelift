@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -17,11 +16,6 @@ func TestRoleResource(t *testing.T) {
 
 	t.Run("creates and updates roles without an error", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
-		var allAvailableActions []string
-		for _, action := range structs.ActionList {
-			allAvailableActions = append(allAvailableActions, string(action))
-		}
 
 		config := func(name, description string, actions []string) string {
 			actionsList := ""
@@ -58,12 +52,12 @@ func TestRoleResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: config("bar", "new description", allAvailableActions),
+				Config: config("bar", "new description", []string{"SPACE_READ", "SPACE_WRITE", "SPACE_ADMIN"}),
 				Check: Resource(
 					resourceName,
 					Attribute("name", StartsWith("Provider test role bar")),
 					Attribute("description", Equals("new description")),
-					SetEquals("actions", allAvailableActions...),
+					SetEquals("actions", "SPACE_READ", "SPACE_WRITE", "SPACE_ADMIN"),
 				),
 			},
 		})
@@ -147,7 +141,7 @@ func TestRoleResourceValidation(t *testing.T) {
 						actions = ["INVALID_ACTION"]
 					}
 				`, randomID),
-				ExpectError: regexp.MustCompile("must be one of"),
+				ExpectError: regexp.MustCompile("action INVALID_ACTION is not a valid action. valid actions are:"),
 			},
 		})
 	})
