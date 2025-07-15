@@ -41,6 +41,7 @@ func TestRoleResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
+					Attribute("slug", StartsWith("provider-test-role-foo")),
 					Attribute("name", StartsWith("Provider test role foo")),
 					Attribute("description", Equals("old description")),
 					SetEquals("actions", "SPACE_READ", "SPACE_WRITE"),
@@ -56,6 +57,7 @@ func TestRoleResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("name", StartsWith("Provider test role bar")),
+					Attribute("slug", StartsWith("provider-test-role-")), // Slug won't change
 					Attribute("description", Equals("new description")),
 					SetEquals("actions", "SPACE_READ", "SPACE_WRITE", "SPACE_ADMIN"),
 				),

@@ -16,13 +16,14 @@ func TestRoleData(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: `
 				data "spacelift_role" "test" {
-					name = "Space admin"
+					slug = "space-admin"
 				}
 			`,
 			Check: Resource(
 				"data.spacelift_role.test",
 				Attribute("id", IsNotEmpty()),
 				Attribute("name", Equals("Space admin")),
+				Attribute("slug", Equals("space-admin")),
 				Attribute("description", IsNotEmpty()),
 				Attribute("is_system", Equals("true")),
 				SetEquals("actions", "SPACE_READ", "SPACE_WRITE", "SPACE_ADMIN"),
@@ -61,7 +62,7 @@ func TestRoleData(t *testing.T) {
 			Config: `
 				data "spacelift_role" "test" {}
 			`,
-			ExpectError: regexp.MustCompile(`either 'role_id' or 'name' must be specified to read a role`),
+			ExpectError: regexp.MustCompile(`either 'role_id' or 'slug' must be specified to read a role`),
 		}})
 	})
 }

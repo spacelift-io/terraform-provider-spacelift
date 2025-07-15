@@ -4,7 +4,7 @@ page_title: "spacelift_role Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_role represents a Spacelift role - a collection of permissions that can be assigned to IdP groups or API keys to control access to Spacelift resources and operations.
-  You can either filter roles by their unique identifier (role_id) or by their human-readable name (name).
+  You can either filter roles by their unique identifier (role_id) or by their URL-friendly unique identifier (slug).
   Note: you must have admin access to the root Space in order to retrieve roles.
 ---
 
@@ -12,7 +12,7 @@ description: |-
 
 `spacelift_role` represents a Spacelift **role** - a collection of permissions that can be assigned to IdP groups or API keys to control access to Spacelift resources and operations.
 
-You can either filter roles by their unique identifier (`role_id`) or by their human-readable name (`name`).
+You can either filter roles by their unique identifier (`role_id`) or by their URL-friendly unique identifier (`slug`).
 
 **Note:** you must have admin access to the `root` Space in order to retrieve roles.
 
@@ -21,7 +21,7 @@ You can either filter roles by their unique identifier (`role_id`) or by their h
 ```terraform
 # Retrieve a system role by name
 data "spacelift_role" "admin" {
-  name = "Space admin"
+  slug = "space-admin"
 }
 
 # Retrieve a custom (non-system) role by ID
@@ -35,8 +35,8 @@ data "spacelift_role" "custom" {
 
 ### Optional
 
-- `name` (String) Human-readable, free-form name of the role. Can be used to filter roles.
-- `role_id` (String) Unique identifier (ULID) of the role. Can be used to filter roles.
+- `role_id` (String) Unique identifier (ULID) of the role. Can be used to filter roles. Example: `01K07523Q8B4TBF0YHQRF6J5MW`.
+- `slug` (String) URL-friendly unique identifier of the role, generated from the name. Example: `space-admin`.
 
 ### Read-Only
 
@@ -44,3 +44,4 @@ data "spacelift_role" "custom" {
 - `description` (String) Human-readable, free-form description of the role
 - `id` (String) The ID of this resource.
 - `is_system` (Boolean) Whether the role is a system role (Space admin, Space writer, Space reader). The 3 system roles are created by default and cannot be deleted or modified.
+- `name` (String) Human-readable, free-form name of the role. Can be used to filter roles.

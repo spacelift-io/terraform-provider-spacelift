@@ -13,17 +13,3 @@ func DisallowEmptyString(in interface{}, path cty.Path) diag.Diagnostics {
 
 	return nil
 }
-
-// ValidateAction ensures that the given value is a valid action enum value.
-// func ValidateAction(in interface{}, path cty.Path) diag.Diagnostics {
-// 	actionStr, ok := in.(string)
-// 	if !ok {
-// 		return diag.Errorf("%s must be a string", path)
-// 	}
-
-// 	if !slices.Contains(structs.ActionList, structs.Action(actionStr)) {
-// 		return diag.Errorf("%s must be one of %v", path, structs.ActionList)
-// 	}
-
-// 	return nil
-// }

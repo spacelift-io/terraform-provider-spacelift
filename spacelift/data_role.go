@@ -17,7 +17,7 @@ func dataRole() *schema.Resource {
 			"a collection of permissions that can be assigned to IdP groups or API keys " +
 			"to control access to Spacelift resources and operations.\n\n" +
 			"You can either filter roles by their unique identifier (`role_id`) " +
-			"or by their human-readable name (`name`).\n\n" +
+			"or by their URL-friendly unique identifier (`slug`).\n\n" +
 			"**Note:** you must have admin access to the `root` Space in order to retrieve roles.",
 
 		ReadContext: dataRoleRead,
@@ -25,17 +25,22 @@ func dataRole() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"role_id": {
 				Type:          schema.TypeString,
-				Description:   "Unique identifier (ULID) of the role. Can be used to filter roles.",
+				Description:   "Unique identifier (ULID) of the role. Can be used to filter roles. Example: `01K07523Q8B4TBF0YHQRF6J5MW`.",
 				Optional:      true,
 				Computed:      true,
-				ConflictsWith: []string{"name"},
+				ConflictsWith: []string{"slug"},
+			},
+			"slug": {
+				Type:          schema.TypeString,
+				Description:   "URL-friendly unique identifier of the role, generated from the name. Example: `space-admin`.",
+				ConflictsWith: []string{"role_id"},
+				Optional:      true,
+				Computed:      true,
 			},
 			"name": {
-				Type:          schema.TypeString,
-				Description:   "Human-readable, free-form name of the role. Can be used to filter roles.",
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"role_id"},
+				Type:        schema.TypeString,
+				Description: "Human-readable, free-form name of the role. Can be used to filter roles.",
+				Computed:    true,
 			},
 			"description": {
 				Type:        schema.TypeString,
@@ -59,9 +64,13 @@ func dataRole() *schema.Resource {
 
 func dataRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	filterToRoleID := d.Get("role_id").(string)
-	filterToRoleName := d.Get("name").(string)
-	if filterToRoleID == "" && filterToRoleName == "" {
-		return diag.Errorf("either 'role_id' or 'name' must be specified to read a role")
+	filterToRoleSlug := d.Get("slug").(string)
+
+	if filterToRoleID == "" && filterToRoleSlug == "" {
+		return diag.Errorf("either 'role_id' or 'slug' must be specified to read a role")
+	}
+	if filterToRoleID != "" && filterToRoleSlug != "" {
+		return diag.Errorf("only one of 'role_id' or 'slug' can be specified to read a role")
 	}
 
 	var query struct {
@@ -84,7 +93,7 @@ func dataRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 			role = r
 			break
 		}
-		if r.Name == filterToRoleName {
+		if r.Slug == filterToRoleSlug {
 			role = r
 			break
 		}
@@ -95,12 +104,13 @@ func dataRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 			return diag.Errorf("role with ID %s not found", filterToRoleID)
 		}
 
-		return diag.Errorf("role with name %s not found", filterToRoleName)
+		return diag.Errorf("role with name %s not found", filterToRoleSlug)
 	}
 
 	d.SetId(role.ID)
 	d.Set("role_id", role.ID)
 	d.Set("name", role.Name)
+	d.Set("slug", role.Slug)
 	d.Set("description", role.Description)
 	d.Set("is_system", role.IsSystem)
 

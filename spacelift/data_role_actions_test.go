@@ -17,7 +17,7 @@ func TestRoleActionsData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_role_actions.test",
 				Attribute("id", Equals("role_actions")),
-				SetContains("actions", "SPACE_READ", "SPACE_WRITE", "SPACE_ADMIN"),
+				SetContains("actions", "SPACE_READ", "SPACE_WRITE", "SPACE_ADMIN", "RUN_TRIGGER", "RUN_CONFIRM"),
 			),
 		}})
 	})

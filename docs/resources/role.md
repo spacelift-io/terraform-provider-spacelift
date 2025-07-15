@@ -37,7 +37,8 @@ resource "spacelift_role" "readonly" {
 
 ### Read-Only
 
-- `id` (String) Unique identifier (ULID) of the role
+- `id` (String) Unique identifier (ULID) of the role. Example: `01K07523Q8B4TBF0YHQRF6J5MW`.
+- `slug` (String) URL-friendly unique identifier of the role, generated from the name. Example: `space-admin`.
 
 ## Import
 

@@ -7,6 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
+const enumKind string = "ENUM"
+
 type IntrospectionClient struct {
 	client *Client
 }
@@ -20,12 +22,6 @@ func NewIntrospectionClient(client *Client) *IntrospectionClient {
 type EnumValue struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-}
-
-type EnumType struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	EnumValues  []EnumValue `json:"enumValues"`
 }
 
 type Schema struct {
@@ -42,13 +38,13 @@ type IntrospectionQuery struct {
 }
 
 func (c *IntrospectionClient) GetEnumValues(ctx context.Context, enumName string) ([]string, error) {
-	query, err := c.Introspect(ctx)
+	resp, err := c.Introspect(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to introspect schema: %w", err)
 	}
 
-	for _, t := range query.Schema.Types {
-		if t.Name == enumName && t.Kind == "ENUM" {
+	for _, t := range resp.Schema.Types {
+		if t.Name == enumName && t.Kind == enumKind {
 			var values []string
 			for _, enumValue := range t.EnumValues {
 				values = append(values, enumValue.Name)

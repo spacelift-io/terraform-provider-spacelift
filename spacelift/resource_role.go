@@ -33,7 +33,12 @@ func resourceRole() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,
-				Description: "Unique identifier (ULID) of the role",
+				Description: "Unique identifier (ULID) of the role. Example: `01K07523Q8B4TBF0YHQRF6J5MW`.",
+				Computed:    true,
+			},
+			"slug": {
+				Type:        schema.TypeString,
+				Description: "URL-friendly unique identifier of the role, generated from the name. Example: `space-admin`.",
 				Computed:    true,
 			},
 			"name": {
@@ -108,6 +113,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	d.Set("id", role.ID)
 	d.Set("name", role.Name)
+	d.Set("slug", role.Slug)
 	d.Set("description", role.Description)
 
 	actions := schema.NewSet(schema.HashString, []interface{}{})

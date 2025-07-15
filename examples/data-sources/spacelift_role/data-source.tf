@@ -1,6 +1,6 @@
 # Retrieve a system role by name
 data "spacelift_role" "admin" {
-  name = "Space admin"
+  slug = "space-admin"
 }
 
 # Retrieve a custom (non-system) role by ID
