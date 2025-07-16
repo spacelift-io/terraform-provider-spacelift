@@ -23,5 +23,7 @@ key.*
 # Goreleaser output directory
 dist/
 
+.claude/settings.local.json
+
 test.env
 .envrc
