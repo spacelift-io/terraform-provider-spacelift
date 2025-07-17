@@ -49,6 +49,12 @@ func resourceStackDestructor() *schema.Resource {
 				Description: "If set to true, destruction won't delete the stack",
 				Optional:    true,
 			},
+			"discard_runs": {
+				Type:        schema.TypeBool,
+				Description: "If set to true, destruction will also discard all runs on the stack that are eligible for discarding (e.g. not in progress runs)",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 
 		Timeouts: &schema.ResourceTimeout{
@@ -86,13 +92,24 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 		return nil
 	}
 
-	var mutation struct {
-		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroyResources: true)"`
-	}
-
 	stackID := d.Get("stack_id").(string)
 	variables := map[string]interface{}{"id": toID(stackID)}
 
+	if discardRuns := d.Get("discard_runs"); discardRuns != nil && discardRuns.(bool) {
+		var mutation struct {
+			RunDiscard *structs.RunDiscardAll `graphql:"runDiscardAll(stack: $id)"`
+		}
+		if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDiscardRuns", &mutation, variables); err != nil {
+			return diag.Errorf("could not discard runs on stack %s: %v", stackID, internal.FromSpaceliftError(err))
+		}
+		if len(mutation.RunDiscard.FailedDiscarding) > 0 {
+			return diag.Errorf("could not discard runs on stack %s: %v", stackID, mutation.RunDiscard.FailedDiscarding)
+		}
+	}
+
+	var mutation struct {
+		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id, destroyResources: true)"`
+	}
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack %s: %v", stackID, internal.FromSpaceliftError(err))
 	}
