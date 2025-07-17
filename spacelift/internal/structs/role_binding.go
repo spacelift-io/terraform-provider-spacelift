@@ -11,7 +11,7 @@ type APIKeyRoleBinding struct {
 
 type UserGroupRoleBinding struct {
 	ID        string    `graphql:"id"`
-	Role      Role      `graphql:"role"`
+	RoleID    string    `graphql:"roleID"`
 	SpaceID   string    `graphql:"spaceID"`
 	UserGroup UserGroup `graphql:"userGroup"`
 }

@@ -3,23 +3,46 @@
 page_title: "spacelift_idp_group_mapping Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_idp_group_mapping represents a mapping (binding) between a user group (as provided by IdP) and a Spacelift User Management Policy. If you assign permissions (a Policy) to a user group, all users in the group will have those permissions unless the user's permissions are higher than the group's permissions.
+  spacelift_idp_group_mapping represents a mapping between a group in an IdP and Spacelift.
+  Define the policy attribute to give permissions to user groups in a certain space.When the policy attribute is left empty, you can use the spacelift_role_attachment resource to bind roles to an IdP group.
 ---
 
 # spacelift_idp_group_mapping (Resource)
 
-`spacelift_idp_group_mapping` represents a mapping (binding) between a user group (as provided by IdP) and a Spacelift User Management Policy. If you assign permissions (a Policy) to a user group, all users in the group will have those permissions unless the user's permissions are higher than the group's permissions.
+`spacelift_idp_group_mapping` represents a mapping between a group in an IdP and Spacelift.
+
+- Define the `policy` attribute to give permissions to user groups in a certain space.
+- When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource to bind roles to an IdP group.
 
 ## Example Usage
 
 ```terraform
-resource "spacelift_idp_group_mapping" "test" {
-  name = "test"
+# Via policy
+resource "spacelift_idp_group_mapping" "devops" {
+  name = "devops"
   policy {
     space_id = "root"
     role     = "ADMIN"
   }
-  description = "test description"
+  description = "Maps the devops IdP group to the root space with admin role"
+}
+
+# Via role attachment
+resource "spacelift_idp_group_mapping" "devops" {
+  name        = "devops"
+  description = "Creates a mapping for the devops IdP group"
+}
+
+resource "spacelift_role" "devops" {
+  name        = "SpaceAdmin"
+  description = "A role that provides full admin access to a space"
+  actions     = ["SPACE_ADMIN"]
+}
+
+resource "spacelift_role_attachment" "devops" {
+  idp_group_mapping = spacelift_idp_group_mapping.devops.id
+  role_id           = spacelift_role.devops.id
+  space_id          = "root"
 }
 ```
 
@@ -28,12 +51,12 @@ resource "spacelift_idp_group_mapping" "test" {
 
 ### Required
 
-- `name` (String) Name of the user group - should be unique in one account
-- `policy` (Block Set, Min: 1) (see [below for nested schema](#nestedblock--policy))
+- `name` (String) Name of the IdP group as defined in the SSO provider - should be unique per account
 
 ### Optional
 
-- `description` (String) Description of the user group
+- `description` (String) Description of the IdP group mapping
+- `policy` (Block Set) List of access rules for the IdP group. (see [below for nested schema](#nestedblock--policy))
 
 ### Read-Only
 
@@ -45,4 +68,4 @@ resource "spacelift_idp_group_mapping" "test" {
 Required:
 
 - `role` (String) Type of access to the space. Possible values are: READ, WRITE, ADMIN
-- `space_id` (String) ID (slug) of the space the user group has access to
+- `space_id` (String) ID (slug) of the space the IdP group mapping has access to

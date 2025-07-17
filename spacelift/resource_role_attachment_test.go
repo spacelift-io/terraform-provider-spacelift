@@ -111,8 +111,81 @@ func TestRoleAttachmentResource(t *testing.T) {
 		})
 	})
 
-	// TODO: Add test for IDP group mapping when it's implemented
-	// t.Run("with an IDP group mapping", func(t *testing.T) {
-	// 	// Implementation for idp_group_mapping_id test case
-	// })
+	t.Run("with an IDP group mapping", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		configInitial := fmt.Sprintf(`
+			resource "spacelift_idp_group_mapping" "test" {
+				name = "Test IDP Group Mapping %s"
+	        }
+
+			resource "spacelift_role" "test" {
+				name        = "Test role attachment - initial role %s"
+				description = "Test role for attachment"
+				actions     = ["SPACE_READ"]
+			}
+
+			resource "spacelift_space" "test" {
+				name = "Test IDP Space %s"
+				parent_space_id = "root"
+			}
+
+			resource "spacelift_role_attachment" "test" {
+				idp_group_mapping_id = spacelift_idp_group_mapping.test.id
+				role_id              = spacelift_role.test.id
+				space_id             = spacelift_space.test.id
+			}
+		`, randomID, randomID, randomID)
+
+		configUpdated := fmt.Sprintf(`
+			resource "spacelift_idp_group_mapping" "test" {
+				name = "Test IDP Group Mapping %s Updated"
+	        }
+			
+			resource "spacelift_role" "another_role" {
+				name        = "Test role attachment - another role %s"
+				description = "Another role for attachment"
+				actions     = ["SPACE_READ", "SPACE_WRITE"]
+			}
+
+			resource "spacelift_space" "another_space" {
+				name = "Test IDP Space Another %s"
+				parent_space_id = "root"
+			}
+
+			resource "spacelift_role_attachment" "test" {
+				idp_group_mapping_id = spacelift_idp_group_mapping.test.id
+				role_id              = spacelift_role.another_role.id
+				space_id             = spacelift_space.another_space.id
+			}
+		`, randomID, randomID, randomID)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configInitial,
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("idp_group_mapping_id", IsNotEmpty()),
+					Attribute("role_id", IsNotEmpty()),
+					Attribute("space_id", IsNotEmpty()),
+				),
+			},
+			{
+				Config: configUpdated,
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("idp_group_mapping_id", IsNotEmpty()),
+					Attribute("role_id", IsNotEmpty()),
+					Attribute("space_id", IsNotEmpty()),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
+	})
 }

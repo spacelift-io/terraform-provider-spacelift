@@ -99,4 +99,27 @@ func TestIdpGroupMappingResource(t *testing.T) {
 		})
 	})
 
+	t.Run("create a group without policy", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_idp_group_mapping" "test" {
+						name = "%s"
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("name", Equals(randomID)),
+					SetEmpty("policy"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
+	})
 }

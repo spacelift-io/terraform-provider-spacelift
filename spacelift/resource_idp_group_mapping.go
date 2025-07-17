@@ -22,9 +22,11 @@ var validAccessLevels = []string{
 func resourceIdpGroupMapping() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
-			"`spacelift_idp_group_mapping` represents a mapping (binding) between a user group (as provided by IdP) " +
-			"and a Spacelift User Management Policy. If you assign permissions (a Policy) to a user group, all users in the group " +
-			"will have those permissions unless the user's permissions are higher than the group's permissions.",
+			"`spacelift_idp_group_mapping` represents a mapping between a group in an IdP " +
+			"and Spacelift.\n\n" +
+			"- Define the `policy` attribute to give permissions to user groups in a certain space.\n" +
+			"- When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource " +
+			"to bind roles to an IdP group.",
 		CreateContext: resourceIdpGroupMappingCreate,
 		ReadContext:   resourceIdpGroupMappingRead,
 		UpdateContext: resourceIdpGroupMappingUpdate,
@@ -37,20 +39,20 @@ func resourceIdpGroupMapping() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:             schema.TypeString,
-				Description:      "Name of the user group - should be unique in one account",
+				Description:      "Name of the IdP group as defined in the SSO provider - should be unique per account",
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
 			"policy": {
-				Type:     schema.TypeSet,
-				MinItems: 1,
-				Required: true,
+				Type:        schema.TypeSet,
+				Description: "List of access rules for the IdP group.",
+				Optional:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"space_id": {
 							Type:             schema.TypeString,
-							Description:      "ID (slug) of the space the user group has access to",
+							Description:      "ID (slug) of the space the IdP group mapping has access to",
 							Required:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
@@ -67,7 +69,7 @@ func resourceIdpGroupMapping() *schema.Resource {
 			},
 			"description": {
 				Type:        schema.TypeString,
-				Description: "Description of the user group",
+				Description: "Description of the IdP group mapping",
 				Optional:    true,
 			},
 		},
@@ -87,7 +89,7 @@ func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, 
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create user group mapping %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
+		return diag.Errorf("could not create IdP group mapping %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
 	}
 
 	// set the ID in TF state
@@ -104,7 +106,7 @@ func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, me
 	}
 	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "ManagedUserGroupRead", &query, variables); err != nil {
-		return diag.Errorf("could not query for user group mapping: %v", err)
+		return diag.Errorf("could not query for IdP group mapping: %v", err)
 	}
 
 	// if the mapping is not found on the Spacelift side, delete it from the TF state
@@ -144,7 +146,7 @@ func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, 
 		},
 	}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupUpdate", &mutation, variables); err != nil {
-		ret = append(ret, diag.Errorf("could not update user group mapping: %v", internal.FromSpaceliftError(err))...)
+		ret = append(ret, diag.Errorf("could not update IdP group mapping: %v", internal.FromSpaceliftError(err))...)
 	}
 
 	// send a read query to the API
@@ -160,7 +162,7 @@ func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, 
 	}
 	variables := map[string]interface{}{"id": toID(d.Id())}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete user group mapping: %v", internal.FromSpaceliftError(err))
+		return diag.Errorf("could not delete IdP group mapping: %v", internal.FromSpaceliftError(err))
 	}
 
 	// if the mapping was successfully removed from the Spacelift side, delete it from the TF state
@@ -170,7 +172,8 @@ func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, 
 }
 
 func getAccessRules(d *schema.ResourceData) []structs.SpaceAccessRuleInput {
-	var accessRules []structs.SpaceAccessRuleInput
+	accessRules := make([]structs.SpaceAccessRuleInput, 0)
+
 	if policies, ok := d.Get("policy").(*schema.Set); ok {
 		for _, a := range policies.List() {
 			access := a.(map[string]interface{})
