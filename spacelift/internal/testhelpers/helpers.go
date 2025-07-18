@@ -301,6 +301,24 @@ func SetContains(name string, values ...string) AttributeCheck {
 	}
 }
 
+// SetEmpty checks if the given set is empty
+func SetEmpty(name string) AttributeCheck {
+	return func(attributes map[string]string) error {
+		countPrefix := fmt.Sprintf("%s.#", name)
+
+		count, ok := attributes[countPrefix]
+		if !ok {
+			return errors.Errorf("%q does not appear to be a set", name)
+		}
+
+		if count != "0" {
+			return errors.Errorf("expected %q to be empty, but it has %s elements", name, count)
+		}
+
+		return nil
+	}
+}
+
 // SetLengthGreaterThanZero ensures the given attribute is a set and has a length greater than zero
 func SetLengthGreaterThanZero(name string) AttributeCheck {
 	return func(attributes map[string]string) error {

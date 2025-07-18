@@ -179,7 +179,7 @@ func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData,
 	roleBinding := query.UserGroupRoleBinding
 
 	d.Set("idp_group_mapping_id", roleBinding.UserGroup.ID)
-	d.Set("role_id", roleBinding.Role.ID)
+	d.Set("role_id", roleBinding.RoleID)
 	d.Set("space_id", roleBinding.SpaceID)
 
 	return nil
