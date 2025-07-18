@@ -10,7 +10,6 @@ description: |-
 # spacelift_idp_group_mapping (Resource)
 
 `spacelift_idp_group_mapping` represents a mapping between a group in an IdP and Spacelift.
-
 - Define the `policy` attribute to give permissions to user groups in a certain space.
 - When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource to bind roles to an IdP group.
 
@@ -69,3 +68,13 @@ Required:
 
 - `role` (String) Type of access to the space. Possible values are: READ, WRITE, ADMIN
 - `space_id` (String) ID (slug) of the space the IdP group mapping has access to
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import spacelift_idp_group_mapping.devops $IDP_GROUP_MAPPING_ID
+```

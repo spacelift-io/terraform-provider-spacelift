@@ -23,7 +23,7 @@ func resourceIdpGroupMapping() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
 			"`spacelift_idp_group_mapping` represents a mapping between a group in an IdP " +
-			"and Spacelift.\n\n" +
+			"and Spacelift.\n" +
 			"- Define the `policy` attribute to give permissions to user groups in a certain space.\n" +
 			"- When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource " +
 			"to bind roles to an IdP group.",
