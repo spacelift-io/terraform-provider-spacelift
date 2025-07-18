@@ -1,0 +1,1 @@
+terraform import spacelift_idp_group_mapping.devops $IDP_GROUP_MAPPING_ID

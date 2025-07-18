@@ -1,1 +1,5 @@
-terraform import spacelift_role_attachment.api_key_attachment <ROLE_ATTACHMENT_ID>
+terraform import spacelift_role_attachment.api_key_attachment API/$ROLE_ATTACHMENT_ID
+
+terraform import spacelift_role_attachment.idp_group_attachment IDP/$ROLE_ATTACHMENT_ID
+
+terraform import spacelift_role_attachment.user_attachment USER/$ROLE_ATTACHMENT_ID
