@@ -255,16 +255,18 @@ func TestWorkerPoolResourceSpace(t *testing.T) {
 	})
 
 	t.Run("CSR changes reset worker pool", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		var originalId string
 		var originalConfig string
 		csr := "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJRWtqQ0NBbm9DQVFBd1RURUxNQWtHQTFVRUJoTUNVRXd4RGpBTUJnTlZCQW9NQldKaFkyOXVNUTR3REFZRApWUVFEREFWaVlXTnZiakVlTUJ3R0NTcUdTSWIzRFFFSkFSWVBZbUZqYjI1QVltRmpiMjR1YjNKbk1JSUNJakFOCkJna3Foa2lHOXcwQkFRRUZBQU9DQWc4QU1JSUNDZ0tDQWdFQXdhand1UmlreTFkODF0TVpJZytJSXBHUHQxclUKV2t4UGhDOENKNzNUWmx3ZTdVcC9McFFiNnpYU0I2eStCWkludnptd1ZBNzNuM0dnVEdFeS9VbDF2VUthaXZmaQpna3lnd05vV0ExYzRTaUNnbjdYTnl1T2c2MktSWGxNb05TeCsrZmVINXZzVGRRVVd2TjZIZkJEQ2dGZ1VQa1JuClp1MDUwOWxBQ2ZrZ00ycnl0b3N3enplbUVUbWRrNlhsYXBnWE9Ebll5bGgvbnRrVFJqZU91VThOUUF1eGRmSUEKY2JFQ0lJZ1Vuak44WWJhWTlGL1RyRjBHUGlQRVZuTEh3Yi95REM2d0NiOXFITUFHRXJhZ0d0cHVzbis0eTBsRwo5S0IvTzZ1R2haRk5HK3FDYUM3MFFKZWI3TzRSdlI3VlA4aWxPOU8rQnE2OU4vY1B4cUFXRTY3WUplUzVxa1hNClFRVVBxVGVXMGs2NC9KZ2c0Nm5ZTmhueGJ5Rkp1MzZ5ME1xbndDN1FYVjZicjFDNldsM3gzTzlNZng4UGVaWGIKdjFqejhod2RWSGFIc0ZLTkgwemdrTk5ISkJ1ZTAyZWwxRkNnbCtMSGNTdWJKdHJnaXpLWkVFSGlFeWhUVURUOQpqeTlSWGpPSUUrNTQ3TkFNMHZvVlY1aTg1eDN0LzdFeFI5R0lraFpwejNQSlV3WUplbHE1M3JPakRvRXZhWTF1CmFUSm9VclYwUUUwK0hTN3ZyaWxXb0VXWlFjOUFiNFFmNnZicmpncCsvVzFEVU5WcGFtVjhQU2dTS3M4RUkwNW4Kek5hc3Q3cnA3b1A2WXBiR2VrbGVQRllWVUVqNTZOKzBxNnh3MFdtS1loNmtYOGRxTTVoNWlkVTFsdUlSU01xMgpkUmJZWStwRFQyeHAwaWtDQXdFQUFhQUFNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUNBUUNjZUM2VXRSbnZ3MkRmCkpsQ285NFdIZDRUTTdQYVBtYmdkeVlMSGpacTZKNGdMcGxrcFlnSno2TnA4OThhTExtRDluTlNEV1c0QkpieDkKdXNaaTA3eFl1cjZybjY0cFRUeUhOK1U4WHZsYVdCQjVoMmV3NytZeXVDNWh4RkU1Mjg0OEJ2WG9LNFdmSzRIegpsZ25vWW9qWERNWEpSRTBqR0drVk8rckt4ZW41ak9ZQW4rbkxQT25HNzRSR25kZ2xTYVFhbFFidjFZb095L1dSCll3QzNqM2JodzUrTG9BNVUvaXhZSytma09rZmZOR0VpaU91K0tZV1J6cTVUd2hOKzFHV1l1M3B4WGJ3ZHM3emgKcjlrdVRvdUhpbDg0OTdaZTJGY2t1VTF3OWVaSmY4WlBHWlNLamhmSUhMYWtwNE9UQUlDb1hDS0hhNEhtUVVzRApVdFBjS0E4ZUdkNmh3U0gyS0FndWU2VVdsMDhFZ2xnRlhkOC90Qy9wYzhNR3QxU2RtTzgzUlVEenJLREt3TCszClhNc0xYOWlic1VTZzk3ZzF5R1RxWE1JeUhXK0tiT3lOZS9JYVBYblJJKy9zdkJaTEY0OGQ4UTdKY2xQcHZ6SysKSnlhMXVLWkI4MFRlZnlpaW5oa21GcmcvWmNzdEI2MEI5VFVHaHNib3JmNW5hdnNCcWIxUkN6c2J5VUFvOVphUgpTUXQyNDlMOUc1bmlIcUNTUENxWXVqRktuMWxIVjVicGxwaDFzWHozOVU5RXVTanNxRlNlMlorM0duUVNSSHlNCkx1YTNPT2pmRXh6UUl3Zm5DUy8wMjVIZENjMDZXY3hNK3JUUlA1UW13eGRJNFBtTTNEU2dCRXE0L2RjeEZwTUYKWnp4VkNreU5PWUJPRklTTXRUWDNiQXI3K3JST2VBPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg=="
 		testSteps(t, []resource.TestStep{
 			{
-				Config: `
+				Config: fmt.Sprintf(`
 				resource "spacelift_worker_pool" "test" {
-					name = "My test workerpool"
+					name = "My test workerpool %s"
 				}
-				`,
+				`, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
@@ -283,10 +285,10 @@ func TestWorkerPoolResourceSpace(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_worker_pool" "test" {
-					name = "My test workerpool"
+					name = "My test workerpool %s"
 					csr  = "%s"
 				}
-				`, csr),
+				`, randomID, csr),
 				Check: Resource(
 					resourceName,
 					// We validate the id has not changed, which tells us the resource was not recreated
@@ -301,6 +303,8 @@ func TestWorkerPoolResourceSpace(t *testing.T) {
 	})
 
 	t.Run("Name and description change does not impact csr or config", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		var originalId string
 		var originalConfig string
 		csr := "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJRWtqQ0NBbm9DQVFBd1RURUxNQWtHQTFVRUJoTUNVRXd4RGpBTUJnTlZCQW9NQldKaFkyOXVNUTR3REFZRApWUVFEREFWaVlXTnZiakVlTUJ3R0NTcUdTSWIzRFFFSkFSWVBZbUZqYjI1QVltRmpiMjR1YjNKbk1JSUNJakFOCkJna3Foa2lHOXcwQkFRRUZBQU9DQWc4QU1JSUNDZ0tDQWdFQXdhand1UmlreTFkODF0TVpJZytJSXBHUHQxclUKV2t4UGhDOENKNzNUWmx3ZTdVcC9McFFiNnpYU0I2eStCWkludnptd1ZBNzNuM0dnVEdFeS9VbDF2VUthaXZmaQpna3lnd05vV0ExYzRTaUNnbjdYTnl1T2c2MktSWGxNb05TeCsrZmVINXZzVGRRVVd2TjZIZkJEQ2dGZ1VQa1JuClp1MDUwOWxBQ2ZrZ00ycnl0b3N3enplbUVUbWRrNlhsYXBnWE9Ebll5bGgvbnRrVFJqZU91VThOUUF1eGRmSUEKY2JFQ0lJZ1Vuak44WWJhWTlGL1RyRjBHUGlQRVZuTEh3Yi95REM2d0NiOXFITUFHRXJhZ0d0cHVzbis0eTBsRwo5S0IvTzZ1R2haRk5HK3FDYUM3MFFKZWI3TzRSdlI3VlA4aWxPOU8rQnE2OU4vY1B4cUFXRTY3WUplUzVxa1hNClFRVVBxVGVXMGs2NC9KZ2c0Nm5ZTmhueGJ5Rkp1MzZ5ME1xbndDN1FYVjZicjFDNldsM3gzTzlNZng4UGVaWGIKdjFqejhod2RWSGFIc0ZLTkgwemdrTk5ISkJ1ZTAyZWwxRkNnbCtMSGNTdWJKdHJnaXpLWkVFSGlFeWhUVURUOQpqeTlSWGpPSUUrNTQ3TkFNMHZvVlY1aTg1eDN0LzdFeFI5R0lraFpwejNQSlV3WUplbHE1M3JPakRvRXZhWTF1CmFUSm9VclYwUUUwK0hTN3ZyaWxXb0VXWlFjOUFiNFFmNnZicmpncCsvVzFEVU5WcGFtVjhQU2dTS3M4RUkwNW4Kek5hc3Q3cnA3b1A2WXBiR2VrbGVQRllWVUVqNTZOKzBxNnh3MFdtS1loNmtYOGRxTTVoNWlkVTFsdUlSU01xMgpkUmJZWStwRFQyeHAwaWtDQXdFQUFhQUFNQTBHQ1NxR1NJYjNEUUVCQ3dVQUE0SUNBUUNjZUM2VXRSbnZ3MkRmCkpsQ285NFdIZDRUTTdQYVBtYmdkeVlMSGpacTZKNGdMcGxrcFlnSno2TnA4OThhTExtRDluTlNEV1c0QkpieDkKdXNaaTA3eFl1cjZybjY0cFRUeUhOK1U4WHZsYVdCQjVoMmV3NytZeXVDNWh4RkU1Mjg0OEJ2WG9LNFdmSzRIegpsZ25vWW9qWERNWEpSRTBqR0drVk8rckt4ZW41ak9ZQW4rbkxQT25HNzRSR25kZ2xTYVFhbFFidjFZb095L1dSCll3QzNqM2JodzUrTG9BNVUvaXhZSytma09rZmZOR0VpaU91K0tZV1J6cTVUd2hOKzFHV1l1M3B4WGJ3ZHM3emgKcjlrdVRvdUhpbDg0OTdaZTJGY2t1VTF3OWVaSmY4WlBHWlNLamhmSUhMYWtwNE9UQUlDb1hDS0hhNEhtUVVzRApVdFBjS0E4ZUdkNmh3U0gyS0FndWU2VVdsMDhFZ2xnRlhkOC90Qy9wYzhNR3QxU2RtTzgzUlVEenJLREt3TCszClhNc0xYOWlic1VTZzk3ZzF5R1RxWE1JeUhXK0tiT3lOZS9JYVBYblJJKy9zdkJaTEY0OGQ4UTdKY2xQcHZ6SysKSnlhMXVLWkI4MFRlZnlpaW5oa21GcmcvWmNzdEI2MEI5VFVHaHNib3JmNW5hdnNCcWIxUkN6c2J5VUFvOVphUgpTUXQyNDlMOUc1bmlIcUNTUENxWXVqRktuMWxIVjVicGxwaDFzWHozOVU5RXVTanNxRlNlMlorM0duUVNSSHlNCkx1YTNPT2pmRXh6UUl3Zm5DUy8wMjVIZENjMDZXY3hNK3JUUlA1UW13eGRJNFBtTTNEU2dCRXE0L2RjeEZwTUYKWnp4VkNreU5PWUJPRklTTXRUWDNiQXI3K3JST2VBPT0KLS0tLS1FTkQgQ0VSVElGSUNBVEUgUkVRVUVTVC0tLS0tCg=="
@@ -308,15 +312,15 @@ func TestWorkerPoolResourceSpace(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_worker_pool" "test" {
-					name = "My workerpool to update"
+					name = "My workerpool to update %s"
 					csr  = "%s"
 				}
-				`, csr),
+				`, randomID, csr),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("csr", Equals(csr)),
-					Attribute("name", Equals("My workerpool to update")),
+					Attribute("name", Equals(fmt.Sprintf("My workerpool to update %s", randomID))),
 					func(attributes map[string]string) error {
 						originalId = attributes["id"]
 						originalConfig = attributes["config"]
@@ -327,18 +331,18 @@ func TestWorkerPoolResourceSpace(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_worker_pool" "test" {
-					name        = "My workerpool to update - updated"
-					description = "My workerpool to update - updated"
+					name        = "My workerpool to update %s - updated"
+					description = "My workerpool to update %s - updated"
 					csr  = "%s"
 				}
-				`, csr),
+				`, randomID, randomID, csr),
 				Check: Resource(
 					resourceName,
 					Attribute("id", func(v string) error { return Equals(originalId)(v) }),
 					Attribute("config", func(v string) error { return Equals(originalConfig)(v) }),
 					Attribute("csr", Equals(csr)),
-					Attribute("name", Equals("My workerpool to update - updated")),
-					Attribute("description", Equals("My workerpool to update - updated")),
+					Attribute("name", Equals(fmt.Sprintf("My workerpool to update %s - updated", randomID))),
+					Attribute("description", Equals(fmt.Sprintf("My workerpool to update %s - updated", randomID))),
 				),
 			},
 		})
