@@ -18,7 +18,9 @@ func resourceUser() *schema.Resource {
 		Description: "" +
 			"`spacelift_user` represents a mapping between a Spacelift user " +
 			"(managed using an Identity Provider) and a Policy. A Policy defines " +
-			"what access rights the user has to a given Space.",
+			"what access rights the user has to a given Space.\n\n" +
+			"When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource " +
+			"to bind roles to a user.",
 		CreateContext: resourceUserCreate,
 		ReadContext:   resourceUserRead,
 		UpdateContext: resourceUserUpdate,
@@ -36,8 +38,7 @@ func resourceUser() *schema.Resource {
 			},
 			"policy": {
 				Type:     schema.TypeSet,
-				MinItems: 1,
-				Required: true,
+				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"space_id": {

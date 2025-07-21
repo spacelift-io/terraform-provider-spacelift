@@ -15,20 +15,21 @@ import (
 func TestRoleAttachmentResource(t *testing.T) {
 	const resourceName = "spacelift_role_attachment.test"
 
-	t.Run("either API key or IDP group mapping must be set", func(t *testing.T) {
+	t.Run("exactly one of API key, IDP group mapping, or user must be set", func(t *testing.T) {
 		config := `
 			resource "spacelift_role_attachment" "test" {
 				api_key_id           = "AAAA"
 				idp_group_mapping_id = "BBBB"
-				space_id             = "CCCC"
-				role_id              = "DDDD"
+				user_id              = "CCCC"
+				space_id             = "DDDD"
+				role_id              = "EEEE"
 			}
 		`
 
 		testSteps(t, []resource.TestStep{
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile("only one of `api_key_id,idp_group_mapping_id` can be specified"),
+				ExpectError: regexp.MustCompile("only one of `api_key_id,idp_group_mapping_id,user_id` can be\nspecified"),
 			},
 		})
 	})
@@ -179,6 +180,90 @@ func TestRoleAttachmentResource(t *testing.T) {
 					Attribute("idp_group_mapping_id", IsNotEmpty()),
 					Attribute("role_id", IsNotEmpty()),
 					Attribute("space_id", IsNotEmpty()),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
+	})
+
+	t.Run("with a user", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		configInitial := fmt.Sprintf(`
+			resource "spacelift_role" "test" {
+				name        = "Test role attachment - initial role %s"
+				description = "Test role for attachment"
+				actions     = ["SPACE_READ"]
+			}
+
+			resource "spacelift_space" "test" {
+				name = "Test User Space %s"
+				parent_space_id = "root"
+			}
+
+			resource "spacelift_user" "test" {
+				username = "%s"
+				invitation_email = "%s"
+			}
+
+			resource "spacelift_role_attachment" "test" {
+				user_id  = spacelift_user.test.id
+				role_id  = spacelift_role.test.id
+				space_id = spacelift_space.test.id
+			}
+		`, randomID, randomID, fmt.Sprintf("%s@example.com", randomID), fmt.Sprintf("%s@example.com", randomID))
+
+		configUpdated := fmt.Sprintf(`
+			resource "spacelift_role" "another_role" {
+				name        = "Test role attachment - another role %s"
+				description = "Another role for attachment"
+				actions     = ["SPACE_READ", "SPACE_WRITE"]
+			}
+
+			resource "spacelift_space" "another_space" {
+				name = "Test User Space Another %s"
+				parent_space_id = "root"
+			}
+
+			resource "spacelift_user" "another_user" {
+				username = "%s"
+				invitation_email = "%s"
+			}
+
+			resource "spacelift_role_attachment" "test" {
+				user_id  = spacelift_user.another_user.id
+				role_id  = spacelift_role.another_role.id
+				space_id = spacelift_space.another_space.id
+			}
+		`, randomID, randomID, fmt.Sprintf("%s+another@example.com", randomID), fmt.Sprintf("%s+another@example.com", randomID))
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configInitial,
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("user_id", IsNotEmpty()),
+					Attribute("role_id", IsNotEmpty()),
+					Attribute("space_id", StartsWith("test-user-space-")),
+					AttributeNotPresent("api_key_id"),
+					AttributeNotPresent("idp_group_mapping_id"),
+				),
+			},
+			{
+				Config: configUpdated,
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("user_id", IsNotEmpty()),
+					Attribute("role_id", IsNotEmpty()),
+					Attribute("space_id", StartsWith("test-user-space-another-")),
+					AttributeNotPresent("api_key_id"),
+					AttributeNotPresent("idp_group_mapping_id"),
 				),
 			},
 			{
