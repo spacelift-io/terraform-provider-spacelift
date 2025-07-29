@@ -130,6 +130,121 @@ func TestWorkerPoolResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with drift detection run limit", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(limit int) string {
+			return fmt.Sprintf(`
+				resource "spacelift_worker_pool" "test" {
+					name                      = "Worker pool with drift limit %s"
+					description               = "Test drift detection run limit"
+					drift_detection_run_limit = %d
+				}
+			`, randomID, limit)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(5),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("name", Equals(fmt.Sprintf("Worker pool with drift limit %s", randomID))),
+					Attribute("drift_detection_run_limit", Equals("5")),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"csr", "private_key"},
+			},
+			{
+				Config: config(10),
+				Check: Resource(
+					resourceName,
+					Attribute("drift_detection_run_limit", Equals("10")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_worker_pool" "test" {
+						name = "Worker pool with drift limit %s"
+						description = "Test drift detection run limit"
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("drift_detection_run_limit", Equals("-1")),
+				),
+			},
+		})
+	})
+
+	t.Run("with drift detection default behavior", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_worker_pool" "test" {
+						name        = "Worker pool default drift %s"
+						description = "Test default drift detection behavior"
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("name", Equals(fmt.Sprintf("Worker pool default drift %s", randomID))),
+					Attribute("drift_detection_run_limit", Equals("-1")),
+				),
+			},
+		})
+	})
+
+	t.Run("with drift detection set to zero", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_worker_pool" "test" {
+						name                      = "Worker pool zero drift %s"
+						description               = "Test zero drift detection limit"
+						drift_detection_run_limit = 0
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("name", Equals(fmt.Sprintf("Worker pool zero drift %s", randomID))),
+					Attribute("drift_detection_run_limit", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with drift detection negative values", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_worker_pool" "test" {
+						name                      = "Worker pool negative drift %s"
+						drift_detection_run_limit = -5
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("name", Equals(fmt.Sprintf("Worker pool negative drift %s", randomID))),
+					Attribute("drift_detection_run_limit", Equals("-5")),
+				),
+			},
+		})
+	})
+
 }
 
 func TestWorkerPoolResourceSpace(t *testing.T) {

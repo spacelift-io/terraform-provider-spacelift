@@ -50,6 +50,11 @@ func dataWorkerPools() *schema.Resource {
 							Description: "ID (slug) of the space the worker pool is in",
 							Computed:    true,
 						},
+						"drift_detection_run_limit": {
+							Type:        schema.TypeInt,
+							Description: "Limit of how many concurrent drift detection runs are allowed per worker pool",
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -98,11 +103,12 @@ func flattenDataWorkerPoolsList(workerPools []*structs.WorkerPool) []map[string]
 		}
 
 		wps[index] = map[string]interface{}{
-			"worker_pool_id": wp.ID,
-			"name":           wp.Name,
-			"config":         wp.Config,
-			"description":    description,
-			"space_id":       wp.Space,
+			"worker_pool_id":            wp.ID,
+			"name":                      wp.Name,
+			"config":                    wp.Config,
+			"description":               description,
+			"space_id":                  wp.Space,
+			"drift_detection_run_limit": wp.DriftDetectionRunLimit,
 		}
 	}
 
