@@ -86,6 +86,12 @@ func resourceWorkerPool() *schema.Resource {
 				},
 				Optional: true,
 			},
+			"drift_detection_run_limit": {
+				Type:        schema.TypeInt,
+				Description: "Limit of how many concurrent drift detection runs are allowed per worker pool",
+				Optional:    true,
+				Default:     -1,
+			},
 		},
 	}
 }
@@ -94,14 +100,15 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 	name := d.Get("name").(string)
 
 	var mutation struct {
-		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description, labels: $labels, space: $space)"`
+		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description, labels: $labels, space: $space, driftDetectionRunLimit: $drift_detection_run_limit)"`
 	}
 
 	variables := map[string]interface{}{
-		"name":        graphql.String(name),
-		"description": (*graphql.String)(nil),
-		"labels":      []graphql.String(nil),
-		"space":       (*graphql.ID)(nil),
+		"name":                      graphql.String(name),
+		"description":               (*graphql.String)(nil),
+		"labels":                    []graphql.String(nil),
+		"space":                     (*graphql.ID)(nil),
+		"drift_detection_run_limit": graphql.Int(d.Get("drift_detection_run_limit").(int)), //nolint:gosec // safe: value known to fit in int32
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -207,6 +214,11 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	if workerPool.DriftDetectionRunLimit != nil {
+		d.Set("drift_detection_run_limit", *workerPool.DriftDetectionRunLimit)
+	}
+
 	d.Set("space_id", workerPool.Space)
 
 	return nil
@@ -240,15 +252,16 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	// Handle regular update for other attributes
 	var mutation struct {
-		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space)"`
+		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space, driftDetectionRunLimit: $drift_detection_run_limit)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":          toID(d.Id()),
-		"name":        graphql.String(name),
-		"description": (*graphql.String)(nil),
-		"labels":      []graphql.String(nil),
-		"space":       (*graphql.ID)(nil),
+		"id":                        toID(d.Id()),
+		"name":                      graphql.String(name),
+		"description":               (*graphql.String)(nil),
+		"labels":                    []graphql.String(nil),
+		"space":                     (*graphql.ID)(nil),
+		"drift_detection_run_limit": graphql.Int(d.Get("drift_detection_run_limit").(int)), //nolint:gosec // safe: value known to fit in int32
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
