@@ -31,6 +31,7 @@ Read-Only:
 
 - `config` (String)
 - `description` (String)
+- `drift_detection_run_limit` (Number)
 - `name` (String)
 - `space_id` (String)
 - `worker_pool_id` (String)
