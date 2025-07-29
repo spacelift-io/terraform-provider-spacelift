@@ -58,3 +58,28 @@ func TestWorkerPoolDataSpace(t *testing.T) {
 		),
 	}})
 }
+
+func TestWorkerPoolDataDriftDetection(t *testing.T) {
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+	testSteps(t, []resource.TestStep{{
+		Config: fmt.Sprintf(`
+			resource "spacelift_worker_pool" "test" {
+				name                      = "Worker pool with drift limit %s"
+				drift_detection_run_limit = 7
+				labels                    = ["test"]
+			}
+
+			data "spacelift_worker_pool" "test" {
+				worker_pool_id = spacelift_worker_pool.test.id
+			}
+		`, randomID),
+		Check: Resource(
+			"data.spacelift_worker_pool.test",
+			Attribute("id", IsNotEmpty()),
+			Attribute("name", Equals(fmt.Sprintf("Worker pool with drift limit %s", randomID))),
+			Attribute("drift_detection_run_limit", Equals("7")),
+			SetEquals("labels", "test"),
+		),
+	}})
+}
