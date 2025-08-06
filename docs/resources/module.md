@@ -49,6 +49,7 @@ resource "spacelift_module" "example-module" {
 - `bitbucket_datacenter` (Block List, Max: 1) Bitbucket Datacenter VCS settings (see [below for nested schema](#nestedblock--bitbucket_datacenter))
 - `description` (String) Free-form module description for users
 - `enable_local_preview` (Boolean) Indicates whether local preview versions can be triggered on this Module. Defaults to `false`.
+- `git_sparse_checkout_paths` (Set of String) Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.
 - `github_enterprise` (Block List, Max: 1) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedblock--github_enterprise))
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - `labels` (Set of String)

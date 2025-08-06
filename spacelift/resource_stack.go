@@ -497,6 +497,12 @@ func resourceStack() *schema.Resource {
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Optional:    true,
 			},
+			"git_sparse_checkout_paths": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.",
+			},
 			"additional_project_globs": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -938,6 +944,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 			gbs = append(gbs, graphql.String(gb.(string)))
 		}
 		ret.AddditionalProjectGlobs = &gbs
+	}
+
+	if gitSparseCheckoutPaths, ok := d.Get("git_sparse_checkout_paths").(*schema.Set); ok {
+		var paths []graphql.String
+		for _, path := range gitSparseCheckoutPaths.List() {
+			paths = append(paths, graphql.String(path.(string)))
+		}
+		ret.GitSparseCheckoutPaths = &paths
 	}
 
 	if runnerImage, ok := d.GetOk("runner_image"); ok {

@@ -7,26 +7,27 @@ import (
 
 // Module represents the Module data relevant to the provider.
 type Module struct {
-	ID                  string       `graphql:"id"`
-	Administrative      bool         `graphql:"administrative"`
-	Branch              string       `graphql:"branch"`
-	Description         *string      `graphql:"description"`
-	Integrations        Integrations `graphql:"integrations"`
-	Labels              []string     `graphql:"labels"`
-	LocalPreviewEnabled bool         `graphql:"localPreviewEnabled"`
-	Name                string       `graphql:"name"`
-	Namespace           string       `graphql:"namespace"`
-	ProjectRoot         *string      `graphql:"projectRoot"`
-	ProtectFromDeletion bool         `graphql:"protectFromDeletion"`
-	Provider            VCSProvider  `graphql:"provider"`
-	Public              bool         `graphql:"public"`
-	Repository          string       `graphql:"repository"`
-	RepositoryURL       *string      `graphql:"repositoryURL"`
-	SharedAccounts      []string     `graphql:"sharedAccounts"`
-	Space               string       `graphql:"space"`
-	SpaceDetails        Space        `graphql:"spaceDetails"`
-	TerraformProvider   string       `graphql:"terraformProvider"`
-	VCSIntegration      *struct {
+	ID                     string       `graphql:"id"`
+	Administrative         bool         `graphql:"administrative"`
+	Branch                 string       `graphql:"branch"`
+	Description            *string      `graphql:"description"`
+	Integrations           Integrations `graphql:"integrations"`
+	Labels                 []string     `graphql:"labels"`
+	LocalPreviewEnabled    bool         `graphql:"localPreviewEnabled"`
+	Name                   string       `graphql:"name"`
+	Namespace              string       `graphql:"namespace"`
+	ProjectRoot            *string      `graphql:"projectRoot"`
+	GitSparseCheckoutPaths []string     `graphql:"gitSparseCheckoutPaths"`
+	ProtectFromDeletion    bool         `graphql:"protectFromDeletion"`
+	Provider               VCSProvider  `graphql:"provider"`
+	Public                 bool         `graphql:"public"`
+	Repository             string       `graphql:"repository"`
+	RepositoryURL          *string      `graphql:"repositoryURL"`
+	SharedAccounts         []string     `graphql:"sharedAccounts"`
+	Space                  string       `graphql:"space"`
+	SpaceDetails           Space        `graphql:"spaceDetails"`
+	TerraformProvider      string       `graphql:"terraformProvider"`
+	VCSIntegration         *struct {
 		ID        string `graphql:"id"`
 		IsDefault bool   `graphql:"isDefault"`
 	} `graphql:"vcsIntegration"`

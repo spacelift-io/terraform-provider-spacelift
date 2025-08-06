@@ -22,6 +22,7 @@ func TestModuleData(t *testing.T) {
 				branch          = "master"
 				description     = "description"
 				labels          = ["one", "two"]
+				git_sparse_checkout_paths = ["module"]
 				repository      = "terraform-bacon-tasty"
 				shared_accounts = ["foo-subdomain", "bar-subdomain"]
 			}
@@ -38,6 +39,7 @@ func TestModuleData(t *testing.T) {
 				SetEquals("labels", "one", "two"),
 				Attribute("name", Equals(fmt.Sprintf("test-module-%s", randomID))),
 				Attribute("project_root", Equals("")),
+				SetEquals("git_sparse_checkout_paths", "module"),
 				Attribute("repository", Equals("terraform-bacon-tasty")),
 				SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
 				Attribute("terraform_provider", Equals("default")),

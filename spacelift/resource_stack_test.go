@@ -41,6 +41,7 @@ func TestStackResource(t *testing.T) {
 					name                     = "Provider test stack %s"
 					project_root             = "root"
 					additional_project_globs = ["/bacon", "/bacon/eggs/*"]
+					git_sparse_checkout_paths = ["root", "root/eggs", "becon"]
 					protect_from_deletion    = %t
 					repository               = "demo"
 					runner_image             = "custom_image:runner"
@@ -93,6 +94,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
 					SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
+					SetEquals("git_sparse_checkout_paths", "root", "root/eggs", "becon"),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("enable_well_known_secret_masking", Equals("false")),
 					Attribute("enable_sensitive_outputs_upload", Equals("true")),

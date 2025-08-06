@@ -18,35 +18,37 @@ type ModuleCreateInput struct {
 
 // ModuleUpdateInput represents the input required to update a Module.
 type ModuleUpdateInput struct {
-	Administrative      graphql.Boolean   `json:"administrative"`
-	Branch              graphql.String    `json:"branch"`
-	Description         *graphql.String   `json:"description"`
-	Labels              *[]graphql.String `json:"labels"`
-	LocalPreviewEnabled graphql.Boolean   `json:"localPreviewEnabled"`
-	ProjectRoot         *graphql.String   `json:"projectRoot"`
-	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`
-	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
-	WorkerPool          *graphql.ID       `json:"workerPool"`
-	Space               *graphql.String   `json:"space"`
+	Administrative         graphql.Boolean   `json:"administrative"`
+	Branch                 graphql.String    `json:"branch"`
+	Description            *graphql.String   `json:"description"`
+	Labels                 *[]graphql.String `json:"labels"`
+	LocalPreviewEnabled    graphql.Boolean   `json:"localPreviewEnabled"`
+	ProjectRoot            *graphql.String   `json:"projectRoot"`
+	GitSparseCheckoutPaths *[]graphql.String `json:"gitSparseCheckoutPaths"`
+	ProtectFromDeletion    graphql.Boolean   `json:"protectFromDeletion"`
+	SharedAccounts         *[]graphql.String `json:"sharedAccounts"`
+	WorkerPool             *graphql.ID       `json:"workerPool"`
+	Space                  *graphql.String   `json:"space"`
 }
 
 // ModuleUpdateV2Input represents the input required to update a Module,
 // including the source.
 type ModuleUpdateV2Input struct {
-	Administrative      graphql.Boolean   `json:"administrative"`
-	Branch              graphql.String    `json:"branch"`
-	Description         *graphql.String   `json:"description"`
-	Labels              *[]graphql.String `json:"labels"`
-	LocalPreviewEnabled graphql.Boolean   `json:"localPreviewEnabled"`
-	Namespace           *graphql.String   `json:"namespace"`
-	ProjectRoot         *graphql.String   `json:"projectRoot"`
-	ProtectFromDeletion graphql.Boolean   `json:"protectFromDeletion"`
-	Provider            *graphql.String   `json:"provider"`
-	Repository          graphql.String    `json:"repository"`
-	RepositoryURL       *graphql.String   `json:"repositoryURL"`
-	SharedAccounts      *[]graphql.String `json:"sharedAccounts"`
-	Space               *graphql.String   `json:"space"`
-	VCSIntegrationID    *graphql.ID       `json:"vcsIntegrationId"`
-	WorkerPool          *graphql.ID       `json:"workerPool"`
-	WorkflowTool        *graphql.String   `json:"workflowTool"`
+	Administrative         graphql.Boolean   `json:"administrative"`
+	Branch                 graphql.String    `json:"branch"`
+	Description            *graphql.String   `json:"description"`
+	Labels                 *[]graphql.String `json:"labels"`
+	LocalPreviewEnabled    graphql.Boolean   `json:"localPreviewEnabled"`
+	Namespace              *graphql.String   `json:"namespace"`
+	ProjectRoot            *graphql.String   `json:"projectRoot"`
+	GitSparseCheckoutPaths *[]graphql.String `json:"gitSparseCheckoutPaths"`
+	ProtectFromDeletion    graphql.Boolean   `json:"protectFromDeletion"`
+	Provider               *graphql.String   `json:"provider"`
+	Repository             graphql.String    `json:"repository"`
+	RepositoryURL          *graphql.String   `json:"repositoryURL"`
+	SharedAccounts         *[]graphql.String `json:"sharedAccounts"`
+	Space                  *graphql.String   `json:"space"`
+	VCSIntegrationID       *graphql.ID       `json:"vcsIntegrationId"`
+	WorkerPool             *graphql.ID       `json:"workerPool"`
+	WorkflowTool           *graphql.String   `json:"workflowTool"`
 }

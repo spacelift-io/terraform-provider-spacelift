@@ -23,6 +23,7 @@ func TestModuleResource(t *testing.T) {
 					branch                = "master"
 					description           = "%s"
 					labels                = ["one", "two"]
+					git_sparse_checkout_paths = ["module"]
 					enable_local_preview  = %t
 					protect_from_deletion = %t
 					repository            = "terraform-bacon-tasty"
@@ -45,6 +46,7 @@ func TestModuleResource(t *testing.T) {
 					SetEquals("labels", "one", "two"),
 					Attribute("name", Equals(fmt.Sprintf("github-module-%s", randomID))),
 					AttributeNotPresent("project_root"),
+					SetEquals("git_sparse_checkout_paths", "module"),
 					Attribute("enable_local_preview", Equals("false")),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("public", Equals("false")),

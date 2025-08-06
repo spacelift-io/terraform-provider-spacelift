@@ -39,6 +39,7 @@ data "spacelift_stack" "k8s-core" {
 - `before_init` (List of String) List of before-init scripts
 - `before_perform` (List of String) List of before-perform scripts
 - `before_plan` (List of String) List of before-plan scripts
+- `git_sparse_checkout_paths` (Set of String) Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.
 
 ### Read-Only
 
