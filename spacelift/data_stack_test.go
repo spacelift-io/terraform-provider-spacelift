@@ -37,6 +37,7 @@ func TestStackData(t *testing.T) {
 				name                            = "Test stack %s"
 				project_root                    = "root"
 				additional_project_globs 		= ["/bacon", "/bacon/eggs/*"]
+				git_sparse_checkout_paths       = ["root", "root/eggs", "becon"]
 				repository                      = "demo"
 				runner_image                    = "custom_image:runner"
 				terraform_workspace             = "bacon"
@@ -87,6 +88,7 @@ func TestStackData(t *testing.T) {
 				Attribute("name", StartsWith("Test stack")),
 				Attribute("project_root", Equals("root")),
 				SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
+				SetEquals("git_sparse_checkout_paths", "root", "root/eggs", "becon"),
 				Attribute("repository", Equals("demo")),
 				Attribute("runner_image", Equals("custom_image:runner")),
 				Attribute("terraform_workspace", Equals("bacon")),

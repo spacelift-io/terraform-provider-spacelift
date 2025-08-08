@@ -25,6 +25,10 @@ data "spacelift_module" "k8s-module" {
 
 - `module_id` (String) ID (slug) of the module
 
+### Optional
+
+- `git_sparse_checkout_paths` (Set of String) Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.
+
 ### Read-Only
 
 - `administrative` (Boolean) indicates whether this module can administer others

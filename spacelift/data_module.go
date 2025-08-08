@@ -180,6 +180,12 @@ func dataModule() *schema.Resource {
 				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
 				Computed:    true,
 			},
+			"git_sparse_checkout_paths": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.",
+			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
 				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail.",
@@ -300,6 +306,12 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	} else {
 		d.Set("project_root", nil)
 	}
+
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	for _, path := range module.GitSparseCheckoutPaths {
+		gitSparseCheckoutPaths.Add(path)
+	}
+	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
 	if workerPool := module.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)

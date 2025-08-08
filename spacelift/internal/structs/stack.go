@@ -55,6 +55,7 @@ type Stack struct {
 	Namespace                    string        `graphql:"namespace"`
 	ProjectRoot                  *string       `graphql:"projectRoot"`
 	AdditionalProjectGlobs       []string      `graphql:"additionalProjectGlobs"`
+	GitSparseCheckoutPaths       []string      `graphql:"gitSparseCheckoutPaths"`
 	ProtectFromDeletion          bool          `graphql:"protectFromDeletion"`
 	Provider                     VCSProvider   `graphql:"provider"`
 	Repository                   string        `graphql:"repository"`
@@ -264,6 +265,12 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		globs.Add(gb)
 	}
 	d.Set("additional_project_globs", globs)
+
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	for _, path := range stack.GitSparseCheckoutPaths {
+		gitSparseCheckoutPaths.Add(path)
+	}
+	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
 	switch stack.VendorConfig.Typename {
 	case StackConfigVendorAnsible:

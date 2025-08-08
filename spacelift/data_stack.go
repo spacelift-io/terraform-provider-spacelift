@@ -350,6 +350,12 @@ func dataStack() *schema.Resource {
 				Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
 				Computed:    true,
 			},
+			"git_sparse_checkout_paths": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.",
+			},
 			"additional_project_globs": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -563,6 +569,12 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		globs.Add(gb)
 	}
 	d.Set("additional_project_globs", globs)
+
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	for _, path := range stack.GitSparseCheckoutPaths {
+		gitSparseCheckoutPaths.Add(path)
+	}
+	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
 	if iacKey, iacSettings := stack.IaCSettings(); iacKey != "" {
 		if err := d.Set(iacKey, []interface{}{iacSettings}); err != nil {

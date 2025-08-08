@@ -29,6 +29,7 @@ type StackInput struct {
 	Namespace                    *graphql.String    `json:"namespace"`
 	ProjectRoot                  *graphql.String    `json:"projectRoot"`
 	AddditionalProjectGlobs      *[]graphql.String  `json:"additionalProjectGlobs"`
+	GitSparseCheckoutPaths       *[]graphql.String  `json:"gitSparseCheckoutPaths"`
 	ProtectFromDeletion          graphql.Boolean    `json:"protectFromDeletion"`
 	Provider                     *graphql.String    `json:"provider"`
 	Repository                   graphql.String     `json:"repository"`

@@ -241,6 +241,12 @@ func resourceModule() *schema.Resource {
 				Description: "Project root is the optional directory relative to the repository root containing the module source code.",
 				Optional:    true,
 			},
+			"git_sparse_checkout_paths": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+				Description: "Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.",
+			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
 				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail. Defaults to `false`.",
@@ -382,6 +388,12 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	if projectRoot := module.ProjectRoot; projectRoot != nil {
 		d.Set("project_root", *projectRoot)
 	}
+
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	for _, path := range module.GitSparseCheckoutPaths {
+		gitSparseCheckoutPaths.Add(path)
+	}
+	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
 	if err := module.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)
@@ -569,6 +581,14 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.ProjectRoot = toOptionalString(projectRoot)
 	}
 
+	if gitSparseCheckoutPaths, ok := d.Get("git_sparse_checkout_paths").(*schema.Set); ok {
+		var paths []graphql.String
+		for _, path := range gitSparseCheckoutPaths.List() {
+			paths = append(paths, graphql.String(path.(string)))
+		}
+		ret.GitSparseCheckoutPaths = &paths
+	}
+
 	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
 		var sharedAccounts []graphql.String
 		for _, account := range sharedAccountsSet.List() {
@@ -613,6 +633,14 @@ func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
 
 	if projectRoot := d.Get("project_root"); projectRoot != "" {
 		ret.ProjectRoot = toOptionalString(projectRoot)
+	}
+
+	if gitSparseCheckoutPaths, ok := d.Get("git_sparse_checkout_paths").(*schema.Set); ok {
+		var paths []graphql.String
+		for _, path := range gitSparseCheckoutPaths.List() {
+			paths = append(paths, graphql.String(path.(string)))
+		}
+		ret.GitSparseCheckoutPaths = &paths
 	}
 
 	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
