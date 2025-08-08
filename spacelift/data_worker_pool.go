@@ -52,6 +52,11 @@ func dataWorkerPool() *schema.Resource {
 				Description: "ID (slug) of the space the worker pool is in",
 				Computed:    true,
 			},
+			"drift_detection_run_limit": {
+				Type:        schema.TypeInt,
+				Description: "Limit of how many concurrent drift detection runs are allowed per worker pool",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -89,6 +94,10 @@ func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interf
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
+
+	if workerPool.DriftDetectionRunLimit != nil {
+		d.Set("drift_detection_run_limit", *workerPool.DriftDetectionRunLimit)
+	}
 
 	return nil
 }
