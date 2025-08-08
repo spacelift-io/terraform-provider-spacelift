@@ -4,14 +4,13 @@ page_title: "spacelift_idp_group_mapping Resource - terraform-provider-spacelift
 subcategory: ""
 description: |-
   spacelift_idp_group_mapping represents a mapping between a group in an IdP and Spacelift.
-  Define the policy attribute to give permissions to user groups in a certain space.When the policy attribute is left empty, you can use the spacelift_role_attachment resource to bind roles to an IdP group.
+  Note: The policy attribute, previously used to assign roles to the group, is deprecated. Use the spacelift_role_attachment resource to manage group roles instead.
 ---
 
 # spacelift_idp_group_mapping (Resource)
 
 `spacelift_idp_group_mapping` represents a mapping between a group in an IdP and Spacelift.
-- Define the `policy` attribute to give permissions to user groups in a certain space.
-- When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource to bind roles to an IdP group.
+Note: The `policy` attribute, previously used to assign roles to the group, is deprecated. Use the `spacelift_role_attachment` resource to manage group roles instead.
 
 ## Example Usage
 
@@ -55,7 +54,7 @@ resource "spacelift_role_attachment" "devops" {
 ### Optional
 
 - `description` (String) Description of the IdP group mapping
-- `policy` (Block Set) List of access rules for the IdP group. (see [below for nested schema](#nestedblock--policy))
+- `policy` (Block Set, Deprecated) List of access rules for the IdP group. (see [below for nested schema](#nestedblock--policy))
 
 ### Read-Only
 
