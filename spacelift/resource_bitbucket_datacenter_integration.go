@@ -104,6 +104,12 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 				Optional:    true,
 				Default:     vcs.CheckTypeDefault,
 			},
+			bitbucketDatacenterUseGitCheckout: {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Computed:    true,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -115,12 +121,13 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 
 	variables := map[string]interface{}{
 		"customInput": &vcs.CustomVCSInput{
-			Name:        toString(d.Get(bitbucketDatacenterName)),
-			IsDefault:   toOptionalBool(d.Get(bitbucketDatacenterIsDefault)),
-			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
-			Labels:      setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
-			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
-			VCSChecks:   toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
+			Name:           toString(d.Get(bitbucketDatacenterName)),
+			IsDefault:      toOptionalBool(d.Get(bitbucketDatacenterIsDefault)),
+			SpaceID:        toString(d.Get(bitbucketDatacenterSpaceID)),
+			Labels:         setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+			Description:    toOptionalString(d.Get(bitbucketDatacenterDescription)),
+			VCSChecks:      toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
+			UseGitCheckout: toOptionalBool(d.Get(bitbucketDatacenterUseGitCheckout)),
 		},
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
@@ -167,11 +174,12 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
 		"accessToken":    toOptionalString(d.Get(bitbucketDatacenterAccessToken)),
 		"customInput": &vcs.CustomVCSUpdateInput{
-			ID:          toID(d.Id()),
-			SpaceID:     toString(d.Get(bitbucketDatacenterSpaceID)),
-			Description: toOptionalString(d.Get(bitbucketDatacenterDescription)),
-			Labels:      setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
-			VCSChecks:   toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
+			ID:             toID(d.Id()),
+			SpaceID:        toString(d.Get(bitbucketDatacenterSpaceID)),
+			Description:    toOptionalString(d.Get(bitbucketDatacenterDescription)),
+			Labels:         setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
+			VCSChecks:      toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
+			UseGitCheckout: toOptionalBool(d.Get(bitbucketDatacenterUseGitCheckout)),
 		},
 	}
 
@@ -223,4 +231,5 @@ func fillBitbucketDatacenterIntegrationResults(d *schema.ResourceData, bitbucket
 	}
 	d.Set(bitbucketDatacenterLabels, labels)
 	d.Set(bitbucketDatacenterVCSChecks, bitbucketDatacenterIntegration.VCSChecks)
+	d.Set(bitbucketDatacenterUseGitCheckout, bitbucketDatacenterIntegration.UseGitCheckout)
 }

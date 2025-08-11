@@ -16,4 +16,5 @@ type BitbucketDatacenterIntegration struct {
 	WebhookSecret  string   `graphql:"webhookSecret"`
 	WebhookURL     string   `graphql:"webhookURL"`
 	VCSChecks      string   `graphql:"vcsChecks"`
+	UseGitCheckout bool     `graphql:"useGitCheckout"`
 }

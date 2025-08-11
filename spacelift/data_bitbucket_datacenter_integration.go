@@ -22,6 +22,7 @@ const (
 	bitbucketDatacenterWebhookURL     = "webhook_url"
 	bitbucketDatacenterWebhookSecret  = "webhook_secret"
 	bitbucketDatacenterVCSChecks      = "vcs_checks"
+	bitbucketDatacenterUseGitCheckout = "use_git_checkout"
 )
 
 func dataBitbucketDatacenterIntegration() *schema.Resource {
@@ -94,6 +95,11 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 				Description: "VCS checks configured for Bitbucket Datacenter repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
 				Computed:    true,
 			},
+			bitbucketDatacenterUseGitCheckout: {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -115,6 +121,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 			WebhookURL     string   `graphql:"webhookURL"`
 			Username       string   `graphql:"username"`
 			VCSChecks      string   `graphql:"vcsChecks"`
+			UseGitCheckout bool     `graphql:"useGitCheckout"`
 		} `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
@@ -151,6 +158,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 
 	d.Set(bitbucketDatacenterLabels, labels)
 	d.Set(bitbucketDatacenterVCSChecks, bitbucketDatacenterIntegration.VCSChecks)
+	d.Set(bitbucketDatacenterUseGitCheckout, bitbucketDatacenterIntegration.UseGitCheckout)
 
 	return nil
 }
