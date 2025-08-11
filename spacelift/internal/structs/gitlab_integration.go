@@ -16,4 +16,5 @@ type GitLabIntegration struct {
 	WebhookSecret  string   `graphql:"webhookSecret"`
 	WebhookURL     string   `graphql:"webhookUrl"`
 	VCSChecks      string   `graphql:"vcsChecks"`
+	UseGitCheckout bool     `graphql:"useGitCheckout"`
 }

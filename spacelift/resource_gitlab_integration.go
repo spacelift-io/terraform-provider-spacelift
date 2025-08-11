@@ -114,6 +114,11 @@ func resourceGitLabIntegration() *schema.Resource {
 				Optional:    true,
 				Default:     vcs.CheckTypeDefault,
 			},
+			gitLabUseGitCheckout: {
+				Type:        schema.TypeBool,
+				Description: "Whether to use git checkout for GitLab repositories. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -125,12 +130,13 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 
 	variables := map[string]interface{}{
 		"customInput": &vcs.CustomVCSInput{
-			Name:        toString(d.Get(gitLabName)),
-			IsDefault:   toOptionalBool(d.Get(gitLabIsDefault)),
-			SpaceID:     toString(d.Get(gitLabSpaceID)),
-			Labels:      setToOptionalStringList(d.Get(gitLabLabels)),
-			Description: toOptionalString(d.Get(gitLabDescription)),
-			VCSChecks:   toOptionalString(d.Get(gitLabVCSChecks)),
+			Name:           toString(d.Get(gitLabName)),
+			IsDefault:      toOptionalBool(d.Get(gitLabIsDefault)),
+			SpaceID:        toString(d.Get(gitLabSpaceID)),
+			Labels:         setToOptionalStringList(d.Get(gitLabLabels)),
+			Description:    toOptionalString(d.Get(gitLabDescription)),
+			VCSChecks:      toOptionalString(d.Get(gitLabVCSChecks)),
+			UseGitCheckout: toOptionalBool(d.Get(gitLabUseGitCheckout)),
 		},
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
@@ -175,11 +181,12 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
 		"customInput": &vcs.CustomVCSUpdateInput{
-			ID:          toID(d.Id()),
-			SpaceID:     toString(d.Get(gitLabSpaceID)),
-			Description: toOptionalString(d.Get(gitLabDescription)),
-			Labels:      setToOptionalStringList(d.Get(gitLabLabels)),
-			VCSChecks:   toOptionalString(d.Get(gitLabVCSChecks)),
+			ID:             toID(d.Id()),
+			SpaceID:        toString(d.Get(gitLabSpaceID)),
+			Description:    toOptionalString(d.Get(gitLabDescription)),
+			Labels:         setToOptionalStringList(d.Get(gitLabLabels)),
+			VCSChecks:      toOptionalString(d.Get(gitLabVCSChecks)),
+			UseGitCheckout: toOptionalBool(d.Get(gitLabUseGitCheckout)),
 		},
 	}
 
@@ -223,6 +230,7 @@ func fillGitLabIntegrationResults(d *schema.ResourceData, gitLabIntegration *str
 	d.Set(gitLabWebhookURL, gitLabIntegration.WebhookURL)
 	d.Set(gitLabWebhookSecret, gitLabIntegration.WebhookSecret)
 	d.Set(gitLabVCSChecks, gitLabIntegration.VCSChecks)
+	d.Set(gitLabUseGitCheckout, gitLabIntegration.UseGitCheckout)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range gitLabIntegration.Labels {
