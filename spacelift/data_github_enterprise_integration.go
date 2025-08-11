@@ -10,17 +10,18 @@ import (
 )
 
 const (
-	ghEnterpriseID            = "id"
-	ghEnterpriseName          = "name"
-	ghEnterpriseDescription   = "description"
-	ghEnterpriseIsDefault     = "is_default"
-	ghEnterpriseLabels        = "labels"
-	ghEnterpriseSpaceID       = "space_id"
-	ghEnterpriseAppID         = "app_id"
-	ghEnterpriseAPIHost       = "api_host"
-	ghEnterpriseWebhookSecret = "webhook_secret"
-	ghEnterpriseWebhookURL    = "webhook_url"
-	ghEnterpriseVCSChecks     = "vcs_checks"
+	ghEnterpriseID             = "id"
+	ghEnterpriseName           = "name"
+	ghEnterpriseDescription    = "description"
+	ghEnterpriseIsDefault      = "is_default"
+	ghEnterpriseLabels         = "labels"
+	ghEnterpriseSpaceID        = "space_id"
+	ghEnterpriseAppID          = "app_id"
+	ghEnterpriseAPIHost        = "api_host"
+	ghEnterpriseWebhookSecret  = "webhook_secret"
+	ghEnterpriseWebhookURL     = "webhook_url"
+	ghEnterpriseVCSChecks      = "vcs_checks"
+	ghEnterpriseUseGitCheckout = "use_git_checkout"
 )
 
 func dataGithubEnterpriseIntegration() *schema.Resource {
@@ -88,6 +89,11 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 				Description: "VCS checks configured for Github repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
 				Computed:    true,
 			},
+			ghEnterpriseUseGitCheckout: {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -106,8 +112,9 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 			Space         struct {
 				ID string `graphql:"id"`
 			} `graphql:"space"`
-			Labels    []string `graphql:"labels"`
-			VCSChecks string   `graphql:"vcsChecks"`
+			Labels         []string `graphql:"labels"`
+			VCSChecks      string   `graphql:"vcsChecks"`
+			UseGitCheckout bool     `graphql:"useGitCheckout"`
 		} `graphql:"githubEnterpriseIntegration(id: $id)"`
 	}
 
@@ -144,6 +151,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 
 	d.Set(ghEnterpriseLabels, labels)
 	d.Set(ghEnterpriseVCSChecks, githubEnterpriseIntegration.VCSChecks)
+	d.Set(ghEnterpriseUseGitCheckout, githubEnterpriseIntegration.UseGitCheckout)
 
 	return nil
 }

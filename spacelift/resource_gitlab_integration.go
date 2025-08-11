@@ -116,8 +116,9 @@ func resourceGitLabIntegration() *schema.Resource {
 			},
 			gitLabUseGitCheckout: {
 				Type:        schema.TypeBool,
-				Description: "Whether to use git checkout for GitLab repositories. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
 				Computed:    true,
+				Optional:    true,
 			},
 		},
 	}
