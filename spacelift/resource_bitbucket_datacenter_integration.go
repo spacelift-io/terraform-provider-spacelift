@@ -106,7 +106,7 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 			},
 			bitbucketDatacenterUseGitCheckout: {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to false.",
 				Computed:    true,
 				Optional:    true,
 			},
