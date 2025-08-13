@@ -39,7 +39,7 @@ resource "spacelift_stack_destructor" "k8s-core" {
 
 ### Optional
 
-- `deactivated` (Boolean) If set to true, destruction won't delete the stack
+- `deactivated` (Boolean) If set to true, destruction won't delete the resources (e.g. AWS/Azure/GCP infrastructure) that the stack manages
 - `discard_runs` (Boolean) If set to true, destruction will also discard all runs on the stack that are eligible for discarding (e.g. not in progress runs)
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
