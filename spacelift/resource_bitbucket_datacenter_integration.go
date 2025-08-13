@@ -127,7 +127,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 			Labels:         setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
 			Description:    toOptionalString(d.Get(bitbucketDatacenterDescription)),
 			VCSChecks:      toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
-			UseGitCheckout: toOptionalBool(d.Get(bitbucketDatacenterUseGitCheckout)),
+			UseGitCheckout: getOptionalBool(d, bitbucketDatacenterUseGitCheckout),
 		},
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
@@ -179,7 +179,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 			Description:    toOptionalString(d.Get(bitbucketDatacenterDescription)),
 			Labels:         setToOptionalStringList(d.Get(bitbucketDatacenterLabels)),
 			VCSChecks:      toOptionalString(d.Get(bitbucketDatacenterVCSChecks)),
-			UseGitCheckout: toOptionalBool(d.Get(bitbucketDatacenterUseGitCheckout)),
+			UseGitCheckout: getOptionalBool(d, bitbucketDatacenterUseGitCheckout),
 		},
 	}
 

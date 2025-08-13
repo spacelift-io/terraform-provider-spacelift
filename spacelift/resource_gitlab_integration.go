@@ -117,8 +117,8 @@ func resourceGitLabIntegration() *schema.Resource {
 			gitLabUseGitCheckout: {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
-				Computed:    true,
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}
@@ -137,7 +137,7 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 			Labels:         setToOptionalStringList(d.Get(gitLabLabels)),
 			Description:    toOptionalString(d.Get(gitLabDescription)),
 			VCSChecks:      toOptionalString(d.Get(gitLabVCSChecks)),
-			UseGitCheckout: toOptionalBool(d.Get(gitLabUseGitCheckout)),
+			UseGitCheckout: getOptionalBool(d, gitLabUseGitCheckout),
 		},
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
@@ -187,7 +187,7 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 			Description:    toOptionalString(d.Get(gitLabDescription)),
 			Labels:         setToOptionalStringList(d.Get(gitLabLabels)),
 			VCSChecks:      toOptionalString(d.Get(gitLabVCSChecks)),
-			UseGitCheckout: toOptionalBool(d.Get(gitLabUseGitCheckout)),
+			UseGitCheckout: getOptionalBool(d, gitLabUseGitCheckout),
 		},
 	}
 

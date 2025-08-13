@@ -88,3 +88,19 @@ func toOptionalStringMap(input interface{}) *structs.StringMap {
 	}
 	return &customHeaders
 }
+
+// getOptionalBool checks if user has explicitly set a boolean value in the configuration and returns it as a pointer to graphql.Boolean.
+// If the value is not set in the configuration, it returns nil.
+func getOptionalBool(d *schema.ResourceData, key string) *graphql.Boolean {
+	// Check if the raw config has the key set explicitly
+	rawConfig := d.GetRawConfig()
+	if !rawConfig.IsNull() {
+		configValue := rawConfig.GetAttr(key)
+		if !configValue.IsNull() {
+			// User explicitly set the value in config
+			return toOptionalBool(d.Get(key))
+		}
+	}
+
+	return nil
+}
