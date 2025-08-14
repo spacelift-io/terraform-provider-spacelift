@@ -14,9 +14,10 @@ description: |-
 
 ```terraform
 resource "spacelift_worker_pool" "k8s-core" {
-  name        = "Main worker"
-  csr         = filebase64("/path/to/csr")
-  description = "Used for all type jobs"
+  name                      = "Main worker"
+  csr                       = filebase64("/path/to/csr")
+  description               = "Used for all type jobs"
+  drift_detection_run_limit = 10
 }
 ```
 
@@ -31,6 +32,7 @@ resource "spacelift_worker_pool" "k8s-core" {
 
 - `csr` (String, Sensitive) certificate signing request in base64. Changing this value will trigger a token reset.
 - `description` (String) description of the worker pool
+- `drift_detection_run_limit` (Number) Limit of how many concurrent drift detection runs are allowed per worker pool
 - `labels` (Set of String)
 - `space_id` (String) ID (slug) of the space the worker pool is in
 
