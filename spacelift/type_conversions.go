@@ -94,13 +94,16 @@ func toOptionalStringMap(input interface{}) *structs.StringMap {
 func getOptionalBool(d *schema.ResourceData, key string) *graphql.Boolean {
 	// Check if the raw config has the key set explicitly
 	rawConfig := d.GetRawConfig()
-	if !rawConfig.IsNull() {
-		configValue := rawConfig.GetAttr(key)
-		if !configValue.IsNull() {
-			// User explicitly set the value in config
-			return toOptionalBool(d.Get(key))
-		}
+
+	if rawConfig.IsNull() {
+		return nil
 	}
 
-	return nil
+	configValue := rawConfig.GetAttr(key)
+	if configValue.IsNull() {
+		return nil
+	}
+
+	// User explicitly set the value in config
+	return toOptionalBool(d.Get(key))
 }

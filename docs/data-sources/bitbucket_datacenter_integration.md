@@ -31,7 +31,7 @@ data "spacelift_bitbucket_datacenter_integration" "bitbucket_datacenter_integrat
 - `labels` (List of String) Bitbucket Datacenter integration labels
 - `name` (String) Bitbucket Datacenter integration name
 - `space_id` (String) Bitbucket Datacenter integration space id
-- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to false.
+- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.
 - `user_facing_host` (String) Bitbucket Datacenter integration user facing host
 - `username` (String) Username which will be used to authenticate requests for cloning repositories
 - `vcs_checks` (String) VCS checks configured for Bitbucket Datacenter repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.

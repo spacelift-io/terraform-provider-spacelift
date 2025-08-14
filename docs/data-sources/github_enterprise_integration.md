@@ -32,7 +32,7 @@ data "spacelift_github_enterprise_integration" "github_enterprise_integration" {
 - `labels` (List of String) Github integration labels
 - `name` (String) Github integration name
 - `space_id` (String) Github integration space id
-- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.
+- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.
 - `vcs_checks` (String) VCS checks configured for Github repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 - `webhook_secret` (String) Github integration webhook secret
 - `webhook_url` (String) Github integration webhook url

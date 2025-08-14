@@ -31,7 +31,7 @@ data "spacelift_azure_devops_integration" "azure_devops_integration" {}
 - `name` (String) Azure DevOps integration name
 - `organization_url` (String) Azure DevOps integration organization url
 - `space_id` (String) Azure DevOps integration space id
-- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to false.
+- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.
 - `vcs_checks` (String) VCS checks configured for Azure DevOps repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 - `webhook_password` (String) Azure DevOps integration webhook password
 - `webhook_url` (String) Azure DevOps integration webhook url

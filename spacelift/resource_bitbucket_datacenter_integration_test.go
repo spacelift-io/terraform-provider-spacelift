@@ -77,7 +77,7 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: configBitbucket("username", host, token, descr, "null", "null", true),
+				Config: configBitbucket("username", host, token, descr, "null", "null", useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute("id", Equals(name)),
@@ -101,7 +101,7 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"access_token"}, // specified only in the config
 			},
 			{
-				Config: configBitbucket("newUserName", host, token, "new descr", `["new label1"]`, "null", false),
+				Config: configBitbucket("newUserName", host, token, "new descr", `["new label1"]`, "null", !useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute("api_host", Equals(host)),
@@ -116,7 +116,7 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, "null", true),
+				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, "null", useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute("api_host", Equals(spaceLevel.APIHost)),
@@ -132,35 +132,35 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, `"`+vcs.CheckTypeAggregated+`"`, true),
+				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, `"`+vcs.CheckTypeAggregated+`"`, useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(bitbucketDatacenterVCSChecks, Equals(vcs.CheckTypeAggregated)),
 				),
 			},
 			{
-				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, `"`+vcs.CheckTypeAll+`"`, true),
+				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, `"`+vcs.CheckTypeAll+`"`, useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(bitbucketDatacenterVCSChecks, Equals(vcs.CheckTypeAll)),
 				),
 			},
 			{
-				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, `"`+vcs.CheckTypeIndividual+`"`, true),
+				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, `"`+vcs.CheckTypeIndividual+`"`, useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(bitbucketDatacenterVCSChecks, Equals(vcs.CheckTypeIndividual)),
 				),
 			},
 			{
-				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, "null", false) + configStack(),
+				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, "null", !useGitCheckout) + configStack(),
 				Check: Resource(
 					"spacelift_stack.test",
 					Attribute("bitbucket_datacenter.0.id", Equals(name)),
 				),
 			},
 			{
-				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, "null", false) + configStack() + configRun(),
+				Config: configBitbucket(spaceLevel.Username, spaceLevel.APIHost, spaceLevel.AccessToken, descr, labels, "null", !useGitCheckout) + configStack() + configRun(),
 				Check: Resource(
 					"spacelift_run.test",
 					Attribute("id", IsNotEmpty()),

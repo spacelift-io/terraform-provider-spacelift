@@ -10,6 +10,8 @@ import (
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
+const useGitCheckout = true
+
 func TestGitLabIntegrationResource(t *testing.T) {
 	const resourceName = "spacelift_gitlab_integration.test"
 
@@ -74,7 +76,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: configGitLab(host, token, descr, "null", "null", false),
+				Config: configGitLab(host, token, descr, "null", "null", !useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabName, Equals(name)),
@@ -97,7 +99,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{gitLabToken}, // specified only in the config
 			},
 			{
-				Config: configGitLab(host, token, "new descr", `["new label1"]`, "null", false),
+				Config: configGitLab(host, token, "new descr", `["new label1"]`, "null", !useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabAPIHost, Equals(host)),
@@ -111,7 +113,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null", true),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null", useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabAPIHost, Equals(spaceLevel.APIHost)),
@@ -127,14 +129,14 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null", false) + configStack(),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null", !useGitCheckout) + configStack(),
 				Check: Resource(
 					"spacelift_stack.test",
 					Attribute("gitlab.0.id", Equals(name)),
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null", true) + configStack() + configRun(),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, "null", useGitCheckout) + configStack() + configRun(),
 				Check: Resource(
 					"spacelift_run.test",
 					Attribute(gitLabID, IsNotEmpty()),
@@ -142,21 +144,21 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeAggregated+`"`, true),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeAggregated+`"`, useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeAggregated)),
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeAll+`"`, true),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeAll+`"`, useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeAll)),
 				),
 			},
 			{
-				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeIndividual+`"`, true),
+				Config: configGitLab(spaceLevel.APIHost, spaceLevel.Token, descr, labels, `"`+vcs.CheckTypeIndividual+`"`, useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeIndividual)),

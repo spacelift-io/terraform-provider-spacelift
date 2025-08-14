@@ -71,7 +71,7 @@ func dataGitlabIntegration() *schema.Resource {
 			},
 			gitLabUseGitCheckout: {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.",
 				Computed:    true,
 			},
 		},
