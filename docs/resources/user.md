@@ -4,14 +4,14 @@ page_title: "spacelift_user Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_user represents a mapping between a Spacelift user (managed using an Identity Provider) and a Policy. A Policy defines what access rights the user has to a given Space.
-  When the policy attribute is left empty, you can use the spacelift_role_attachment resource to bind roles to a user.
+  Note: The policy attribute, previously used to assign roles to the user, is deprecated. Use the spacelift_role_attachment resource to manage user roles instead.
 ---
 
 # spacelift_user (Resource)
 
 `spacelift_user` represents a mapping between a Spacelift user (managed using an Identity Provider) and a Policy. A Policy defines what access rights the user has to a given Space.
 
-When the `policy` attribute is left empty, you can use the `spacelift_role_attachment` resource to bind roles to a user.
+Note: The `policy` attribute, previously used to assign roles to the user, is deprecated. Use the `spacelift_role_attachment` resource to manage user roles instead.
 
 ## Example Usage
 
@@ -59,7 +59,7 @@ resource "spacelift_role_attachment" "user_attachment" {
 ### Optional
 
 - `invitation_email` (String) `invitation_email` will be used to send an invitation to the specified email address. This property is required when creating a new user. This property is optional when importing an existing user.
-- `policy` (Block Set) (see [below for nested schema](#nestedblock--policy))
+- `policy` (Block Set, Deprecated) (see [below for nested schema](#nestedblock--policy))
 
 ### Read-Only
 
