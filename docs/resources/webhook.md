@@ -30,6 +30,7 @@ resource "spacelift_webhook" "webhook" {
 
 - `enabled` (Boolean) enables or disables sending webhooks. Defaults to `true`.
 - `module_id` (String) ID of the module which triggers the webhooks
+- `retry_on_failure` (Boolean) whether to retry the webhook in case of failure. Defaults to `false`.
 - `secret` (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.
 - `stack_id` (String) ID of the stack which triggers the webhooks
 

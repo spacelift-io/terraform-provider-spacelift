@@ -15,12 +15,13 @@ func TestNamedWebhookData(t *testing.T) {
 	testSteps(t, []resource.TestStep{{
 		Config: fmt.Sprintf(`
 				resource "spacelift_named_webhook" "test" {
-					endpoint = "https://bacon.org"
-					space_id = "root"
-					name     = "%s"
-					labels   = ["1", "2"]
-					secret   = "super-secret"
-					enabled  = true
+					endpoint         = "https://bacon.org"
+					space_id         = "root"
+					name             = "%s"
+					labels           = ["1", "2"]
+					secret           = "super-secret"
+					enabled          = true
+					retry_on_failure = false
 				}
 
 				resource "spacelift_named_webhook_secret_header" "test-secret" {

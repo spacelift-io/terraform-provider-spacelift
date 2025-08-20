@@ -16,6 +16,7 @@ resource "spacelift_audit_trail_webhook" "test" {
 	endpoint = "%s"
 	include_runs = true
 	secret = "secret"
+	retry_on_failure = false
 }
 `
 
@@ -25,6 +26,7 @@ resource "spacelift_audit_trail_webhook" "test" {
 	endpoint = "%s"
 	include_runs = true
 	secret = "secret"
+	retry_on_failure = false
 	custom_headers = {
 		"X-Some-Header" = "some-value"
 		"X-Some-Header-2" = "some-value-2"

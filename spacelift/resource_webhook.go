@@ -85,6 +85,12 @@ func resourceWebhook() *schema.Resource {
 				Description: "ID of the stack which triggers the webhooks",
 				Optional:    true,
 			},
+			"retry_on_failure": {
+				Type:        schema.TypeBool,
+				Description: "whether to retry the webhook in case of failure. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -97,12 +103,19 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 		} `graphql:"webhooksIntegrationCreate(stack: $stack, input: $input)"`
 	}
 
+	input := structs.WebhooksIntegrationInput{
+		Enabled:  graphql.Boolean(d.Get("enabled").(bool)),
+		Endpoint: graphql.String(d.Get("endpoint").(string)),
+		Secret:   graphql.String(d.Get("secret").(string)),
+	}
+
+	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
+		value := graphql.Boolean(retryOnFailure.(bool))
+		input.RetryOnFailure = &value
+	}
+
 	variables := map[string]interface{}{
-		"input": structs.WebhooksIntegrationInput{
-			Enabled:  graphql.Boolean(d.Get("enabled").(bool)),
-			Endpoint: graphql.String(d.Get("endpoint").(string)),
-			Secret:   graphql.String(d.Get("secret").(string)),
-		},
+		"input": input,
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
@@ -178,6 +191,7 @@ func resourceModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", "")
+	d.Set("retry_on_failure", module.Integrations.Webhooks[webhookIndex].RetryOnFailure)
 
 	return nil
 }
@@ -219,6 +233,7 @@ func resourceStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
 	d.Set("secret", "")
+	d.Set("retry_on_failure", stack.Integrations.Webhooks[webhookIndex].RetryOnFailure)
 
 	return nil
 }
@@ -235,12 +250,19 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		} `graphql:"webhooksIntegrationUpdate(stack: $stack, id: $webhook, input: $input)"`
 	}
 
+	input := structs.WebhooksIntegrationInput{
+		Enabled:  graphql.Boolean(enabled),
+		Endpoint: graphql.String(endpoint),
+	}
+
+	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
+		value := graphql.Boolean(retryOnFailure.(bool))
+		input.RetryOnFailure = &value
+	}
+
 	variables := map[string]interface{}{
 		"webhook": toID(webhookID),
-		"input": structs.WebhooksIntegrationInput{
-			Enabled:  graphql.Boolean(enabled),
-			Endpoint: graphql.String(endpoint),
-		},
+		"input":   input,
 	}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {

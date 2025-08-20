@@ -26,5 +26,6 @@ description: |-
 - `id` (String) The ID of this resource.
 - `labels` (Set of String) labels for the webhook to use when referring in policies or filtering them
 - `name` (String) the name for the webhook which will also be used to generate the id
+- `retry_on_failure` (Boolean) whether to retry the webhook in case of failure
 - `secret_header_keys` (Set of String) secret header keys which are currently set for this webhook
 - `space_id` (String) ID of the space the webhook is in
