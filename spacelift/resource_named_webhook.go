@@ -68,6 +68,12 @@ func resourceNamedWebhook() *schema.Resource {
 				ForceNew:         true,
 				DiffSuppressFunc: ignoreOnceCreated,
 			},
+			"retry_on_failure": {
+				Type:        schema.TypeBool,
+				Description: "whether to retry the webhook in case of failure. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -86,6 +92,11 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		Name:     graphql.String(d.Get("name").(string)),
 		Secret:   toOptionalString(d.Get("secret").(string)),
 		Labels:   []graphql.String{},
+	}
+
+	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
+		value := graphql.Boolean(retryOnFailure.(bool))
+		input.RetryOnFailure = &value
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -126,6 +137,7 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("enabled", wh.Enabled)
 	d.Set("space_id", wh.Space.ID)
 	d.Set("secret", "")
+	d.Set("retry_on_failure", wh.RetryOnFailure)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range wh.Labels {
@@ -156,16 +168,23 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 		Webhook *structs.NamedWebhooksIntegration `graphql:"namedWebhooksIntegrationUpdate(id: $id, input: $input)"`
 	}
 
+	input := structs.NamedWebhooksIntegrationInput{
+		Enabled:  graphql.Boolean(enabled),
+		Endpoint: graphql.String(endpoint),
+		Secret:   toOptionalString(secret),
+		Name:     graphql.String(name),
+		Space:    graphql.String(spaceID),
+		Labels:   labels,
+	}
+
+	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
+		value := graphql.Boolean(retryOnFailure.(bool))
+		input.RetryOnFailure = &value
+	}
+
 	variables := map[string]interface{}{
-		"id": toID(webhookID),
-		"input": structs.NamedWebhooksIntegrationInput{
-			Enabled:  graphql.Boolean(enabled),
-			Endpoint: graphql.String(endpoint),
-			Secret:   toOptionalString(secret),
-			Name:     graphql.String(name),
-			Space:    graphql.String(spaceID),
-			Labels:   labels,
-		},
+		"id":    toID(webhookID),
+		"input": input,
 	}
 
 	var ret diag.Diagnostics
