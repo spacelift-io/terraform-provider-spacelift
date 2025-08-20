@@ -35,3 +35,4 @@ data "spacelift_webhook" "webhook" {
 - `enabled` (Boolean) enables or disables sending webhooks
 - `endpoint` (String) endpoint to send the POST request to
 - `id` (String) The ID of this resource.
+- `retry_on_failure` (Boolean) whether to retry the webhook in case of failure

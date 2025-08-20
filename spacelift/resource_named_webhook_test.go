@@ -19,12 +19,13 @@ func TestNamedWebhookResource(t *testing.T) {
 		config := func(endpoint string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_named_webhook" "test" {
-					endpoint = "%s"
-					space_id = "root"
-					name     = "testing-named-%s"
-					labels   = ["1", "2"]
-					secret   = "super-secret"
-					enabled  = true
+					endpoint         = "%s"
+					space_id         = "root"
+					name             = "testing-named-%s"
+					labels           = ["1", "2"]
+					secret           = "super-secret"
+					enabled          = true
+					retry_on_failure = false
 				}
 			`, endpoint, randomID)
 		}
@@ -61,10 +62,11 @@ func TestNamedWebhookResource(t *testing.T) {
 		config := func(endpoint string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_named_webhook" "test" {
-					endpoint = "%s"
-					space_id = "root"
-					name     = "testing-named-%s"
-					enabled  = true
+					endpoint         = "%s"
+					space_id         = "root"
+					name             = "testing-named-%s"
+					enabled          = true
+					retry_on_failure = false
 				}
 			`, endpoint, randomID)
 		}

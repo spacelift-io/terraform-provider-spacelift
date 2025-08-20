@@ -21,9 +21,10 @@ type Integrations struct {
 		TokenScopes         []string `graphql:"tokenScopes"`
 	} `graphql:"gcp"`
 	Webhooks []struct {
-		ID       string `graphql:"id"`
-		Enabled  bool   `graphql:"enabled"`
-		Endpoint string `graphql:"endpoint"`
-		Secret   string `graphql:"secret"`
+		ID             string `graphql:"id"`
+		Enabled        bool   `graphql:"enabled"`
+		Endpoint       string `graphql:"endpoint"`
+		Secret         string `graphql:"secret"`
+		RetryOnFailure *bool  `graphql:"retryOnFailure"`
 	} `graphql:"webhooks"`
 }
