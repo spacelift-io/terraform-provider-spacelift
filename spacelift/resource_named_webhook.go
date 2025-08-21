@@ -95,8 +95,7 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		value := graphql.Boolean(retryOnFailure.(bool))
-		input.RetryOnFailure = &value
+		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -178,8 +177,7 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		value := graphql.Boolean(retryOnFailure.(bool))
-		input.RetryOnFailure = &value
+		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	variables := map[string]interface{}{
