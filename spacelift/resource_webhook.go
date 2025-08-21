@@ -110,8 +110,7 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		value := graphql.Boolean(retryOnFailure.(bool))
-		input.RetryOnFailure = &value
+		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	variables := map[string]interface{}{
@@ -256,8 +255,7 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		value := graphql.Boolean(retryOnFailure.(bool))
-		input.RetryOnFailure = &value
+		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	variables := map[string]interface{}{

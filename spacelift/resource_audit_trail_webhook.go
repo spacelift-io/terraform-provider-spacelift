@@ -79,8 +79,7 @@ func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceD
 	}
 
 	if retryOnFailure, ok := data.GetOk("retry_on_failure"); ok {
-		value := toBool(retryOnFailure)
-		input.RetryOnFailure = &value
+		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	variables := map[string]interface{}{
@@ -129,8 +128,7 @@ func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceD
 	}
 
 	if retryOnFailure, ok := data.GetOk("retry_on_failure"); ok {
-		value := toBool(retryOnFailure)
-		input.RetryOnFailure = &value
+		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	variables := map[string]interface{}{
