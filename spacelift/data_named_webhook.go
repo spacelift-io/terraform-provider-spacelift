@@ -63,6 +63,11 @@ func dataNamedWebhook() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
+			"retry_on_failure": {
+				Type:        schema.TypeBool,
+				Description: "whether to retry the webhook in case of failure",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -88,6 +93,7 @@ func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("endpoint", wh.Endpoint)
 	d.Set("enabled", wh.Enabled)
 	d.Set("space_id", wh.Space.ID)
+	d.Set("retry_on_failure", wh.RetryOnFailure)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range wh.Labels {

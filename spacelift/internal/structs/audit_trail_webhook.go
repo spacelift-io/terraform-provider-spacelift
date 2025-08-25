@@ -7,8 +7,9 @@ type AuditTrailWebhook struct {
 }
 
 type AuditTrailWebhookRead struct {
-	Enabled     bool   `graphql:"enabled"`
-	Endpoint    string `graphql:"endpoint"`
-	IncludeRuns bool   `graphql:"includeRuns"`
-	Secret      string `graphql:"secret"`
+	Enabled        bool   `graphql:"enabled"`
+	Endpoint       string `graphql:"endpoint"`
+	IncludeRuns    bool   `graphql:"includeRuns"`
+	Secret         string `graphql:"secret"`
+	RetryOnFailure *bool  `graphql:"retryOnFailure"`
 }
