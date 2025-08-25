@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -26,6 +27,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("app_id", Equals(cfg.AppID)),
 				Attribute(ghEnterpriseVCSChecks, Equals(cfg.VCSChecks)),
+				Attribute(ghEnterpriseUseGitCheckout, Equals(strconv.FormatBool(cfg.UseGitCheckout))),
 			),
 		}})
 	})
@@ -49,6 +51,7 @@ func TestGithubEnterpriseIntegrationData(t *testing.T) {
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("app_id", Equals(cfg.AppID)),
 				Attribute(ghEnterpriseVCSChecks, Equals(cfg.VCSChecks)),
+				Attribute(ghEnterpriseUseGitCheckout, Equals(strconv.FormatBool(cfg.UseGitCheckout))),
 			),
 		}})
 	})

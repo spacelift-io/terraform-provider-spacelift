@@ -69,6 +69,11 @@ func dataGitlabIntegration() *schema.Resource {
 				Description: "VCS checks configured for GitLab repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
 				Computed:    true,
 			},
+			gitLabUseGitCheckout: {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -84,11 +89,12 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 			Space       struct {
 				ID string `graphql:"id"`
 			} `graphql:"space"`
-			Labels        []string `graphql:"labels"`
-			APIHost       string   `graphql:"apiHost"`
-			WebhookSecret string   `graphql:"webhookSecret"`
-			WebhookURL    string   `graphql:"webhookUrl"`
-			VCSChecks     string   `graphql:"vcsChecks"`
+			Labels         []string `graphql:"labels"`
+			APIHost        string   `graphql:"apiHost"`
+			WebhookSecret  string   `graphql:"webhookSecret"`
+			WebhookURL     string   `graphql:"webhookUrl"`
+			VCSChecks      string   `graphql:"vcsChecks"`
+			UseGitCheckout bool     `graphql:"useGitCheckout"`
 		} `graphql:"gitlabIntegration(id: $id)"`
 	}
 
@@ -124,6 +130,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.Set(gitLabLabels, labels)
 	d.Set(gitLabVCSChecks, gitLabIntegration.VCSChecks)
+	d.Set(gitLabUseGitCheckout, gitLabIntegration.UseGitCheckout)
 
 	return nil
 }

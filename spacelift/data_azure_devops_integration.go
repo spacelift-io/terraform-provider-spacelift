@@ -20,6 +20,7 @@ const (
 	azureDevopsWebhookPassword = "webhook_password"
 	azureDevopsWebhookURL      = "webhook_url"
 	azureDevopsVCSChecks       = "vcs_checks"
+	azureDevopsUseGitCheckout  = "use_git_checkout"
 )
 
 func dataAzureDevopsIntegration() *schema.Resource {
@@ -82,6 +83,11 @@ func dataAzureDevopsIntegration() *schema.Resource {
 				Description: "VCS checks configured for Azure DevOps repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
 				Computed:    true,
 			},
+			azureDevopsUseGitCheckout: {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -101,6 +107,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 			WebhookPassword string   `graphql:"webhookPassword"`
 			WebhookURL      string   `graphql:"webhookUrl"`
 			VCSChecks       string   `graphql:"vcsChecks"`
+			UseGitCheckout  bool     `graphql:"useGitCheckout"`
 		} `graphql:"azureDevOpsRepoIntegration(id: $id)"`
 	}
 
@@ -136,6 +143,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 
 	d.Set(azureDevopsLabels, labels)
 	d.Set(azureDevopsVCSChecks, azureDevopsIntegration.VCSChecks)
+	d.Set(azureDevopsUseGitCheckout, azureDevopsIntegration.UseGitCheckout)
 
 	return nil
 }

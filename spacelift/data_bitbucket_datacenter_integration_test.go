@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
@@ -26,6 +27,7 @@ func TestBitbucketDataCenterIntegrationData(t *testing.T) {
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("user_facing_host", Equals(cfg.UserFacingHost)),
 				Attribute(bitbucketDatacenterVCSChecks, Equals(cfg.VCSChecks)),
+				Attribute(bitbucketDatacenterUseGitCheckout, Equals(strconv.FormatBool(cfg.UseGitCheckout))),
 			),
 		}})
 	})
@@ -49,6 +51,7 @@ func TestBitbucketDataCenterIntegrationData(t *testing.T) {
 				Attribute("webhook_url", Equals(cfg.WebhookURL)),
 				Attribute("user_facing_host", Equals(cfg.UserFacingHost)),
 				Attribute(bitbucketDatacenterVCSChecks, Equals(cfg.VCSChecks)),
+				Attribute(bitbucketDatacenterUseGitCheckout, Equals(strconv.FormatBool(cfg.UseGitCheckout))),
 			),
 		}})
 	})
