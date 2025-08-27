@@ -215,6 +215,11 @@ func dataModule() *schema.Resource {
 				Description: "Name of the repository, without the owner part",
 				Computed:    true,
 			},
+			"runner_image": {
+				Type:        schema.TypeString,
+				Description: "Name of the Docker image used to process Runs",
+				Computed:    true,
+			},
 			"module_id": {
 				Type:             schema.TypeString,
 				Description:      "ID (slug) of the module",
@@ -305,6 +310,12 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		d.Set("project_root", *module.ProjectRoot)
 	} else {
 		d.Set("project_root", nil)
+	}
+
+	if module.RunnerImage != nil {
+		d.Set("runner_image", *module.RunnerImage)
+	} else {
+		d.Set("runner_image", nil)
 	}
 
 	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})

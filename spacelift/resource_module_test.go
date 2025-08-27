@@ -327,6 +327,45 @@ func TestModuleResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with runner_image", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(runnerImage string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_module" "test" {
+					name           = "runner-image-module-%s"
+					branch         = "master"
+					repository     = "terraform-bacon-tasty"
+					runner_image   = "%s"
+				}
+			`, randomID, runnerImage)
+		}
+
+		const resourceName = "spacelift_module.test"
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("alpine:latest"),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("runner_image", Equals("alpine:latest")),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: config("ubuntu:20.04"),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("runner_image", Equals("ubuntu:20.04")),
+				),
+			},
+		})
+	})
 }
 
 func TestModuleResourceSpace(t *testing.T) {
