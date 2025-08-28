@@ -23,6 +23,7 @@ type Module struct {
 	Public                 bool         `graphql:"public"`
 	Repository             string       `graphql:"repository"`
 	RepositoryURL          *string      `graphql:"repositoryURL"`
+	RunnerImage            *string      `graphql:"runnerImage"`
 	SharedAccounts         []string     `graphql:"sharedAccounts"`
 	Space                  string       `graphql:"space"`
 	SpaceDetails           Space        `graphql:"spaceDetails"`

@@ -26,6 +26,7 @@ type ModuleUpdateInput struct {
 	ProjectRoot            *graphql.String   `json:"projectRoot"`
 	GitSparseCheckoutPaths *[]graphql.String `json:"gitSparseCheckoutPaths"`
 	ProtectFromDeletion    graphql.Boolean   `json:"protectFromDeletion"`
+	RunnerImage            *graphql.String   `json:"runnerImage"`
 	SharedAccounts         *[]graphql.String `json:"sharedAccounts"`
 	WorkerPool             *graphql.ID       `json:"workerPool"`
 	Space                  *graphql.String   `json:"space"`
@@ -46,6 +47,7 @@ type ModuleUpdateV2Input struct {
 	Provider               *graphql.String   `json:"provider"`
 	Repository             graphql.String    `json:"repository"`
 	RepositoryURL          *graphql.String   `json:"repositoryURL"`
+	RunnerImage            *graphql.String   `json:"runnerImage"`
 	SharedAccounts         *[]graphql.String `json:"sharedAccounts"`
 	Space                  *graphql.String   `json:"space"`
 	VCSIntegrationID       *graphql.ID       `json:"vcsIntegrationId"`

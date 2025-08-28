@@ -289,6 +289,11 @@ func resourceModule() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
+			"runner_image": {
+				Type:        schema.TypeString,
+				Description: "Name of the Docker image used to process Runs",
+				Optional:    true,
+			},
 			"shared_accounts": {
 				Type:        schema.TypeSet,
 				Description: "List of the accounts (subdomains) which should have access to the Module",
@@ -387,6 +392,10 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	if projectRoot := module.ProjectRoot; projectRoot != nil {
 		d.Set("project_root", *projectRoot)
+	}
+
+	if module.RunnerImage != nil {
+		d.Set("runner_image", *module.RunnerImage)
 	}
 
 	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
@@ -589,6 +598,10 @@ func moduleUpdateInput(d *schema.ResourceData) structs.ModuleUpdateInput {
 		ret.GitSparseCheckoutPaths = &paths
 	}
 
+	if runnerImage, ok := d.GetOk("runner_image"); ok {
+		ret.RunnerImage = toOptionalString(runnerImage)
+	}
+
 	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
 		var sharedAccounts []graphql.String
 		for _, account := range sharedAccountsSet.List() {
@@ -641,6 +654,10 @@ func moduleUpdateV2Input(d *schema.ResourceData) structs.ModuleUpdateV2Input {
 			paths = append(paths, graphql.String(path.(string)))
 		}
 		ret.GitSparseCheckoutPaths = &paths
+	}
+
+	if runnerImage, ok := d.GetOk("runner_image"); ok {
+		ret.RunnerImage = toOptionalString(runnerImage)
 	}
 
 	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
