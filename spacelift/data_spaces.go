@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
@@ -20,6 +21,12 @@ func dataSpaces() *schema.Resource {
 		ReadContext: dataSpacesRead,
 
 		Schema: map[string]*schema.Schema{
+			"labels": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "required labels to match",
+				Optional:    true,
+			},
 			"spaces": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -66,14 +73,7 @@ func dataSpaces() *schema.Resource {
 
 func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var query struct {
-		Spaces []struct {
-			ID              string   `graphql:"id"`
-			Labels          []string `graphql:"labels"`
-			Name            string   `graphql:"name"`
-			Description     string   `graphql:"description"`
-			ParentSpace     string   `graphql:"parentSpace"`
-			InheritEntities bool     `graphql:"inheritEntities"`
-		} `graphql:"spaces()"`
+		Spaces []structs.Space `graphql:"spaces()"`
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "SpacesRead", &query, nil); err != nil {
@@ -81,7 +81,7 @@ func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	var spaces []interface{}
-	for _, space := range query.Spaces {
+	for _, space := range internal.FilterByRequiredLabels(d, query.Spaces, func(space structs.Space) []string { return space.Labels }) {
 		spaces = append(spaces, map[string]interface{}{
 			"space_id":         space.ID,
 			"name":             space.Name,
