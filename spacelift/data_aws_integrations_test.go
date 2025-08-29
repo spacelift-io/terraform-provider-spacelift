@@ -53,6 +53,47 @@ func TestAWSIntegrationsData(t *testing.T) {
 	}})
 }
 
+func TestAWSIntegrationsDataFilterByLabels(t *testing.T) {
+	first := &structs.AWSIntegration{
+		DurationSeconds:             1234,
+		GenerateCredentialsInWorker: false,
+		Labels:                      []string{"one", "two"},
+		Name:                        acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
+		RoleARN:                     "arn:aws:iam::039653571618:role/empty-test-role",
+		Space:                       "root",
+	}
+	second := &structs.AWSIntegration{
+		DurationSeconds:             4321,
+		GenerateCredentialsInWorker: true,
+		Labels:                      []string{"three", "four"},
+		Name:                        acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
+		RoleARN:                     "arn:aws:iam::039653571618:role/empty-test-role-2",
+		Space:                       "legacy",
+		Region:                      &[]string{"us-east-1"}[0],
+	}
+
+	terraformConfig := fmt.Sprintf(`
+		 %s
+
+		 %s
+
+      	 data "spacelift_aws_integrations" "test" {
+			labels     = ["three"]
+			depends_on = [spacelift_aws_integration.%s, spacelift_aws_integration.%s]
+      	 }
+		`,
+		awsIntegrationToResource(first),
+		awsIntegrationToResource(second),
+		first.Name, second.Name,
+	)
+	testSteps(t, []resource.TestStep{{
+		Config: terraformConfig, Check: resource.ComposeTestCheckFunc(
+			Resource("data.spacelift_aws_integrations.test", Attribute("id", Equals("spacelift_aws_integrations"))),
+			resource.ComposeTestCheckFunc(awsIntegrationChecks(second)...),
+		),
+	}})
+}
+
 func awsIntegrationToResource(i *structs.AWSIntegration) string {
 	var regionAttr string
 	if i.Region != nil {
