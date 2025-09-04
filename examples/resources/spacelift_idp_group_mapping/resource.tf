@@ -21,7 +21,7 @@ resource "spacelift_role" "devops" {
 }
 
 resource "spacelift_role_attachment" "devops" {
-  idp_group_mapping = spacelift_idp_group_mapping.devops.id
-  role_id           = spacelift_role.devops.id
-  space_id          = "root"
+  idp_group_mapping_id = spacelift_idp_group_mapping.devops.id
+  role_id              = spacelift_role.devops.id
+  space_id             = "root"
 }
