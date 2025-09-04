@@ -25,6 +25,7 @@ description: |-
 ### Optional
 
 - `labels` (Set of String) labels for the webhook to use when referring in policies or filtering them
+- `retry_on_failure` (Boolean) whether to retry the webhook in case of failure. Defaults to `false`.
 - `secret` (String, Sensitive) secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.
 
 ### Read-Only

@@ -47,6 +47,11 @@ func dataWebhook() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
+			"retry_on_failure": {
+				Type:        schema.TypeBool,
+				Description: "whether to retry the webhook in case of failure",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -91,6 +96,7 @@ func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId(webhookID)
 	d.Set("enabled", module.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", module.Integrations.Webhooks[webhookIndex].Endpoint)
+	d.Set("retry_on_failure", module.Integrations.Webhooks[webhookIndex].RetryOnFailure)
 
 	return nil
 }
@@ -126,6 +132,7 @@ func dataStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.SetId(webhookID)
 	d.Set("enabled", stack.Integrations.Webhooks[webhookIndex].Enabled)
 	d.Set("endpoint", stack.Integrations.Webhooks[webhookIndex].Endpoint)
+	d.Set("retry_on_failure", stack.Integrations.Webhooks[webhookIndex].RetryOnFailure)
 
 	return nil
 }
