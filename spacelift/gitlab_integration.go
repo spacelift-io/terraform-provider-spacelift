@@ -14,4 +14,5 @@ const (
 	gitLabWebhookURL     = "webhook_url"
 	gitLabWebhookSecret  = "webhook_secret"
 	gitLabVCSChecks      = "vcs_checks"
+	gitLabUseGitCheckout = "use_git_checkout"
 )

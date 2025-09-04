@@ -18,6 +18,7 @@ var testConfig struct {
 				WebhookSecret   string
 				WebhookURL      string
 				VCSChecks       string
+				UseGitCheckout  bool
 			}
 			SpaceLevel struct {
 				Name            string
@@ -28,6 +29,7 @@ var testConfig struct {
 				WebhookSecret   string
 				WebhookURL      string
 				VCSChecks       string
+				UseGitCheckout  bool
 			}
 			Repository struct {
 				Name      string
@@ -67,6 +69,7 @@ var testConfig struct {
 				WebhookSecret  string
 				WebhookURL     string
 				VCSChecks      string
+				UseGitCheckout bool
 			}
 			SpaceLevel struct {
 				Name           string
@@ -79,6 +82,7 @@ var testConfig struct {
 				WebhookURL     string
 				AccessToken    string
 				VCSChecks      string
+				UseGitCheckout bool
 			}
 			Repository struct {
 				Name      string
@@ -88,23 +92,25 @@ var testConfig struct {
 		}
 		GithubEnterprise struct {
 			Default struct {
-				Name          string
-				ID            string
-				APIHost       string
-				AppID         string
-				WebhookSecret string
-				WebhookURL    string
-				VCSChecks     string
+				Name           string
+				ID             string
+				APIHost        string
+				AppID          string
+				WebhookSecret  string
+				WebhookURL     string
+				VCSChecks      string
+				UseGitCheckout bool
 			}
 			SpaceLevel struct {
-				Name          string
-				ID            string
-				Space         string
-				APIHost       string
-				AppID         string
-				WebhookSecret string
-				WebhookURL    string
-				VCSChecks     string
+				Name           string
+				ID             string
+				Space          string
+				APIHost        string
+				AppID          string
+				WebhookSecret  string
+				WebhookURL     string
+				VCSChecks      string
+				UseGitCheckout bool
 			}
 			Repository struct {
 				Name      string
@@ -114,23 +120,25 @@ var testConfig struct {
 		}
 		Gitlab struct {
 			Default struct {
-				Name          string
-				ID            string
-				Token         string
-				APIHost       string
-				WebhookSecret string
-				WebhookURL    string
-				VCSChecks     string
+				Name           string
+				ID             string
+				Token          string
+				APIHost        string
+				WebhookSecret  string
+				WebhookURL     string
+				VCSChecks      string
+				UseGitCheckout bool
 			}
 			SpaceLevel struct {
-				Name          string
-				ID            string
-				Space         string
-				APIHost       string
-				Token         string
-				WebhookSecret string
-				WebhookURL    string
-				VCSChecks     string
+				Name           string
+				ID             string
+				Space          string
+				APIHost        string
+				Token          string
+				WebhookSecret  string
+				WebhookURL     string
+				VCSChecks      string
+				UseGitCheckout bool
 			}
 			Repository struct {
 				Name      string

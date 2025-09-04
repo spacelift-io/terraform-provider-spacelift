@@ -54,6 +54,7 @@ resource "spacelift_bitbucket_datacenter_integration" "private-example" {
 - `description` (String) Bitbucket Datacenter integration description
 - `labels` (Set of String) Bitbucket Datacenter integration labels
 - `space_id` (String) Bitbucket Datacenter integration space id. Defaults to `root`.
+- `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to false.
 - `vcs_checks` (String) VCS checks configured for Bitbucket Datacenter repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
 
 ### Read-Only
