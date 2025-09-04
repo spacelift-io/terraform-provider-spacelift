@@ -24,7 +24,7 @@ func TestModuleData(t *testing.T) {
 				labels          = ["one", "two"]
 				git_sparse_checkout_paths = ["module"]
 				repository      = "terraform-bacon-tasty"
-				shared_accounts = ["foo-subdomain", "bar-subdomain"]
+				shared_accounts = ["spacelift-io"]
 			}
 			data "spacelift_module" "test" {
 				module_id = spacelift_module.test.id
@@ -41,7 +41,7 @@ func TestModuleData(t *testing.T) {
 				Attribute("project_root", Equals("")),
 				SetEquals("git_sparse_checkout_paths", "module"),
 				Attribute("repository", Equals("terraform-bacon-tasty")),
-				SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+				SetEquals("shared_accounts", "spacelift-io"),
 				Attribute("terraform_provider", Equals("default")),
 			),
 		}})
@@ -143,7 +143,7 @@ func TestModuleDataSpace(t *testing.T) {
 				description     = "description"
 				labels          = ["one", "two"]
 				repository      = "terraform-bacon-tasty"
-				shared_accounts = ["foo-subdomain", "bar-subdomain"]
+				shared_accounts = ["spacelift-io"]
 				space_id        = "root"
 			}
 
@@ -162,7 +162,7 @@ func TestModuleDataSpace(t *testing.T) {
 			Attribute("project_root", Equals("")),
 			Attribute("repository", Equals("terraform-bacon-tasty")),
 			Attribute("space_id", Equals("root")),
-			SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+			SetEquals("shared_accounts", "spacelift-io"),
 			Attribute("terraform_provider", Equals("default")),
 		),
 	}})

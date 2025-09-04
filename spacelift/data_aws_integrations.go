@@ -15,6 +15,12 @@ func dataAWSIntegrations() *schema.Resource {
 		Description: "`spacelift_aws_integrations` represents a list of all the AWS integrations in the Spacelift account visible to the API user.",
 		ReadContext: dataAWSIntegrationsRead,
 		Schema: map[string]*schema.Schema{
+			"labels": {
+				Type:        schema.TypeSet,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Description: "required labels to match",
+				Optional:    true,
+			},
 			"integrations": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -90,7 +96,7 @@ func dataAWSIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta i
 		return nil
 	}
 
-	mapped := flattenDataIntegrationsList(integrations)
+	mapped := flattenDataIntegrationsList(internal.FilterByRequiredLabels(d, integrations, func(integration *structs.AWSIntegration) []string { return integration.Labels }))
 	if err := d.Set("integrations", mapped); err != nil {
 		d.SetId("")
 		return diag.Errorf("could not set contexts: %v", err)

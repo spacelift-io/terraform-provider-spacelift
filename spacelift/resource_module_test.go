@@ -27,7 +27,7 @@ func TestModuleResource(t *testing.T) {
 					enable_local_preview  = %t
 					protect_from_deletion = %t
 					repository            = "terraform-bacon-tasty"
-					shared_accounts       = ["foo-subdomain", "bar-subdomain"]
+					shared_accounts       = ["spacelift-io"]
 				}
 			`, randomID, description, localPreview, protectFromDeletion)
 		}
@@ -51,7 +51,7 @@ func TestModuleResource(t *testing.T) {
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("public", Equals("false")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
-					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+					SetEquals("shared_accounts", "spacelift-io"),
 					Attribute("terraform_provider", Equals("default")),
 				),
 			},
@@ -152,7 +152,7 @@ func TestModuleResource(t *testing.T) {
 					labels             = ["one", "two"]
                     project_root       = "%s"
 					repository         = "terraform-bacon-tasty"
-					shared_accounts    = ["foo-subdomain", "bar-subdomain"]
+					shared_accounts    = ["spacelift-io"]
                     terraform_provider = "papaya"
 				}
 			`, randomID, projectRoot)
@@ -173,7 +173,7 @@ func TestModuleResource(t *testing.T) {
 					Attribute("name", Equals(fmt.Sprintf("project-root-%s", randomID))),
 					Attribute("project_root", Equals("test-root/ab")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
-					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+					SetEquals("shared_accounts", "spacelift-io"),
 					Attribute("terraform_provider", Equals("papaya")),
 				),
 			},
@@ -327,6 +327,45 @@ func TestModuleResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with runner_image", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(runnerImage string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_module" "test" {
+					name           = "runner-image-module-%s"
+					branch         = "master"
+					repository     = "terraform-bacon-tasty"
+					runner_image   = "%s"
+				}
+			`, randomID, runnerImage)
+		}
+
+		const resourceName = "spacelift_module.test"
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("alpine:latest"),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("runner_image", Equals("alpine:latest")),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: config("ubuntu:20.04"),
+				Check: Resource(
+					"spacelift_module.test",
+					Attribute("runner_image", Equals("ubuntu:20.04")),
+				),
+			},
+		})
+	})
 }
 
 func TestModuleResourceSpace(t *testing.T) {
@@ -344,7 +383,7 @@ func TestModuleResourceSpace(t *testing.T) {
 					protect_from_deletion = %t
 					repository            = "terraform-bacon-tasty"
 					space_id              = "root"
-					shared_accounts       = ["foo-subdomain", "bar-subdomain"]
+					shared_accounts       = ["spacelift-io"]
 				}
 			`, randomID, description, protectFromDeletion)
 		}
@@ -365,7 +404,7 @@ func TestModuleResourceSpace(t *testing.T) {
 					AttributeNotPresent("project_root"),
 					Attribute("protect_from_deletion", Equals("true")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
-					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+					SetEquals("shared_accounts", "spacelift-io"),
 					Attribute("terraform_provider", Equals("default")),
 					Attribute("space_id", Equals("root")),
 				),
@@ -399,7 +438,7 @@ func TestModuleResourceSpace(t *testing.T) {
 					labels             = ["one", "two"]
                     project_root       = "%s"
 					repository         = "terraform-bacon-tasty"
-					shared_accounts    = ["foo-subdomain", "bar-subdomain"]
+					shared_accounts    = ["spacelift-io"]
                     terraform_provider = "papaya"
 				}
 			`, randomID, projectRoot)
@@ -420,7 +459,7 @@ func TestModuleResourceSpace(t *testing.T) {
 					Attribute("name", Equals(fmt.Sprintf("project-root-%s", randomID))),
 					Attribute("project_root", Equals("test-root/ab")),
 					Attribute("repository", Equals("terraform-bacon-tasty")),
-					SetEquals("shared_accounts", "bar-subdomain", "foo-subdomain"),
+					SetEquals("shared_accounts", "spacelift-io"),
 					Attribute("terraform_provider", Equals("papaya")),
 				),
 			},
