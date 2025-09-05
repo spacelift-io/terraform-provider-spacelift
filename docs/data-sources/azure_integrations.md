@@ -33,5 +33,6 @@ Read-Only:
 - `integration_id` (String)
 - `labels` (Set of String)
 - `name` (String)
+- `object_id` (String)
 - `space_id` (String)
 - `tenant_id` (String)

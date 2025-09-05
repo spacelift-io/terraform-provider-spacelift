@@ -82,6 +82,11 @@ func resourceAzureIntegration() *schema.Resource {
 					"integration.",
 				Computed: true,
 			},
+			"object_id": {
+				Type:        schema.TypeString,
+				Description: "The objectId of the Azure AD application used by the integration.",
+				Computed:    true,
+			},
 			"display_name": {
 				Type: schema.TypeString,
 				Description: "" +

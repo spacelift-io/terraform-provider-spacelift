@@ -42,6 +42,7 @@ resource "spacelift_azure_integration" "example" {
 - `application_id` (String) The applicationId of the Azure AD application used by the integration.
 - `display_name` (String) The display name for the application in Azure. This is automatically generated when the integration is created, and cannot be changed without deleting and recreating the integration.
 - `id` (String) The ID of this resource.
+- `object_id` (String) The objectId of the Azure AD application used by the integration.
 
 ## Import
 

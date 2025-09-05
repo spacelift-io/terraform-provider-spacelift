@@ -41,5 +41,6 @@ data "spacelift_azure_integration" "example" {
 - `display_name` (String) The display name for the application in Azure. This is automatically generated when the integration is created, and cannot be changed without deleting and recreating the integration.
 - `id` (String) The ID of this resource.
 - `labels` (Set of String) Labels to set on the integration
+- `object_id` (String) The objectId of the Azure AD application used by the integration.
 - `space_id` (String) ID (slug) of the space the integration is in
 - `tenant_id` (String) The Azure AD tenant ID

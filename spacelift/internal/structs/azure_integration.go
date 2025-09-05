@@ -9,6 +9,7 @@ type AzureIntegration struct {
 	AdminConsentProvided  bool     `graphql:"adminConsentProvided"`
 	AdminConsentURL       string   `graphql:"adminConsentURL"`
 	ApplicationID         string   `graphql:"applicationId"`
+	ObjectID              *string  `graphql:"objectId"`
 	DefaultSubscriptionID *string  `graphql:"defaultSubscriptionId"`
 	DisplayName           string   `graphql:"displayName"`
 	Labels                []string `graphql:"labels"`
@@ -37,6 +38,9 @@ func (i *AzureIntegration) ToMap() map[string]interface{} {
 	}
 	if subID := i.DefaultSubscriptionID; subID != nil {
 		fields["default_subscription_id"] = *subID
+	}
+	if i.ObjectID != nil {
+		fields["object_id"] = *i.ObjectID
 	}
 
 	fields["labels"] = i.getLabelsSet()
