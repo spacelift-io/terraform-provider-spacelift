@@ -83,6 +83,7 @@ func azureIntegrationChecks(i *structs.AzureIntegration) []resource.TestCheckFun
 					SetEquals("labels", i.Labels...),
 					Attribute("space_id", Equals(i.Space)),
 					Attribute("integration_id", IsNotEmpty()),
+					Attribute("object_id", IsNotEmpty()),
 				),
 			),
 		),
