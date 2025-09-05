@@ -92,6 +92,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_scheduled_run":                          dataScheduledRun(),
 				"spacelift_scheduled_delete_stack":                 dataScheduledDeleteStack(),
 				"spacelift_stack":                                  dataStack(),
+				"spacelift_stack_outputs":                          dataStackOutputs(),
 				"spacelift_stacks":                                 dataStacks(),
 				"spacelift_tool_versions":                          dataToolVersions(),
 				"spacelift_user":                                   dataUser(),
