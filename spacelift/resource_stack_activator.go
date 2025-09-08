@@ -52,12 +52,16 @@ func resourceStackActivatorRead(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		return diag.Errorf("failed to retrieve stack: %v", internal.FromSpaceliftError(err))
 	}
+	var diags diag.Diagnostics
 	if stack == nil {
-		return diag.Errorf("stack not found: %v", internal.FromSpaceliftError(err))
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  "could not find activator's stack",
+		})
 	}
 	d.SetId(fmt.Sprintf("activator-%d", time.Now().Unix()))
-	d.Set("enabled", !stack.IsDisabled)
-	return nil
+	d.Set("enabled", stack != nil && !stack.IsDisabled)
+	return diags
 }
 
 func resourceStackActivatorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
