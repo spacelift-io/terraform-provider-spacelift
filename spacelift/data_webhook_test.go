@@ -23,9 +23,10 @@ func TestWebhookData(t *testing.T) {
 				}
 
 				resource "spacelift_webhook" "test" {
-					stack_id = spacelift_stack.test.id
-					endpoint = "https://bacon.org"
-					secret   = "very-very-secret"
+					stack_id         = spacelift_stack.test.id
+					endpoint         = "https://bacon.org"
+					secret           = "very-very-secret"
+					retry_on_failure = false
 				}
 
 				data "spacelift_webhook" "test" {
@@ -56,9 +57,10 @@ func TestWebhookData(t *testing.T) {
 				}
 
 				resource "spacelift_webhook" "test" {
-					module_id = spacelift_module.test.id
-					endpoint  = "https://bacon.org"
-					secret    = "very-very-secret"
+					module_id        = spacelift_module.test.id
+					endpoint         = "https://bacon.org"
+					secret           = "very-very-secret"
+					retry_on_failure = false
 				}
 
 				data "spacelift_webhook" "test" {
