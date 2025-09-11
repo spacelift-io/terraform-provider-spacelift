@@ -527,4 +527,111 @@ func TestModuleResourceSpace(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with space_shares", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		branch := "master"
+		repository := "terraform-bacon-tasty"
+
+		spaces := `
+				resource "spacelift_space" "test_space_1" {
+					name = "test-space-1"
+				}
+				resource "spacelift_space" "test_space_2" {
+					name = "test-space-2"
+				}
+				resource "spacelift_space" "test_space_3" {
+					name = "test-space-3"
+				}`
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				%s
+				resource "spacelift_module" "test" {
+					name           = "space-shares-module-%s"
+					branch         = %q
+					repository     = %q
+					space_shares   = [spacelift_space.test_space_1.id, spacelift_space.test_space_2.id]
+					shared_accounts = ["spacelift-io"]
+				}
+			`, spaces, randomID, branch, repository),
+				Check: resource.ComposeTestCheckFunc(
+					// Verify space_shares contains exactly 2 elements
+					resource.TestCheckResourceAttr("spacelift_module.test", "space_shares.#", "2"),
+					// Verify the space IDs are in the set (order doesn't matter)
+					resource.TestCheckTypeSetElemAttrPair("spacelift_module.test", "space_shares.*", "spacelift_space.test_space_1", "id"),
+					resource.TestCheckTypeSetElemAttrPair("spacelift_module.test", "space_shares.*", "spacelift_space.test_space_2", "id"),
+					// Verify shared_accounts still works
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.#", "1"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.0", "spacelift-io"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				%s
+				resource "spacelift_module" "test" {
+					name           = "space-shares-module-%s"
+					branch         = %q
+					repository     = %q
+					shared_accounts = ["spacelift-io"]
+				}
+			`, spaces, randomID, branch, repository),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("spacelift_module.test", "space_shares.#", "0"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.#", "1"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.0", "spacelift-io"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				%s
+				resource "spacelift_module" "test" {
+					name           = "space-shares-module-%s"
+					branch         = %q
+					repository     = %q
+					space_shares   = [spacelift_space.test_space_3.id]
+					shared_accounts = ["spacelift-io"]
+				}
+			`, spaces, randomID, branch, repository),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("spacelift_module.test", "space_shares.#", "1"),
+					resource.TestCheckTypeSetElemAttrPair("spacelift_module.test", "space_shares.*", "spacelift_space.test_space_3", "id"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.#", "1"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.0", "spacelift-io"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				%s
+				resource "spacelift_module" "test" {
+					name           = "space-shares-module-%s"
+					branch         = %q
+					repository     = %q
+					space_shares   = []
+					shared_accounts = ["spacelift-io"]
+				}
+			`, spaces, randomID, branch, repository),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("spacelift_module.test", "space_shares.#", "0"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.#", "1"),
+					resource.TestCheckResourceAttr("spacelift_module.test", "shared_accounts.0", "spacelift-io"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				%s
+				resource "spacelift_module" "test" {
+					name           = "space-shares-module-%s"
+					branch         = %q 
+					repository     = %q
+					space_shares   = ["foobar-space-that-does-not-exist"]
+					shared_accounts = ["spacelift-io"]
+				}
+			`, spaces, randomID, branch, repository),
+				ExpectError: regexp.MustCompile("you need to have admin or write permissions to be able to share a module with following spaces: foobar-space-that-does-not-exist"),
+			},
+		})
+	})
 }
