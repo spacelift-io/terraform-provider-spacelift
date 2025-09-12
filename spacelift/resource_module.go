@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/pkg/errors"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -300,6 +301,12 @@ func resourceModule() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 			},
+			"space_shares": {
+				Type:        schema.TypeSet,
+				Description: "(Beta) List of the space IDs which should have access to the Module",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Optional:    true,
+			},
 			"space_id": {
 				Type:        schema.TypeString,
 				Description: "ID (slug) of the space the module is in",
@@ -353,6 +360,10 @@ func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		if err := meta.(*internal.Client).Mutate(ctx, "ModulePublish", &publicMutation, publicVariables); err != nil {
 			return diag.Errorf("could not make module public: %v", internal.FromSpaceliftError(err))
 		}
+	}
+
+	if err := updateModuleShares(ctx, d, meta); err != nil {
+		return diag.Errorf("could not set module shares: %v", internal.FromSpaceliftError(err))
 	}
 
 	return resourceModuleRead(ctx, d, meta)
@@ -415,10 +426,20 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("labels", labels)
 
 	sharedAccounts := schema.NewSet(schema.HashString, []interface{}{})
-	for _, account := range module.SharedAccounts {
-		sharedAccounts.Add(account)
+	for _, share := range module.ModuleShares {
+		if share.To.Space == nil {
+			sharedAccounts.Add(share.To.Account.Subdomain)
+		}
 	}
 	d.Set("shared_accounts", sharedAccounts)
+
+	spaceShares := schema.NewSet(schema.HashString, []interface{}{})
+	for _, share := range module.ModuleShares {
+		if share.To.Space != nil {
+			spaceShares.Add(share.To.Space.ID)
+		}
+	}
+	d.Set("space_shares", spaceShares)
 
 	if workerPool := module.WorkerPool; workerPool != nil {
 		d.Set("worker_pool_id", workerPool.ID)
@@ -446,10 +467,59 @@ func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ModuleUpdate", &mutation, variables); err != nil {
-		ret = diag.FromErr(internal.FromSpaceliftError(err))
+		ret = append(ret, diag.FromErr(internal.FromSpaceliftError(err))...)
+	}
+
+	if err := updateModuleShares(ctx, d, meta); err != nil {
+		ret = append(ret, diag.FromErr(internal.FromSpaceliftError(err))...)
 	}
 
 	return append(ret, resourceModuleRead(ctx, d, meta)...)
+}
+
+func updateModuleShares(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+	if !d.HasChange("space_shares") {
+		return nil
+	}
+
+	accountShares := make([]graphql.ID, 0)
+	if sharedAccountsSet, ok := d.Get("shared_accounts").(*schema.Set); ok {
+		for _, account := range sharedAccountsSet.List() {
+			accountShares = append(accountShares, graphql.ID(account.(string)))
+		}
+	}
+
+	spaceShares := make([]graphql.ID, 0)
+	if spaceSharesSet, ok := d.Get("space_shares").(*schema.Set); ok {
+		for _, space := range spaceSharesSet.List() {
+			spaceShares = append(spaceShares, graphql.ID(space.(string)))
+		}
+	}
+
+	var shareMutation struct {
+		ShareModule []structs.ModuleShare `graphql:"moduleShare(id: $id, input: $input)"`
+	}
+
+	type ModuleShareInput struct {
+		Accounts []graphql.ID `json:"accounts"`
+		Spaces   []graphql.ID `json:"spaces"`
+	}
+
+	shareInput := ModuleShareInput{
+		Accounts: accountShares,
+		Spaces:   spaceShares,
+	}
+
+	shareVariables := map[string]interface{}{
+		"id":    graphql.ID(d.Id()),
+		"input": shareInput,
+	}
+
+	if err := meta.(*internal.Client).Mutate(ctx, "ModuleShare", &shareMutation, shareVariables); err != nil {
+		return errors.Wrap(internal.FromSpaceliftError(err), "could not set module shares")
+	}
+
+	return nil
 }
 
 func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -42,6 +42,7 @@ func TestModuleData(t *testing.T) {
 				SetEquals("git_sparse_checkout_paths", "module"),
 				Attribute("repository", Equals("terraform-bacon-tasty")),
 				SetEquals("shared_accounts", "spacelift-io"),
+				Attribute("space_shares.#", Equals("0")),
 				Attribute("terraform_provider", Equals("default")),
 			),
 		}})
@@ -163,7 +164,44 @@ func TestModuleDataSpace(t *testing.T) {
 			Attribute("repository", Equals("terraform-bacon-tasty")),
 			Attribute("space_id", Equals("root")),
 			SetEquals("shared_accounts", "spacelift-io"),
+			Attribute("space_shares.#", Equals("0")),
 			Attribute("terraform_provider", Equals("default")),
+		),
+	}})
+}
+
+func TestModuleDataSpaceShares(t *testing.T) {
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+	spaces := `
+		resource "spacelift_space" "test_space_1" {
+			name = "test-space-1"
+		}
+		resource "spacelift_space" "test_space_2" {
+			name = "test-space-2"
+		}`
+
+	testSteps(t, []resource.TestStep{{
+		Config: fmt.Sprintf(`
+			%s
+			resource "spacelift_module" "test" {
+				name            = "test-module-%s"
+				branch          = "master"
+				repository      = "terraform-bacon-tasty"
+				space_shares    = [spacelift_space.test_space_1.id, spacelift_space.test_space_2.id]
+			}
+
+			data "spacelift_module" "test" {
+				module_id = spacelift_module.test.id
+			}
+		`, spaces, randomID),
+		Check: resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("data.spacelift_module.test", "id", fmt.Sprintf("terraform-default-test-module-%s", randomID)),
+			// Check space_shares contains exactly 2 elements
+			resource.TestCheckResourceAttr("data.spacelift_module.test", "space_shares.#", "2"),
+			// Verify the space IDs are in the set (order doesn't matter)
+			resource.TestCheckTypeSetElemAttrPair("data.spacelift_module.test", "space_shares.*", "spacelift_space.test_space_1", "id"),
+			resource.TestCheckTypeSetElemAttrPair("data.spacelift_module.test", "space_shares.*", "spacelift_space.test_space_2", "id"),
 		),
 	}})
 }

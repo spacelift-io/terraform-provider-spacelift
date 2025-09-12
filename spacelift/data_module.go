@@ -232,6 +232,12 @@ func dataModule() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
+			"space_shares": {
+				Type:        schema.TypeSet,
+				Description: "(Beta) List of the space IDs which should have access to the Module",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
 			"space_id": {
 				Type:        schema.TypeString,
 				Description: "ID (slug) of the space the module is in",
@@ -293,10 +299,20 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("labels", labels)
 
 	sharedAccounts := schema.NewSet(schema.HashString, []interface{}{})
-	for _, account := range module.SharedAccounts {
-		sharedAccounts.Add(account)
+	for _, share := range module.ModuleShares {
+		if share.To.Space == nil {
+			sharedAccounts.Add(share.To.Account.Subdomain)
+		}
 	}
 	d.Set("shared_accounts", sharedAccounts)
+
+	spaceShares := schema.NewSet(schema.HashString, []interface{}{})
+	for _, share := range module.ModuleShares {
+		if share.To.Space != nil {
+			spaceShares.Add(share.To.Space.ID)
+		}
+	}
+	d.Set("space_shares", spaceShares)
 
 	d.Set("repository", module.Repository)
 
