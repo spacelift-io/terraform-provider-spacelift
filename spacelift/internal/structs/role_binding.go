@@ -46,3 +46,7 @@ type UserRoleBindingInput struct {
 type UserRoleBindingBatchInput struct {
 	Bindings []UserRoleBindingInput `json:"bindings"`
 }
+
+type ApiKeyRoleBindingBatchInput struct {
+	Bindings []ApiKeyRoleBindingInput `json:"bindings"`
+}
