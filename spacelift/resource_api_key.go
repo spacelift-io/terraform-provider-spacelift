@@ -46,6 +46,7 @@ func resourceAPIKey() *schema.Resource {
 				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
+				ForceNew:    true,
 				Description: "OIDC configuration for the API key. When provided, creates an OIDC API key instead of a SECRET API key.",
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
