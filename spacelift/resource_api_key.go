@@ -127,13 +127,13 @@ func apiKeyCreateInput(d *schema.ResourceData) structs.ApiKeyInput {
 
 	// Always set IDPGroups to ensure we send an empty array instead of null
 	// Initialize as an empty slice (not nil) to ensure JSON serialization sends []
-	idp_groups := make([]graphql.String, 0)
-	if idp_groupsSet, ok := d.Get("idp_groups").(*schema.Set); ok && idp_groupsSet != nil {
-		for _, team := range idp_groupsSet.List() {
-			idp_groups = append(idp_groups, graphql.String(team.(string)))
+	idpGroups := make([]graphql.String, 0)
+	if idpGroupsSet, ok := d.Get("idp_groups").(*schema.Set); ok && idpGroupsSet != nil {
+		for _, team := range idpGroupsSet.List() {
+			idpGroups = append(idpGroups, graphql.String(team.(string)))
 		}
 	}
-	input.IDPGroups = idp_groups
+	input.IDPGroups = idpGroups
 
 	// Add OIDC configuration if provided
 	if oidcList, ok := d.Get("oidc").([]interface{}); ok && len(oidcList) > 0 {
