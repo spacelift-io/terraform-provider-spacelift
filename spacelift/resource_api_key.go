@@ -93,7 +93,7 @@ func resourceAPIKey() *schema.Resource {
 			},
 			"secret": {
 				Type:        schema.TypeString,
-				Description: "The secret value of the API key (only available after creation)",
+				Description: "The secret value of the API key",
 				Computed:    true,
 				Sensitive:   true,
 			},

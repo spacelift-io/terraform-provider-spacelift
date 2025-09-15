@@ -28,7 +28,7 @@ description: |-
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `secret` (String, Sensitive) The secret value of the API key (only available after creation)
+- `secret` (String, Sensitive) The secret value of the API key
 - `type` (String) Type of the API key (SECRET or OIDC)
 
 <a id="nestedblock--access_rule"></a>
