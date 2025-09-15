@@ -340,7 +340,6 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	d.SetId(apiKey.ID)
 	d.Set("name", apiKey.Name)
-	d.Set("admin", apiKey.Admin)
 	d.Set("type", string(apiKey.Type))
 
 	idpGroups := schema.NewSet(schema.HashString, []interface{}{})
