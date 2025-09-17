@@ -27,6 +27,7 @@ func TestPolicyResource(t *testing.T) {
 					deny["%s"] { true }
 					EOF
 					type = "PLAN"
+					engine_type = "REGO_V0"
 				}
 			`, randomID, message)
 		}
@@ -80,6 +81,43 @@ func TestPolicyResource(t *testing.T) {
 					labels = []
 					body = "package spacelift"
 					type = "PLAN"
+				}`, randomID),
+				Check: Resource(
+					resourceName,
+					SetEquals("labels"),
+				),
+			},
+		})
+	})
+
+	t.Run("can change rego version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`resource "spacelift_policy" "test" {
+					name = "Label test policy %s"
+					body = <<EOF
+					package spacelift
+					deny contains "boom" if { true }
+					EOF
+					type = "PLAN"
+					engine_type = "REGO_V1"
+				}`, randomID),
+				Check: Resource(
+					resourceName,
+					SetEquals("labels", "one", "two", "three"),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`resource "spacelift_policy" "test" {
+					name = "Label test policy %s"
+					body = <<EOF
+					package spacelift
+					deny["boom"] { true }
+					EOF
+					type = "PLAN"
+					engine_type = "REGO_V0"
 				}`, randomID),
 				Check: Resource(
 					resourceName,
