@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -214,15 +214,20 @@ func validateProviderConfig(d *schema.ResourceData) (bool, error) {
 }
 
 func buildClientFromToken(token string) (*internal.Client, error) {
-	var claims jwt.StandardClaims
+	claims := make(jwt.MapClaims)
 
-	_, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
-	if unverifiable := new(jwt.UnverfiableTokenError); err != nil && !errors.As(err, &unverifiable) {
+	_, _, err := jwt.NewParser().ParseUnverified(token, &claims)
+	if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
 		return nil, errors.Wrap(err, "could not parse client token")
 	}
 
-	if len(claims.Audience) != 1 {
-		return nil, fmt.Errorf("invalid audience in token: %v", claims.Audience)
+	audience, err := claims.GetAudience()
+	if err != nil {
+		return nil, fmt.Errorf("could not get audience from token: %v", err)
+	}
+
+	if len(audience) != 1 {
+		return nil, fmt.Errorf("invalid audience in token: %v", audience)
 	}
 
 	requestsPerSecond, maxBurst, err := getRateLimit()
@@ -230,7 +235,7 @@ func buildClientFromToken(token string) (*internal.Client, error) {
 		return nil, errors.Wrap(err, "could not create rate limiter for client")
 	}
 
-	return internal.NewClient(claims.Audience[0], token, requestsPerSecond, maxBurst), nil
+	return internal.NewClient(audience[0], token, requestsPerSecond, maxBurst), nil
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error) {

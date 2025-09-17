@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
@@ -56,23 +56,25 @@ func dataCurrentSpace() *schema.Resource {
 }
 
 func getStackIDFromToken(token string) (string, error) {
-	var claims jwt.StandardClaims
+	claims := make(jwt.MapClaims)
 
-	_, _, err := (&jwt.Parser{}).ParseUnverified(token, &claims)
-	if err != nil {
+	_, _, err := jwt.NewParser().ParseUnverified(token, &claims)
+	if err != nil && !errors.Is(err, jwt.ErrTokenUnverifiable) {
 		// Don't care about validation errors, we don't actually validate those
 		// tokens, we only parse them.
-		var unverifiable *jwt.UnverfiableTokenError
-		if !errors.As(err, &unverifiable) {
-			return "", fmt.Errorf("could not parse client token: %v", err)
-		}
+		return "", fmt.Errorf("could not parse client token: %v", err)
 	}
 
-	if issuer := claims.Issuer; issuer != "spacelift" {
+	if issuer, _ := claims.GetIssuer(); issuer != "spacelift" {
 		return "", fmt.Errorf("unexpected token issuer %s, is this a Spacelift run?", issuer)
 	}
 
-	stackID, _ := path.Split(claims.Subject)
+	subj, err := claims.GetSubject()
+	if err != nil {
+		return "", fmt.Errorf("could not get subject from token: %v", err)
+	}
+
+	stackID, _ := path.Split(subj)
 	return stackID, nil
 }
 
