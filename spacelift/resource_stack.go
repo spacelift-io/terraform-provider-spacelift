@@ -360,7 +360,14 @@ func resourceStack() *schema.Resource {
 			},
 			"github_action_deploy": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.",
+				Description: "Indicates whether GitHub users can deploy from the Checks API. This field is deprecated in favor of `allow_run_promotion` and will be removed in the next major version.",
+				Optional:    true,
+				Default:     true,
+				Deprecated:  "Use `allow_run_promotion` instead. This field will be removed in the next major version",
+			},
+			"allow_run_promotion": {
+				Type:        schema.TypeBool,
+				Description: "Indicates whether proposed runs can be promoted to tracked runs. Defaults to `true`.",
 				Optional:    true,
 				Default:     true,
 			},
@@ -817,7 +824,7 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		Autodeploy:                   graphql.Boolean(d.Get("autodeploy").(bool)),
 		Autoretry:                    graphql.Boolean(d.Get("autoretry").(bool)),
 		Branch:                       toString(d.Get("branch")),
-		GitHubActionDeploy:           graphql.Boolean(d.Get("github_action_deploy").(bool)),
+		GitHubActionDeploy:           graphql.Boolean(d.Get("allow_run_promotion").(bool)) || graphql.Boolean(d.Get("github_action_deploy").(bool)),
 		LocalPreviewEnabled:          graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		EnableWellKnownSecretMasking: graphql.Boolean(d.Get("enable_well_known_secret_masking").(bool)),
 		EnableSensitiveOutputUpload:  graphql.Boolean(d.Get("enable_sensitive_outputs_upload").(bool)),
@@ -862,6 +869,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 	description, ok := d.GetOk("description")
 	if ok {
 		ret.Description = toOptionalString(description)
+	}
+
+	// github_action_deploy is deprecated in favor of allow_run_promotion but we want to
+	// keep supporting it until the next major version
+	if !d.GetRawConfig().GetAttr("github_action_deploy").IsNull() {
+		ret.GitHubActionDeploy = graphql.Boolean(d.Get("github_action_deploy").(bool))
+	} else {
+		ret.GitHubActionDeploy = graphql.Boolean(d.Get("allow_run_promotion").(bool))
 	}
 
 	ret.Provider = graphql.NewString("GITHUB")
