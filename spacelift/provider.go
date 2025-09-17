@@ -150,6 +150,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_version":                          resourceVersion(),
 				"spacelift_webhook":                          resourceWebhook(),
 				"spacelift_worker_pool":                      resourceWorkerPool(),
+				"spacelift_worker_pool_recycle":              resourceWorkerPoolRecycle(),
 			},
 			ConfigureContextFunc: configureProvider(commit, version),
 		}

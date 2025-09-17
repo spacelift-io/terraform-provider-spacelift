@@ -13,16 +13,16 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with: { go-version-file: go.mod }
 
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.12.2"
+          terraform_version: "1.13.3"
           terraform_wrapper: false
 
       - name: Test with coverage

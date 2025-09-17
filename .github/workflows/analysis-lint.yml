@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       
       - name: Install Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with: { go-version-file: go.mod }
 
       - name: Check formatting using gofmt
@@ -26,4 +26,4 @@ jobs:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           reporter: github-pr-review
-          golangci_lint_version: v2.3.1
+          golangci_lint_version: v2.4.0
