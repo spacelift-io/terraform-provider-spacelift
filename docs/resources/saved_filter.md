@@ -75,9 +75,9 @@ resource "spacelift_saved_filter" "my_filter" {
 ### Required
 
 - `data` (String) Data is the JSON representation of the filter data
-- `is_public` (Boolean) Toggle whether the filter is public or not
+- `is_public` (Boolean) Toggle whether the filter is public or not. If set to true, everyone can use it in the account.
 - `name` (String) Name of the saved filter
-- `type` (String) Type describes the type of the filter. It is used to determine which view the filter is for. Possible values are `stacks`, `blueprints`, `contexts`, `webhooks`.
+- `type` (String) Type describes the type of the filter. It is used to determine which view the filter is for. Possible values are `stacks`, `modules`, `auditTrailEntries`, `vcsIntegrations`, `blueprints`, `contexts`, `workerPools`, `webhooks`, `notifications`, `resources`, `policies`.
 
 ### Read-Only
 

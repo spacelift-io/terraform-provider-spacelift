@@ -48,7 +48,7 @@ func resourceSavedFilter() *schema.Resource {
 			},
 			"is_public": {
 				Type:        schema.TypeBool,
-				Description: "Toggle whether the filter is public or not",
+				Description: "Toggle whether the filter is public or not. If set to true, everyone can use it in the account.",
 				Required:    true,
 			},
 			"created_by": {
@@ -59,7 +59,7 @@ func resourceSavedFilter() *schema.Resource {
 			"type": {
 				Type: schema.TypeString,
 				Description: "Type describes the type of the filter. It is used to determine which view the filter is for. " +
-					"Possible values are `stacks`, `blueprints`, `contexts`, `webhooks`.",
+					"Possible values are `stacks`, `modules`, `auditTrailEntries`, `vcsIntegrations`, `blueprints`, `contexts`, `workerPools`, `webhooks`, `notifications`, `resources`, `policies`.",
 				Required: true,
 				ForceNew: true,
 				ValidateFunc: validation.StringInSlice(
