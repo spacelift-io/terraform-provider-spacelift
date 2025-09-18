@@ -3,7 +3,7 @@ module github.com/spacelift-io/terraform-provider-spacelift
 go 1.24
 
 require (
-	github.com/dgrijalva/jwt-go/v4 v4.0.0-preview1
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/hashicorp/terraform-plugin-log v0.9.0
