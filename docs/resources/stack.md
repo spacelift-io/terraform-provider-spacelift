@@ -218,7 +218,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 - `after_perform` (List of String) List of after-perform scripts
 - `after_plan` (List of String) List of after-plan scripts
 - `after_run` (List of String) List of after-run scripts
-- `allow_run_promotion` (Boolean) Indicates whether proposed runs can be promoted to tracked runs. Defaults to `true`.
+- `allow_run_promotion` (Boolean) Indicates whether a proposed run can be promoted to a tracked a run. Defaults to `true`.
 - `ansible` (Block List, Max: 1) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedblock--ansible))
 - `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed. Defaults to `false`.
 - `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried. Defaults to `false`.
@@ -236,7 +236,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 - `enable_sensitive_outputs_upload` (Boolean) Indicates whether sensitive outputs created by this stack can be uploaded to Spacelift to be used by Stack Dependency references. Triggered only when corresponding option is enabled on the Worker Pool used by the Stack as well. Defaults to `true`.
 - `enable_well_known_secret_masking` (Boolean) Indicates whether well-known secret masking is enabled.
 - `git_sparse_checkout_paths` (Set of String) Git sparse checkout paths is an optional list of paths to use for sparse checkout. If not set, the entire repository will be checked out.
-- `github_action_deploy` (Boolean, Deprecated) Indicates whether GitHub users can deploy from the Checks API. This field is deprecated in favor of `allow_run_promotion` and will be removed in the next major version.
+- `github_action_deploy` (Boolean, Deprecated) Use `allow_run_promotion` instead. Indicates whether GitHub users can promote proposed runs to tracked runs from the Checks API. This is called allow run promotion in the UI. Defaults to `true`.
 - `github_enterprise` (Block List, Max: 1) VCS settings for [GitHub custom application](https://docs.spacelift.io/integrations/source-control/github#setting-up-the-custom-application) (see [below for nested schema](#nestedblock--github_enterprise))
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - `import_state` (String, Sensitive) State file to upload when creating a new stack
