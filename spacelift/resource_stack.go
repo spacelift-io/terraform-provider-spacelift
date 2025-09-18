@@ -358,11 +358,28 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Default:     true,
 			},
+			"allow_run_promotion": {
+				Type:          schema.TypeBool,
+				Description:   "Indicates whether a proposed run can be promoted to a tracked a run. Defaults to `true`.",
+				Optional:      true,
+				Default:       true,
+				ConflictsWith: []string{"github_action_deploy"},
+				DiffSuppressFunc: func(k, oldValue, newValue string, d *schema.ResourceData) bool {
+					// if github_action_deploy is set, ignore changes to allow_run_promotion:
+					return !d.GetRawConfig().GetAttr("github_action_deploy").IsNull()
+				},
+			},
 			"github_action_deploy": {
-				Type:        schema.TypeBool,
-				Description: "Indicates whether GitHub users can deploy from the Checks API. Defaults to `true`. This is called allow run promotion in the UI.",
-				Optional:    true,
-				Default:     true,
+				Type:          schema.TypeBool,
+				Description:   "Use `allow_run_promotion` instead. Indicates whether GitHub users can promote proposed runs to tracked runs from the Checks API. This is called allow run promotion in the UI. Defaults to `true`.",
+				Optional:      true,
+				Default:       true,
+				ConflictsWith: []string{"allow_run_promotion"},
+				Deprecated:    "Use `allow_run_promotion` instead.",
+				DiffSuppressFunc: func(_, _, new string, res *schema.ResourceData) bool {
+					// if allow_run_promotion is set, ignore changes to github_action_deploy:
+					return !res.GetRawConfig().GetAttr("allow_run_promotion").IsNull()
+				},
 			},
 			"github_enterprise": {
 				Type:          schema.TypeList,
@@ -812,12 +829,17 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func stackInput(d *schema.ResourceData) structs.StackInput {
+	// Prefer new parameter, fallback to deprecated if not set
+	allowRunPromotion := d.Get("allow_run_promotion").(bool)
+	if d.GetRawConfig().GetAttr("allow_run_promotion").IsNull() {
+		allowRunPromotion = d.Get("github_action_deploy").(bool)
+	}
 	ret := structs.StackInput{
 		Administrative:               graphql.Boolean(d.Get("administrative").(bool)),
 		Autodeploy:                   graphql.Boolean(d.Get("autodeploy").(bool)),
 		Autoretry:                    graphql.Boolean(d.Get("autoretry").(bool)),
 		Branch:                       toString(d.Get("branch")),
-		GitHubActionDeploy:           graphql.Boolean(d.Get("github_action_deploy").(bool)),
+		GitHubActionDeploy:           graphql.Boolean(allowRunPromotion),
 		LocalPreviewEnabled:          graphql.Boolean(d.Get("enable_local_preview").(bool)),
 		EnableWellKnownSecretMasking: graphql.Boolean(d.Get("enable_well_known_secret_masking").(bool)),
 		EnableSensitiveOutputUpload:  graphql.Boolean(d.Get("enable_sensitive_outputs_upload").(bool)),

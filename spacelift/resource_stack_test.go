@@ -1145,25 +1145,26 @@ func TestStackResourceSpace(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`resource "spacelift_stack" "test" {
-					administrative = true
-					after_apply    = ["ls -la", "rm -rf /"]
-					after_destroy  = ["echo 'after_destroy'"]
-					after_init     = ["terraform fmt -check", "tflint"]
-					after_perform  = ["echo 'after_perform'"]
-					after_plan     = ["echo 'after_plan'"]
-					autodeploy     = true
-					autoretry      = false
-					before_apply   = ["ls -la", "rm -rf /"]
-					before_destroy = ["echo 'before_destroy'"]
-					before_init    = ["terraform fmt -check", "tflint"]
-					before_perform = ["echo 'before_perform'"]
-					before_plan    = ["echo 'before_plan'"]
-					branch         = "master"
-					labels         = ["one", "two"]
-					name           = "Provider test stack %s"
-					project_root   = "root"
-					repository     = "demo"
-					runner_image   = "custom_image:runner"
+					administrative      = true
+					after_apply         = ["ls -la", "rm -rf /"]
+					after_destroy       = ["echo 'after_destroy'"]
+					after_init          = ["terraform fmt -check", "tflint"]
+					after_perform       = ["echo 'after_perform'"]
+					after_plan          = ["echo 'after_plan'"]
+					autodeploy          = true
+					autoretry           = false
+					before_apply        = ["ls -la", "rm -rf /"]
+					before_destroy      = ["echo 'before_destroy'"]
+					before_init         = ["terraform fmt -check", "tflint"]
+					before_perform      = ["echo 'before_perform'"]
+					before_plan         = ["echo 'before_plan'"]
+					allow_run_promotion = false
+					branch              = "master"
+					labels              = ["one", "two"]
+					name                = "Provider test stack %s"
+					project_root        = "root"
+					repository          = "demo"
+					runner_image        = "custom_image:runner"
 					pulumi {
 							login_url = "s3://bucket"
 							stack_name = "mainpl"
@@ -1199,6 +1200,7 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("before_perform.0", Equals("echo 'before_perform'")),
 					Attribute("before_plan.#", Equals("1")),
 					Attribute("before_plan.0", Equals("echo 'before_plan'")),
+					Attribute("allow_run_promotion", Equals("false")),
 					Attribute("branch", Equals("master")),
 					SetEquals("labels", "one", "two"),
 					Attribute("name", StartsWith("Provider test stack")),

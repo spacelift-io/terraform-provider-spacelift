@@ -241,6 +241,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
 	d.Set("enable_sensitive_outputs_upload", stack.EnableSensitiveOutputUpload)
 	d.Set("github_action_deploy", stack.GitHubActionDeploy)
+	d.Set("allow_run_promotion", stack.GitHubActionDeploy)
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)
