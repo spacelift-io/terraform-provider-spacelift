@@ -46,3 +46,7 @@ type UserRoleBindingInput struct {
 type UserRoleBindingBatchInput struct {
 	Bindings []UserRoleBindingInput `json:"bindings"`
 }
+
+type ApiKeyRoleBindingBatchInput struct { //nolint:staticcheck // The backend type is spelled that way, so we can't change this.
+	Bindings []ApiKeyRoleBindingInput `json:"bindings"`
+}
