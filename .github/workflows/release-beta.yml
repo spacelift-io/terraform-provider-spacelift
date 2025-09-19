@@ -24,7 +24,7 @@ jobs:
           exit 1
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
 
@@ -36,7 +36,7 @@ jobs:
           echo -e "project_name: terraform-provider-${{ inputs.providerType }}\n$(cat .goreleaser.yml)" > .goreleaser.yml
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with: { go-version-file: go.mod }
 
       - name: Import GPG key
