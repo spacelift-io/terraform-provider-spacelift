@@ -28,6 +28,11 @@ var policyTypes = []string{
 	"NOTIFICATION",
 }
 
+var policyEngineTypes = []string{
+	"REGO_V0",
+	"REGO_V1",
+}
+
 // This is a map of new policy type names to the ones they are replacing.
 var typeNameReplacements = map[string]string{
 	"ACCESS": "STACK_ACCESS",
@@ -103,6 +108,16 @@ func resourcePolicy() *schema.Resource {
 				Optional:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
+			"engine_type": {
+				Type:        schema.TypeString,
+				Description: "Type of engine used to evaluate the policy. Possible values are `REGO_V0` and `REGO_V1`.",
+				Optional:    true,
+				Computed:    true,
+				ValidateFunc: validation.StringInSlice(
+					policyEngineTypes,
+					false,
+				),
+			},
 		},
 	}
 }
@@ -130,6 +145,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	if description, ok := d.GetOk("description"); ok {
 		input.Description = toOptionalString(description)
+	}
+
+	engineType := d.Get("engine_type")
+	if typeStr, ok := engineType.(string); ok && typeStr != "" {
+		et := structs.PolicyEngineType(typeStr)
+		input.EngineType = &et
 	}
 
 	variables := map[string]interface{}{"input": input}
@@ -164,6 +185,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("type", policy.Type)
 	d.Set("space_id", policy.Space)
 	d.Set("description", policy.Description)
+	d.Set("engine_type", policy.EngineType)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})
 	for _, label := range policy.Labels {
@@ -190,6 +212,12 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	if desc, ok := d.GetOk("description"); ok {
 		input.Description = toOptionalString(desc)
+	}
+
+	engineType := d.Get("engine_type")
+	if typeStr, ok := engineType.(string); ok && typeStr != "" {
+		et := structs.PolicyEngineType(typeStr)
+		input.EngineType = &et
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
