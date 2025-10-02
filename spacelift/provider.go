@@ -106,6 +106,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_worker_pools":                           dataWorkerPools(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
+				"spacelift_api_key":                          resourceAPIKey(),
 				"spacelift_audit_trail_webhook":              resourceAuditTrailWebhook(),
 				"spacelift_aws_integration_attachment":       resourceAWSIntegrationAttachment(),
 				"spacelift_aws_integration":                  resourceAWSIntegration(),
