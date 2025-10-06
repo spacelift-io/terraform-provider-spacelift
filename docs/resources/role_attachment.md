@@ -4,7 +4,7 @@ page_title: "spacelift_role_attachment Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_role_attachment represents a Spacelift role attachment between:
-  an API key and a rolean IdP Group Mapping and a rolea stack and a roleor a user and a role
+  an API key and a rolean IdP Group Mapping and a rolea stack, role and a spaceor a user and a role
   Exactly one of api_key_id, idp_group_mapping_id, stack_id, or user_id must be set.
 ---
 
@@ -13,7 +13,7 @@ description: |-
 `spacelift_role_attachment` represents a Spacelift role attachment between:
 - an API key and a role
 - an IdP Group Mapping and a role
-- a stack and a role
+- a stack, role and a space
 - or a user and a role
 Exactly one of `api_key_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.
 
@@ -47,7 +47,6 @@ resource "spacelift_role_attachment" "idp_group_attachment" {
   space_id             = spacelift_space.devops.id
 }
 
-# Attach a stack to a role in a specific space
 resource "spacelift_stack" "application" {
   name       = "Application Stack"
   repository = "app-infrastructure"
@@ -78,7 +77,7 @@ resource "spacelift_role_attachment" "user_attachment" {
 
 ### Required
 
-- `role_id` (String) ID of the role (ULID format) to attach to the API key, IdP Group or to the user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
+- `role_id` (String) ID of the role (ULID format) to attach to the API key, IdP Group, stack, or user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
 - `space_id` (String) ID of the space where the role attachment should be created
 
 ### Optional
