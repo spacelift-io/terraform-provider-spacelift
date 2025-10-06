@@ -30,7 +30,7 @@ func TestRoleAttachmentResource(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile("only one of `api_key_id,idp_group_mapping_id,stack_id,user_id` can be\nspecified"),
+				ExpectError: regexp.MustCompile("(?s)only one of `api_key_id,idp_group_mapping_id,stack_id,user_id`.*can be specified"),
 			},
 		})
 	})
