@@ -15,21 +15,22 @@ import (
 func TestRoleAttachmentResource(t *testing.T) {
 	const resourceName = "spacelift_role_attachment.test"
 
-	t.Run("exactly one of API key, IDP group mapping, or user must be set", func(t *testing.T) {
+	t.Run("exactly one of API key, IDP group mapping, stack, or user must be set", func(t *testing.T) {
 		config := `
 			resource "spacelift_role_attachment" "test" {
 				api_key_id           = "AAAA"
 				idp_group_mapping_id = "BBBB"
-				user_id              = "CCCC"
-				space_id             = "DDDD"
-				role_id              = "EEEE"
+				stack_id             = "CCCC"
+				user_id              = "DDDD"
+				space_id             = "EEEE"
+				role_id              = "FFFF"
 			}
 		`
 
 		testSteps(t, []resource.TestStep{
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile("only one of `api_key_id,idp_group_mapping_id,user_id` can be\nspecified"),
+				ExpectError: regexp.MustCompile("only one of `api_key_id,idp_group_mapping_id,stack_id,user_id` can be\nspecified"),
 			},
 		})
 	})
