@@ -4,20 +4,17 @@ page_title: "spacelift_role_attachment Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_role_attachment represents a Spacelift role attachment between:
-  an API key and a role;
-  an IdP Group Mapping and a role;
-  a stack, role and a space;
-  or a user and a role.
+  an API key and a role for a given space;an IdP Group Mapping and a role for a given space;a stack and a role for a given space;or a user and a role for a given space.
   Exactly one of api_key_id, idp_group_mapping_id, stack_id, or user_id must be set.
 ---
 
 # spacelift_role_attachment (Resource)
 
 `spacelift_role_attachment` represents a Spacelift role attachment between: 
-an API key and a role; 
-an IdP Group Mapping and a role; 
-a stack, role and a space; 
-or a user and a role. 
+- an API key and a role for a given space; 
+- an IdP Group Mapping and a role for a given space; 
+- a stack and a role for a given space; 
+- or a user and a role for a given space. 
 Exactly one of `api_key_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.
 
 ## Example Usage

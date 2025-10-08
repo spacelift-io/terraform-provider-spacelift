@@ -25,10 +25,10 @@ func resourceRoleAttachment() *schema.Resource {
 		Description: "" +
 			"`spacelift_role_attachment` represents a Spacelift role attachment " +
 			"between: \n" +
-			"an API key and a role; \n" +
-			"an IdP Group Mapping and a role; \n" +
-			"a stack, role and a space; \n" +
-			"or a user and a role. \n" +
+			"- an API key and a role for a given space; \n" +
+			"- an IdP Group Mapping and a role for a given space; \n" +
+			"- a stack and a role for a given space; \n" +
+			"- or a user and a role for a given space. \n" +
 			"Exactly one of `api_key_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.",
 
 		CreateContext: resourceRoleAttachmentCreate,
