@@ -282,7 +282,7 @@ func TestRoleAttachmentResource(t *testing.T) {
 			resource "spacelift_stack" "test" {
 				name        = "Test Stack %s"
 				repository  = "demo"
-				branch      = "main"
+				branch      = "master"
 			}
 
 			resource "spacelift_role" "test" {
@@ -307,7 +307,7 @@ func TestRoleAttachmentResource(t *testing.T) {
 			resource "spacelift_stack" "test" {
 				name        = "Test Stack %s"
 				repository  = "demo"
-				branch      = "main"
+				branch      = "master"
 			}
 
 			resource "spacelift_role" "another_role" {
@@ -441,7 +441,7 @@ func TestRoleAttachmentResource(t *testing.T) {
 				ImportState:       true,
 				ImportStateId:     "INVALID/some-id", // Should be STACK/some-id
 				ImportStateVerify: false,
-				ExpectError:       regexp.MustCompile("could not query for.*role binding|not found"),
+				ExpectError:       regexp.MustCompile("Cannot import non-existent remote object|not found"),
 			},
 		})
 	})
