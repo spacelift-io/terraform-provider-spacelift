@@ -325,7 +325,7 @@ func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta inte
 	roleBinding := query.StackRoleBinding
 
 	d.Set("stack_id", roleBinding.StackID)
-	d.Set("role_id", roleBinding.Role.ID)
+	d.Set("role_id", roleBinding.RoleID)
 	d.Set("space_id", roleBinding.SpaceID)
 
 	return nil
