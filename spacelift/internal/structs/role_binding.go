@@ -50,3 +50,20 @@ type UserRoleBindingBatchInput struct {
 type ApiKeyRoleBindingBatchInput struct { //nolint:staticcheck // The backend type is spelled that way, so we can't change this.
 	Bindings []ApiKeyRoleBindingInput `json:"bindings"`
 }
+
+type StackRoleBinding struct {
+	ID      string `graphql:"id"`
+	Role    Role   `graphql:"role"`
+	Space   Space  `graphql:"space"`
+	StackID string `graphql:"stackID"`
+}
+
+type StackRoleBindingInput struct {
+	RoleID  graphql.ID `json:"roleID"`
+	StackID graphql.ID `json:"stackID"`
+	SpaceID graphql.ID `json:"spaceID"`
+}
+
+type StackRoleBindingBatchInput struct {
+	Bindings []StackRoleBindingInput `json:"bindings"`
+}
