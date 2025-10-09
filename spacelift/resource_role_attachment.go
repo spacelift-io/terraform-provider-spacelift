@@ -330,7 +330,7 @@ func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta inte
 	if err := d.Set("role_id", roleBinding.Role.ID); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("space_id", roleBinding.SpaceID); err != nil {
+	if err := d.Set("space_id", roleBinding.Space.ID); err != nil {
 		return diag.FromErr(err)
 	}
 

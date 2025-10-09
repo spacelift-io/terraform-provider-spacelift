@@ -54,7 +54,7 @@ type ApiKeyRoleBindingBatchInput struct { //nolint:staticcheck // The backend ty
 type StackRoleBinding struct {
 	ID      string `graphql:"id"`
 	Role    Role   `graphql:"role"`
-	SpaceID string `graphql:"spaceID"`
+	Space   Space  `graphql:"space"`
 	StackID string `graphql:"stackID"`
 }
 
