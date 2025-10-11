@@ -57,6 +57,11 @@ func dataPolicy() *schema.Resource {
 				Description: "type of the policy",
 				Computed:    true,
 			},
+			"engine_type": {
+				Type:        schema.TypeString,
+				Description: "type of engine used to evaluate the policy",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -80,6 +85,7 @@ func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("name", policy.Name)
 	d.Set("body", policy.Body)
 	d.Set("type", policy.Type)
+	d.Set("engine_type", policy.EngineType)
 	d.Set("space_id", policy.Space)
 	d.Set("description", policy.Description)
 
