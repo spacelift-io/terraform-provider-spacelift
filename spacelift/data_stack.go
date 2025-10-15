@@ -24,8 +24,9 @@ func dataStack() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "indicates whether this stack can administer others",
+				Description: "Indicates whether this stack can administer others. This field will be removed in a future version. Use `spacelift_role_attachment` resource to manage stack permissions.",
 				Computed:    true,
+				Deprecated:  "Will be removed in a future version.",
 			},
 			"ansible": {
 				Type:        schema.TypeList,
