@@ -38,10 +38,24 @@ resource "spacelift_scheduled_run" "k8s-core-timestamp" {
 resource "spacelift_scheduled_run" "k8s-core-custom" {
   stack_id = spacelift_stack.k8s-core.id
 
-  name           = "custom-terraform-apply"
-  every          = ["0 21 * * 1-5"]
-  timezone       = "CET"
-  runtime_config = "terraform_version: \"1.5.7\""
+  name     = "custom-terraform-apply"
+  every    = ["0 21 * * 1-5"]
+  timezone = "CET"
+
+  runtime_config {
+    project_root = "custom/path"
+    runner_image = "custom-runner:latest"
+    after_apply  = ["echo 'Apply complete'", "notify-team"]
+
+    environment {
+      key   = "TF_VAR_region"
+      value = "us-east-1"
+    }
+    environment {
+      key   = "TF_VAR_env"
+      value = "production"
+    }
+  }
 }
 ```
 
