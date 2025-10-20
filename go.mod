@@ -64,4 +64,4 @@ require (
 	google.golang.org/protobuf v1.36.9 // indirect
 )
 
-replace github.com/shurcooL/graphql => github.com/spacelift-io/graphql v1.2.0
+replace github.com/shurcooL/graphql => github.com/spacelift-io/graphql v1.3.0

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/shurcooL/graphql"
 	"golang.org/x/time/rate"
 )
@@ -75,10 +76,14 @@ func (c *Client) client() *graphql.Client {
 	retryableClient.Logger = nil
 
 	requestOptions := c.getRequestOptions()
+	debugFn := func(ctx context.Context, msg string) {
+		tflog.Debug(ctx, msg)
+	}
 
-	return graphql.NewClient(
+	return graphql.NewClientWithDebugging(
 		c.url(),
 		retryableClient.StandardClient(),
+		debugFn,
 		requestOptions...,
 	)
 }
