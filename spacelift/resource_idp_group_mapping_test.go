@@ -39,10 +39,12 @@ func TestIdpGroupMappingResource(t *testing.T) {
 	const resourceName = "spacelift_idp_group_mapping.test"
 
 	t.Run("creates and updates a user group mapping without an error", func(t *testing.T) {
-		oldName := "old name"
-		oldDescription := "old description"
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		randomDescription := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		oldName := "old name " + randomID
+		oldDescription := "old description " + randomDescription
+		newName := "new name " + randomID
+		newDescription := "new description " + randomDescription
 
 		testSteps(t, []resource.TestStep{
 			{
@@ -61,11 +63,11 @@ func TestIdpGroupMappingResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
-				Config: fmt.Sprintf(withOneAccess, randomID, randomDescription),
+				Config: fmt.Sprintf(withOneAccess, newName, newDescription),
 				Check: Resource(
 					resourceName,
-					Attribute("name", Equals(randomID)),
-					Attribute("description", Equals(randomDescription)),
+					Attribute("name", Equals(newName)),
+					Attribute("description", Equals(newDescription)),
 				),
 			},
 		})

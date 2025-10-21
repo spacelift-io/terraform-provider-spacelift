@@ -173,13 +173,13 @@ func TestModuleDataSpace(t *testing.T) {
 func TestModuleDataSpaceShares(t *testing.T) {
 	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-	spaces := `
+	spaces := fmt.Sprintf(`
 		resource "spacelift_space" "test_space_1" {
-			name = "test-space-1"
+			name = "test-space-1-%s"
 		}
 		resource "spacelift_space" "test_space_2" {
-			name = "test-space-2"
-		}`
+			name = "test-space-2-%s"
+		}`, randomID, randomID)
 
 	testSteps(t, []resource.TestStep{{
 		Config: fmt.Sprintf(`
