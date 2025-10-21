@@ -27,7 +27,7 @@ If you want to build from source, you can simply use `go build` in the root of t
 To develop the provider locally you need the following tools:
 
 - [Go](https://go.dev/doc/install) - see [go.mod](go.mod) for the proper version
-- [GoReleaser](https://goreleaser.com/).
+- [GoReleaser](https://goreleaser.com/) - minimum v2.0.0
 - A Spacelift account to use for testing.
 
 ### Generating the Documentation
@@ -54,7 +54,7 @@ This involves the following steps:
 To build the provider, run the following command:
 
 ```shell
-goreleaser build --clean --snapshot --skip=sign
+goreleaser build --clean --snapshot
 ```
 
 This will produce a number of binaries in subfolders of the `dist` folder for each supported
