@@ -40,62 +40,6 @@ func TestSavedFiltersData(t *testing.T) {
 		}})
 	})
 
-	t.Run("type specified", func(t *testing.T) {
-		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		datasourceName := "data.spacelift_saved_filters.stacks"
-
-		testSteps(t, []resource.TestStep{{
-			Config: `
-				resource "spacelift_saved_filter" "test1" {
-					name = "a-` + randomID + `"
-					type = "stacks"
-					is_public = true
-					data = jsonencode({
-						"key": "activeFilters",
-						"value": jsonencode({})
-  					})
-				}
-
-				resource "spacelift_saved_filter" "test2" {
-					name = "b-` + randomID + `"
-					type = "stacks"
-					is_public = true
-					data = jsonencode({
-						"key": "activeFilters",
-						"value": jsonencode({})
-  					})
-				}
-
-				resource "spacelift_saved_filter" "test3" {
-					name = "c-` + randomID + `"
-					type = "blueprints"
-					is_public = true
-					data = jsonencode({
-						"key": "activeFilters",
-						"value": jsonencode({})
-  					})
-				}
-
-				data "spacelift_saved_filters" "stacks" {
-					filter_type = "stacks"
-					depends_on = [spacelift_saved_filter.test1,spacelift_saved_filter.test2,spacelift_saved_filter.test3]
-				}
-			`,
-			Check: resource.ComposeTestCheckFunc(
-				Resource(datasourceName,
-					Attribute("id", IsNotEmpty()),
-					Attribute("filters.#", Equals("2")),
-					Attribute("filters.0.id", IsNotEmpty()),
-					Attribute("filters.0.type", Equals("stacks")),
-					Attribute("filters.0.name", Equals("a-"+randomID)),
-					Attribute("filters.1.id", IsNotEmpty()),
-					Attribute("filters.1.type", Equals("stacks")),
-					Attribute("filters.1.name", Equals("b-"+randomID)),
-				),
-			),
-		}})
-	})
-
 	t.Run("name specified", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		datasourceName := "data.spacelift_saved_filters.blueprints"

@@ -2,10 +2,6 @@ name: 🧪 Test
 
 on: [push]
 
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
-
 jobs:
   deployment:
     name: Test the code
@@ -22,7 +18,7 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.13.3"
+          terraform_version: "1.13.4"
           terraform_wrapper: false
 
       - name: Test with coverage
