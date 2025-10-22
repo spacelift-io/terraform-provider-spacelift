@@ -22,9 +22,10 @@ func TestPolicyData(t *testing.T) {
 					description = "My awesome policy"
 					body = <<EOF
 					package spacelift
-					deny["boom"] { true }
+					deny contains "boom" if { true }
 					EOF
 					type = "PLAN"
+					engine_type = "REGO_V1"
 				}
 				data "spacelift_policy" "test" {
 					policy_id = spacelift_policy.test.id
@@ -37,6 +38,7 @@ func TestPolicyData(t *testing.T) {
 				Attribute("type", Equals("PLAN")),
 				SetEquals("labels", "one", "two"),
 				Attribute("description", Equals("My awesome policy")),
+				Attribute("engine_type", Equals("REGO_V1")),
 			),
 		}})
 	})
@@ -59,6 +61,7 @@ func TestPolicyDataSpace(t *testing.T) {
 					deny["boom"] { true }
 					EOF
 					type = "PLAN"
+					engine_type = "REGO_V0"
 				}
 
 				data "spacelift_policy" "test" {
@@ -73,6 +76,7 @@ func TestPolicyDataSpace(t *testing.T) {
 				Attribute("space_id", Equals("root")),
 				SetEquals("labels", "one", "two"),
 				Attribute("description", Equals("My awesome policy")),
+				Attribute("engine_type", Equals("REGO_V0")),
 			),
 		}})
 	})

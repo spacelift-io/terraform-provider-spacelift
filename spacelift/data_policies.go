@@ -64,6 +64,11 @@ func dataPolicies() *schema.Resource {
 							Description: "description of the policy",
 							Computed:    true,
 						},
+						"engine_type": {
+							Type:        schema.TypeString,
+							Description: "type of engine used to evaluate the policy",
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -81,6 +86,7 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			Type        string   `graphql:"type"`
 			Space       string   `graphql:"space"`
 			Description string   `graphql:"description"`
+			EngineType  string   `graphql:"engineType"`
 		} `graphql:"policies()"`
 	}
 
@@ -122,6 +128,7 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 			"type":        policy.Type,
 			"space_id":    policy.Space,
 			"description": policy.Description,
+			"engine_type": policy.EngineType,
 		})
 	}
 
