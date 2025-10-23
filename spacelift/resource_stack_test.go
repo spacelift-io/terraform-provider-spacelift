@@ -364,10 +364,12 @@ func TestStackResource(t *testing.T) {
 	})
 
 	t.Run("external state access", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: `resource "spacelift_stack" "test" {
-						name                            = "External state access test"
+						name                            = "External state access test ` + randomID + `"
 						project_root                    = "root"
 						repository                      = "demo"
 						branch                          = "master"
@@ -381,7 +383,7 @@ func TestStackResource(t *testing.T) {
 			},
 			{
 				Config: `resource "spacelift_stack" "test" {
-						name                            = "External state access test"
+						name                            = "External state access test ` + randomID + `"
 						project_root                    = "root"
 						repository                      = "demo"
 						branch                          = "master"
@@ -396,7 +398,7 @@ func TestStackResource(t *testing.T) {
 			},
 			{
 				Config: `resource "spacelift_stack" "test" {
-						name                            = "External state access test"
+						name                            = "External state access test ` + randomID + `"
 						project_root                    = "root"
 						repository                      = "demo"
 						branch                          = "master"
@@ -411,7 +413,7 @@ func TestStackResource(t *testing.T) {
 			},
 			{
 				Config: `resource "spacelift_stack" "test" {
-						name                            = "External state access test"
+						name                            = "External state access test ` + randomID + `"
 						project_root                    = "root"
 						repository                      = "demo"
 						branch                          = "master"

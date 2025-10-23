@@ -534,16 +534,16 @@ func TestModuleResourceSpace(t *testing.T) {
 		branch := "master"
 		repository := "terraform-bacon-tasty"
 
-		spaces := `
+		spaces := fmt.Sprintf(`
 				resource "spacelift_space" "test_space_1" {
-					name = "test-space-1"
+					name = "test-space-1-%s"
 				}
 				resource "spacelift_space" "test_space_2" {
-					name = "test-space-2"
+					name = "test-space-2-%s"
 				}
 				resource "spacelift_space" "test_space_3" {
-					name = "test-space-3"
-				}`
+					name = "test-space-3-%s"
+				}`, randomID, randomID, randomID)
 
 		testSteps(t, []resource.TestStep{
 			{

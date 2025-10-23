@@ -33,6 +33,7 @@ output "policy_body" {
 
 - `body` (String) body of the policy
 - `description` (String) description of the policy
+- `engine_type` (String) type of engine used to evaluate the policy
 - `id` (String) The ID of this resource.
 - `labels` (Set of String)
 - `name` (String) name of the policy

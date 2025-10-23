@@ -43,6 +43,7 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 ### Optional
 
 - `description` (String) Description of the policy
+- `engine_type` (String) Type of engine used to evaluate the policy. Possible values are `REGO_V0` and `REGO_V1`.
 - `labels` (Set of String)
 - `space_id` (String) ID (slug) of the space the policy is in
 

@@ -46,7 +46,7 @@ func resourceStackDestructor() *schema.Resource {
 			},
 			"deactivated": {
 				Type:        schema.TypeBool,
-				Description: "If set to true, destruction won't delete the stack",
+				Description: "If set to true, destruction won't delete the resources (e.g. AWS/Azure/GCP infrastructure) managed by the stack",
 				Optional:    true,
 			},
 			"discard_runs": {
