@@ -211,7 +211,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 ### Optional
 
 - `additional_project_globs` (Set of String) Project globs is an optional list of paths to track changes of in addition to the project root.
-- `administrative` (Boolean) Indicates whether this stack can manage others. Defaults to `false`.
+- `administrative` (Boolean, Deprecated) Indicates whether this stack can manage others. Defaults to `false`. This field will be removed in a future version. Use `spacelift_role_attachment` resource to manage stack permissions.
 - `after_apply` (List of String) List of after-apply scripts
 - `after_destroy` (List of String) List of after-destroy scripts
 - `after_init` (List of String) List of after-init scripts

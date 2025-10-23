@@ -61,9 +61,10 @@ func resourceStack() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
-				Description: "Indicates whether this stack can manage others. Defaults to `false`.",
+				Description: "Indicates whether this stack can manage others. Defaults to `false`. This field will be removed in a future version. Use `spacelift_role_attachment` resource to manage stack permissions.",
 				Optional:    true,
 				Default:     false,
+				Deprecated:  "This field will be removed in a future version. Use `spacelift_role_attachment` resource to manage stack permissions.",
 			},
 			"ansible": {
 				Type:          schema.TypeList,
