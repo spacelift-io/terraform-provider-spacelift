@@ -74,6 +74,16 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Optional:         true,
 				Default:          "",
 				ForceNew:         true,
+				ConflictsWith:    []string{"value_nonsensitive"},
+			},
+			"value_nonsensitive": {
+				Type:          schema.TypeString,
+				Description:   "Value of the environment variable. Defaults to an empty string.",
+				Sensitive:     false,
+				Optional:      true,
+				Default:       "",
+				ForceNew:      true,
+				ConflictsWith: []string{"value"},
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
@@ -93,12 +103,19 @@ func resourceEnvironmentVariable() *schema.Resource {
 }
 
 func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	writeOnly := d.Get("write_only").(bool)
+
+	value, sensitive := resourceEnvironmentVariableValue(d)
+	if !sensitive && writeOnly {
+		return diag.Errorf("a non-sensitive environment variable cannot be write-only")
+	}
+
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
 			ID:          toID(d.Get("name")),
 			Type:        structs.ConfigType("ENVIRONMENT_VARIABLE"),
-			Value:       toString(d.Get("value")),
-			WriteOnly:   graphql.Boolean(d.Get("write_only").(bool)),
+			Value:       value,
+			WriteOnly:   graphql.Boolean(writeOnly),
 			Description: toOptionalString(d.Get("description")),
 		},
 	}
@@ -125,6 +142,13 @@ func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceDa
 	variables["stack"] = toID(moduleID)
 
 	return resourceEnvironmentVariableCreateModule(ctx, d, meta.(*internal.Client), variables)
+}
+
+func resourceEnvironmentVariableValue(d *schema.ResourceData) (graphql.String, bool) {
+	if v, ok := d.GetOk("value_nonsensitive"); ok {
+		return toString(v), false
+	}
+	return toString(d.Get("value")), true
 }
 
 func resourceEnvironmentVariableCreateContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
@@ -206,7 +230,11 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	d.Set("write_only", element.WriteOnly)
 
 	if value := element.Value; value != nil {
-		d.Set("value", *value)
+		if _, ok := d.GetOk("value_nonsensitive"); ok {
+			d.Set("value_nonsensitive", *value)
+		} else {
+			d.Set("value", *value)
+		}
 	} else {
 		d.Set("value", element.Checksum)
 	}
