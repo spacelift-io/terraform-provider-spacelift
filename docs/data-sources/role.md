@@ -43,5 +43,5 @@ data "spacelift_role" "custom" {
 - `actions` (Set of String) List of actions (permissions) associated with the role
 - `description` (String) Human-readable, free-form description of the role
 - `id` (String) The ID of this resource.
-- `is_system` (Boolean) Whether the role is a system role (Space admin, Space writer, Space reader). The 3 system roles are created by default and cannot be deleted or modified.
+- `is_system` (Boolean) Whether the role is a system role. System roles are built-in roles with predefined permissions for specific Spacelift functionality and cannot be modified or deleted.
 - `name` (String) Human-readable, free-form name of the role. Can be used to filter roles.
