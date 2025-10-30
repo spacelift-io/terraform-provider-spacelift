@@ -55,7 +55,7 @@ func dataRole() *schema.Resource {
 			},
 			"is_system": {
 				Type:        schema.TypeBool,
-				Description: "Whether the role is a system role (Space admin, Space writer, Space reader). The 3 system roles are created by default and cannot be deleted or modified.",
+				Description: "Whether the role is a system role. System roles are built-in roles with predefined permissions for specific Spacelift functionality and cannot be modified or deleted.",
 				Computed:    true,
 			},
 		},
