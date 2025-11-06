@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -100,9 +101,11 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 			RunDiscard *structs.RunDiscardAll `graphql:"runDiscardAll(stack: $id)"`
 		}
 		if err := meta.(*internal.Client).Mutate(ctx, "StackDestructorDiscardRuns", &mutation, variables); err != nil {
-			return diag.Errorf("could not discard runs on stack %s: %v", stackID, internal.FromSpaceliftError(err))
-		}
-		if len(mutation.RunDiscard.FailedDiscarding) > 0 {
+			// If there are no runs to discard, treat this as success rather than an error
+			if !strings.Contains(err.Error(), "no runs found that can be discarded") {
+				return diag.Errorf("could not discard runs on stack %s: %v", stackID, internal.FromSpaceliftError(err))
+			}
+		} else if len(mutation.RunDiscard.FailedDiscarding) > 0 {
 			return diag.Errorf("could not discard runs on stack %s: %v", stackID, mutation.RunDiscard.FailedDiscarding)
 		}
 	}
