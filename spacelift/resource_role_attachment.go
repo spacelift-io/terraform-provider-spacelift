@@ -16,6 +16,7 @@ import (
 const (
 	apiKeyRoleAttachmentPrefix          = "API"
 	idpGroupMappingRoleAttachmentPrefix = "IDP"
+	stackRoleAttachmentPrefix           = "STACK"
 	userRoleAttachmentPrefix            = "USER"
 )
 
@@ -23,11 +24,11 @@ func resourceRoleAttachment() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
 			"`spacelift_role_attachment` represents a Spacelift role attachment " +
-			"between:\n" +
-			"- an API key and a role\n" +
-			"- an IdP Group Mapping and a role\n" +
-			"- or a user and a role\n" +
-			"Exactly one of `api_key_id`, `idp_group_mapping_id`, or `user_id` must be set.",
+			"between an API key and a role within a specific space, " +
+			"an IdP Group Mapping and a role within a specific space, " +
+			"a stack and a role within a specific space, " +
+			"or a user and a role within a specific space. " +
+			"Exactly one of `api_key_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.",
 
 		CreateContext: resourceRoleAttachmentCreate,
 		ReadContext:   resourceRoleAttachmentRead,
@@ -43,23 +44,32 @@ func resourceRoleAttachment() *schema.Resource {
 				Description:  "ID of the API key (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "user_id"},
+				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"idp_group_mapping_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the IdP Group Mapping (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "ID of the IdP Group Mapping (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
+			},
+			"stack_id": {
+				Type:         schema.TypeString,
+				Description:  "Slug of the Stack to attach to the role. For example: `my-stack`.",
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"user_id": {
-				Type:        schema.TypeString,
-				Description: "ID of the user (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
-				Optional:    true,
-				ForceNew:    true,
+				Type:         schema.TypeString,
+				Description:  "ID of the user (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"role_id": {
 				Type:             schema.TypeString,
-				Description:      "ID of the role (ULID format) to attach to the API key, IdP Group or to the user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
+				Description:      "ID of the role (ULID format) to attach to the API key, IdP Group, stack, or user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
@@ -77,10 +87,15 @@ func resourceRoleAttachment() *schema.Resource {
 
 func resourceRoleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	apiKeyID := d.Get("api_key_id").(string)
+	stackID := d.Get("stack_id").(string)
 	userID := d.Get("user_id").(string)
 
 	if apiKeyID != "" {
 		return createAPIKeyRoleBinding(ctx, d, meta)
+	}
+
+	if stackID != "" {
+		return createStackRoleBinding(ctx, d, meta)
 	}
 
 	if userID != "" {
@@ -164,12 +179,37 @@ func createIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceDat
 	return resourceRoleAttachmentRead(ctx, d, meta)
 }
 
+func createStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var mutation struct {
+		CreateRoleBinding structs.StackRoleBinding `graphql:"stackRoleBindingCreate(input: $input)"`
+	}
+
+	variables := map[string]interface{}{
+		"input": structs.StackRoleBindingInput{
+			StackID: toID(d.Get("stack_id").(string)),
+			RoleID:  toID(d.Get("role_id").(string)),
+			SpaceID: toID(d.Get("space_id").(string)),
+		},
+	}
+
+	if err := meta.(*internal.Client).Mutate(ctx, "StackRoleBindingCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create stack role binding: %v", internal.FromSpaceliftError(err))
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", stackRoleAttachmentPrefix, mutation.CreateRoleBinding.ID))
+
+	return resourceRoleAttachmentRead(ctx, d, meta)
+}
+
 func resourceRoleAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 
 	if strings.HasPrefix(id, apiKeyRoleAttachmentPrefix) {
 		return readAPIKeyRoleBinding(ctx, d, meta)
+	}
 
+	if strings.HasPrefix(id, stackRoleAttachmentPrefix) {
+		return readStackRoleBinding(ctx, d, meta)
 	}
 
 	if strings.HasPrefix(id, userRoleAttachmentPrefix) {
@@ -177,7 +217,6 @@ func resourceRoleAttachmentRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	return readIDPGroupMappingRoleBinding(ctx, d, meta)
-
 }
 
 func readAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -264,6 +303,40 @@ func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
+func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var query struct {
+		StackRoleBinding *structs.StackRoleBinding `graphql:"stackRoleBinding(id: $id)"`
+	}
+
+	id := strings.TrimPrefix(d.Id(), stackRoleAttachmentPrefix+"/")
+	variables := map[string]interface{}{
+		"id": toID(id),
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "StackRoleBindingRead", &query, variables); err != nil {
+		return diag.Errorf("could not query for stack role binding: %v", internal.FromSpaceliftError(err))
+	}
+
+	if query.StackRoleBinding == nil {
+		d.SetId("")
+		return nil
+	}
+
+	roleBinding := query.StackRoleBinding
+
+	if err := d.Set("stack_id", roleBinding.StackID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("role_id", roleBinding.Role.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("space_id", roleBinding.Space.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
 func resourceRoleAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	id := d.Id()
 
@@ -271,12 +344,15 @@ func resourceRoleAttachmentDelete(ctx context.Context, d *schema.ResourceData, m
 		return deleteAPIKeyRoleBinding(ctx, d, meta)
 	}
 
+	if strings.HasPrefix(id, stackRoleAttachmentPrefix) {
+		return deleteStackRoleBinding(ctx, d, meta)
+	}
+
 	if strings.HasPrefix(id, userRoleAttachmentPrefix) {
 		return deleteUserRoleBinding(ctx, d, meta)
 	}
 
 	return deleteIDPGroupMappingRoleBinding(ctx, d, meta)
-
 }
 
 func deleteAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -329,6 +405,25 @@ func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceDat
 
 	if err := meta.(*internal.Client).Mutate(ctx, "UserGroupRoleBindingDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete user group role binding: %v", internal.FromSpaceliftError(err))
+	}
+
+	d.SetId("")
+
+	return nil
+}
+
+func deleteStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var mutation struct {
+		DeleteRoleBinding *structs.StackRoleBinding `graphql:"stackRoleBindingDelete(id: $id)"`
+	}
+
+	id := strings.TrimPrefix(d.Id(), stackRoleAttachmentPrefix+"/")
+	variables := map[string]interface{}{
+		"id": toID(id),
+	}
+
+	if err := meta.(*internal.Client).Mutate(ctx, "StackRoleBindingDelete", &mutation, variables); err != nil {
+		return diag.Errorf("could not delete stack role binding: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId("")

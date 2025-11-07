@@ -43,7 +43,7 @@ data "spacelift_stack" "k8s-core" {
 
 ### Read-Only
 
-- `administrative` (Boolean) indicates whether this stack can administer others
+- `administrative` (Boolean, Deprecated) Indicates whether this stack can administer others. This field will be removed in a future version. Use `spacelift_role_attachment` resource to manage stack permissions.
 - `ansible` (List of Object) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedatt--ansible))
 - `autodeploy` (Boolean) indicates whether changes to this stack can be automatically deployed
 - `autoretry` (Boolean) indicates whether obsolete proposed changes should automatically be retried

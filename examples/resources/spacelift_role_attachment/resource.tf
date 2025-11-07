@@ -25,6 +25,18 @@ resource "spacelift_role_attachment" "idp_group_attachment" {
   space_id             = spacelift_space.devops.id
 }
 
+resource "spacelift_stack" "application" {
+  name       = "Application Stack"
+  repository = "app-infrastructure"
+  branch     = "main"
+}
+
+resource "spacelift_role_attachment" "stack_attachment" {
+  stack_id = spacelift_stack.application.id
+  role_id  = spacelift_role.devops.id
+  space_id = spacelift_space.devops.id
+}
+
 # Attach a user to a role in a specific space
 resource "spacelift_user" "devops" {
   username         = "devops-user"
