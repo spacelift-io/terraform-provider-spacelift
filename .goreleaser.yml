@@ -37,4 +37,4 @@ changelog:
   use: github-native
 
 release:
-  draft: true
+  draft: false
