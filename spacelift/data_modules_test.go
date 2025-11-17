@@ -19,6 +19,17 @@ func TestModulesData(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
+
+				resource "spacelift_space" "test_space_1" {
+					name = "test-space-1-%s"
+				}
+				resource "spacelift_space" "test_space_2" {
+					name = "test-space-2-%s"
+				}
+				resource "spacelift_space" "test_space_3" {
+					name = "test-space-3-%s"
+				}
+
 				resource "spacelift_module" "test" {
 					name = "test-module-%s"
 
@@ -27,6 +38,8 @@ func TestModulesData(t *testing.T) {
 					labels         = ["bacon", "cabbage"]
 					project_root   = "root"
 					repository     = "demo"
+					space_shares   = [spacelift_space.test_space_1.id, spacelift_space.test_space_2.id]
+					shared_accounts = ["spacelift-io"]
 				}
 
 				data "spacelift_modules" "test" {
@@ -53,12 +66,17 @@ func TestModulesData(t *testing.T) {
 					project_root {
 					  any_of = ["root"]
 					}
-				  }
-			`, randomID, randomID),
+				}
+			`, randomID, randomID, randomID, randomID, randomID),
 			Check: resource.ComposeTestCheckFunc(
 				Resource(datasourceName, Attribute("id", IsNotEmpty())),
 				CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"modules", "module_id"}, resourceName, "id"),
 				CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"modules", "name"}, resourceName, "name"),
+				resource.TestCheckResourceAttr(datasourceName, "modules.0.space_shares.#", "2"),
+				resource.TestCheckTypeSetElemAttrPair(datasourceName, "modules.0.space_shares.*", "spacelift_space.test_space_1", "id"),
+				resource.TestCheckTypeSetElemAttrPair(datasourceName, "modules.0.space_shares.*", "spacelift_space.test_space_2", "id"),
+				resource.TestCheckResourceAttr(datasourceName, "modules.0.shared_accounts.#", "1"),
+				resource.TestCheckResourceAttr(datasourceName, "modules.0.shared_accounts.0", "spacelift-io"),
 			),
 		}})
 	})

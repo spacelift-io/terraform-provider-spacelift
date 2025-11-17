@@ -108,20 +108,19 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 				"git_sparse_checkout_paths":        node.GitSparseCheckoutPaths,
 			}
 
+			module["worker_pool_id"] = nil
 			if workerPool := node.WorkerPool; workerPool != nil {
 				module["worker_pool_id"] = workerPool.ID
-			} else {
-				module["worker_pool_id"] = nil
 			}
 
 			sharedAccountsList := []interface{}{}
 			spaceSharesList := []interface{}{}
 			for _, share := range node.ModuleShares {
-				if share.To.Space == nil {
-					sharedAccountsList = append(sharedAccountsList, share.To.Account.Subdomain)
-				} else {
+				if share.To.Space != nil {
 					spaceSharesList = append(spaceSharesList, share.To.Space.ID)
+					continue
 				}
+				sharedAccountsList = append(sharedAccountsList, share.To.Account.Subdomain)
 			}
 			module["shared_accounts"] = sharedAccountsList
 			module["space_shares"] = spaceSharesList
