@@ -80,6 +80,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_gitlab_webhook_endpoint":                dataGitlabWebhookEndpoint(),
 				"spacelift_ips":                                    dataIPs(),
 				"spacelift_module":                                 dataModule(),
+				"spacelift_modules":                                dataModules(),
 				"spacelift_mounted_file":                           dataMountedFile(),
 				"spacelift_policies":                               dataPolicies(),
 				"spacelift_policy":                                 dataPolicy(),
