@@ -1,6 +1,8 @@
 package spacelift
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/shurcooL/graphql"
 
@@ -106,4 +108,27 @@ func getOptionalBool(d *schema.ResourceData, key string) *graphql.Boolean {
 
 	// User explicitly set the value in config
 	return toOptionalBool(d.Get(key))
+}
+
+// convertToString converts various types to their string representation
+// This is used for plugin parameters where the API expects strings but users provide typed values
+func convertToString(input interface{}) string {
+	if input == nil {
+		return ""
+	}
+
+	switch v := input.(type) {
+	case string:
+		return v
+	case bool:
+		if v {
+			return "true"
+		}
+		return "false"
+	case int, int32, int64, float32, float64:
+		return fmt.Sprintf("%v", v)
+	default:
+		// Fallback to fmt.Sprintf for any other type
+		return fmt.Sprintf("%v", v)
+	}
 }
