@@ -28,14 +28,16 @@ func resourceDefaultRunnerImage() *schema.Resource {
 
 		Schema: map[string]*schema.Schema{
 			"private": {
-				Type:        schema.TypeString,
-				Description: "Runner image to be used for private worker pools",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "Runner image to be used for private worker pools",
+				Optional:     true,
+				AtLeastOneOf: []string{"private", "public"},
 			},
 			"public": {
-				Type:        schema.TypeString,
-				Description: "Runner image to be used for public worker pools",
-				Optional:    true,
+				Type:         schema.TypeString,
+				Description:  "Runner image to be used for public worker pools",
+				Optional:     true,
+				AtLeastOneOf: []string{"private", "public"},
 			},
 		},
 	}
