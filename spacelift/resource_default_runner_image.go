@@ -86,11 +86,6 @@ func resourceDefaultRunnerImageRead(ctx context.Context, data *schema.ResourceDa
 	privateEmpty := query.DefaultPrivateWorkerPoolRunnerImage == nil || *query.DefaultPrivateWorkerPoolRunnerImage == ""
 	publicEmpty := query.DefaultPublicWorkerPoolRunnerImage == nil || *query.DefaultPublicWorkerPoolRunnerImage == ""
 
-	if privateEmpty && publicEmpty {
-		data.SetId("")
-		return nil
-	}
-
 	if !publicEmpty {
 		data.Set("public", *query.DefaultPublicWorkerPoolRunnerImage)
 	} else {
