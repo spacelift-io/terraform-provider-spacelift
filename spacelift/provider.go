@@ -118,6 +118,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_blueprint":                        resourceBlueprint(),
 				"spacelift_context_attachment":               resourceContextAttachment(),
 				"spacelift_context":                          resourceContext(),
+				"spacelift_default_runner_image":             resourceDefaultRunnerImage(),
 				"spacelift_drift_detection":                  resourceDriftDetection(),
 				"spacelift_environment_variable":             resourceEnvironmentVariable(),
 				"spacelift_gcp_service_account":              resourceGCPServiceAccount(),
