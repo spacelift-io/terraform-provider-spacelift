@@ -124,8 +124,6 @@ func resourceDefaultRunnerImageUpdate(ctx context.Context, data *schema.Resource
 		return diag.Errorf("could not set default runner image for account: %v", err)
 	}
 
-	data.SetId(time.Now().String())
-
 	return resourceDefaultRunnerImageRead(ctx, data, i)
 }
 
