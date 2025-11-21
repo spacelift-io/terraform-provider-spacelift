@@ -5,17 +5,18 @@ import "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 // AzureIntegration represents an Azure identity provided by the Spacelift
 // integration.
 type AzureIntegration struct {
-	ID                    string   `graphql:"id"`
-	AdminConsentProvided  bool     `graphql:"adminConsentProvided"`
-	AdminConsentURL       string   `graphql:"adminConsentURL"`
-	ApplicationID         string   `graphql:"applicationId"`
-	ObjectID              *string  `graphql:"objectId"`
-	DefaultSubscriptionID *string  `graphql:"defaultSubscriptionId"`
-	DisplayName           string   `graphql:"displayName"`
-	Labels                []string `graphql:"labels"`
-	Name                  string   `graphql:"name"`
-	TenantID              string   `graphql:"tenantId"`
-	Space                 string   `graphql:"space"`
+	ID                       string   `graphql:"id"`
+	AdminConsentProvided     bool     `graphql:"adminConsentProvided"`
+	AdminConsentURL          string   `graphql:"adminConsentURL"`
+	ApplicationID            string   `graphql:"applicationId"`
+	ObjectID                 *string  `graphql:"objectId"`
+	ServicePrincipalObjectID *string  `graphql:"servicePrincipalObjectId"`
+	DefaultSubscriptionID    *string  `graphql:"defaultSubscriptionId"`
+	DisplayName              string   `graphql:"displayName"`
+	Labels                   []string `graphql:"labels"`
+	Name                     string   `graphql:"name"`
+	TenantID                 string   `graphql:"tenantId"`
+	Space                    string   `graphql:"space"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
@@ -41,6 +42,11 @@ func (i *AzureIntegration) ToMap() map[string]interface{} {
 	}
 	if i.ObjectID != nil {
 		fields["object_id"] = *i.ObjectID
+	}
+
+	// service_principal_object_id is only available after going through the consent flow
+	if i.ServicePrincipalObjectID != nil {
+		fields["service_principal_object_id"] = *i.ServicePrincipalObjectID
 	}
 
 	fields["labels"] = i.getLabelsSet()

@@ -86,6 +86,13 @@ func resourceAzureIntegration() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The objectId of the Azure AD application used by the integration.",
 				Computed:    true,
+				Deprecated:  "This field will be removed in a future version. Use `service_principal_object_id` instead.",
+			},
+			"service_principal_object_id": {
+				Type: schema.TypeString,
+				Description: "This is the unique ID of the service principal object associated with this application. " +
+					"This ID can be useful when performing management operations against this application using programmatic interfaces.",
+				Computed: true,
 			},
 			"display_name": {
 				Type: schema.TypeString,
