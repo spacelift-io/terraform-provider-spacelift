@@ -1,0 +1,1 @@
+tofu import spacelift_plugin_template.example $PLUGIN_TEMPLATE_ID
