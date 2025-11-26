@@ -234,7 +234,7 @@ func dataModule() *schema.Resource {
 			},
 			"space_shares": {
 				Type:        schema.TypeSet,
-				Description: "(Beta) List of the space IDs which should have access to the Module",
+				Description: "List of the space IDs which should have access to the Module",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
