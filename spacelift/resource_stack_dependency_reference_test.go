@@ -109,4 +109,49 @@ func TestStackDependencyReferenceResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("imports stack dependency reference using human-readable format", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		configWithoutReference := func() string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test1" {
+					branch     = "master"
+					repository = "demo"
+					name       = "my-first-stack-%s"
+				}
+
+				resource "spacelift_stack" "test2" {
+					branch     = "master"
+					repository = "demo"
+					name       = "my-second-stack-%s"
+				}
+
+				resource "spacelift_stack_dependency" "test" {
+					stack_id = spacelift_stack.test1.id
+					depends_on_stack_id = spacelift_stack.test2.id
+				}`, randomID, randomID)
+		}
+
+		configWithReference := func() string {
+			return configWithoutReference() + `
+				resource "spacelift_stack_dependency_reference" "test" {
+					stack_dependency_id = spacelift_stack_dependency.test.id
+					output_name = "output_test"
+					input_name = "input_test"
+					trigger_always = false
+				}`
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configWithReference(),
+			},
+			{
+				ResourceName:  resourceName,
+				ImportState:   true,
+				ImportStateId: fmt.Sprintf("my-first-stack-%s/my-second-stack-%s/input_test", randomID, randomID),
+				ImportStateVerify: true,
+			},
+		})
+	})
 }
