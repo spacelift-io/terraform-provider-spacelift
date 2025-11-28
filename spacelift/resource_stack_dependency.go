@@ -2,11 +2,13 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/oklog/ulid/v2"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
@@ -19,7 +21,9 @@ func resourceStackDependency() *schema.Resource {
 			"`spacelift_stack_dependency` represents a Spacelift **stack dependency** - " +
 			"a dependency between two stacks. When one stack depends on another, the tracked runs " +
 			"of the stack will not start until the dependent stack is successfully finished. Additionally, " +
-			"changes to the dependency will trigger the dependent.",
+			"changes to the dependency will trigger the dependent.\n\n" +
+			"~> **Import format**: Use `terraform import spacelift_stack_dependency.example stack-id/depends-on-stack-id`. " +
+			"The old format `stack-id/dependency-ulid` is deprecated but still supported for backward compatibility.",
 
 		CreateContext: resourceStackDependencyCreate,
 		ReadContext:   resourceStackDependencyRead,
@@ -68,7 +72,12 @@ func resourceStackDependencyDelete(ctx context.Context, d *schema.ResourceData, 
 		StackDependency *structs.StackDependency `graphql:"stackDependencyDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": getStackDependencyID(d)}
+	_, depID, err := parseStackDependencyID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	variables := map[string]any{"id": graphql.ID(depID)}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDependencyDelete", &query, variables); err != nil {
 		return diag.Errorf("could not delete stack dependency: %s", err)
@@ -79,46 +88,103 @@ func resourceStackDependencyDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var query struct {
-		Stack *struct {
-			Dependency *structs.StackDependency `graphql:"dependency(id: $id)"`
-		} `graphql:"stack(id: $stack)"`
-	}
+func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	stackID := toID(d.Get("stack_id"))
+	dependsOnStackID := toID(d.Get("depends_on_stack_id"))
 
-	variables := map[string]interface{}{
-		"id":    getStackDependencyID(d),
-		"stack": toID(d.Get("stack_id")),
-	}
-
-	if err := meta.(*internal.Client).Query(ctx, "StackDependencyRead", &query, variables); err != nil {
+	dependency, err := resourceStackDependencyFetchByStackID(ctx, meta, stackID, dependsOnStackID)
+	if err != nil {
 		return diag.Errorf("could not query for stack dependency: %s", err)
 	}
 
-	if query.Stack == nil || query.Stack.Dependency == nil {
+	if dependency == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("stack_id", query.Stack.Dependency.Stack.ID)
-	d.Set("depends_on_stack_id", query.Stack.Dependency.DependsOnStack.ID)
+	d.Set("stack_id", dependency.Stack.ID)
+	d.Set("depends_on_stack_id", dependency.DependsOnStack.ID)
+	d.SetId(path.Join(dependency.Stack.ID, dependency.ID))
 
 	return nil
 }
 
-func resourceStackDependencyImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
-	idParts := strings.Split(d.Id(), "/")
-	d.Set("stack_id", idParts[0])
+func resourceStackDependencyImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	stackID, secondPart, err := parseStackDependencyID(d.Id())
+	if err != nil {
+		return nil, fmt.Errorf("invalid import ID format: %w", err)
+	}
 
-	resourceStackDependencyRead(ctx, d, meta)
+	var dependency *structs.StackDependency
+
+	// Try to parse as ULID to detect old format (stackID/dependencyULID)
+	_, err = ulid.Parse(secondPart)
+	if err == nil {
+		dependency, err = resourceStackDependencyFetchByID(ctx, meta, toID(stackID), toID(secondPart))
+	} else {
+		dependency, err = resourceStackDependencyFetchByStackID(ctx, meta, toID(stackID), toID(secondPart))
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if dependency == nil {
+		return nil, fmt.Errorf("stack dependency not found for import ID: %s", path.Join(stackID, secondPart))
+	}
+
+	d.Set("stack_id", dependency.Stack.ID)
+	d.Set("depends_on_stack_id", dependency.DependsOnStack.ID)
+	d.SetId(path.Join(dependency.Stack.ID, dependency.ID))
 
 	return []*schema.ResourceData{d}, nil
 }
 
-func getStackDependencyID(d *schema.ResourceData) graphql.ID {
-	idParts := strings.Split(d.Id(), "/")
+// resourceStackDependencyFetchByID fetches a dependency using ULID (old format)
+func resourceStackDependencyFetchByID(ctx context.Context, meta any, stackID, dependencyID graphql.ID) (*structs.StackDependency, error) {
+	variables := map[string]any{
+		"id":               dependencyID,
+		"stackId":          stackID,
+		"dependsOnStackId": toID(""),
+	}
+	return resourceStackDependencyFetch(ctx, meta, variables)
+}
 
-	return graphql.ID(idParts[1])
+// resourceStackDependencyFetchByStackID fetches a dependency using stack ID (new format)
+func resourceStackDependencyFetchByStackID(ctx context.Context, meta any, stackID, dependsOnStackID graphql.ID) (*structs.StackDependency, error) {
+	variables := map[string]any{
+		"id":               toID(""),
+		"stackId":          stackID,
+		"dependsOnStackId": dependsOnStackID,
+	}
+	return resourceStackDependencyFetch(ctx, meta, variables)
+}
+
+func resourceStackDependencyFetch(ctx context.Context, meta any, variables map[string]any) (*structs.StackDependency, error) {
+	var query struct {
+		Stack *struct {
+			Dependency *structs.StackDependency `graphql:"dependency(id: $id, dependsOnStackId: $dependsOnStackId)"`
+		} `graphql:"stack(id: $stackId)"`
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "StackDependencyRead", &query, variables); err != nil {
+		return nil, err
+	}
+
+	if query.Stack == nil {
+		return nil, fmt.Errorf("stack not found")
+	}
+
+	return query.Stack.Dependency, nil
+}
+
+func parseStackDependencyID(id string) (string, string, error) {
+	idParts := strings.SplitN(id, "/", 2)
+	if len(idParts) != 2 {
+		return "", "", fmt.Errorf("unexpected resource ID format: %s", id)
+	}
+
+	return idParts[0], idParts[1], nil
 }
 
 func stackDependencyCreateInput(d *schema.ResourceData) structs.StackDependencyInput {

@@ -4,11 +4,14 @@ page_title: "spacelift_stack_dependency Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_stack_dependency represents a Spacelift stack dependency - a dependency between two stacks. When one stack depends on another, the tracked runs of the stack will not start until the dependent stack is successfully finished. Additionally, changes to the dependency will trigger the dependent.
+  ~> Import format: Use terraform import spacelift_stack_dependency.example stack-id/depends-on-stack-id. The old format stack-id/dependency-ulid is deprecated but still supported for backward compatibility.
 ---
 
 # spacelift_stack_dependency (Resource)
 
 `spacelift_stack_dependency` represents a Spacelift **stack dependency** - a dependency between two stacks. When one stack depends on another, the tracked runs of the stack will not start until the dependent stack is successfully finished. Additionally, changes to the dependency will trigger the dependent.
+
+~> **Import format**: Use `terraform import spacelift_stack_dependency.example stack-id/depends-on-stack-id`. The old format `stack-id/dependency-ulid` is deprecated but still supported for backward compatibility.
 
 ## Example Usage
 
