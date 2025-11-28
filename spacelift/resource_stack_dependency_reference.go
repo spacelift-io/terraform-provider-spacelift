@@ -20,9 +20,7 @@ func resourceStackDependencyReference() *schema.Resource {
 		Description: "" +
 			"`spacelift_stack_dependency_reference` represents a Spacelift **stack dependency reference** - " +
 			"a reference matches a stack's output to another stack's input. It is similar to an environment variable " +
-			"(`spacelift_environment_variable`), except that value is provided by another stack's output.\n\n" +
-			"~> **Import format**: Use `terraform import spacelift_stack_dependency_reference.example stack-id/depends-on-stack-id/input-name`. " +
-			"The old format `stack-id/dependency-ulid/reference-ulid` is deprecated but still supported for backward compatibility.",
+			"(`spacelift_environment_variable`), except that value is provided by another stack's output.",
 
 		CreateContext: resourceStackDependencyReferenceCreate,
 		ReadContext:   resourceStackDependencyReferenceRead,

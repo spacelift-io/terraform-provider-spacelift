@@ -4,14 +4,11 @@ page_title: "spacelift_stack_dependency_reference Resource - terraform-provider-
 subcategory: ""
 description: |-
   spacelift_stack_dependency_reference represents a Spacelift stack dependency reference - a reference matches a stack's output to another stack's input. It is similar to an environment variable (spacelift_environment_variable), except that value is provided by another stack's output.
-  ~> Import format: Use terraform import spacelift_stack_dependency_reference.example stack-id/depends-on-stack-id/input-name. The old format stack-id/dependency-ulid/reference-ulid is deprecated but still supported for backward compatibility.
 ---
 
 # spacelift_stack_dependency_reference (Resource)
 
 `spacelift_stack_dependency_reference` represents a Spacelift **stack dependency reference** - a reference matches a stack's output to another stack's input. It is similar to an environment variable (`spacelift_environment_variable`), except that value is provided by another stack's output.
-
-~> **Import format**: Use `terraform import spacelift_stack_dependency_reference.example stack-id/depends-on-stack-id/input-name`. The old format `stack-id/dependency-ulid/reference-ulid` is deprecated but still supported for backward compatibility.
 
 ## Example Usage
 
@@ -56,3 +53,13 @@ resource "spacelift_stack_dependency_reference" "test" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import spacelift_stack_dependency_reference.example stack-id/depends-on-stack-id/input-name
+```
