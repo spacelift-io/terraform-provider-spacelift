@@ -20,6 +20,7 @@ func TestAWSIntegrationsData(t *testing.T) {
 		Name:                        acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
 		RoleARN:                     "arn:aws:iam::039653571618:role/empty-test-role",
 		Space:                       "root",
+		AutoattachEnabled:           true,
 	}
 	second := &structs.AWSIntegration{
 		DurationSeconds:             4321,
@@ -107,9 +108,10 @@ func awsIntegrationToResource(i *structs.AWSIntegration) string {
         	labels                         =  %s
         	duration_seconds               =  %d
         	generate_credentials_in_worker =  %t
+					autoattach_enabled             = 	%t
 		%s
       	 }
-`, i.Name, i.Name, i.RoleARN, i.Space, labelsAsString(i.Labels), i.DurationSeconds, i.GenerateCredentialsInWorker, regionAttr)
+`, i.Name, i.Name, i.RoleARN, i.Space, labelsAsString(i.Labels), i.DurationSeconds, i.GenerateCredentialsInWorker, i.AutoattachEnabled, regionAttr)
 }
 
 func labelsAsString(labels []string) string {
@@ -124,6 +126,7 @@ func awsIntegrationChecks(i *structs.AWSIntegration) []resource.TestCheckFunc {
 		Attribute("space_id", Equals(i.Space)),
 		Attribute("duration_seconds", Equals(fmt.Sprintf("%d", i.DurationSeconds))),
 		Attribute("generate_credentials_in_worker", Equals(fmt.Sprintf("%t", i.GenerateCredentialsInWorker))),
+		Attribute("autoattach_enabled", Equals(fmt.Sprintf("%t", i.AutoattachEnabled))),
 		SetEquals("labels", i.Labels...),
 	}
 	if i.Region != nil {
@@ -134,7 +137,7 @@ func awsIntegrationChecks(i *structs.AWSIntegration) []resource.TestCheckFunc {
 	return []resource.TestCheckFunc{
 		Resource("data.spacelift_aws_integrations.test",
 			Nested("integrations",
-				CheckInList(),
+				CheckInList(checks...),
 			),
 		),
 	}

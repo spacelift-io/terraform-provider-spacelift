@@ -38,6 +38,7 @@ data "spacelift_aws_integration" "example" {
 
 ### Read-Only
 
+- `autoattach_enabled` (Boolean) Enables `autoattach:` labels functionality for this integration.
 - `duration_seconds` (Number) Duration in seconds for which the assumed role credentials should be valid
 - `external_id` (String) Custom external ID (works only for private workers).
 - `generate_credentials_in_worker` (Boolean) Generate AWS credentials in the private worker

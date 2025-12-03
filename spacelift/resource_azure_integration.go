@@ -109,13 +109,19 @@ func resourceAzureIntegration() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"autoattach_enabled": {
+				Type:        schema.TypeBool,
+				Description: "Enables `autoattach:` labels functionality for this integration.",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
 
 func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationCreate(name: $name, tenantID: $tenantID, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space)"`
+		CreateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationCreate(name: $name, tenantID: $tenantID, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space, autoattachEnabled: $autoattachEnabled)"`
 	}
 
 	labels := []graphql.String{}
@@ -132,6 +138,7 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 		"labels":                labels,
 		"defaultSubscriptionId": (*graphql.String)(nil),
 		"space":                 (*graphql.ID)(nil),
+		"autoattachEnabled":     toBool(d.Get("autoattach_enabled")),
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
@@ -172,7 +179,7 @@ func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, m
 
 func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationUpdate(id: $id, name: $name, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space)"`
+		UpdateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationUpdate(id: $id, name: $name, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space, autoattachEnabled: $autoattachEnabled)"`
 	}
 
 	labels := []graphql.String{}
@@ -189,6 +196,7 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 		"labels":                labels,
 		"defaultSubscriptionId": (*graphql.String)(nil),
 		"space":                 (*graphql.ID)(nil),
+		"autoattachEnabled":     toBool(d.Get("autoattach_enabled")),
 	}
 
 	if subID, ok := d.GetOk("default_subscription_id"); ok {

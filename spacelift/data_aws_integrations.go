@@ -71,6 +71,11 @@ func dataAWSIntegrations() *schema.Resource {
 							Description: "AWS region to select a regional AWS STS endpoint.",
 							Computed:    true,
 						},
+						"autoattach_enabled": {
+							Type:        schema.TypeBool,
+							Description: "Enables `autoattach:` labels functionality for this integration.",
+							Computed:    true,
+						},
 					},
 				},
 			},

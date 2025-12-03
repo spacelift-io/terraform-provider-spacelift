@@ -29,6 +29,7 @@ description: |-
 
 Read-Only:
 
+- `autoattach_enabled` (Boolean)
 - `duration_seconds` (Number)
 - `external_id` (String)
 - `generate_credentials_in_worker` (Boolean)

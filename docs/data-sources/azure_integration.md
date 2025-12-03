@@ -37,6 +37,7 @@ data "spacelift_azure_integration" "example" {
 - `admin_consent_provided` (Boolean) Indicates whether admin consent has been performed for the AAD Application.
 - `admin_consent_url` (String) The URL to use to provide admin consent to the application in the customer's tenant
 - `application_id` (String) The applicationId of the Azure AD application used by the integration.
+- `autoattach_enabled` (Boolean) Enables `autoattach:` labels functionality for this integration.
 - `default_subscription_id` (String) The default subscription ID to use, if one isn't specified at the stack/module level
 - `display_name` (String) The display name for the application in Azure. This is automatically generated when the integration is created, and cannot be changed without deleting and recreating the integration.
 - `id` (String) The ID of this resource.

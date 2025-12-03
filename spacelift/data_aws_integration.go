@@ -78,6 +78,11 @@ func dataAWSIntegration() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Computed: true,
 			},
+			"autoattach_enabled": {
+				Type:        schema.TypeBool,
+				Description: "Enables `autoattach:` labels functionality for this integration.",
+				Computed:    true,
+			},
 		},
 	}
 }

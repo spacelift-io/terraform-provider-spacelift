@@ -17,6 +17,7 @@ type AzureIntegration struct {
 	Name                     string   `graphql:"name"`
 	TenantID                 string   `graphql:"tenantId"`
 	Space                    string   `graphql:"space"`
+	AutoattachEnabled        bool     `graphql:"autoattachEnabled"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
@@ -36,6 +37,7 @@ func (i *AzureIntegration) ToMap() map[string]interface{} {
 		"name":                   i.Name,
 		"tenant_id":              i.TenantID,
 		"space_id":               i.Space,
+		"autoattach_enabled":     i.AutoattachEnabled,
 	}
 	if subID := i.DefaultSubscriptionID; subID != nil {
 		fields["default_subscription_id"] = *subID

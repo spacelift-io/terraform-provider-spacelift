@@ -22,6 +22,7 @@ func TestAzureIntegrationData(t *testing.T) {
 				tenant_id               = "tenant-id"
 				default_subscription_id = "subscription-id"
 				labels                  = ["one", "two"]
+				autoattach_enabled      = true
 			}
 			data "spacelift_azure_integration" "test" {
 				integration_id = spacelift_azure_integration.test.id
@@ -39,6 +40,7 @@ func TestAzureIntegrationData(t *testing.T) {
 				Attribute("name", Equals(fmt.Sprintf("test-integration-%s", randomID))),
 				Attribute("tenant_id", Equals("tenant-id")),
 				SetEquals("labels", "one", "two"),
+				Attribute("autoattach_enabled", Equals("true")),
 			),
 		}})
 	})
