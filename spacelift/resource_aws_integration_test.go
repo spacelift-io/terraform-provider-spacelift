@@ -23,7 +23,7 @@ func TestAWSIntegrationResource(t *testing.T) {
         role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
         labels                         = ["one", "two"]
         generate_credentials_in_worker = false
-				autoattach_enabled             = true
+		autoattach_enabled             = true
 			}
 		`, randomID),
 			Check: Resource(
