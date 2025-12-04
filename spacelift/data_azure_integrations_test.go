@@ -61,7 +61,7 @@ func azureIntegrationToResource(i *structs.AzureIntegration) string {
 				tenant_id               = "%s"
 				default_subscription_id = "%s"
 				labels                  =  %s
-				space_id 				   = "%s"
+				space_id 				= "%s"
 				autoattach_enabled      = %s
 			}
 `,
