@@ -108,7 +108,7 @@ func awsIntegrationToResource(i *structs.AWSIntegration) string {
         	labels                         =  %s
         	duration_seconds               =  %d
         	generate_credentials_in_worker =  %t
-					autoattach_enabled             = 	%t
+			autoattach_enabled             = 	%t
 		%s
       	 }
 `, i.Name, i.Name, i.RoleARN, i.Space, labelsAsString(i.Labels), i.DurationSeconds, i.GenerateCredentialsInWorker, i.AutoattachEnabled, regionAttr)
