@@ -22,7 +22,7 @@ func TestAWSIntegrationData(t *testing.T) {
         labels                         = ["one", "two"]
         duration_seconds               = 3600
         generate_credentials_in_worker = false
-				autoattach_enabled             = true
+		autoattach_enabled             = true
       }
 
       data "spacelift_aws_integration" "test" {
