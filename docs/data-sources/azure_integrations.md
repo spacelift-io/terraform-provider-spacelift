@@ -28,6 +28,7 @@ Read-Only:
 - `admin_consent_provided` (Boolean)
 - `admin_consent_url` (String)
 - `application_id` (String)
+- `autoattach_enabled` (Boolean)
 - `default_subscription_id` (String)
 - `display_name` (String)
 - `integration_id` (String)

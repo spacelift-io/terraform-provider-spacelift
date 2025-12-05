@@ -20,9 +20,10 @@ func TestAzureIntegrationResource(t *testing.T) {
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_azure_integration" "test" {
-					name      = "test-integration-%s"
-					tenant_id = "tenant-id"
-					labels    = ["one", "two"]
+					name               = "test-integration-%s"
+					tenant_id          = "tenant-id"
+					labels             = ["one", "two"]
+					autoattach_enabled = true
 				}
 			`, randomID),
 				Check: Resource(
@@ -37,6 +38,7 @@ func TestAzureIntegrationResource(t *testing.T) {
 					Attribute("application_id", IsNotEmpty()),
 					Attribute("object_id", IsNotEmpty()),
 					Attribute("display_name", IsNotEmpty()),
+					Attribute("autoattach_enabled", Equals("true")),
 				),
 			},
 			{

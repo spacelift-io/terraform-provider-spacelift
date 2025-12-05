@@ -22,6 +22,7 @@ func TestAzureIntegrationsData(t *testing.T) {
 			Name:                  acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
 			TenantID:              acctest.RandStringFromCharSet(10, acctest.CharSetAlpha),
 			Space:                 "root",
+			AutoattachEnabled:     true,
 		}
 		second := &structs.AzureIntegration{
 			DefaultSubscriptionID: &subId2,
@@ -61,6 +62,7 @@ func azureIntegrationToResource(i *structs.AzureIntegration) string {
 				default_subscription_id = "%s"
 				labels                  =  %s
 				space_id 				= "%s"
+				autoattach_enabled      = %s
 			}
 `,
 		i.Name,
@@ -69,6 +71,7 @@ func azureIntegrationToResource(i *structs.AzureIntegration) string {
 		*i.DefaultSubscriptionID,
 		fmt.Sprintf(`["%s"]`, strings.Join(i.Labels, `", "`)),
 		i.Space,
+		fmt.Sprintf("%t", i.AutoattachEnabled),
 	)
 }
 
@@ -84,6 +87,7 @@ func azureIntegrationChecks(i *structs.AzureIntegration) []resource.TestCheckFun
 					Attribute("space_id", Equals(i.Space)),
 					Attribute("integration_id", IsNotEmpty()),
 					Attribute("object_id", IsNotEmpty()),
+					Attribute("autoattach_enabled", Equals(fmt.Sprintf("%t", i.AutoattachEnabled))),
 				),
 			),
 		),

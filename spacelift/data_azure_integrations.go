@@ -97,6 +97,11 @@ func dataAzureIntegrations() *schema.Resource {
 							Description: "The Azure AD tenant ID",
 							Computed:    true,
 						},
+						"autoattach_enabled": {
+							Type:        schema.TypeBool,
+							Description: "Enables `autoattach:` labels functionality for this integration.",
+							Computed:    true,
+						},
 					},
 				},
 			},

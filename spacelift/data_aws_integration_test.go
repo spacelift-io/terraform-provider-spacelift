@@ -22,6 +22,7 @@ func TestAWSIntegrationData(t *testing.T) {
         labels                         = ["one", "two"]
         duration_seconds               = 3600
         generate_credentials_in_worker = false
+		autoattach_enabled             = true
       }
 
       data "spacelift_aws_integration" "test" {
@@ -36,6 +37,7 @@ func TestAWSIntegrationData(t *testing.T) {
 				Attribute("generate_credentials_in_worker", Equals("false")),
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
 				SetEquals("labels", "one", "two"),
+				Attribute("autoattach_enabled", Equals("true")),
 			),
 		}})
 	})
