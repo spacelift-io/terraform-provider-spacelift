@@ -152,7 +152,6 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 
 	enabled := d.Get("enabled").(bool)
 	endpoint := d.Get("endpoint").(string)
-	secret := d.Get("secret").(string)
 	spaceID := d.Get("space_id").(string)
 	name := d.Get("name").(string)
 
@@ -170,7 +169,6 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 	input := structs.NamedWebhooksIntegrationInput{
 		Enabled:  graphql.Boolean(enabled),
 		Endpoint: graphql.String(endpoint),
-		Secret:   toOptionalString(secret),
 		Name:     graphql.String(name),
 		Space:    graphql.String(spaceID),
 		Labels:   labels,
