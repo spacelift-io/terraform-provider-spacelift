@@ -61,7 +61,7 @@ func TestAPIKeyResource(t *testing.T) {
 func TestAPIKeyResourceOIDC(t *testing.T) {
 	const resourceName = "spacelift_api_key.test"
 
-	t.Run("creates and updates an OIDC API key", func(t *testing.T) {
+	t.Run("creates an OIDC API key and updates name", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		config := func(name, issuer, clientID, subject string) string {
@@ -69,7 +69,7 @@ func TestAPIKeyResourceOIDC(t *testing.T) {
 				resource "spacelift_api_key" "test" {
 					name = "%s"
 					idp_groups = ["github-users"]
-					
+
 					oidc {
 						issuer = "%s"
 						client_id = "%s"
@@ -108,13 +108,52 @@ func TestAPIKeyResourceOIDC(t *testing.T) {
 				Config: config(
 					fmt.Sprintf("Updated OIDC API Key %s", randomID),
 					"https://token.actions.githubusercontent.com",
-					"client456",
-					"repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/develop",
+					"client123",
+					"repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/main",
 				),
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(fmt.Sprintf("Updated OIDC API Key %s", randomID))),
-					Attribute("oidc.0.client_id", Equals("client456")),
+					Attribute("oidc.0.client_id", Equals("client123")),
+					Attribute("oidc.0.subject_expression", Equals("repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/main")),
+				),
+			},
+		})
+	})
+
+	t.Run("forces recreation when OIDC subject_expression changes", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(subject string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_api_key" "test" {
+					name = "OIDC API Key %s"
+					idp_groups = ["github-users"]
+
+					oidc {
+						issuer = "https://token.actions.githubusercontent.com"
+						client_id = "client123"
+						subject_expression = "%s"
+					}
+				}
+			`, randomID, subject)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/main"),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("type", Equals("OIDC")),
+					Attribute("oidc.0.subject_expression", Equals("repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/main")),
+				),
+			},
+			{
+				Config: config("repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/develop"),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
 					Attribute("oidc.0.subject_expression", Equals("repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/develop")),
 				),
 			},
