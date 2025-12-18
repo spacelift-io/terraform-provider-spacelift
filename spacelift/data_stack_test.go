@@ -96,6 +96,7 @@ func TestStackData(t *testing.T) {
 				Attribute("terraform_external_state_access", Equals("true")),
 				Attribute("enable_well_known_secret_masking", Equals("true")),
 				Attribute("enable_sensitive_outputs_upload", Equals("false")),
+				Attribute("enabled", Equals("true")),
 			),
 		}})
 	})
