@@ -57,6 +57,7 @@ data "spacelift_stack" "k8s-core" {
 - `enable_local_preview` (Boolean) Indicates whether local preview runs can be triggered on this Stack.
 - `enable_sensitive_outputs_upload` (Boolean) Indicates whether sensitive outputs created by this stack can be uploaded to Spacelift to be used by Stack Dependency references. Triggered only when corresponding option is enabled on the Worker Pool used by the Stack as well. Defaults to `true`.
 - `enable_well_known_secret_masking` (Boolean) Indicates whether well-known secret masking is enabled.
+- `enabled` (Boolean) Indicates whether the stack is enabled or disabled
 - `github_enterprise` (List of Object) GitHub Enterprise (self-hosted) VCS settings (see [below for nested schema](#nestedatt--github_enterprise))
 - `gitlab` (List of Object) GitLab VCS settings (see [below for nested schema](#nestedatt--gitlab))
 - `id` (String) The ID of this resource.
