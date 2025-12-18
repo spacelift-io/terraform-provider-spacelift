@@ -153,6 +153,7 @@ Read-Only:
 - `enable_local_preview` (Boolean)
 - `enable_sensitive_outputs_upload` (Boolean)
 - `enable_well_known_secret_masking` (Boolean)
+- `enabled` (Boolean)
 - `git_sparse_checkout_paths` (Set of String)
 - `github_enterprise` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--github_enterprise))
 - `gitlab` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--gitlab))
