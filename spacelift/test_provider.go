@@ -25,10 +25,9 @@ func testProvider() *schema.Provider {
 }
 
 func testSteps(t *testing.T, steps []resource.TestStep) {
-	t.Parallel()
 	t.Helper()
 
-	resource.Test(t, resource.TestCase{
+	resource.ParallelTest(t, resource.TestCase{
 		IsUnitTest: true,
 		Providers: map[string]*schema.Provider{
 			"spacelift": testProvider(),
