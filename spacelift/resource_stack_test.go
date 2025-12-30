@@ -799,6 +799,79 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with Terragrunt use_state_management", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt state %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = false
+					terragrunt {
+						terragrunt_version = "0.45.0"
+						terraform_version  = "1.4.0"
+						use_run_all        = false
+						use_state_management = false
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.use_state_management", Equals("false")),
+					Attribute("manage_state", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt state %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = false
+					terragrunt {
+						terragrunt_version = "0.45.0"
+						terraform_version  = "1.4.0"
+						use_run_all        = false
+						use_state_management = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.use_state_management", Equals("true")),
+					Attribute("manage_state", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt state %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = true
+					terragrunt {
+						terragrunt_version = "0.45.0"
+						terraform_version  = "1.4.0"
+						use_run_all        = false
+						use_state_management = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.use_state_management", Equals("true")),
+					Attribute("manage_state", Equals("true")),
+				),
+			},
+		})
+	})
+
 	t.Run("with GitHub and no vendor-specific configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
