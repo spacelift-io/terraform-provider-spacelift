@@ -713,9 +713,11 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	stackInput := stackInput(d)
 	manageState := d.Get("manage_state").(bool)
 
-	// For Terragrunt stacks, also check if use_state_management is enabled
-	if stackInput.VendorConfig.TerragruntInput != nil && stackInput.VendorConfig.TerragruntInput.UseStateManagement != nil {
-		manageState = manageState || bool(*stackInput.VendorConfig.TerragruntInput.UseStateManagement)
+	// Let's check both global and vendor-specific config
+	isStateManaged := manageState
+	if stackInput.VendorConfig.TerragruntInput != nil &&
+		stackInput.VendorConfig.TerragruntInput.UseStateManagement != nil {
+		isStateManaged = isStateManaged || bool(*stackInput.VendorConfig.TerragruntInput.UseStateManagement)
 	}
 
 	variables := map[string]interface{}{
@@ -732,8 +734,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	var stateContent string
 
 	content, ok := d.GetOk("import_state")
-	if ok && !manageState {
-		return diag.Errorf(`"import_state" requires "manage_state" to be true`)
+	if ok && !isStateManaged {
+		return diag.Errorf(`"import_state" requires "manage_state" or "terragrunt.use_state_management" to be true`)
 	} else if ok {
 		stateContent = content.(string)
 		// After we've saved the imported state to memory, set the value to an empty string so it doesn't get saved to this state file.
@@ -742,8 +744,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	path, ok := d.GetOk("import_state_file")
-	if ok && !manageState {
-		return diag.Errorf(`"import_state_file" requires "manage_state" to be true`)
+	if ok && !isStateManaged {
+		return diag.Errorf(`"import_state_file" requires "manage_state" or "terragrunt.use_state_management" to be true`)
 	} else if ok {
 		data, err := os.ReadFile(path.(string))
 		if err != nil {
@@ -761,8 +763,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	if v, ok := d.GetOk("terraform_external_state_access"); ok {
-		if v.(bool) && !manageState {
-			return diag.Errorf(`"terraform_external_state_access" requires "manage_state" to be true`)
+		if v.(bool) && !isStateManaged {
+			return diag.Errorf(`"terraform_external_state_access" requires "manage_state" or "terragrunt.use_state_management" to be true`)
 		}
 	}
 

@@ -1016,6 +1016,58 @@ func TestStackResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("terraform_external_state_access with Terragrunt use_state_management", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			// Test that external access works with use_state_management=true
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch                         = "master"
+					name                           = "Provider test external access %s"
+					project_root                   = "root"
+					repository                     = "demo"
+					manage_state                   = false
+					terraform_external_state_access = true
+					terragrunt {
+						terragrunt_version      = "0.45.0"
+						terraform_version       = "1.4.0"
+						use_run_all             = false
+						use_state_management    = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terraform_external_state_access", Equals("true")),
+					Attribute("manage_state", Equals("false")),
+					Attribute("terragrunt.0.use_state_management", Equals("true")),
+				),
+			},
+			// Test that external access fails without state management
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch                         = "master"
+					name                           = "Provider test external access %s"
+					project_root                   = "root"
+					repository                     = "demo"
+					manage_state                   = false
+					terraform_external_state_access = true
+					terragrunt {
+						terragrunt_version      = "0.45.0"
+						terraform_version       = "1.4.0"
+						use_run_all             = false
+						use_state_management    = false
+					}
+				}
+			`, randomID),
+				ExpectError: regexp.MustCompile(`"terraform_external_state_access" requires "manage_state" or "terragrunt.use_state_management" to be true`),
+			},
+		})
+	})
 }
 
 func TestStackResourceSpace(t *testing.T) {
