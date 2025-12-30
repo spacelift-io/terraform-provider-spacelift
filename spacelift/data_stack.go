@@ -497,6 +497,11 @@ func dataStack() *schema.Resource {
 							Description: "Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.",
 							Computed:    true,
 						},
+						"use_state_management": {
+							Type:        schema.TypeBool,
+							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Defaults to `false`.",
+							Computed:    true,
+						},
 						"tool": {
 							Type:        schema.TypeString,
 							Description: "The IaC tool used by Terragrunt. Will be either OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED.",

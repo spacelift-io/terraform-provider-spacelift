@@ -680,6 +680,13 @@ func resourceStack() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 						},
+						"use_state_management": {
+							Type:        schema.TypeBool,
+							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Defaults to `false`.",
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+						},
 						"tool": {
 							Type:        schema.TypeString,
 							Description: "The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.",
@@ -703,10 +710,16 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID, slug: $slug)"`
 	}
 
+	stackInput := stackInput(d)
 	manageState := d.Get("manage_state").(bool)
 
+	// For Terragrunt stacks, also check if use_state_management is enabled
+	if stackInput.VendorConfig.TerragruntInput != nil && stackInput.VendorConfig.TerragruntInput.UseStateManagement != nil {
+		manageState = manageState || bool(*stackInput.VendorConfig.TerragruntInput.UseStateManagement)
+	}
+
 	variables := map[string]interface{}{
-		"input":         stackInput(d),
+		"input":         stackInput,
 		"manageState":   graphql.Boolean(manageState),
 		"stackObjectID": (*graphql.String)(nil),
 		"slug":          (*graphql.String)(nil),
@@ -1052,6 +1065,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 		if tool, ok := terragrunt[0].(map[string]interface{})["tool"]; ok && tool.(string) != "" {
 			terragruntConfig.Tool = toOptionalString(tool)
+		}
+
+		if useStateManagement, ok := terragrunt[0].(map[string]interface{})["use_state_management"]; ok {
+			terragruntConfig.UseStateManagement = toOptionalBool(useStateManagement)
 		}
 
 		if shouldWeReComputeTerraformVersionForTerragrunt(d) {
