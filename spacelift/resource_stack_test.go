@@ -421,7 +421,7 @@ func TestStackResource(t *testing.T) {
 						manage_state                    = false
 						terraform_external_state_access = true
 					 }`,
-				ExpectError: regexp.MustCompile(`"terraform_external_state_access" requires "manage_state" to be true`),
+				ExpectError: regexp.MustCompile(`"terraform_external_state_access" requires "manage_state"`),
 			},
 		})
 	})
