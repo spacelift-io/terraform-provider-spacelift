@@ -410,6 +410,7 @@ Optional:
 - `tool` (String) The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.
 - `use_run_all` (Boolean) Whether to use `terragrunt run-all` instead of `terragrunt`.
 - `use_smart_sanitization` (Boolean) Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.
+- `use_state_management` (Boolean) Determines if Spacelift should manage state for this Terragrunt stack. Takes precedence over `manage_state`. Defaults to `false`.
 
 ## Import
 

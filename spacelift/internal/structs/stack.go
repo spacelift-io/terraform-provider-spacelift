@@ -100,6 +100,7 @@ type Stack struct {
 			TerragruntVersion    *string `graphql:"terragruntVersion"`
 			UseRunAll            bool    `graphql:"useRunAll"`
 			UseSmartSanitization bool    `graphql:"useSmartSanitization"`
+			UseStateManagement   bool    `graphql:"useStateManagement"`
 			Tool                 string  `graphql:"tool"`
 		} `graphql:"... on StackConfigVendorTerragrunt"`
 	} `graphql:"vendorConfig"`
@@ -152,6 +153,7 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 			"terragrunt_version":     s.VendorConfig.Terragrunt.TerragruntVersion,
 			"use_run_all":            s.VendorConfig.Terragrunt.UseRunAll,
 			"use_smart_sanitization": s.VendorConfig.Terragrunt.UseSmartSanitization,
+			"use_state_management":   s.VendorConfig.Terragrunt.UseStateManagement,
 			"tool":                   s.VendorConfig.Terragrunt.Tool,
 		}
 	}
@@ -310,6 +312,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 			"terragrunt_version":     stack.VendorConfig.Terragrunt.TerragruntVersion,
 			"use_run_all":            stack.VendorConfig.Terragrunt.UseRunAll,
 			"use_smart_sanitization": stack.VendorConfig.Terragrunt.UseSmartSanitization,
+			"use_state_management":   stack.VendorConfig.Terragrunt.UseStateManagement,
 			"tool":                   stack.VendorConfig.Terragrunt.Tool,
 		}
 

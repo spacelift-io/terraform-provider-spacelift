@@ -474,6 +474,81 @@ func TestStackData(t *testing.T) {
 			),
 		}})
 	})
+
+	t.Run("with Terragrunt use_state_management", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch              = "master"
+					name                = "Test stack %s"
+					repository          = "demo"
+					terragrunt {
+						terraform_version      = "1.5.7"
+						terragrunt_version     = "0.55.15"
+						use_run_all            = false
+						use_smart_sanitization = true
+					}
+				}
+				data "spacelift_stack" "test" {
+					stack_id = spacelift_stack.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_stack.test",
+					Attribute("terragrunt.0.use_state_management", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch              = "master"
+					name                = "Test stack %s"
+					repository          = "demo"
+					terragrunt {
+						terraform_version      = "1.5.7"
+						terragrunt_version     = "0.55.15"
+						use_run_all            = false
+						use_smart_sanitization = true
+						use_state_management   = false
+					}
+				}
+				data "spacelift_stack" "test" {
+					stack_id = spacelift_stack.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_stack.test",
+					Attribute("terragrunt.0.use_state_management", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch              = "master"
+					name                = "Test stack %s"
+					repository          = "demo"
+					terragrunt {
+						terraform_version      = "1.5.7"
+						terragrunt_version     = "0.55.15"
+						use_run_all            = false
+						use_smart_sanitization = true
+						use_state_management   = true
+					}
+				}
+				data "spacelift_stack" "test" {
+					stack_id = spacelift_stack.test.id
+				}
+			`, randomID),
+				Check: Resource(
+					"data.spacelift_stack.test",
+					Attribute("terragrunt.0.use_state_management", Equals("true")),
+				),
+			},
+		})
+	})
 }
 
 func TestStackDataSpace(t *testing.T) {
