@@ -682,7 +682,7 @@ func resourceStack() *schema.Resource {
 						},
 						"use_state_management": {
 							Type:        schema.TypeBool,
-							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Defaults to `false`.",
+							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Takes precedence over `manage_state`. Defaults to `false`.",
 							Optional:    true,
 							Default:     false,
 							ForceNew:    true,
