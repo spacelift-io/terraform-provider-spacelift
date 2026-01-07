@@ -293,3 +293,4 @@ Read-Only:
 - `tool` (String)
 - `use_run_all` (Boolean)
 - `use_smart_sanitization` (Boolean)
+- `use_state_management` (Boolean)

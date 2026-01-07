@@ -680,6 +680,13 @@ func resourceStack() *schema.Resource {
 							Optional:    true,
 							Default:     false,
 						},
+						"use_state_management": {
+							Type:        schema.TypeBool,
+							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Takes precedence over `manage_state`. Defaults to `false`.",
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+						},
 						"tool": {
 							Type:        schema.TypeString,
 							Description: "The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.",
@@ -703,10 +710,18 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID, slug: $slug)"`
 	}
 
+	stackInput := stackInput(d)
 	manageState := d.Get("manage_state").(bool)
 
+	// Let's check both global and vendor-specific config
+	isStateManaged := manageState
+	if stackInput.VendorConfig.TerragruntInput != nil &&
+		stackInput.VendorConfig.TerragruntInput.UseStateManagement != nil {
+		isStateManaged = isStateManaged || bool(*stackInput.VendorConfig.TerragruntInput.UseStateManagement)
+	}
+
 	variables := map[string]interface{}{
-		"input":         stackInput(d),
+		"input":         stackInput,
 		"manageState":   graphql.Boolean(manageState),
 		"stackObjectID": (*graphql.String)(nil),
 		"slug":          (*graphql.String)(nil),
@@ -719,8 +734,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	var stateContent string
 
 	content, ok := d.GetOk("import_state")
-	if ok && !manageState {
-		return diag.Errorf(`"import_state" requires "manage_state" to be true`)
+	if ok && !isStateManaged {
+		return diag.Errorf(`"import_state" requires "manage_state" or "terragrunt.use_state_management" to be true`)
 	} else if ok {
 		stateContent = content.(string)
 		// After we've saved the imported state to memory, set the value to an empty string so it doesn't get saved to this state file.
@@ -729,8 +744,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	path, ok := d.GetOk("import_state_file")
-	if ok && !manageState {
-		return diag.Errorf(`"import_state_file" requires "manage_state" to be true`)
+	if ok && !isStateManaged {
+		return diag.Errorf(`"import_state_file" requires "manage_state" or "terragrunt.use_state_management" to be true`)
 	} else if ok {
 		data, err := os.ReadFile(path.(string))
 		if err != nil {
@@ -748,8 +763,8 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	if v, ok := d.GetOk("terraform_external_state_access"); ok {
-		if v.(bool) && !manageState {
-			return diag.Errorf(`"terraform_external_state_access" requires "manage_state" to be true`)
+		if v.(bool) && !isStateManaged {
+			return diag.Errorf(`"terraform_external_state_access" requires "manage_state" or "terragrunt.use_state_management" to be true`)
 		}
 	}
 
@@ -1052,6 +1067,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 		if tool, ok := terragrunt[0].(map[string]interface{})["tool"]; ok && tool.(string) != "" {
 			terragruntConfig.Tool = toOptionalString(tool)
+		}
+
+		if useStateManagement, ok := terragrunt[0].(map[string]interface{})["use_state_management"]; ok {
+			terragruntConfig.UseStateManagement = toOptionalBool(useStateManagement)
 		}
 
 		if shouldWeReComputeTerraformVersionForTerragrunt(d) {
