@@ -110,6 +110,7 @@ resource "spacelift_aws_integration_attachment" "my_module" {
 - `labels` (Set of String) Labels to set on the integration
 - `region` (String) AWS region to select a regional AWS STS endpoint.
 - `space_id` (String) ID (slug) of the space the integration is in
+- `tag_assume_role` (Boolean) When enabled, Spacelift will tag the assume role action with run and stack metadata. Defaults to `false`.
 
 ### Read-Only
 

@@ -35,6 +35,7 @@ func TestAWSIntegrationResource(t *testing.T) {
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
 				SetEquals("labels", "one", "two"),
 				Attribute("autoattach_enabled", Equals("true")),
+				Attribute("tag_assume_role", Equals("false")),
 			),
 		},
 		{
@@ -213,6 +214,79 @@ func TestAWSIntegrationResourceRegion(t *testing.T) {
 				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
 				Attribute("region", IsEmpty()),
+			),
+		},
+	})
+}
+
+func TestAWSIntegrationResourceTagAssumeRole(t *testing.T) {
+	const resourceName = "spacelift_aws_integration.test"
+
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+	testSteps(t, []resource.TestStep{
+		{
+			// Test without tag_assume_role set (should default to false)
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        generate_credentials_in_worker = false
+			}
+		`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("tag_assume_role", Equals("false")),
+			),
+		},
+		{
+			ResourceName:      resourceName,
+			ImportState:       true,
+			ImportStateVerify: true,
+		},
+		{
+			// Test enabling tag_assume_role
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        tag_assume_role                = true
+        generate_credentials_in_worker = false
+			}
+			`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("tag_assume_role", Equals("true")),
+			),
+		},
+		{
+			// Test disabling tag_assume_role
+			Config: fmt.Sprintf(`
+			resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        tag_assume_role                = false
+        generate_credentials_in_worker = false
+			}
+			`, randomID),
+			Check: Resource(
+				resourceName,
+				Attribute("id", IsNotEmpty()),
+				Attribute("duration_seconds", Equals("900")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("tag_assume_role", Equals("false")),
 			),
 		},
 	})
