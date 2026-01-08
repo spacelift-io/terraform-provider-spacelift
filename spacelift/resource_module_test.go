@@ -630,7 +630,7 @@ func TestModuleResourceSpace(t *testing.T) {
 					shared_accounts = ["spacelift-io"]
 				}
 			`, spaces, randomID, branch, repository),
-				ExpectError: regexp.MustCompile("you need to have admin or write permissions to be able to share a module with following spaces: foobar-space-that-does-not-exist"),
+				ExpectError: regexp.MustCompile("you do not have permissions to share a module with following spaces: foobar-space-that-does-not-exist"),
 			},
 		})
 	})
