@@ -39,19 +39,21 @@ var testConfig struct {
 		}
 		BitbucketCloud struct {
 			Default struct {
-				Name       string
-				ID         string
-				Username   string
-				WebhookURL string
-				VCSChecks  string
+				Name          string
+				ID            string
+				Username      string
+				WebhookSecret string
+				WebhookURL    string
+				VCSChecks     string
 			}
 			SpaceLevel struct {
-				Name       string
-				ID         string
-				Space      string
-				Username   string
-				WebhookURL string
-				VCSChecks  string
+				Name          string
+				ID            string
+				Space         string
+				Username      string
+				WebhookSecret string
+				WebhookURL    string
+				VCSChecks     string
 			}
 			Repository struct {
 				Name      string
