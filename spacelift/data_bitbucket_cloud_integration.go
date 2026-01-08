@@ -10,15 +10,16 @@ import (
 )
 
 const (
-	bitbucketCloudID          = "id"
-	bitbucketCloudName        = "name"
-	bitbucketCloudDescription = "description"
-	bitbucketCloudIsDefault   = "is_default"
-	bitbucketCloudLabels      = "labels"
-	bitbucketCloudSpaceID     = "space_id"
-	bitbucketCloudUsername    = "username"
-	bitbucketCloudWebhookURL  = "webhook_url"
-	bitbucketCloudVCSChecks   = "vcs_checks"
+	bitbucketCloudID            = "id"
+	bitbucketCloudName          = "name"
+	bitbucketCloudDescription   = "description"
+	bitbucketCloudIsDefault     = "is_default"
+	bitbucketCloudLabels        = "labels"
+	bitbucketCloudSpaceID       = "space_id"
+	bitbucketCloudUsername      = "username"
+	bitbucketCloudWebhookURL    = "webhook_url"
+	bitbucketCloudWebhookSecret = "webhook_secret"
+	bitbucketCloudVCSChecks     = "vcs_checks"
 )
 
 func dataBitbucketCloudIntegration() *schema.Resource {
@@ -66,6 +67,12 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 				Description: "Bitbucket Cloud username",
 				Computed:    true,
 			},
+			bitbucketCloudWebhookSecret: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud integration webhook secret",
+				Computed:    true,
+				Sensitive:   true,
+			},
 			bitbucketCloudWebhookURL: {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Cloud integration webhook URL",
@@ -90,10 +97,11 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 			Space       struct {
 				ID string `graphql:"id"`
 			} `graphql:"space"`
-			Labels     []string `graphql:"labels"`
-			Username   string   `graphql:"username"`
-			WebhookURL string   `graphql:"webhookUrl"`
-			VCSChecks  string   `graphql:"vcsChecks"`
+			Labels        []string `graphql:"labels"`
+			Username      string   `graphql:"username"`
+			WebhookSecret string   `graphql:"webhookSecret"`
+			WebhookURL    string   `graphql:"webhookUrl"`
+			VCSChecks     string   `graphql:"vcsChecks"`
 		} `graphql:"bitbucketCloudIntegration(id: $id)"`
 	}
 
@@ -119,6 +127,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(bitbucketCloudIsDefault, bitbucketCloudIntegration.IsDefault)
 	d.Set(bitbucketCloudSpaceID, bitbucketCloudIntegration.Space.ID)
 	d.Set(bitbucketCloudUsername, bitbucketCloudIntegration.Username)
+	d.Set(bitbucketCloudWebhookSecret, bitbucketCloudIntegration.WebhookSecret)
 	d.Set(bitbucketCloudWebhookURL, bitbucketCloudIntegration.WebhookURL)
 
 	labels := schema.NewSet(schema.HashString, []interface{}{})

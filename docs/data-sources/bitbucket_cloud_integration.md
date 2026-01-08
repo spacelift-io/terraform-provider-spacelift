@@ -32,4 +32,5 @@ data "spacelift_bitbucket_cloud_integration" "bitbucket_cloud_integration" {}
 - `space_id` (String) Bitbucket Cloud integration space id
 - `username` (String) Bitbucket Cloud username
 - `vcs_checks` (String) VCS checks configured for Bitbucket Cloud repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.
+- `webhook_secret` (String, Sensitive) Bitbucket Cloud integration webhook secret
 - `webhook_url` (String) Bitbucket Cloud integration webhook URL
