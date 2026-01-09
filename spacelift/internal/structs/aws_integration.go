@@ -14,6 +14,7 @@ type AWSIntegration struct {
 	Space                       string   `graphql:"space"`
 	Region                      *string  `graphql:"region"`
 	AutoattachEnabled           bool     `graphql:"autoattachEnabled"`
+	TagAssumeRole               bool     `graphql:"tagAssumeRole"`
 }
 
 // PopulateResourceData populates Terraform resource data with the contents of
@@ -35,6 +36,7 @@ func (i *AWSIntegration) ToMap() map[string]interface{} {
 		"labels":                         i.getLabelsSet(),
 		"region":                         i.Region,
 		"autoattach_enabled":             i.AutoattachEnabled,
+		"tag_assume_role":                i.TagAssumeRole,
 	}
 }
 
