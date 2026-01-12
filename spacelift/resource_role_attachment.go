@@ -365,13 +365,8 @@ func deleteAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta i
 		"id": toID(id),
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "ApiKeyRoleBindingDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete role attachment: %v", internal.FromSpaceliftError(err))
-	}
-
-	d.SetId("")
-
-	return nil
+	err := meta.(*internal.Client).Mutate(ctx, "ApiKeyRoleBindingDelete", &mutation, variables)
+	return handleRoleBindingDeleteError(err, d, "could not delete role attachment")
 }
 
 func deleteUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -384,13 +379,8 @@ func deleteUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta int
 		"id": toID(id),
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "UserRoleBindingDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete user role binding: %v", internal.FromSpaceliftError(err))
-	}
-
-	d.SetId("")
-
-	return nil
+	err := meta.(*internal.Client).Mutate(ctx, "UserRoleBindingDelete", &mutation, variables)
+	return handleRoleBindingDeleteError(err, d, "could not delete user role binding")
 }
 
 func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -403,13 +393,8 @@ func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceDat
 		"id": toID(id),
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "UserGroupRoleBindingDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete user group role binding: %v", internal.FromSpaceliftError(err))
-	}
-
-	d.SetId("")
-
-	return nil
+	err := meta.(*internal.Client).Mutate(ctx, "UserGroupRoleBindingDelete", &mutation, variables)
+	return handleRoleBindingDeleteError(err, d, "could not delete user group role binding")
 }
 
 func deleteStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -422,11 +407,21 @@ func deleteStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta in
 		"id": toID(id),
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "StackRoleBindingDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete stack role binding: %v", internal.FromSpaceliftError(err))
+	err := meta.(*internal.Client).Mutate(ctx, "StackRoleBindingDelete", &mutation, variables)
+	return handleRoleBindingDeleteError(err, d, "could not delete stack role binding")
+}
+
+func handleRoleBindingDeleteError(err error, d *schema.ResourceData, errorMessage string) diag.Diagnostics {
+	if err == nil {
+		d.SetId("")
+		return nil
 	}
 
-	d.SetId("")
+	// Already deleted
+	if strings.Contains(err.Error(), "not found") {
+		d.SetId("")
+		return nil
+	}
 
-	return nil
+	return diag.Errorf("%s: %v", errorMessage, internal.FromSpaceliftError(err))
 }
