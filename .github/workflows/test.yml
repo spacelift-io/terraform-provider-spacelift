@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Go
         uses: actions/setup-go@v6
@@ -18,11 +18,12 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.13.4"
+          terraform_version: "~1"
           terraform_wrapper: false
 
       - name: Test with coverage
         run: go test -parallel 40 -timeout 30m -coverprofile=coverage.txt -coverpkg=./... ./...
+        if: github.actor != 'dependabot[bot]'
         env:
           SPACELIFT_API_KEY_ENDPOINT: ${{ vars.preprod_SPACELIFT_API_KEY_ENDPOINT }}
           SPACELIFT_API_KEY_ID: ${{ secrets.PREPROD_SPACELIFT_API_KEY_ID }}

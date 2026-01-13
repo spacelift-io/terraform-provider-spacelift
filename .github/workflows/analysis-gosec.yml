@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Run GoSec Security Scanner
         uses: securego/gosec@master
@@ -23,6 +23,6 @@ jobs:
           args: "-severity=medium -no-fail -fmt sarif -out gosec-results.sarif ./..."
 
       - name: Upload GoSec scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: "gosec-results.sarif"
