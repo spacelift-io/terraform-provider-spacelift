@@ -105,6 +105,12 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 		if len(mutation.RunDiscard.FailedDiscarding) > 0 {
 			return diag.Errorf("could not discard runs on stack %s: %v", stackID, mutation.RunDiscard.FailedDiscarding)
 		}
+
+		// Wait for the stack to be unblocked after discarding runs.
+		// The backend clears blockers asynchronously when runs reach terminal states.
+		if diagnostics := waitForStackUnblocked(ctx, meta.(*internal.Client), stackID); diagnostics.HasError() {
+			return diagnostics
+		}
 	}
 
 	var mutation struct {
@@ -123,6 +129,51 @@ func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, 
 	d.SetId("")
 
 	return nil
+}
+
+func waitForStackUnblocked(ctx context.Context, client *internal.Client, id string) diag.Diagnostics {
+	ticker := time.NewTicker(time.Second * 2)
+	defer ticker.Stop()
+
+	// Wait up to 2 minutes for the stack blocker to be cleared
+	timeout := time.After(time.Minute * 2)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return diag.FromErr(ctx.Err())
+		case <-timeout:
+			return diag.Errorf("timeout waiting for stack %s to be unblocked after discarding runs", id)
+		case <-ticker.C:
+		}
+
+		// Use a custom struct to query only the blocker field
+		var query struct {
+			Stack *struct {
+				Blocker *struct {
+					ID string `graphql:"id"`
+				} `graphql:"blocker"`
+			} `graphql:"stack(id: $id)"`
+		}
+
+		variables := map[string]interface{}{"id": graphql.ID(id)}
+
+		if err := client.Query(ctx, "StackCheckBlocker", &query, variables); err != nil {
+			return diag.Errorf("could not query for stack %s blocker status: %v", id, err)
+		}
+
+		stack := query.Stack
+		if stack == nil {
+			return diag.Errorf("stack %s not found while waiting for unblock", id)
+		}
+
+		// Check if the stack is no longer blocked
+		if stack.Blocker == nil {
+			return nil
+		}
+
+		// Stack still has a blocker, continue waiting
+	}
 }
 
 func waitForDestroy(ctx context.Context, client *internal.Client, id string) diag.Diagnostics {
