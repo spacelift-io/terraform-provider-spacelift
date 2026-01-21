@@ -153,6 +153,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack":                            resourceStack(),
 				"spacelift_task":                             resourceTask(),
 				"spacelift_template":                         resourceTemplate(),
+				"spacelift_template_version":                 resourceTemplateVersion(),
 				"spacelift_terraform_provider":               resourceTerraformProvider(),
 				"spacelift_user":                             resourceUser(),
 				"spacelift_vcs_agent_pool":                   resourceVCSAgentPool(),
