@@ -1,0 +1,49 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: daily
+    allow:
+      - dependency-type: direct
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      hashicorp:
+        patterns:
+          - "github.com/hashicorp/*"
+      golang:
+        patterns:
+          - "golang.org/*"
+
+  - package-ecosystem: gomod
+    directory: /tools
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: "chore(deps)"
+    allow:
+      - dependency-type: direct
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+    groups:
+      actions:
+        patterns:
+          - "*"
