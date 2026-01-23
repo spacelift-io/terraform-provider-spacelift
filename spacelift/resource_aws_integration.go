@@ -88,13 +88,19 @@ func resourceAWSIntegration() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"tag_assume_role": {
+				Type:        schema.TypeBool,
+				Description: "When enabled, Spacelift will tag the assume role action with run and stack metadata. Defaults to `false`.",
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
 
 func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		CreateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationCreate(name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region, autoattachEnabled: $autoattachEnabled)"`
+		CreateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationCreate(name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region, autoattachEnabled: $autoattachEnabled, tagAssumeRole: $tagAssumeRole)"`
 	}
 
 	labels := []graphql.String{}
@@ -115,6 +121,7 @@ func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, m
 		"space":                       (*graphql.ID)(nil),
 		"region":                      (*graphql.String)(nil),
 		"autoattachEnabled":           graphql.Boolean(d.Get("autoattach_enabled").(bool)),
+		"tagAssumeRole":               graphql.Boolean(d.Get("tag_assume_role").(bool)),
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {
@@ -155,7 +162,7 @@ func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, met
 
 func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	var mutation struct {
-		UpdateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationUpdate(id: $id, name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region, autoattachEnabled: $autoattachEnabled)"`
+		UpdateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationUpdate(id: $id, name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region, autoattachEnabled: $autoattachEnabled, tagAssumeRole: $tagAssumeRole)"`
 	}
 
 	labels := []graphql.String{}
@@ -177,6 +184,7 @@ func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, m
 		"space":                       (*graphql.ID)(nil),
 		"region":                      (*graphql.String)(nil),
 		"autoattachEnabled":           graphql.Boolean(d.Get("autoattach_enabled").(bool)),
+		"tagAssumeRole":               graphql.Boolean(d.Get("tag_assume_role").(bool)),
 	}
 
 	if spaceID, ok := d.GetOk("space_id"); ok {

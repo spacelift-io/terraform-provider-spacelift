@@ -39,3 +39,4 @@ Read-Only:
 - `region` (String)
 - `role_arn` (String)
 - `space_id` (String)
+- `tag_assume_role` (Boolean)

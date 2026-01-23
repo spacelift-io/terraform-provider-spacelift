@@ -38,6 +38,7 @@ func TestAWSIntegrationData(t *testing.T) {
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
 				SetEquals("labels", "one", "two"),
 				Attribute("autoattach_enabled", Equals("true")),
+				Attribute("tag_assume_role", Equals("false")),
 			),
 		}})
 	})
@@ -271,6 +272,60 @@ func TestAWSIntegrationDataRegion(t *testing.T) {
 				Attribute("generate_credentials_in_worker", Equals("false")),
 				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
 				Attribute("region", Equals("eu-central-1")),
+			),
+		}})
+	})
+}
+
+func TestAWSIntegrationDataTagAssumeRole(t *testing.T) {
+	t.Run("with tag_assume_role disabled", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+      resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        generate_credentials_in_worker = false
+        tag_assume_role                = false
+      }
+
+      data "spacelift_aws_integration" "test" {
+        integration_id = spacelift_aws_integration.test.id
+      }
+      `, randomID),
+			Check: Resource(
+				"data.spacelift_aws_integration.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("tag_assume_role", Equals("false")),
+			),
+		}})
+	})
+
+	t.Run("with tag_assume_role enabled", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+      resource "spacelift_aws_integration" "test" {
+        name                           = "test-aws-integration-%s"
+        role_arn                       = "arn:aws:iam::039653571618:role/empty-test-role"
+        generate_credentials_in_worker = false
+        tag_assume_role                = true
+      }
+
+      data "spacelift_aws_integration" "test" {
+        integration_id = spacelift_aws_integration.test.id
+      }
+      `, randomID),
+			Check: Resource(
+				"data.spacelift_aws_integration.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("role_arn", Equals("arn:aws:iam::039653571618:role/empty-test-role")),
+				Attribute("generate_credentials_in_worker", Equals("false")),
+				Attribute("name", Equals(fmt.Sprintf("test-aws-integration-%s", randomID))),
+				Attribute("tag_assume_role", Equals("true")),
 			),
 		}})
 	})

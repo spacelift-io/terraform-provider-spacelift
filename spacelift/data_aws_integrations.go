@@ -76,6 +76,11 @@ func dataAWSIntegrations() *schema.Resource {
 							Description: "Enables `autoattach:` labels functionality for this integration.",
 							Computed:    true,
 						},
+						"tag_assume_role": {
+							Type:        schema.TypeBool,
+							Description: "When enabled, Spacelift will tag the assume role action with run and stack metadata.",
+							Computed:    true,
+						},
 					},
 				},
 			},
