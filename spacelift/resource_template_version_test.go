@@ -71,7 +71,7 @@ func TestTemplateVersionResource(t *testing.T) {
 
 	t.Run("Creates a template version in PUBLISHED state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		validTemplate := `stack:\n  name: stackerino\n  space: root\n  vcs:\n    branch: main\n    repository: spacelift-io/terraform-provider-spacelift\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: 0.12.0`
+		validTemplate := `stacks:\n- name: Blueprint v2 - test upgrade 3\n  key: test\n  vcs:\n    reference: \n      value: main\n      type: branch\n    repository: spacelift-infra\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: \"1.3.0\"`
 
 		config := fmt.Sprintf(`
 			resource "spacelift_template" "test" {
