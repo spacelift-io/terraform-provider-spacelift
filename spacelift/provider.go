@@ -97,6 +97,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack":                                  dataStack(),
 				"spacelift_stack_outputs":                          dataStackOutputs(),
 				"spacelift_stacks":                                 dataStacks(),
+				"spacelift_template":                               dataTemplate(),
 				"spacelift_tool_versions":                          dataToolVersions(),
 				"spacelift_user":                                   dataUser(),
 				"spacelift_webhook":                                dataWebhook(),
