@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -121,6 +122,41 @@ func TestTemplateVersionResource(t *testing.T) {
 					Attribute("instructions", Equals("")),
 					Attribute("ulid", IsNotEmpty()),
 				),
+			},
+		})
+	})
+
+	t.Run("can import a template version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func() string {
+			return fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "1.0.0"
+					state          = "DRAFT"
+					instructions   = "test instructions"
+					template       = "not validated for drafts"
+				}`, randomID)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(),
+			},
+			{
+				ResourceName: resourceName,
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					templateVersion := s.RootModule().Resources[resourceName]
+					return fmt.Sprintf("%s-%s", templateVersion.Primary.Attributes["template_id"], templateVersion.Primary.Attributes["ulid"]), nil
+				},
+				ImportStateVerify: true,
 			},
 		})
 	})

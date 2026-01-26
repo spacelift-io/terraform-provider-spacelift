@@ -3,7 +3,6 @@ package spacelift
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -25,7 +24,7 @@ func resourceTemplateVersion() *schema.Resource {
 		DeleteContext: resourceTemplateVersionDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceTemplateVersionImport,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -95,21 +94,14 @@ func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not create template version: %v", err)
 	}
 
-	templateID := d.Get("template_id").(string)
-	d.SetId(fmt.Sprintf("%s/%s", templateID, mutation.Blueprint.ID))
+	d.SetId(mutation.Blueprint.ID)
 
 	return resourceTemplateVersionRead(ctx, d, meta)
 }
 
 func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	templateID, versionID, err := parseTemplateVersionID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	if err := d.Set("template_id", templateID); err != nil {
-		return diag.Errorf("could not set \"template_id\": %v", err)
-	}
+	templateID := d.Get("template_id").(string)
+	versionID := d.Id()
 
 	var query struct {
 		BlueprintVersionedGroup *struct {
@@ -162,17 +154,12 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, versionID, err := parseTemplateVersionID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintVersionUpdate(id: $id, input: $input)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":    graphql.ID(versionID),
+		"id":    graphql.ID(d.Id()),
 		"input": templateVersionUpdateInput(d),
 	}
 
@@ -184,17 +171,12 @@ func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, versionID, err := parseTemplateVersionID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	var mutation struct {
 		Blueprint *structs.Blueprint `graphql:"blueprintVersionDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{
-		"id": graphql.ID(versionID),
+		"id": graphql.ID(d.Id()),
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "TemplateVersionDelete", &mutation, variables); err != nil {
@@ -206,12 +188,51 @@ func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func parseTemplateVersionID(id string) (templateID string, versionID string, err error) {
-	idParts := strings.SplitN(id, "/", 2)
-	if len(idParts) != 2 {
-		return "", "", fmt.Errorf("unexpected resource ID: %s, expected format: template_id/version_id", id)
+func resourceTemplateVersionImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	importID := d.Id()
+
+	// ULID is always 26 characters, format is: template_id-ulid
+	// We need to find the last dash that separates template_id from ulid
+	if len(importID) < 28 { // minimum: "x-" + 26 char ULID
+		return nil, fmt.Errorf("invalid import ID format: %s, expected format: template_id-version_ulid", importID)
 	}
-	return idParts[0], idParts[1], nil
+
+	// Split from the right: template_id is everything before the last 27 characters (dash + 26 char ULID)
+	templateID := importID[:len(importID)-27]
+	versionULID := importID[len(importID)-26:]
+
+	// Validate that we have a dash separator
+	if importID[len(importID)-27] != '-' {
+		return nil, fmt.Errorf("invalid import ID format: %s, expected format: template_id-version_ulid", importID)
+	}
+
+	var query struct {
+		BlueprintVersionedGroup *struct {
+			BlueprintVersion *structs.Blueprint `graphql:"blueprintVersion(id: $versionId)"`
+		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
+	}
+
+	variables := map[string]interface{}{
+		"templateId": graphql.ID(templateID),
+		"versionId":  graphql.ID(versionULID),
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "TemplateVersionImport", &query, variables); err != nil {
+		return nil, fmt.Errorf("could not query for template version: %v", err)
+	}
+
+	if query.BlueprintVersionedGroup == nil {
+		return nil, fmt.Errorf("template not found: %s", templateID)
+	}
+
+	if query.BlueprintVersionedGroup.BlueprintVersion == nil {
+		return nil, fmt.Errorf("template version not found: %s in template %s", versionULID, templateID)
+	}
+
+	d.Set("template_id", templateID)
+	d.SetId(query.BlueprintVersionedGroup.BlueprintVersion.ID)
+
+	return []*schema.ResourceData{d}, nil
 }
 
 func templateVersionCreateInput(d *schema.ResourceData) structs.BlueprintVersionCreateInput {
