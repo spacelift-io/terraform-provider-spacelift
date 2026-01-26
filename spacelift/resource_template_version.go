@@ -2,6 +2,8 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,15 +58,6 @@ func resourceTemplateVersion() *schema.Resource {
 				Description: "Instructions for the template version",
 				Optional:    true,
 			},
-			"labels": {
-				Type:        schema.TypeSet,
-				Description: "Labels of the template version",
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: validations.DisallowEmptyString,
-				},
-				Optional: true,
-			},
 			"ulid": {
 				Type:        schema.TypeString,
 				Description: "Unique ULID of the template version",
@@ -102,70 +95,84 @@ func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not create template version: %v", err)
 	}
 
-	d.SetId(mutation.Blueprint.ID)
+	templateID := d.Get("template_id").(string)
+	d.SetId(fmt.Sprintf("%s/%s", templateID, mutation.Blueprint.ID))
 
 	return resourceTemplateVersionRead(ctx, d, meta)
 }
 
 func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	templateID, versionID, err := parseTemplateVersionID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	if err := d.Set("template_id", templateID); err != nil {
+		return diag.Errorf("could not set \"template_id\": %v", err)
+	}
+
 	var query struct {
-		Blueprint *structs.Blueprint `graphql:"blueprint(id: $id)"`
+		BlueprintVersionedGroup *struct {
+			BlueprintVersion *structs.Blueprint `graphql:"blueprintVersion(id: $versionId)"`
+		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
 	}
 
 	variables := map[string]interface{}{
-		"id": graphql.ID(d.Id()),
+		"templateId": graphql.ID(templateID),
+		"versionId":  graphql.ID(versionID),
 	}
 
 	if err := meta.(*internal.Client).Query(ctx, "TemplateVersionRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for template version: %v", err)
 	}
 
-	if query.Blueprint == nil {
+	if query.BlueprintVersionedGroup == nil || query.BlueprintVersionedGroup.BlueprintVersion == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("state", query.Blueprint.State)
-	d.Set("ulid", query.Blueprint.ULID)
-	d.Set("created_at", query.Blueprint.CreatedAt)
-	d.Set("updated_at", query.Blueprint.UpdatedAt)
+	blueprint := query.BlueprintVersionedGroup.BlueprintVersion
 
-	if query.Blueprint.Version != nil {
-		d.Set("version_number", *query.Blueprint.Version)
+	d.Set("state", blueprint.State)
+	d.Set("ulid", blueprint.ULID)
+	d.Set("created_at", blueprint.CreatedAt)
+	d.Set("updated_at", blueprint.UpdatedAt)
+
+	if blueprint.Version != nil {
+		d.Set("version_number", *blueprint.Version)
 	}
 
-	if query.Blueprint.RawTemplate == nil {
+	if blueprint.RawTemplate == nil {
 		d.Set("template", "")
 	} else {
-		d.Set("template", *query.Blueprint.RawTemplate)
+		d.Set("template", *blueprint.RawTemplate)
 	}
 
-	if query.Blueprint.Instructions == nil {
+	if blueprint.Instructions == nil {
 		d.Set("instructions", "")
 	} else {
-		d.Set("instructions", *query.Blueprint.Instructions)
+		d.Set("instructions", *blueprint.Instructions)
 	}
 
-	if query.Blueprint.PublishedAt != nil {
-		d.Set("published_at", *query.Blueprint.PublishedAt)
+	if blueprint.PublishedAt != nil {
+		d.Set("published_at", *blueprint.PublishedAt)
 	}
-
-	labels := schema.NewSet(schema.HashString, []interface{}{})
-	for _, label := range query.Blueprint.Labels {
-		labels.Add(label)
-	}
-	d.Set("labels", labels)
 
 	return nil
 }
 
 func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	_, versionID, err := parseTemplateVersionID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintVersionUpdate(id: $id, input: $input)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":    graphql.ID(d.Id()),
+		"id":    graphql.ID(versionID),
 		"input": templateVersionUpdateInput(d),
 	}
 
@@ -177,12 +184,17 @@ func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	_, versionID, err := parseTemplateVersionID(d.Id())
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	var mutation struct {
 		Blueprint *structs.Blueprint `graphql:"blueprintVersionDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{
-		"id": graphql.ID(d.Id()),
+		"id": graphql.ID(versionID),
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "TemplateVersionDelete", &mutation, variables); err != nil {
@@ -194,12 +206,21 @@ func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
+func parseTemplateVersionID(id string) (templateID string, versionID string, err error) {
+	idParts := strings.SplitN(id, "/", 2)
+	if len(idParts) != 2 {
+		return "", "", fmt.Errorf("unexpected resource ID: %s, expected format: template_id/version_id", id)
+	}
+	return idParts[0], idParts[1], nil
+}
+
 func templateVersionCreateInput(d *schema.ResourceData) structs.BlueprintVersionCreateInput {
 	var input structs.BlueprintVersionCreateInput
 
 	input.BlueprintID = graphql.ID(d.Get("template_id").(string))
 	input.State = graphql.String(d.Get("state").(string))
 	input.VersionNumber = graphql.String(d.Get("version_number").(string))
+	input.Labels = []graphql.String{}
 
 	if instructions, ok := d.GetOk("instructions"); ok {
 		input.Instructions = toOptionalString(instructions)
@@ -207,14 +228,6 @@ func templateVersionCreateInput(d *schema.ResourceData) structs.BlueprintVersion
 
 	if template, ok := d.GetOk("template"); ok {
 		input.Template = toOptionalString(template)
-	}
-
-	input.Labels = []graphql.String{}
-
-	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		for _, label := range labelSet.List() {
-			input.Labels = append(input.Labels, graphql.String(label.(string)))
-		}
 	}
 
 	return input
@@ -225,6 +238,7 @@ func templateVersionUpdateInput(d *schema.ResourceData) structs.BlueprintVersion
 
 	input.State = graphql.String(d.Get("state").(string))
 	input.VersionNumber = graphql.String(d.Get("version_number").(string))
+	input.Labels = []graphql.String{}
 
 	if instructions, ok := d.GetOk("instructions"); ok {
 		input.Instructions = toOptionalString(instructions)
@@ -232,14 +246,6 @@ func templateVersionUpdateInput(d *schema.ResourceData) structs.BlueprintVersion
 
 	if template, ok := d.GetOk("template"); ok {
 		input.Template = toOptionalString(template)
-	}
-
-	input.Labels = []graphql.String{}
-
-	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		for _, label := range labelSet.List() {
-			input.Labels = append(input.Labels, graphql.String(label.(string)))
-		}
 	}
 
 	return input

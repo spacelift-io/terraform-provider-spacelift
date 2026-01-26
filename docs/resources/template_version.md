@@ -24,7 +24,6 @@ description: |-
 ### Optional
 
 - `instructions` (String) Instructions for the template version
-- `labels` (Set of String) Labels of the template version
 - `template` (String) Body of the template. Required if `state` is set to `PUBLISHED`.
 
 ### Read-Only

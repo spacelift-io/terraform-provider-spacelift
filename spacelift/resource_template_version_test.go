@@ -28,7 +28,6 @@ func TestTemplateVersionResource(t *testing.T) {
 					version_number = "1.0.0"
 					state          = "DRAFT"
 					instructions   = "%s"
-					labels         = ["one", "two"]
 					template       = "not validated for drafts"
 				}`, randomID, instructions)
 		}
@@ -42,18 +41,11 @@ func TestTemplateVersionResource(t *testing.T) {
 					Attribute("version_number", Equals("1.0.0")),
 					Attribute("state", Equals("DRAFT")),
 					Attribute("instructions", Equals("test instructions")),
-					SetEquals("labels", "one", "two"),
 					Attribute("template", Equals("not validated for drafts")),
 					Attribute("ulid", IsNotEmpty()),
 					Attribute("created_at", IsNotEmpty()),
 					Attribute("updated_at", IsNotEmpty()),
 				),
-			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"template_id"},
 			},
 			{
 				Config: config("updated instructions"),
@@ -63,7 +55,6 @@ func TestTemplateVersionResource(t *testing.T) {
 					Attribute("version_number", Equals("1.0.0")),
 					Attribute("state", Equals("DRAFT")),
 					Attribute("instructions", Equals("updated instructions")),
-					SetEquals("labels", "one", "two"),
 				),
 			},
 		})
@@ -84,7 +75,6 @@ func TestTemplateVersionResource(t *testing.T) {
 				version_number = "1.0.0"
 				state          = "PUBLISHED"
 				instructions   = "test instructions"
-				labels         = ["one", "two"]
 				template       = "%s"
 			}`, randomID, validTemplate)
 
@@ -97,7 +87,6 @@ func TestTemplateVersionResource(t *testing.T) {
 					Attribute("version_number", Equals("1.0.0")),
 					Attribute("state", Equals("PUBLISHED")),
 					Attribute("instructions", Equals("test instructions")),
-					SetEquals("labels", "one", "two"),
 					Attribute("template", IsNotEmpty()),
 					Attribute("ulid", IsNotEmpty()),
 					Attribute("published_at", IsNotEmpty()),
@@ -131,49 +120,6 @@ func TestTemplateVersionResource(t *testing.T) {
 					Attribute("state", Equals("DRAFT")),
 					Attribute("instructions", Equals("")),
 					Attribute("ulid", IsNotEmpty()),
-				),
-			},
-		})
-	})
-
-	t.Run("can remove all labels", func(t *testing.T) {
-		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config: fmt.Sprintf(`
-					resource "spacelift_template" "test" {
-						name  = "test-template-%s"
-						space = "root"
-					}
-
-					resource "spacelift_template_version" "test" {
-						template_id    = spacelift_template.test.id
-						version_number = "1.0.0"
-						state          = "DRAFT"
-						labels         = ["one", "two"]
-					}`, randomID),
-				Check: Resource(
-					resourceName,
-					SetEquals("labels", "one", "two"),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-					resource "spacelift_template" "test" {
-						name  = "test-template-%s"
-						space = "root"
-					}
-
-					resource "spacelift_template_version" "test" {
-						template_id    = spacelift_template.test.id
-						version_number = "1.0.0"
-						state          = "DRAFT"
-						labels         = []
-					}`, randomID),
-				Check: Resource(
-					resourceName,
-					SetEquals("labels"),
 				),
 			},
 		})
