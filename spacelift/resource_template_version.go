@@ -94,8 +94,7 @@ func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not create template version: %v", err)
 	}
 
-	templateID := d.Get("template_id").(string)
-	d.SetId(fmt.Sprintf("%s/%s", templateID, mutation.Blueprint.ID))
+	d.SetId(mutation.Blueprint.ID)
 
 	return resourceTemplateVersionRead(ctx, d, meta)
 }
@@ -155,17 +154,12 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, versionID, err := parseTemplateVersionID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintVersionUpdate(id: $id, input: $input)"`
 	}
 
 	variables := map[string]interface{}{
-		"id":    graphql.ID(versionID),
+		"id":    graphql.ID(d.Id()),
 		"input": templateVersionUpdateInput(d),
 	}
 
@@ -177,17 +171,12 @@ func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	_, versionID, err := parseTemplateVersionID(d.Id())
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	var mutation struct {
 		Blueprint *structs.Blueprint `graphql:"blueprintVersionDelete(id: $id)"`
 	}
 
 	variables := map[string]interface{}{
-		"id": graphql.ID(versionID),
+		"id": graphql.ID(d.Id()),
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "TemplateVersionDelete", &mutation, variables); err != nil {
