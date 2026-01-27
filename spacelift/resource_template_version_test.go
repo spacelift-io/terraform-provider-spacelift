@@ -1,0 +1,163 @@
+package spacelift
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+
+	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
+)
+
+func TestTemplateVersionResource(t *testing.T) {
+	const resourceName = "spacelift_template_version.test"
+
+	t.Run("Creates and updates a template version in DRAFT state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(instructions string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "1.0.0"
+					state          = "DRAFT"
+					instructions   = "%s"
+					template       = "not validated for drafts"
+				}`, randomID, instructions)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("test instructions"),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("version_number", Equals("1.0.0")),
+					Attribute("state", Equals("DRAFT")),
+					Attribute("instructions", Equals("test instructions")),
+					Attribute("template", Equals("not validated for drafts")),
+					Attribute("ulid", IsNotEmpty()),
+					Attribute("created_at", IsNotEmpty()),
+					Attribute("updated_at", IsNotEmpty()),
+				),
+			},
+			{
+				Config: config("updated instructions"),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("version_number", Equals("1.0.0")),
+					Attribute("state", Equals("DRAFT")),
+					Attribute("instructions", Equals("updated instructions")),
+				),
+			},
+		})
+	})
+
+	t.Run("Creates a template version in PUBLISHED state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		validTemplate := `stacks:\n- name: Blueprint v2 - test upgrade 3\n  key: test\n  vcs:\n    reference: \n      value: master\n      type: branch\n    repository: demo\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: \"1.3.0\"`
+
+		config := fmt.Sprintf(`
+			resource "spacelift_template" "test" {
+				name  = "test-template-%s"
+				space = "root"
+			}
+
+			resource "spacelift_template_version" "test" {
+				template_id    = spacelift_template.test.id
+				version_number = "1.0.0"
+				state          = "PUBLISHED"
+				instructions   = "test instructions"
+				template       = "%s"
+			}`, randomID, validTemplate)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config,
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("version_number", Equals("1.0.0")),
+					Attribute("state", Equals("PUBLISHED")),
+					Attribute("instructions", Equals("test instructions")),
+					Attribute("template", IsNotEmpty()),
+					Attribute("ulid", IsNotEmpty()),
+					Attribute("published_at", IsNotEmpty()),
+				),
+			},
+		})
+	})
+
+	t.Run("Creates a template version without optional fields", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := fmt.Sprintf(`
+			resource "spacelift_template" "test" {
+				name  = "test-template-%s"
+				space = "root"
+			}
+
+			resource "spacelift_template_version" "test" {
+				template_id    = spacelift_template.test.id
+				version_number = "1.0.0"
+				state          = "DRAFT"
+			}`, randomID)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config,
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("version_number", Equals("1.0.0")),
+					Attribute("state", Equals("DRAFT")),
+					Attribute("instructions", Equals("")),
+					Attribute("ulid", IsNotEmpty()),
+				),
+			},
+		})
+	})
+
+	t.Run("can import a template version", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func() string {
+			return fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "1.0.0"
+					state          = "DRAFT"
+					instructions   = "test instructions"
+					template       = "not validated for drafts"
+				}`, randomID)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(),
+			},
+			{
+				ResourceName: resourceName,
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					templateVersion := s.RootModule().Resources[resourceName]
+					return fmt.Sprintf("%s-%s", templateVersion.Primary.Attributes["template_id"], templateVersion.Primary.Attributes["ulid"]), nil
+				},
+				ImportStateVerify: true,
+			},
+		})
+	})
+}
