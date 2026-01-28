@@ -1,0 +1,87 @@
+package spacelift
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
+	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
+)
+
+func TestTemplateVersionData(t *testing.T) {
+	t.Run("reads a template version in DRAFT state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "1.0.0"
+					state          = "DRAFT"
+					instructions   = "test instructions"
+					template       = "not validated for drafts"
+				}
+
+				data "spacelift_template_version" "test" {
+					template_id = spacelift_template.test.id
+					version_id  = spacelift_template_version.test.id
+				}
+			`, randomID),
+			Check: Resource(
+				"data.spacelift_template_version.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("version_number", Equals("1.0.0")),
+				Attribute("state", Equals("DRAFT")),
+				Attribute("instructions", Equals("test instructions")),
+				Attribute("template", Equals("not validated for drafts")),
+				Attribute("ulid", IsNotEmpty()),
+				Attribute("created_at", IsNotEmpty()),
+				Attribute("updated_at", IsNotEmpty()),
+			),
+		}})
+	})
+
+	t.Run("reads a template version in PUBLISHED state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		validTemplate := `stacks:\n- name: Blueprint v2 - test upgrade 3\n  key: test\n  vcs:\n    reference: \n      value: master\n      type: branch\n    repository: demo\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: \"1.3.0\"`
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "1.0.0"
+					state          = "PUBLISHED"
+					instructions   = "test instructions"
+					template       = "%s"
+				}
+
+				data "spacelift_template_version" "test" {
+					template_id = spacelift_template.test.id
+					version_id  = spacelift_template_version.test.id
+				}
+			`, randomID, validTemplate),
+			Check: Resource(
+				"data.spacelift_template_version.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("version_number", Equals("1.0.0")),
+				Attribute("state", Equals("PUBLISHED")),
+				Attribute("instructions", Equals("test instructions")),
+				Attribute("template", IsNotEmpty()),
+				Attribute("ulid", IsNotEmpty()),
+				Attribute("published_at", IsNotEmpty()),
+			),
+		}})
+	})
+}
