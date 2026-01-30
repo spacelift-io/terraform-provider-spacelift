@@ -12,6 +12,7 @@ jobs:
   build:
     name: Run GoSec
     runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
 
     steps:
       - name: Checkout

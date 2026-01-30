@@ -1,0 +1,72 @@
+name: 🤖 Dependabot
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "go.mod"
+      - "go.sum"
+      - "tools/go.mod"
+      - "tools/go.sum"
+      - ".github/workflows/**"
+
+permissions:
+  contents: write
+  pull-requests: write
+  repository-projects: read
+
+jobs:
+  docs:
+    name: 📚 Regenerate docs
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.labels.*.name, 'go')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate token
+        id: generate
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_KEY }}
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ steps.generate.outputs.token }}
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Regenerate docs
+        run: cd tools && go generate ./...
+
+      - name: Commit changes
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
+          git add docs/
+          git diff --staged --quiet || git commit -m "docs: regenerate documentation"
+          git push
+
+  auto-merge:
+    name: 🤖 Approve and auto-merge
+    needs: docs
+    if: always() && github.actor == 'dependabot[bot]' && !contains(needs.*.result, 'failure')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate token
+        id: generate
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.AUTOMATION_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_APP_KEY }}
+
+      - name: Approve and auto-merge
+        env:
+          GITHUB_TOKEN: ${{ steps.generate.outputs.token }}
+        run: |
+          gh pr review "${{ github.event.pull_request.html_url }}" --approve
+          gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
