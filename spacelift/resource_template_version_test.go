@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -63,10 +64,9 @@ func TestTemplateVersionResource(t *testing.T) {
 
 	t.Run("Creates a template version in PUBLISHED state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		validTemplate := `stacks:\n- name: Blueprint v2 - test upgrade 3\n  key: test\n  vcs:\n    reference: \n      value: master\n      type: branch\n    repository: demo\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: \"1.3.0\"`
+		validTemplate := `stacks:\n- name: Blueprint v2 - test upgrade 3\n  key: %s\n  vcs:\n    reference: \n      value: master\n      type: branch\n    repository: demo\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: \"1.3.0\"`
 
-		config := fmt.Sprintf(`
-			resource "spacelift_template" "test" {
+		rawConfig := `resource "spacelift_template" "test" {
 				name  = "test-template-%s"
 				space = "root"
 			}
@@ -74,14 +74,14 @@ func TestTemplateVersionResource(t *testing.T) {
 			resource "spacelift_template_version" "test" {
 				template_id    = spacelift_template.test.id
 				version_number = "1.0.0"
-				state          = "PUBLISHED"
+				state          = "%s"
 				instructions   = "test instructions"
 				template       = "%s"
-			}`, randomID, validTemplate)
+			}`
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config,
+				Config: fmt.Sprintf(rawConfig, randomID, "PUBLISHED", fmt.Sprintf(validTemplate, "test")),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
@@ -92,6 +92,16 @@ func TestTemplateVersionResource(t *testing.T) {
 					Attribute("ulid", IsNotEmpty()),
 					Attribute("published_at", IsNotEmpty()),
 				),
+			},
+			{
+				Config:      fmt.Sprintf(rawConfig, randomID, "DRAFT", fmt.Sprintf(validTemplate, "test")),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("cannot change the state of a published template version"),
+			},
+			{
+				Config:      fmt.Sprintf(rawConfig, randomID, "PUBLISHED", fmt.Sprintf(validTemplate, "changed-stack-name")),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("cannot modify 'template' field when the template version is already PUBLISHED"),
 			},
 		})
 	})
