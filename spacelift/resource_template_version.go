@@ -23,6 +23,23 @@ func resourceTemplateVersion() *schema.Resource {
 		UpdateContext: resourceTemplateVersionUpdate,
 		DeleteContext: resourceTemplateVersionDelete,
 
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+			// Only validate on updates (not creates)
+			if diff.Id() == "" {
+				return nil
+			}
+
+			oldState, newState := diff.GetChange("state")
+			if oldState == "PUBLISHED" && oldState != newState {
+				return fmt.Errorf("cannot change the state of a published template version")
+			}
+			if oldState.(string) == "PUBLISHED" && diff.HasChange("template") {
+				return fmt.Errorf("cannot modify 'template' field when the template version is already PUBLISHED")
+			}
+
+			return nil
+		},
+
 		Importer: &schema.ResourceImporter{
 			StateContext: resourceTemplateVersionImport,
 		},
