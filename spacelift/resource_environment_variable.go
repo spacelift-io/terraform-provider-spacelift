@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
@@ -24,7 +25,10 @@ func resourceEnvironmentVariable() *schema.Resource {
 			"`spacelift_environment_variable` defines an environment variable on " +
 			"the context (`spacelift_context`), stack (`spacelift_stack`) or a " +
 			"module (`spacelift_module`), thereby allowing to pass and share " +
-			"various secrets and configuration with Spacelift stacks.",
+			"various secrets and configuration with Spacelift stacks.\n\n" +
+			"For secret variables (`write_only`), prefer using `value_wo` and `value_wo_version` " +
+			"instead of `value`. `value_wo` is a write-only attribute that never gets stored in state. " +
+			"Note that the checksum will still be present in state for drift detection.",
 
 		CreateContext: resourceEnvironmentVariableCreate,
 		ReadContext:   resourceEnvironmentVariableRead,
@@ -74,6 +78,24 @@ func resourceEnvironmentVariable() *schema.Resource {
 				Optional:         true,
 				Default:          "",
 				ForceNew:         true,
+				ConflictsWith:    []string{"value_wo", "value_wo_version"},
+			},
+			"value_wo": {
+				Type:          schema.TypeString,
+				Description:   "Value of the environment variable. The value is not stored in the state. Modify value_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"value"},
+				RequiredWith:  []string{"value_wo_version"},
+			},
+			"value_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with value_wo to trigger an update to the value of the environment variable. Increment this value when an update to value_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"value"},
+				RequiredWith:  []string{"value_wo"},
 			},
 			"write_only": {
 				Type:        schema.TypeBool,
@@ -93,11 +115,29 @@ func resourceEnvironmentVariable() *schema.Resource {
 }
 
 func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var value string
+	if v, ok := d.GetOk("value"); ok {
+		value = v.(string)
+	}
+
+	if _, ok := d.GetOk("value_wo_version"); ok {
+		// To get the value of a write-only attribute, we need to access the raw config.
+		p := cty.GetAttrPath("value_wo")
+		woVal, d := d.GetRawConfigAt(p)
+		if d.HasError() {
+			return diag.FromErr(fmt.Errorf("could not get write-only value: %v", d))
+		}
+
+		if !woVal.IsNull() {
+			value = woVal.AsString()
+		}
+	}
+
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
 			ID:          toID(d.Get("name")),
 			Type:        structs.ConfigType("ENVIRONMENT_VARIABLE"),
-			Value:       toString(d.Get("value")),
+			Value:       toString(value),
 			WriteOnly:   graphql.Boolean(d.Get("write_only").(bool)),
 			Description: toOptionalString(d.Get("description")),
 		},
@@ -205,10 +245,12 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	d.Set("name", variableName)
 	d.Set("write_only", element.WriteOnly)
 
-	if value := element.Value; value != nil {
-		d.Set("value", *value)
-	} else {
-		d.Set("value", element.Checksum)
+	if _, hasValueWo := d.GetOk("value_wo_version"); !hasValueWo {
+		if value := element.Value; value != nil {
+			d.Set("value", *value)
+		} else {
+			d.Set("value", element.Checksum)
+		}
 	}
 
 	if description := element.Description; description != nil {

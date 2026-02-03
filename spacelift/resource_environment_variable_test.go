@@ -140,4 +140,52 @@ func TestEnvironmentVariableResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with a context and write-only value", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(value string, version int) string {
+			return fmt.Sprintf(`
+				resource "spacelift_context" "test" {
+					name = "My first context %s"
+				}
+
+				resource "spacelift_environment_variable" "test" {
+					context_id       = spacelift_context.test.id
+					name             = "BACON"
+					value_wo         = "%s"
+					value_wo_version = %d
+				}
+			`, randomID, value, version)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("is tasty", 1),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("checksum", Equals("4d5d01ea427b10dd483e8fce5b5149fb5a9814e9ee614176b756ca4a65c8f154")),
+					Attribute("context_id", Contains(randomID)),
+					Attribute("name", Equals("BACON")),
+					Attribute("write_only", Equals("true")),
+					AttributeNotPresent("module_id"),
+					AttributeNotPresent("stack_id"),
+				),
+			},
+			{
+				Config: config("is very tasty", 2),
+				Check: Resource(
+					resourceName,
+					Attribute("checksum", Equals("475d4301211860d23b1cda67186545da62e8219e7835f303f94dd59ab2d11539")),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"value", "value_wo_version"},
+			},
+		})
+	})
 }
