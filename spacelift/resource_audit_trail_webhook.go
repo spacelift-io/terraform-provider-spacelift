@@ -47,12 +47,12 @@ func resourceAuditTrailWebhook() *schema.Resource {
 			},
 			"secret": {
 				Type:             schema.TypeString,
-				Required:         true,
 				Sensitive:        true,
 				ForceNew:         true,
 				Description:      "`secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.",
 				DiffSuppressFunc: ignoreOnceCreated,
 				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
+				ExactlyOneOf:     []string{"secret_wo"},
 			},
 			"secret_wo": {
 				Type:          schema.TypeString,
@@ -62,6 +62,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				WriteOnly:     true,
 				ConflictsWith: []string{"secret"},
 				RequiredWith:  []string{"secret_wo_version"},
+				ExactlyOneOf:  []string{"secret"},
 			},
 			"secret_wo_version": {
 				Type:          schema.TypeString,
@@ -69,7 +70,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Optional:      true,
 				ForceNew:      true,
 				ConflictsWith: []string{"secret"},
-				RequiredWith:  []string{"secret_wo_version"},
+				RequiredWith:  []string{"secret_wo"},
 			},
 			"custom_headers": {
 				Type:        schema.TypeMap,
