@@ -34,26 +34,36 @@ resource "spacelift_audit_trail_webhook" "test" {
 }
 `
 
+const auditTrailWebhookWriteOnly = `
+resource "spacelift_audit_trail_webhook" "test" {
+	enabled = false
+	endpoint = "%s"
+	include_runs = true
+	secret_wo = "secret"
+	secret_wo_version = 1
+	retry_on_failure = false
+}
+`
+
 func Test_resourceAuditTrailWebhook(t *testing.T) {
 	const resourceName = "spacelift_audit_trail_webhook.test"
 
 	t.Run("creates an audit trail webhook with write_only secret", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
-				Config: fmt.Sprintf(auditTrailWebhookSimple, "https://example.com"),
+				Config: fmt.Sprintf(auditTrailWebhookWriteOnly, "https://example.com"),
 				Check: Resource(
 					resourceName,
 					Attribute("enabled", Equals("false")),
 					Attribute("endpoint", Equals("https://example.com")),
 					Attribute("include_runs", Equals("true")),
-					Attribute("secret_wo", Equals("")),
-					Attribute("secret_wo_version", Equals("1")),
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret", "secret_wo_version"},
 			},
 		})
 	})

@@ -62,8 +62,8 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Optional:      true,
 				WriteOnly:     true,
 				ConflictsWith: []string{"secret"},
-				RequiredWith:  []string{"secret_wo_version"},
 				ExactlyOneOf:  []string{"secret"},
+				RequiredWith:  []string{"secret_wo_version"},
 			},
 			"secret_wo_version": {
 				Type:          schema.TypeString,
