@@ -5,8 +5,8 @@ resource "spacelift_audit_trail_webhook" "example" {
 }
 
 resource "spacelift_audit_trail_webhook" "write_only_example" {
-  endpoint           = "https://example.com"
-  enabled            = true
-  secret_wo          = "somesupersecretkey"
-  secret_wo_versin   = 1
+  endpoint         = "https://example.com"
+  enabled          = true
+  secret_wo        = "somesupersecretkey"
+  secret_wo_versin = 1
 }
