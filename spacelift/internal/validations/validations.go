@@ -19,8 +19,9 @@ func DisallowEmptyString(in interface{}, path cty.Path) diag.Diagnostics {
 
 func ValidateWriteOnlyField(value, valueWo, valueWoVersion string, d *schema.ResourceData) (string, diag.Diagnostics){
 	var result string
+
 	if v, ok := d.GetOk(value); ok {
-		value = v.(string)
+		result = v.(string)
 	}
 
 	if _, ok := d.GetOk(valueWoVersion); ok {
@@ -32,7 +33,7 @@ func ValidateWriteOnlyField(value, valueWo, valueWoVersion string, d *schema.Res
 		}
 
 		if !woVal.IsNull() {
-			value = woVal.AsString()
+			result = woVal.AsString()
 		}
 	}
 
