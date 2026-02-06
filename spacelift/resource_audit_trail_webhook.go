@@ -9,7 +9,6 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceAuditTrailWebhook() *schema.Resource {
