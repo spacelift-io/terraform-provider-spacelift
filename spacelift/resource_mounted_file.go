@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
@@ -112,21 +111,9 @@ func resourceMountedFile() *schema.Resource {
 }
 
 func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var content string
-	if v, ok := d.GetOk("content"); ok {
-		content = v.(string)
-	}
-
-	if _, ok := d.GetOk("content_wo_version"); ok {
-		p := cty.GetAttrPath("content_wo")
-		woVal, d := d.GetRawConfigAt(p)
-		if d.HasError() {
-			return diag.FromErr(fmt.Errorf("could not get write-only content: %v", d))
-		}
-
-		if !woVal.IsNull() {
-			content = woVal.AsString()
-		}
+	content, diags := validations.ValidateWriteOnlyField("content", "content_wo", "content_wo_version", d)
+	if diags != nil {
+		return diags
 	}
 
 	variables := map[string]interface{}{

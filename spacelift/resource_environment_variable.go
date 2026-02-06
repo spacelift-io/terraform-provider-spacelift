@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
@@ -115,23 +114,11 @@ func resourceEnvironmentVariable() *schema.Resource {
 }
 
 func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	var value string
-	if v, ok := d.GetOk("value"); ok {
-		value = v.(string)
+	value, diags := validations.ValidateWriteOnlyField("value", "value_wo", "value_wo_version", d)
+	if diags != nil {
+		return diags
 	}
 
-	if _, ok := d.GetOk("value_wo_version"); ok {
-		// To get the value of a write-only attribute, we need to access the raw config.
-		p := cty.GetAttrPath("value_wo")
-		woVal, d := d.GetRawConfigAt(p)
-		if d.HasError() {
-			return diag.FromErr(fmt.Errorf("could not get write-only value: %v", d))
-		}
-
-		if !woVal.IsNull() {
-			value = woVal.AsString()
-		}
-	}
 
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{

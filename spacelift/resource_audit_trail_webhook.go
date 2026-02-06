@@ -2,15 +2,14 @@ package spacelift
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
 func resourceAuditTrailWebhook() *schema.Resource {
@@ -90,21 +89,9 @@ func resourceAuditTrailWebhook() *schema.Resource {
 }
 
 func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	var secret string
-	if v, ok := data.GetOk("secret"); ok {
-		secret = v.(string)
-	}
-
-	if _, ok := data.GetOk("secret_wo_version"); ok {
-		p := cty.GetAttrPath("secret_wo")
-		woVal, d := data.GetRawConfigAt(p)
-		if d.HasError() {
-			return diag.FromErr(fmt.Errorf("could not get write-only secret: %v", d))
-		}
-
-		if !woVal.IsNull() {
-			secret = woVal.AsString()
-		}
+	secret, diags := validations.ValidateWriteOnlyField("secret", "secret_wo", "secret_wo_version", data)
+	if diags != nil {
+		return diags
 	}
 
 	var mutation struct {
