@@ -2,8 +2,10 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -45,11 +47,30 @@ func resourceAuditTrailWebhook() *schema.Resource {
 			},
 			"secret": {
 				Type:             schema.TypeString,
-				Required:         true,
 				Sensitive:        true,
 				ForceNew:         true,
+				Optional:         true,
+				Deprecated:       "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
 				Description:      "`secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.",
 				DiffSuppressFunc: ignoreOnceCreated,
+				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
+			},
+			"secret_wo": {
+				Type:          schema.TypeString,
+				Description:   "Value of the environment variable. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo_version"},
+			},
+			"secret_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo"},
 			},
 			"custom_headers": {
 				Type:        schema.TypeMap,
@@ -67,14 +88,32 @@ func resourceAuditTrailWebhook() *schema.Resource {
 }
 
 func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+	var secret string
+	if v, ok := data.GetOk("secret"); ok {
+		secret = v.(string)
+	}
+
+	if _, ok := data.GetOk("secret_wo_version"); ok {
+		p := cty.GetAttrPath("secret_wo")
+		woVal, d := data.GetRawConfigAt(p)
+		if d.HasError() {
+			return diag.FromErr(fmt.Errorf("could not get write-only secret: %v", d))
+		}
+
+		if !woVal.IsNull() {
+			secret = woVal.AsString()
+		}
+	}
+
 	var mutation struct {
 		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailSetWebhook(input: $input)"`
 	}
+
 	input := structs.AuditTrailWebhookInput{
 		Enabled:       toBool(data.Get("enabled")),
 		Endpoint:      toString(data.Get("endpoint")),
 		IncludeRuns:   toBool(data.Get("include_runs")),
-		Secret:        toString(data.Get("secret")),
+		Secret:        toString(secret),
 		CustomHeaders: toOptionalStringMap(data.Get("custom_headers")),
 	}
 
