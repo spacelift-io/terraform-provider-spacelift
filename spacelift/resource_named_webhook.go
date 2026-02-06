@@ -58,7 +58,8 @@ func resourceNamedWebhook() *schema.Resource {
 					Type:             schema.TypeString,
 					ValidateDiagFunc: validations.DisallowEmptyString,
 				},
-				Optional: true,
+				Optional:      true,
+				ConflictsWith: []string{"secret_wo", "secret_wo_version"},
 			},
 			"secret": {
 				Type:             schema.TypeString,
@@ -66,6 +67,23 @@ func resourceNamedWebhook() *schema.Resource {
 				Optional:         true,
 				Sensitive:        true,
 				DiffSuppressFunc: ignoreOnceCreated,
+			},
+			"secret_wo": {
+				Type:          schema.TypeString,
+				Description:   "secret used to sign each request so you're able to verify that the request comes from us. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo_version"},
+			},
+			"secret_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo"},
 			},
 			"retry_on_failure": {
 				Type:        schema.TypeBool,
@@ -78,6 +96,11 @@ func resourceNamedWebhook() *schema.Resource {
 }
 
 func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
+	if diags != nil {
+		return diags
+	}
+
 	var mutation struct {
 		WebhooksIntegration struct {
 			ID      string `graphql:"id"`
@@ -89,7 +112,7 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		Endpoint: graphql.String(d.Get("endpoint").(string)),
 		Space:    graphql.ID(d.Get("space_id").(string)),
 		Name:     graphql.String(d.Get("name").(string)),
-		Secret:   toOptionalString(d.Get("secret").(string)),
+		Secret:   toOptionalString(secret),
 		Labels:   []graphql.String{},
 	}
 

@@ -24,9 +24,13 @@ description: |-
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `labels` (Set of String) labels for the webhook to use when referring in policies or filtering them
 - `retry_on_failure` (Boolean) whether to retry the webhook in case of failure. Defaults to `false`.
 - `secret` (String, Sensitive) secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.
+- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) secret used to sign each request so you're able to verify that the request comes from us. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `secret_wo_version` (String) Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.
 
 ### Read-Only
 
