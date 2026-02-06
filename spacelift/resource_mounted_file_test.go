@@ -91,9 +91,9 @@ func TestMountedFileResource(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"content", "content_wo_version"},
 			},
 		})
