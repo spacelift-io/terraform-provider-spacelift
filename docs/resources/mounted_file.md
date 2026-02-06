@@ -40,11 +40,15 @@ resource "spacelift_mounted_file" "core-kubeconfig" {
 
 ### Required
 
-- `content` (String, Sensitive) Content of the mounted file encoded using Base-64
 - `relative_path` (String) Relative path to the mounted file, without the /mnt/workspace/ prefix
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `content` (String, Sensitive) Content of the mounted file encoded using Base-64
+- `content_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Content of the mounted file encoded using Base-64. The content is not stored in the state. Modify content_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `content_wo_version` (String) Used together with content_wo to trigger an update to the content. Increment this value when an update to content_wo is required. This field requires Terraform/OpenTofu 1.11+.
 - `context_id` (String) ID of the context on which the mounted file is defined
 - `description` (String) Free-form description of the mounted file
 - `module_id` (String) ID of the module on which the mounted file is defined

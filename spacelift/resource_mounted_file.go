@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
@@ -44,9 +45,27 @@ func resourceMountedFile() *schema.Resource {
 				Description:      "Content of the mounted file encoded using Base-64",
 				DiffSuppressFunc: suppressValueChange,
 				Sensitive:        true,
-				Required:         true,
+				Optional:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
+				ConflictsWith:    []string{"content_wo", "content_wo_version"},
+			},
+			"content_wo": {
+				Type:          schema.TypeString,
+				Description:   "Content of the mounted file encoded using Base-64. The content is not stored in the state. Modify content_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"content"},
+				RequiredWith:  []string{"content_wo_version"},
+			},
+			"content_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with content_wo to trigger an update to the content. Increment this value when an update to content_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"content"},
+				RequiredWith:  []string{"content_wo"},
 			},
 			"context_id": {
 				Type:         schema.TypeString,
@@ -91,11 +110,28 @@ func resourceMountedFile() *schema.Resource {
 }
 
 func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var content string
+	if v, ok := d.GetOk("content"); ok {
+		content = v.(string)
+	}
+
+	if _, ok := d.GetOk("content_wo_version"); ok {
+		p := cty.GetAttrPath("content_wo")
+		woVal, d := d.GetRawConfigAt(p)
+		if d.HasError() {
+			return diag.FromErr(fmt.Errorf("could not get write-only content: %v", d))
+		}
+
+		if !woVal.IsNull() {
+			content = woVal.AsString()
+		}
+	}
+
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
 			ID:          toID(d.Get("relative_path")),
 			Type:        structs.ConfigType("FILE_MOUNT"),
-			Value:       toString(d.Get("content")),
+			Value:       toString(content),
 			WriteOnly:   graphql.Boolean(d.Get("write_only").(bool)),
 			Description: toOptionalString(d.Get("description")),
 		},
@@ -206,10 +242,12 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 		d.Set("description", *element.Description)
 	}
 
-	if value := element.Value; value != nil {
-		d.Set("content", *value)
-	} else {
-		d.Set("content", element.Checksum)
+	if _, hasValueWo := d.GetOk("content_wo_version"); !hasValueWo {
+		if value := element.Value; value != nil {
+			d.Set("content", *value)
+		} else {
+			d.Set("content", element.Checksum)
+		}
 	}
 
 	return nil

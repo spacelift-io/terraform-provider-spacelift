@@ -43,7 +43,7 @@ resource "spacelift_audit_trail_webhook" "write_only_example" {
 - `include_runs` (Boolean) `include_runs` determines whether the webhook should include information about the run that triggered the event.
 - `retry_on_failure` (Boolean) whether to retry the webhook in case of failure. Defaults to `false`.
 - `secret` (String, Sensitive, Deprecated) `secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.
-- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Value of the environment variable. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) `secret_wo` is a secret that Spacelift will send with the request. The secret_wo is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
 - `secret_wo_version` (String) Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.
 
 ### Read-Only

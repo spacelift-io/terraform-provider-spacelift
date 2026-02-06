@@ -57,6 +57,48 @@ func TestMountedFileResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with a context and write-only content", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(writeOnly bool) string {
+			return fmt.Sprintf(`
+				resource "spacelift_context" "test" {
+					name = "My first context %s"
+				}
+
+				resource "spacelift_mounted_file" "test" {
+					context_id         = spacelift_context.test.id
+					content_wo         = base64encode("bacon is tasty")
+					content_wo_version = 1
+					relative_path      = "bacon.txt"
+					description        = "description text"
+					write_only         = %t
+				}
+			`, randomID, writeOnly)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(true),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("checksum", Equals("fb13e7977b7548a324b598e155b5b5ba3dcca2dad5789abe1411a88fa544be9b")),
+					Attribute("context_id", Contains(randomID)),
+					Attribute("relative_path", Equals("bacon.txt")),
+					Attribute("description", Equals("description text")),
+					Attribute("write_only", Equals("true")),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"content", "content_wo_version"},
+			},
+		})
+	})
+
 	t.Run("with a module", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -68,7 +110,7 @@ func TestMountedFileResource(t *testing.T) {
 					branch         = "master"
 					repository     = "terraform-bacon-tasty"
 				}
-	
+
 				resource "spacelift_mounted_file" "test" {
 					module_id     = spacelift_module.test.id
 					content       = base64encode("bacon is tasty")
@@ -100,7 +142,7 @@ func TestMountedFileResource(t *testing.T) {
 					repository = "demo"
 					name       = "Test stack %s"
 				}
-	
+
 				resource "spacelift_mounted_file" "test" {
 					stack_id      = spacelift_stack.test.id
 					content       = base64encode("bacon is tasty")

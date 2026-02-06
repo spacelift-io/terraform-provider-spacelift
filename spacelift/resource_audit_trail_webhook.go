@@ -57,7 +57,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 			},
 			"secret_wo": {
 				Type:          schema.TypeString,
-				Description:   "Value of the environment variable. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Description:   "`secret_wo` is a secret that Spacelift will send with the request. The secret_wo is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
 				Sensitive:     true,
 				Optional:      true,
 				WriteOnly:     true,
