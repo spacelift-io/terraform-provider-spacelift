@@ -114,7 +114,7 @@ func resourceEnvironmentVariable() *schema.Resource {
 }
 
 func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	value, diags := validations.ValidateWriteOnlyField("value", "value_wo", "value_wo_version", d)
+	value, diags := internal.ValidateWriteOnlyField("value", "value_wo", "value_wo_version", d)
 	if diags != nil {
 		return diags
 	}

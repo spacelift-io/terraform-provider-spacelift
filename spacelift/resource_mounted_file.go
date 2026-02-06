@@ -111,7 +111,7 @@ func resourceMountedFile() *schema.Resource {
 }
 
 func resourceMountedFileCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	content, diags := validations.ValidateWriteOnlyField("content", "content_wo", "content_wo_version", d)
+	content, diags := internal.ExtractWriteOnlyField("content", "content_wo", "content_wo_version", d)
 	if diags != nil {
 		return diags
 	}

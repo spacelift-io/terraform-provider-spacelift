@@ -89,7 +89,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 }
 
 func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	secret, diags := validations.ValidateWriteOnlyField("secret", "secret_wo", "secret_wo_version", data)
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", data)
 	if diags != nil {
 		return diags
 	}
