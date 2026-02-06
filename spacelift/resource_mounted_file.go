@@ -49,6 +49,7 @@ func resourceMountedFile() *schema.Resource {
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 				ConflictsWith:    []string{"content_wo", "content_wo_version"},
+				AtLeastOneOf:     []string{"content", "content_wo"},
 			},
 			"content_wo": {
 				Type:          schema.TypeString,
@@ -58,6 +59,7 @@ func resourceMountedFile() *schema.Resource {
 				WriteOnly:     true,
 				ConflictsWith: []string{"content"},
 				RequiredWith:  []string{"content_wo_version"},
+				AtLeastOneOf:  []string{"content", "content_wo"},
 			},
 			"content_wo_version": {
 				Type:          schema.TypeString,
