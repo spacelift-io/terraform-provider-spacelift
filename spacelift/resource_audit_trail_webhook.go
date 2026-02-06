@@ -50,10 +50,11 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Sensitive:        true,
 				ForceNew:         true,
 				Optional:         true,
+				Deprecated:       "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
 				Description:      "`secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.",
 				DiffSuppressFunc: ignoreOnceCreated,
 				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
-				ExactlyOneOf:     []string{"secret_wo"},
+				ExactlyOneOf:     []string{"secret", "secret_wo"},
 			},
 			"secret_wo": {
 				Type:          schema.TypeString,
@@ -62,7 +63,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Optional:      true,
 				WriteOnly:     true,
 				ConflictsWith: []string{"secret"},
-				ExactlyOneOf:  []string{"secret"},
+				ExactlyOneOf:  []string{"secret", "secret_wo"},
 				RequiredWith:  []string{"secret_wo_version"},
 			},
 			"secret_wo_version": {

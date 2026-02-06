@@ -10,6 +10,9 @@ description: |-
 
 `spacelift_audit_trail_webhook` represents a webhook endpoint to which Spacelift sends POST requests about audit events.
 
+For secret variables (`write_only`), prefer using `secret_wo` and `secret_wo_version` instead of `secret`. `secret_wo` is a write-only
+attribute that never gets stored in state.
+
 ## Example Usage
 
 ```terraform
@@ -17,6 +20,13 @@ resource "spacelift_audit_trail_webhook" "example" {
   endpoint = "https://example.com"
   enabled  = true
   secret   = "mysecretkey"
+}
+
+resource "spacelift_audit_trail_webhook" "write_only_example" {
+  endpoint           = "https://example.com"
+  enabled            = true
+  secret_wo          = "somesupersecretkey"
+  secret_wo_versin   = 1
 }
 ```
 
@@ -27,10 +37,15 @@ resource "spacelift_audit_trail_webhook" "example" {
 
 - `enabled` (Boolean) `enabled` determines whether the webhook is enabled. If it is not, Spacelift will not send any requests to the endpoint.
 - `endpoint` (String) `endpoint` is the URL to which Spacelift will send POST requests about audit events.
-- `secret` (String, Sensitive) `secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+> **NOTE**: Either secret or secert_wo needs to be set. Both fields are declared optional since terraform definition does not allow field to be required and in conflict with another field.
+
+- `secret` (String, Sensitive) `secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.
+- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) `secret_wo`is a secret that Spacelift will send with the request. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `secret_wo_version` (String) Used together with secert_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.
 - `custom_headers` (Map of String) `custom_headers` is a Map of key-value strings, that will be passed as headers with audit trail requests.
 - `include_runs` (Boolean) `include_runs` determines whether the webhook should include information about the run that triggered the event.
 - `retry_on_failure` (Boolean) whether to retry the webhook in case of failure. Defaults to `false`.
