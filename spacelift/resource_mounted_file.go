@@ -56,6 +56,7 @@ func resourceMountedFile() *schema.Resource {
 				Sensitive:     true,
 				Optional:      true,
 				WriteOnly:     true,
+				ValidateDiagFunc: validations.DisallowEmptyString,
 				ConflictsWith: []string{"content"},
 				RequiredWith:  []string{"content_wo_version"},
 				AtLeastOneOf:  []string{"content", "content_wo"},
