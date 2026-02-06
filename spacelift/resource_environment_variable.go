@@ -119,7 +119,6 @@ func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceDa
 		return diags
 	}
 
-
 	variables := map[string]interface{}{
 		"config": structs.ConfigInput{
 			ID:          toID(d.Get("name")),

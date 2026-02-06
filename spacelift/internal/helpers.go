@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ExtractWriteOnlyField(value, valueWo, valueWoVersion string, data *schema.ResourceData) (string, diag.Diagnostics){
+func ExtractWriteOnlyField(value, valueWo, valueWoVersion string, data *schema.ResourceData) (string, diag.Diagnostics) {
 	var result string
 
 	if v, ok := data.GetOk(value); ok {
