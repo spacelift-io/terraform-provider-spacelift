@@ -82,7 +82,6 @@ func resourceNamedWebhook() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{"secret"},
 				RequiredWith:  []string{"secret_wo"},
 			},
