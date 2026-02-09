@@ -232,12 +232,10 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta i
 		d.Set("description", *element.Description)
 	}
 
-	if _, hasValueWo := d.GetOk("content_wo_version"); !hasValueWo {
-		if value := element.Value; value != nil {
-			d.Set("content", *value)
-		} else {
-			d.Set("content", element.Checksum)
-		}
+	if value := element.Value; value != nil {
+		d.Set("content", *value)
+	} else {
+		d.Set("content", element.Checksum)
 	}
 
 	return nil
