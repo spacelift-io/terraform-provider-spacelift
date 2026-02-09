@@ -2,10 +2,8 @@ package spacelift
 
 import (
 	"context"
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -54,15 +52,17 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Description:      "`secret` is a secret that Spacelift will send with the request. Note that once it's created, it will be just an empty string in the state due to security reasons.",
 				DiffSuppressFunc: ignoreOnceCreated,
 				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
+				AtLeastOneOf:     []string{"secret", "secret_wo"},
 			},
 			"secret_wo": {
 				Type:          schema.TypeString,
-				Description:   "Value of the environment variable. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Description:   "`secret_wo` is a secret that Spacelift will send with the request. The secret_wo is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
 				Sensitive:     true,
 				Optional:      true,
 				WriteOnly:     true,
 				ConflictsWith: []string{"secret"},
 				RequiredWith:  []string{"secret_wo_version"},
+				AtLeastOneOf:  []string{"secret", "secret_wo"},
 			},
 			"secret_wo_version": {
 				Type:          schema.TypeString,
@@ -88,21 +88,9 @@ func resourceAuditTrailWebhook() *schema.Resource {
 }
 
 func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
-	var secret string
-	if v, ok := data.GetOk("secret"); ok {
-		secret = v.(string)
-	}
-
-	if _, ok := data.GetOk("secret_wo_version"); ok {
-		p := cty.GetAttrPath("secret_wo")
-		woVal, d := data.GetRawConfigAt(p)
-		if d.HasError() {
-			return diag.FromErr(fmt.Errorf("could not get write-only secret: %v", d))
-		}
-
-		if !woVal.IsNull() {
-			secret = woVal.AsString()
-		}
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", data)
+	if diags != nil {
+		return diags
 	}
 
 	var mutation struct {
