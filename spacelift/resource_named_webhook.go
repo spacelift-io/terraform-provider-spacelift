@@ -65,6 +65,7 @@ func resourceNamedWebhook() *schema.Resource {
 				Description:      "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.",
 				Optional:         true,
 				Sensitive:        true,
+				Deprecated:       "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
 				DiffSuppressFunc: ignoreOnceCreated,
 				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
 			},
