@@ -59,7 +59,6 @@ func resourceNamedWebhook() *schema.Resource {
 					ValidateDiagFunc: validations.DisallowEmptyString,
 				},
 				Optional:      true,
-				ConflictsWith: []string{"secret_wo", "secret_wo_version"},
 			},
 			"secret": {
 				Type:             schema.TypeString,
@@ -67,6 +66,7 @@ func resourceNamedWebhook() *schema.Resource {
 				Optional:         true,
 				Sensitive:        true,
 				DiffSuppressFunc: ignoreOnceCreated,
+				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
 			},
 			"secret_wo": {
 				Type:          schema.TypeString,
