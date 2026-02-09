@@ -58,7 +58,7 @@ func resourceNamedWebhook() *schema.Resource {
 					Type:             schema.TypeString,
 					ValidateDiagFunc: validations.DisallowEmptyString,
 				},
-				Optional:      true,
+				Optional: true,
 			},
 			"secret": {
 				Type:             schema.TypeString,
