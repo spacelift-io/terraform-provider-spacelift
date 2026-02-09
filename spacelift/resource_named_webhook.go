@@ -112,8 +112,13 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		Endpoint: graphql.String(d.Get("endpoint").(string)),
 		Space:    graphql.ID(d.Get("space_id").(string)),
 		Name:     graphql.String(d.Get("name").(string)),
-		Secret:   toOptionalString(secret),
 		Labels:   []graphql.String{},
+	}
+
+	// since both secret and secret_wo field is optional this guard clause prevents accidental override
+	// of secrets if there were any changes unrelated to secret fields
+	if secret != "" {
+		input.Secret = toOptionalString(secret)
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
