@@ -71,7 +71,7 @@ func resourceNamedWebhook() *schema.Resource {
 			},
 			"secret_wo": {
 				Type:          schema.TypeString,
-				Description:   "secret used to sign each request so you're able to verify that the request comes from us. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Description:   "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
 				Sensitive:     true,
 				Optional:      true,
 				WriteOnly:     true,
@@ -170,6 +170,11 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
+	if diags != nil {
+		return diags
+	}
+
 	webhookID := d.Id()
 
 	enabled := d.Get("enabled").(bool)
@@ -193,6 +198,7 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 		Endpoint: graphql.String(endpoint),
 		Name:     graphql.String(name),
 		Space:    graphql.String(spaceID),
+		Secret:   toOptionalString(secret),
 		Labels:   labels,
 	}
 
