@@ -99,7 +99,7 @@ func TestNamedWebhookResource(t *testing.T) {
 					name              = "testing-named-%s"
 					enabled           = true
 					secret_wo         = "super-secret"
-					secret_wo_version = "super-secret"
+					secret_wo_version = 1
 					retry_on_failure  = false
 				}
 			`, endpoint, randomID)
