@@ -71,7 +71,6 @@ func resourceNamedWebhookSecretHeader() *schema.Resource {
 				ConflictsWith: []string{"value"},
 				RequiredWith:  []string{"value_wo"},
 			},
-
 		},
 	}
 }
