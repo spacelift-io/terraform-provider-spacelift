@@ -36,3 +36,15 @@ func testSteps(t *testing.T, steps []resource.TestStep) {
 		Steps: steps,
 	})
 }
+
+func testStepsSequential(t *testing.T, steps []resource.TestStep) {
+	t.Helper()
+
+	resource.Test(t, resource.TestCase{
+		IsUnitTest: true,
+		Providers: map[string]*schema.Provider{
+			"spacelift": testProvider(),
+		},
+		Steps: steps,
+	})
+}

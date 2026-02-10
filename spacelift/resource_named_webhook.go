@@ -65,7 +65,25 @@ func resourceNamedWebhook() *schema.Resource {
 				Description:      "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.",
 				Optional:         true,
 				Sensitive:        true,
+				Deprecated:       "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
 				DiffSuppressFunc: ignoreOnceCreated,
+				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
+			},
+			"secret_wo": {
+				Type:          schema.TypeString,
+				Description:   "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo_version"},
+			},
+			"secret_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo"},
 			},
 			"retry_on_failure": {
 				Type:        schema.TypeBool,
@@ -78,6 +96,11 @@ func resourceNamedWebhook() *schema.Resource {
 }
 
 func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
+	if diags != nil {
+		return diags
+	}
+
 	var mutation struct {
 		WebhooksIntegration struct {
 			ID      string `graphql:"id"`
@@ -89,8 +112,13 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		Endpoint: graphql.String(d.Get("endpoint").(string)),
 		Space:    graphql.ID(d.Get("space_id").(string)),
 		Name:     graphql.String(d.Get("name").(string)),
-		Secret:   toOptionalString(d.Get("secret").(string)),
 		Labels:   []graphql.String{},
+	}
+
+	// since both secret and secret_wo field is optional this guard clause prevents accidental override
+	// of secrets if there were any changes unrelated to secret fields
+	if secret != "" {
+		input.Secret = toOptionalString(secret)
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
@@ -147,6 +175,11 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
+	if diags != nil {
+		return diags
+	}
+
 	webhookID := d.Id()
 
 	enabled := d.Get("enabled").(bool)
@@ -170,6 +203,7 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 		Endpoint: graphql.String(endpoint),
 		Name:     graphql.String(name),
 		Space:    graphql.String(spaceID),
+		Secret:   toOptionalString(secret),
 		Labels:   labels,
 	}
 

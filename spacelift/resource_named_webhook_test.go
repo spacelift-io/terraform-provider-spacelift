@@ -87,4 +87,43 @@ func TestNamedWebhookResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("attach a webhook to root space with wriwrite-only values", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(endpoint string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_named_webhook" "test" {
+					endpoint          = "%s"
+					space_id          = "root"
+					name              = "testing-named-%s"
+					enabled           = true
+					secret_wo         = "super-secret"
+					secret_wo_version = 1
+					retry_on_failure  = false
+				}
+			`, endpoint, randomID)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("https://bacon.net"),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("endpoint", Equals("https://bacon.net")),
+					Attribute("space_id", Equals("root")),
+					Attribute("name", Equals(fmt.Sprintf("testing-named-%s", randomID))),
+					Attribute("enabled", Equals("true")),
+					AttributeNotPresent("labels"),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret", "secret_wo_version"},
+			},
+		})
+	})
 }

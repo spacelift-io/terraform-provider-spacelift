@@ -44,12 +44,12 @@ resource "spacelift_audit_trail_webhook" "test" {
 	retry_on_failure = false
 }
 `
-
+// There can only be one audit trail webhook per account, so these tests must run sequentially
 func Test_resourceAuditTrailWebhook(t *testing.T) {
 	const resourceName = "spacelift_audit_trail_webhook.test"
 
 	t.Run("creates an audit trail webhook with write_only secret", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{
+		testStepsSequential(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(auditTrailWebhookWriteOnly, "https://example.com"),
 				Check: Resource(
@@ -69,7 +69,7 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 	})
 
 	t.Run("creates an audit trail webhook without an error", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{
+		testStepsSequential(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(auditTrailWebhookSimple, "https://example.com"),
 				Check: Resource(
@@ -102,7 +102,7 @@ func Test_resourceAuditTrailWebhook(t *testing.T) {
 	})
 
 	t.Run("endpoint has to be valid", func(t *testing.T) {
-		testSteps(t, []resource.TestStep{
+		testStepsSequential(t, []resource.TestStep{
 			{
 				Config:      fmt.Sprintf(auditTrailWebhookSimple, "https:/invalidendpoint.com/"),
 				ExpectError: regexp.MustCompile(`endpoint must be a valid URL`),
