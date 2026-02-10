@@ -46,15 +46,41 @@ func resourceNamedWebhookSecretHeader() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "value for the header",
 				DiffSuppressFunc: suppressValueChange,
-				Required:         true,
+				Optional:         true,
 				Sensitive:        true,
 				ForceNew:         true,
+				Deprecated:       "`value` is deprecated. Please use value_wo in combination with value_wo_version",
+				ConflictsWith:    []string{"value_wo", "value_wo_version"},
+				AtLeastOneOf:     []string{"value", "value_wo"},
+			},
+			"value_wo": {
+				Type:          schema.TypeString,
+				Description:   "Value for the header. The value is not stored in the state. Modify value_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"value"},
+				RequiredWith:  []string{"value_wo_version"},
+				AtLeastOneOf:  []string{"value", "value_wo"},
+			},
+			"value_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with value_wo to trigger an update to the value of for the header. Increment this value when an update to value_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"value"},
+				RequiredWith:  []string{"value_wo"},
 			},
 		},
 	}
 }
 
 func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	value, diags := internal.ExtractWriteOnlyField("value", "value_wo", "value:value_wo_version", d)
+	if diags != nil {
+		return diags
+	}
+
 	var mutation struct {
 		WebhooksIntegration struct {
 			ID string `graphql:"id"`
@@ -68,7 +94,7 @@ func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.Resou
 			Entries: []structs.KeyValuePair{
 				{
 					Key:   d.Get("key").(string),
-					Value: d.Get("value").(string),
+					Value: value,
 				},
 			},
 		},

@@ -88,7 +88,7 @@ func TestNamedWebhookResource(t *testing.T) {
 		})
 	})
 
-	t.Run("attach a webhook to root space with wriwrite-only values", func(t *testing.T) {
+	t.Run("attach a webhook to root space with write-only values", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		config := func(endpoint string) string {

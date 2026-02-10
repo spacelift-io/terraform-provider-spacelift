@@ -18,8 +18,15 @@ description: |-
 ### Required
 
 - `key` (String) key for the header
-- `value` (String, Sensitive) value for the header
 - `webhook_id` (String) ID of the stack on which the environment variable is defined
+
+### Optional
+
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `value` (String, Sensitive, Deprecated) value for the header
+- `value_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Value for the header. The value is not stored in the state. Modify value_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `value_wo_version` (String) Used together with value_wo to trigger an update to the value of for the header. Increment this value when an update to value_wo is required. This field requires Terraform/OpenTofu 1.11+.
 
 ### Read-Only
 
