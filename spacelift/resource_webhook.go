@@ -78,8 +78,28 @@ func resourceWebhook() *schema.Resource {
 				Sensitive:        true,
 				ForceNew:         true,
 				Default:          "",
+				Deprecated:       "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
 				DiffSuppressFunc: ignoreOnceCreated,
+				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
 			},
+			"secret_wo": {
+				Type:          schema.TypeString,
+				Description:   "`secret_wo` used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value. The secret_wo is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo_version"},
+			},
+			"secret_wo_version": {
+				Type:          schema.TypeString,
+				Description:   "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{"secret"},
+				RequiredWith:  []string{"secret_wo"},
+			},
+
 			"stack_id": {
 				Type:        schema.TypeString,
 				Description: "ID of the stack which triggers the webhooks",
@@ -96,6 +116,11 @@ func resourceWebhook() *schema.Resource {
 }
 
 func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
+	if diags != nil {
+		return diags
+	}
+
 	var mutation struct {
 		WebhooksIntegration struct {
 			ID      string `graphql:"id"`
@@ -106,7 +131,7 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta int
 	input := structs.WebhooksIntegrationInput{
 		Enabled:  graphql.Boolean(d.Get("enabled").(bool)),
 		Endpoint: graphql.String(d.Get("endpoint").(string)),
-		Secret:   graphql.String(d.Get("secret").(string)),
+		Secret:   graphql.String(secret),
 	}
 
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
