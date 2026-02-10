@@ -28,10 +28,14 @@ resource "spacelift_webhook" "webhook" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `enabled` (Boolean) enables or disables sending webhooks. Defaults to `true`.
 - `module_id` (String) ID of the module which triggers the webhooks
 - `retry_on_failure` (Boolean) whether to retry the webhook in case of failure. Defaults to `false`.
-- `secret` (String, Sensitive) secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.
+- `secret` (String, Sensitive, Deprecated) secret used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.
+- `secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) `secret_wo` used to sign each POST request so you're able to verify that the request comes from us. Defaults to an empty value. The secret_wo is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `secret_wo_version` (String) Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.
 - `stack_id` (String) ID of the stack which triggers the webhooks
 
 ### Read-Only

@@ -90,4 +90,48 @@ func TestWebhookResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("with a stack and write-only values", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := func(endpoint string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch     = "master"
+					repository = "demo"
+					name       = "Test stack %s"
+				}
+
+				resource "spacelift_webhook" "test" {
+					stack_id          = spacelift_stack.test.id
+					endpoint          = "%s"
+					secret_wo         = "very-very-secret"
+					secret_wo_version = 1
+					retry_on_failure  = false
+				}
+			`, randomID, endpoint)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("https://bacon.org"),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("endpoint", Equals("https://bacon.org")),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateIdPrefix:     fmt.Sprintf("stack/test-stack-%s/", randomID),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret", "secret_wo_version"},
+			},
+			{
+				Config: config("https://cabbage.org"),
+				Check:  Resource(resourceName, Attribute("endpoint", Equals("https://cabbage.org"))),
+			},
+		})
+	})
 }
