@@ -22,7 +22,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Test with coverage
-        run: go test -parallel 40 -timeout 30m -coverprofile=coverage.txt -coverpkg=./... ./...
+        run: go test -timeout 30m -coverprofile=coverage.txt -coverpkg=./... ./...
         if: github.actor != 'dependabot[bot]'
         env:
           SPACELIFT_API_KEY_ENDPOINT: ${{ vars.preprod_SPACELIFT_API_KEY_ENDPOINT }}
