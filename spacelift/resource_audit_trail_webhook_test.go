@@ -44,7 +44,7 @@ resource "spacelift_audit_trail_webhook" "test" {
 	retry_on_failure = false
 }
 `
-
+// There can only be one audit trail webhook per account, so these tests must run sequentially
 func Test_resourceAuditTrailWebhook(t *testing.T) {
 	const resourceName = "spacelift_audit_trail_webhook.test"
 
