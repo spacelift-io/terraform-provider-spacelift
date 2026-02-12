@@ -106,7 +106,6 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "Used together with access_token_wo to trigger an update to the access token. Increment this value when an update to access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{bitbucketDatacenterAccessToken},
 				RequiredWith:  []string{bitbucketDatacenterAccessTokenWo},
 			},
