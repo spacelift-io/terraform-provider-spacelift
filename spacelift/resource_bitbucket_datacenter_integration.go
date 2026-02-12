@@ -192,6 +192,11 @@ func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.R
 }
 
 func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	token, diags := internal.ExtractWriteOnlyField(bitbucketDatacenterAccessToken, bitbucketDatacenterAccessTokenWo, bitbucketDatacenterAccessTokenWoVersion, d)
+	if diags != nil {
+		return diags
+	}
+
 	var mutation struct {
 		UpdateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
 	}
@@ -200,7 +205,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
 		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
-		"accessToken":    toOptionalString(d.Get(bitbucketDatacenterAccessToken)),
+		"accessToken":    toOptionalString(token),
 		"customInput": &vcs.CustomVCSUpdateInput{
 			ID:             toID(d.Id()),
 			SpaceID:        toString(d.Get(bitbucketDatacenterSpaceID)),
