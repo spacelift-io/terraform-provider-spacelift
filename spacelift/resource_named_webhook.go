@@ -116,7 +116,6 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		Labels:   []graphql.String{},
 	}
 
-
 	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
 		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
