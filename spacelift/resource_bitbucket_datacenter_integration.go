@@ -13,7 +13,9 @@ import (
 )
 
 const (
-	bitbucketDatacenterAccessToken = "access_token"
+	bitbucketDatacenterAccessToken          = "access_token"
+	bitbucketDatacenterAccessTokenWo        = "access_token_wo"
+	bitbucketDatacenterAccessTokenWoVersion = "access_token_wo_version"
 )
 
 func resourceBitbucketDatacenterIntegration() *schema.Resource {
@@ -82,10 +84,31 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 				Required:    true,
 			},
 			bitbucketDatacenterAccessToken: {
-				Type:        schema.TypeString,
-				Description: "User access token from Bitbucket",
-				Sensitive:   true,
-				Required:    true,
+				Type:          schema.TypeString,
+				Description:   "User access token from Bitbucket",
+				Sensitive:     true,
+				Optional:      true,
+				Deprecated:    "`access_token` is deprecated. Please use access_token_wo in combination with access_token_wo_version",
+				ConflictsWith: []string{bitbucketDatacenterAccessTokenWo, bitbucketDatacenterAccessTokenWoVersion},
+				AtLeastOneOf:  []string{bitbucketDatacenterAccessToken, bitbucketDatacenterAccessTokenWo},
+			},
+			bitbucketDatacenterAccessTokenWo: {
+				Type:          schema.TypeString,
+				Description:   "`access_token_wo` user acces token from Bitbucket. The access_token_wo is not stored in the state. Modify access_token_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{bitbucketDatacenterAccessToken},
+				RequiredWith:  []string{bitbucketDatacenterAccessTokenWoVersion},
+				AtLeastOneOf:  []string{bitbucketDatacenterAccessToken, bitbucketDatacenterAccessTokenWo},
+			},
+			bitbucketDatacenterAccessTokenWoVersion: {
+				Type:          schema.TypeString,
+				Description:   "Used together with access_token_wo to trigger an update to the access token. Increment this value when an update to access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{bitbucketDatacenterAccessToken},
+				RequiredWith:  []string{bitbucketDatacenterAccessTokenWo},
 			},
 			bitbucketDatacenterWebhookSecret: {
 				Type:        schema.TypeString,
@@ -115,6 +138,11 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 }
 
 func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	token, diags := internal.ExtractWriteOnlyField(bitbucketDatacenterAccessToken, bitbucketDatacenterAccessTokenWo, bitbucketDatacenterAccessTokenWoVersion, d)
+	if diags != nil {
+		return diags
+	}
+
 	var mutation struct {
 		CreateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
 	}
@@ -132,7 +160,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
 		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
-		"accessToken":    toString(d.Get(bitbucketDatacenterAccessToken)),
+		"accessToken":    toString(token),
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "BitbucketDatacenterIntegrationCreate", &mutation, variables); err != nil {
