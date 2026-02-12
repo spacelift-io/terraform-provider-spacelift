@@ -346,9 +346,10 @@ func templateDeploymentCreateInput(d *schema.ResourceData) structs.BlueprintDepl
 }
 
 func templateDeploymentSchemaToInputs(d *schema.ResourceData) []structs.BlueprintDeploymentCreateInputPair {
+	inputs := make([]structs.BlueprintDeploymentCreateInputPair, 0)
 	if inputList, ok := d.GetOk("input"); ok {
 		stateInputs := inputList.([]any)
-		inputs := make([]structs.BlueprintDeploymentCreateInputPair, len(stateInputs))
+		inputs = make([]structs.BlueprintDeploymentCreateInputPair, len(stateInputs))
 		for i, v := range stateInputs {
 			item := v.(map[string]any)
 			inputs[i] = structs.BlueprintDeploymentCreateInputPair{
@@ -358,7 +359,7 @@ func templateDeploymentSchemaToInputs(d *schema.ResourceData) []structs.Blueprin
 		}
 		return inputs
 	}
-	return nil
+	return inputs
 }
 
 type waitInput struct {
