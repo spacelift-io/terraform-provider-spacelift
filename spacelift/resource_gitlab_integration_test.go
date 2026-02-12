@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/vcs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -162,6 +163,72 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeIndividual)),
+				),
+			},
+		})
+	})
+
+	t.Run("creates and updates a GitLab integration with write-only fields and without an error", func(t *testing.T) {
+		random := func() string { return acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum) }
+
+		var (
+			name  = "my-test-gitlab-integration-" + random()
+			host  = "https://gitlab.com/" + random()
+			token = "access-" + random()
+			descr = "description " + random()
+		)
+
+		configGitLab := func(host, token, descr, labels, vcsChecks string, useGitCheckout bool) string {
+			return `
+				resource "spacelift_gitlab_integration" "test" {
+					name                     = "` + name + `"
+					api_host                 = "` + host + `"
+					user_facing_host         = "` + host + `"
+					private_token_wo         = "` + token + `"
+					private_token_wo_version = "1"
+					description              = "` + descr + `"
+					labels                   = ` + labels + `
+					vcs_checks               = ` + vcsChecks + `
+					use_git_checkout         = ` + strconv.FormatBool(useGitCheckout) + `
+				}
+			`
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configGitLab(host, token, descr, "null", "null", !useGitCheckout),
+				Check: Resource(
+					resourceName,
+					Attribute(gitLabName, Equals(name)),
+					Attribute(gitLabAPIHost, Equals(host)),
+					Attribute(gitLabUserFacingHost, Equals(host)),
+					Attribute(gitLabWebhookURL, IsNotEmpty()),
+					Attribute(gitLabWebhookSecret, IsNotEmpty()),
+					Attribute(gitLabIsDefault, Equals("false")),
+					Attribute(gitLabDescription, Equals(descr)),
+					AttributeNotPresent(gitLabLabels),
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeDefault)),
+					Attribute(gitLabUseGitCheckout, Equals("false")),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{gitLabToken, gitLabTokenWoVersion}, // specified only in the config
+			},
+			{
+				Config: configGitLab(host, token, "new descr", `["new label1"]`, "null", !useGitCheckout),
+				Check: Resource(
+					resourceName,
+					Attribute(gitLabAPIHost, Equals(host)),
+					Attribute(gitLabUserFacingHost, Equals(host)),
+					Attribute(gitLabIsDefault, Equals("false")),
+					Attribute(gitLabDescription, Equals("new descr")),
+					Attribute(gitLabLabels+".#", Equals("1")),
+					Attribute(gitLabLabels+".0", Equals("new label1")),
+					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeDefault)),
+					Attribute(gitLabUseGitCheckout, Equals("false")),
 				),
 			},
 		})

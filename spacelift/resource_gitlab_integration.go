@@ -70,9 +70,30 @@ func resourceGitLabIntegration() *schema.Resource {
 			gitLabToken: {
 				Type:             schema.TypeString,
 				Description:      "The GitLab API Token",
-				Required:         true,
+				Optional:         true,
 				Sensitive:        true,
+				Deprecated:       "`private_token` is deprecated. Please use private_token_wo in combination with private_token_wo_version",
 				ValidateDiagFunc: validations.DisallowEmptyString,
+				ConflictsWith:    []string{gitLabTokenWo, gitLabTokenWoVersion},
+				AtLeastOneOf:     []string{gitLabToken, gitLabTokenWo},
+			},
+			gitLabTokenWo: {
+				Type:          schema.TypeString,
+				Description:   "`private_token_wo` the GitLab API Token .The private_token_wo is not stored in the state. Modify private_token_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Sensitive:     true,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{gitLabToken},
+				RequiredWith:  []string{gitLabTokenWoVersion},
+				AtLeastOneOf:  []string{gitLabToken, gitLabTokenWo},
+			},
+			gitLabTokenWoVersion: {
+				Type:          schema.TypeString,
+				Description:   "Used together with private_token_wo to trigger an update to the private_token. Increment this value when an update to private_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Optional:      true,
+				ForceNew:      true,
+				ConflictsWith: []string{gitLabToken},
+				RequiredWith:  []string{gitLabTokenWo},
 			},
 			gitLabLabels: {
 				Type:        schema.TypeSet,
@@ -125,6 +146,11 @@ func resourceGitLabIntegration() *schema.Resource {
 }
 
 func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	token, digas := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
+	if digas != nil {
+		return digas
+	}
+
 	var mutation struct {
 		CreateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $token, customInput: $customInput)"`
 	}
@@ -141,7 +167,7 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 		},
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
-		"token":          toString(d.Get(gitLabToken)),
+		"token":          toString(token),
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "GitLabIntegrationCreate", &mutation, variables); err != nil {
@@ -173,12 +199,17 @@ func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	token, digas := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
+	if digas != nil {
+		return digas
+	}
+
 	var mutation struct {
 		UpdateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $privateToken, customInput: $customInput)"`
 	}
 
 	variables := map[string]interface{}{
-		"privateToken":   toOptionalString(d.Get(gitLabToken)),
+		"privateToken":   toOptionalString(token),
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
 		"customInput": &vcs.CustomVCSUpdateInput{
