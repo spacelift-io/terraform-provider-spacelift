@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/vcs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -165,6 +166,77 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 					"spacelift_run.test",
 					Attribute("id", IsNotEmpty()),
 					Attribute("stack_id", Equals("stack-for-"+name)),
+				),
+			},
+		})
+	})
+
+	t.Run("creates and updates a bitbucket datacenter integration with write-only fields and without an error ", func(t *testing.T) {
+		random := func() string { return acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum) }
+
+		var (
+			name  = "my-test-bitbucket-datacenter-integration-" + random()
+			host  = "https://bitbucket.com/" + random()
+			token = "access-" + random()
+			descr = "description " + random()
+		)
+
+		configBitbucket := func(user, host, token, descr, labels, vcsChecks string, useGitCheckout bool) string {
+			return `
+				resource "spacelift_bitbucket_datacenter_integration" "test" {
+					name                    = "` + name + `"
+					is_default              = false
+					space_id                = "root"
+					api_host                = "` + host + `"
+					user_facing_host        = "` + host + `"
+					username                = "` + user + `"
+					access_token_wo         = "` + token + `"
+					access_token_wo_version = "` + "1" + `"
+					description             = "` + descr + `"
+					labels                  = ` + labels + `
+					vcs_checks              = ` + vcsChecks + `
+					use_git_checkout        = ` + strconv.FormatBool(useGitCheckout) + `
+				}
+			`
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configBitbucket("username", host, token, descr, "null", "null", useGitCheckout),
+				Check: Resource(
+					resourceName,
+					Attribute("id", Equals(name)),
+					Attribute("api_host", Equals(host)),
+					Attribute("user_facing_host", Equals(host)),
+					Attribute("username", Equals("username")),
+					Attribute("webhook_url", IsNotEmpty()),
+					Attribute("webhook_secret", IsNotEmpty()),
+					Attribute("is_default", Equals("false")),
+					Attribute("description", Equals(descr)),
+					Attribute("labels.#", Equals("0")),
+					Attribute(bitbucketDatacenterVCSChecks, Equals(vcs.CheckTypeDefault)),
+					Attribute(bitbucketDatacenterUseGitCheckout, Equals("true")),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"access_token", "access_token_wo_version"}, // specified only in the config
+			},
+			{
+				Config: configBitbucket("newUserName", host, token, "new descr", `["new label1"]`, "null", !useGitCheckout),
+				Check: Resource(
+					resourceName,
+					Attribute("api_host", Equals(host)),
+					Attribute("user_facing_host", Equals(host)),
+					Attribute("is_default", Equals("false")),
+					Attribute("username", Equals("newUserName")),
+					Attribute("description", Equals("new descr")),
+					Attribute("labels.#", Equals("1")),
+					Attribute("labels.0", Equals("new label1")),
+					Attribute(bitbucketDatacenterVCSChecks, Equals(vcs.CheckTypeDefault)),
+					Attribute(bitbucketDatacenterUseGitCheckout, Equals("false")),
 				),
 			},
 		})

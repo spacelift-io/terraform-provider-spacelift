@@ -20,3 +20,14 @@ resource "spacelift_bitbucket_datacenter_integration" "private-example" {
   username         = "bitbucket_user_name"
   access_token     = "ABCD-EFGhiJKlMNoPQrSTuVWxYz0123456789abCDefGhiJkL"
 }
+
+resource "spacelift_bitbucket_datacenter_integration" "private-write-only" {
+  name                    = "Bitbucket integration"
+  is_default              = false
+  space_id                = "root"
+  api_host                = "https://mybitbucket.myorg.com"
+  user_facing_host        = "https://mybitbucket.myorg.com"
+  username                = "bitbucket_user_name"
+  access_token_wo         = "ABCD-EFGhiJKlMNoPQrSTuVWxYz0123456789abCDefGhiJkL"
+  access_token_wo_version = 1
+}
