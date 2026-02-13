@@ -11,6 +11,8 @@ const (
 	gitLabAppID          = "app_id"
 	gitLabAPIHost        = "api_host"
 	gitLabToken          = "private_token"
+	gitLabTokenWo        = "private_token_wo"
+	gitLabTokenWoVersion = "private_token_wo_version"
 	gitLabWebhookURL     = "webhook_url"
 	gitLabWebhookSecret  = "webhook_secret"
 	gitLabVCSChecks      = "vcs_checks"
