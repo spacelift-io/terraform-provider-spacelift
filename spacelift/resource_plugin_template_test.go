@@ -188,7 +188,7 @@ hooks:
 		testSteps(t, []resource.TestStep{
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile("could not create plugin template: invalid manifest: missing properties: 'version', 'author'"),
+				ExpectError: regexp.MustCompile("could not create plugin template: invalid manifest: missing properties 'version', 'author'"),
 			},
 		})
 	})
