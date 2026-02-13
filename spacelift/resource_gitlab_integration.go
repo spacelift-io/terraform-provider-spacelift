@@ -146,9 +146,9 @@ func resourceGitLabIntegration() *schema.Resource {
 }
 
 func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	token, digas := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
-	if digas != nil {
-		return digas
+	token, diags := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
+	if diags != nil {
+		return diags
 	}
 
 	var mutation struct {
@@ -199,9 +199,9 @@ func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, 
 }
 
 func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	token, digas := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
-	if digas != nil {
-		return digas
+	token, diags := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
+	if diags != nil {
+		return diags
 	}
 
 	var mutation struct {
