@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,12 +25,30 @@ func resourceTemplateVersion() *schema.Resource {
 		DeleteContext: resourceTemplateVersionDelete,
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+
+			oldState, newState := diff.GetChange("state")
+			rawTemplate, ok := diff.Get("template").(string)
+			if ok && rawTemplate != "" && diff.HasChange("template") && newState == "PUBLISHED" {
+				var mutation struct {
+					BlueprintVersionParseTemplate struct {
+						Errors []string `graphql:"errors"`
+					} `graphql:"blueprintVersionParseTemplate(template: $template)"`
+				}
+				if err := meta.(*internal.Client).Mutate(ctx, "ValidateBlueprintVersionTemplate", &mutation, map[string]any{
+					"template": graphql.String(rawTemplate),
+				}); err != nil {
+					return fmt.Errorf("unable to validate template: %v", err)
+				}
+				if len(mutation.BlueprintVersionParseTemplate.Errors) > 0 {
+					return fmt.Errorf("template is invalid:\n - %s", strings.Join(mutation.BlueprintVersionParseTemplate.Errors, "\n - "))
+				}
+			}
+
 			// Only validate on updates (not creates)
 			if diff.Id() == "" {
 				return nil
 			}
 
-			oldState, newState := diff.GetChange("state")
 			if oldState == "PUBLISHED" && oldState != newState {
 				return fmt.Errorf("cannot change the state of a published template version")
 			}
