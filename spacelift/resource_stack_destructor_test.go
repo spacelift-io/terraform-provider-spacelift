@@ -79,12 +79,15 @@ func TestDestroyStackDestructor(t *testing.T) {
 
 			resource "spacelift_run" "test" {
 				stack_id = spacelift_stack.test.id
-				keepers = {
-					"test": "value"
+				wait {
+					continue_on_state = ["unconfirmed"]
 				}
 			}
 
 			resource "spacelift_stack_destructor" "test" {
+				depends_on = [
+					spacelift_run.test,
+				]
 				stack_id     = spacelift_stack.test.id
 				discard_runs = true
 			}
