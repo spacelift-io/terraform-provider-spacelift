@@ -6,6 +6,8 @@ updates:
       interval: daily
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      - dependency-name: "securego/gosec"
     groups:
       actions:
         patterns:
