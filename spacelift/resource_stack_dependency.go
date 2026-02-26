@@ -170,7 +170,7 @@ func resourceStackDependencyFetch(ctx context.Context, meta any, variables map[s
 	}
 
 	if query.Stack == nil {
-		return nil, fmt.Errorf("stack not found")
+		return nil, nil
 	}
 
 	return query.Stack.Dependency, nil
