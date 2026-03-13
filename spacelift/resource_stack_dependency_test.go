@@ -84,9 +84,9 @@ func TestStackDependencyResource(t *testing.T) {
 				Config: config(),
 			},
 			{
-				ResourceName:  resourceName,
-				ImportState:   true,
-				ImportStateId: fmt.Sprintf("my-first-stack-%s/my-second-stack-%s", randomID, randomID),
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateId:     fmt.Sprintf("my-first-stack-%s/my-second-stack-%s", randomID, randomID),
 				ImportStateVerify: true,
 			},
 		})
