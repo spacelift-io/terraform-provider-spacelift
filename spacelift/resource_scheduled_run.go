@@ -357,7 +357,7 @@ func parseScheduledRunInput(d *schema.ResourceData) (*structs.ScheduledRunInput,
 
 	name, ok := d.GetOk("name")
 	if ok && name != nil {
-		cfg.Name = *new(toString(name))
+		cfg.Name = toString(name)
 	}
 
 	runtimeConfig, ok := d.Get("runtime_config").([]any)
