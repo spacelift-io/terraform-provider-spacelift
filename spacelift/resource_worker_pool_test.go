@@ -183,7 +183,7 @@ func TestWorkerPoolResource(t *testing.T) {
 
 	t.Run("with drift detection default behavior", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -204,7 +204,7 @@ func TestWorkerPoolResource(t *testing.T) {
 
 	t.Run("with drift detection set to zero", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -226,7 +226,7 @@ func TestWorkerPoolResource(t *testing.T) {
 
 	t.Run("with drift detection negative values", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
