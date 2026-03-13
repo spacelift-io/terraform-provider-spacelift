@@ -49,12 +49,12 @@ func resourceStackDependency() *schema.Resource {
 
 }
 
-func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		StackDependency structs.StackDependency `graphql:"stackDependencyCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{"input": stackDependencyCreateInput(d)}
+	variables := map[string]any{"input": stackDependencyCreateInput(d)}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDependencyCreate", &query, variables); err != nil {
 		return diag.Errorf("could not create stack dependency: %s", err)
@@ -65,7 +65,7 @@ func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceStackDependencyRead(ctx, d, meta)
 }
 
-func resourceStackDependencyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDependencyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		StackDependency *structs.StackDependency `graphql:"stackDependencyDelete(id: $id)"`
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
-	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -216,7 +215,7 @@ func resourceScheduledRun() *schema.Resource {
 	}
 }
 
-func resourceScheduledRunCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledRunCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	parsedScheduledRun, err := parseScheduledRunInput(d)
 	if err != nil {
 		return diag.Errorf("could not extract scheduled run: %s", err)
@@ -226,7 +225,7 @@ func resourceScheduledRunCreate(ctx context.Context, d *schema.ResourceData, met
 		CreateRunSchedule structs.ScheduledRun `graphql:"stackScheduledRunCreate(stack: $stack, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(d.Get("stack_id").(string)),
 		"input": *parsedScheduledRun,
 	}
@@ -240,7 +239,7 @@ func resourceScheduledRunCreate(ctx context.Context, d *schema.ResourceData, met
 	return resourceScheduledRunRead(ctx, d, meta)
 }
 
-func resourceScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var err error
 
 	idParts := strings.SplitN(d.Id(), "/", 2)
@@ -264,7 +263,7 @@ func resourceScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta 
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(stackID),
 		"id":    toID(scheduleID),
 	}
@@ -285,7 +284,7 @@ func resourceScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceScheduledRunUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledRunUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	scheduledRun, err := parseScheduledRunInput(d)
 	if err != nil {
 		return diag.Errorf("could not extract scheduled run: %s", err)
@@ -310,7 +309,7 @@ func resourceScheduledRunUpdate(ctx context.Context, d *schema.ResourceData, met
 		UpdateRunSchedule structs.ScheduledRun `graphql:"stackScheduledRunUpdate(stack: $stack, scheduledRun: $scheduledRun, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack":        toID(stackID),
 		"scheduledRun": toID(scheduleID),
 		"input":        *scheduledRun,
@@ -323,7 +322,7 @@ func resourceScheduledRunUpdate(ctx context.Context, d *schema.ResourceData, met
 	return resourceScheduledRunRead(ctx, d, meta)
 }
 
-func resourceScheduledRunDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledRunDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var err error
 
 	idParts := strings.SplitN(d.Id(), "/", 2)
@@ -341,7 +340,7 @@ func resourceScheduledRunDelete(ctx context.Context, d *schema.ResourceData, met
 		DeleteRunSchedule structs.ScheduledRun `graphql:"stackScheduledRunDelete(stack: $stack, scheduledRun: $scheduledRun)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledRunDelete", &mutation, map[string]interface{}{
+	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledRunDelete", &mutation, map[string]any{
 		"stack":        toID(stackID),
 		"scheduledRun": toID(scheduleID),
 	}); err != nil {
@@ -358,16 +357,16 @@ func parseScheduledRunInput(d *schema.ResourceData) (*structs.ScheduledRunInput,
 
 	name, ok := d.GetOk("name")
 	if ok && name != nil {
-		cfg.Name = *graphql.NewString(toString(name))
+		cfg.Name = *new(toString(name))
 	}
 
-	runtimeConfig, ok := d.Get("runtime_config").([]interface{})
+	runtimeConfig, ok := d.Get("runtime_config").([]any)
 	if ok && len(runtimeConfig) > 0 {
-		mapped := runtimeConfig[0].(map[string]interface{})
+		mapped := runtimeConfig[0].(map[string]any)
 
 		environment := []structs.EnvVarInput{}
 		for _, e := range mapped["environment"].(*schema.Set).List() {
-			envMap := e.(map[string]interface{})
+			envMap := e.(map[string]any)
 			environment = append(environment, structs.EnvVarInput{
 				Key:   toString(envMap["key"]),
 				Value: toString(envMap["value"]),

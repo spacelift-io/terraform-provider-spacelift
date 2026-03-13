@@ -88,11 +88,11 @@ func dataAWSIntegrations() *schema.Resource {
 	}
 }
 
-func dataAWSIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAWSIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Integrations []*structs.AWSIntegration `graphql:"awsIntegrations()"`
 	}
-	variables := map[string]interface{}{}
+	variables := map[string]any{}
 
 	if err := meta.(*internal.Client).Query(ctx, "AwsIntegrationsRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for AWS integrations: %v", err)
@@ -115,8 +115,8 @@ func dataAWSIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func flattenDataIntegrationsList(integrations []*structs.AWSIntegration) []map[string]interface{} {
-	mapped := make([]map[string]interface{}, len(integrations))
+func flattenDataIntegrationsList(integrations []*structs.AWSIntegration) []map[string]any {
+	mapped := make([]map[string]any, len(integrations))
 
 	for index, integration := range integrations {
 		integrationToMap := integration.ToMap()

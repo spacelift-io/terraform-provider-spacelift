@@ -61,11 +61,11 @@ func dataContexts() *schema.Resource {
 	}
 }
 
-func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Contexts []*structs.Context `graphql:"contexts()"`
 	}
-	variables := map[string]interface{}{}
+	variables := map[string]any{}
 
 	if err := meta.(*internal.Client).Query(ctx, "ContextsRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for contexts: %v", err)
@@ -81,14 +81,14 @@ func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	var labelFilters [][]string
 
-	for _, labelFilter := range d.Get("labels").([]interface{}) {
-		possibleValues := labelFilter.(map[string]interface{})["any_of"]
+	for _, labelFilter := range d.Get("labels").([]any) {
+		possibleValues := labelFilter.(map[string]any)["any_of"]
 		if possibleValues == nil {
 			continue
 		}
 
 		var labels []string
-		for _, label := range possibleValues.([]interface{}) {
+		for _, label := range possibleValues.([]any) {
 			labels = append(labels, label.(string))
 		}
 
@@ -104,15 +104,15 @@ func dataContextsRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func flattenDataContextsList(contexts []*structs.Context, labelFilters [][]string) []map[string]interface{} {
-	wps := []map[string]interface{}{}
+func flattenDataContextsList(contexts []*structs.Context, labelFilters [][]string) []map[string]any {
+	wps := []map[string]any{}
 
 	for _, ctx := range contexts {
 		if !matchesLabels(ctx.Labels, labelFilters) {
 			continue
 		}
 
-		wps = append(wps, map[string]interface{}{
+		wps = append(wps, map[string]any{
 			"context_id":  ctx.ID,
 			"description": ctx.Description,
 			"labels":      ctx.Labels,

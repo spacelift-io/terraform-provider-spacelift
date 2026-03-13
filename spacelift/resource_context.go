@@ -160,7 +160,7 @@ func resourceContext() *schema.Resource {
 	}
 }
 
-func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateContext structs.Context `graphql:"contextCreateV2(input: $input)"`
 	}
@@ -188,7 +188,7 @@ func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta int
 		input.Labels = &labels
 	}
 
-	variables := map[string]interface{}{"input": input}
+	variables := map[string]any{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create context: %v", internal.FromSpaceliftError(err))
@@ -199,12 +199,12 @@ func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta int
 	return resourceContextRead(ctx, d, meta)
 }
 
-func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Context *structs.Context `graphql:"context(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "ContextRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for context: %v", err)
 	}
@@ -221,7 +221,7 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta inter
 		d.Set("description", *description)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range context.Labels {
 		labels.Add(label)
 	}
@@ -243,7 +243,7 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateContext structs.Context `graphql:"contextUpdateV2(id: $id, input: $input)"`
 	}
@@ -273,7 +273,7 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	var ret diag.Diagnostics
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Id()),
 		"input": input,
 	}
@@ -287,12 +287,12 @@ func resourceContextUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	return ret
 }
 
-func resourceContextDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteContext *structs.Context `graphql:"contextDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete context: %v", internal.FromSpaceliftError(err))
@@ -323,7 +323,7 @@ func gqlStringList(d *schema.ResourceData, key string) []graphql.String {
 	ret := []graphql.String{}
 
 	if list, ok := d.GetOk(key); ok {
-		for _, item := range list.([]interface{}) {
+		for _, item := range list.([]any) {
 			ret = append(ret, graphql.String(item.(string)))
 		}
 	}

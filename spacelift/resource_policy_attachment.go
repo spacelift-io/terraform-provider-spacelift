@@ -58,14 +58,14 @@ func resourcePolicyAttachment() *schema.Resource {
 	}
 }
 
-func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AttachPolicy structs.PolicyAttachment `graphql:"policyAttach(id: $id, stack: $stack)"`
 	}
 
 	policyID := d.Get("policy_id").(string)
 
-	variables := map[string]interface{}{"id": toID(policyID)}
+	variables := map[string]any{"id": toID(policyID)}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		if err := verifyStack(ctx, stackID.(string), meta); err != nil {
@@ -91,7 +91,7 @@ func resourcePolicyAttachmentCreate(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourcePolicyAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	policyID := d.Get("policy_id").(string)
 
 	var projectID string
@@ -111,7 +111,7 @@ func resourcePolicyAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	variables, err := resourcePolicyAttachmentVariables(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -130,7 +130,7 @@ func resourcePolicyAttachmentDelete(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourcePolicyAttachmentImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourcePolicyAttachmentImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	input := d.Id()
 
 	parts := strings.Split(input, "/")
@@ -159,23 +159,23 @@ func resourcePolicyAttachmentImport(ctx context.Context, d *schema.ResourceData,
 	return []*schema.ResourceData{d}, nil
 }
 
-func resourcePolicyAttachmentVariables(d *schema.ResourceData) (map[string]interface{}, error) {
+func resourcePolicyAttachmentVariables(d *schema.ResourceData) (map[string]any, error) {
 	idParts := strings.Split(d.Id(), "/")
 	if len(idParts) != 2 {
 		return nil, errors.Errorf("unexpected ID: %s", d.Id())
 	}
 
-	return map[string]interface{}{"id": toID(idParts[1])}, nil
+	return map[string]any{"id": toID(idParts[1])}, nil
 }
 
-func resourcePolicyAttachmentFetch(ctx context.Context, policyID, projectID string, meta interface{}) (*structs.PolicyAttachment, error) {
+func resourcePolicyAttachmentFetch(ctx context.Context, policyID, projectID string, meta any) (*structs.PolicyAttachment, error) {
 	var query struct {
 		Policy *struct {
 			Attachment *structs.PolicyAttachment `graphql:"attachedStack(id: $id)"`
 		} `graphql:"policy(id: $policy)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"policy": policyID,
 		"id":     toID(projectID),
 	}

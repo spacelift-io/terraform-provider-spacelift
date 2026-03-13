@@ -72,7 +72,7 @@ func dataSavedFilters() *schema.Resource {
 	}
 }
 
-func dataFiltersRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataFiltersRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Filters []structs.SavedFilter `graphql:"savedFilters(type: $type)"`
 	}
@@ -84,7 +84,7 @@ func dataFiltersRead(ctx context.Context, d *schema.ResourceData, meta interface
 	nameRaw, nameSpecified := d.GetOk("filter_name")
 	requestedName := nameRaw.(string)
 
-	variables := map[string]interface{}{"type": (*graphql.String)(nil)}
+	variables := map[string]any{"type": (*graphql.String)(nil)}
 	if typeSpecified {
 		variables["type"] = toString(requestedType)
 	}
@@ -93,12 +93,12 @@ func dataFiltersRead(ctx context.Context, d *schema.ResourceData, meta interface
 		return diag.Errorf("could not query for filters: %v", err)
 	}
 
-	var filters []interface{}
+	var filters []any
 	for _, filter := range query.Filters {
 		if nameSpecified && filter.Name != requestedName {
 			continue
 		}
-		filters = append(filters, map[string]interface{}{
+		filters = append(filters, map[string]any{
 			"id":         filter.ID,
 			"is_public":  filter.IsPublic,
 			"name":       filter.Name,

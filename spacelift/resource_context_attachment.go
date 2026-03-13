@@ -62,14 +62,14 @@ func resourceContextAttachment() *schema.Resource {
 	}
 }
 
-func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AttachContext structs.ContextAttachment `graphql:"contextAttach(id: $id, stack: $stack, priority: $priority)"`
 	}
 
 	contextID := d.Get("context_id").(string)
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":       toID(contextID),
 		"priority": graphql.Int(d.Get("priority").(int)), //nolint:gosec // safe: value known to fit in int32
 	}
@@ -97,7 +97,7 @@ func resourceContextAttachmentCreate(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	contextID := d.Get("context_id").(string)
 	var projectID string
 
@@ -118,7 +118,7 @@ func resourceContextAttachmentRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	idParts := strings.Split(d.Id(), "/")
 	if len(idParts) != 2 {
 		return diag.Errorf("unexpected ID: %s", d.Id())
@@ -128,7 +128,7 @@ func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData
 		DetachContext *structs.ContextAttachment `graphql:"contextDetach(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(idParts[1])}
+	variables := map[string]any{"id": toID(idParts[1])}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ContextAttachmentDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not detach context: %v", internal.FromSpaceliftError(err))
@@ -139,7 +139,7 @@ func resourceContextAttachmentDelete(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceContextAttachmentImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceContextAttachmentImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	input := d.Id()
 
 	parts := strings.Split(input, "/")
@@ -168,14 +168,14 @@ func resourceContextAttachmentImport(ctx context.Context, d *schema.ResourceData
 	return []*schema.ResourceData{d}, nil
 }
 
-func resourceContextAttachmentFetch(ctx context.Context, contextID, projectID string, meta interface{}) (*structs.ContextAttachment, error) {
+func resourceContextAttachmentFetch(ctx context.Context, contextID, projectID string, meta any) (*structs.ContextAttachment, error) {
 	var query struct {
 		Context *struct {
 			Attachment *structs.ContextAttachment `graphql:"attachedStack(id: $project)"`
 		} `graphql:"context(id: $context)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"context": contextID,
 		"project": toID(projectID),
 	}

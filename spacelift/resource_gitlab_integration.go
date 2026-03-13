@@ -21,7 +21,7 @@ func resourceGitLabIntegration() *schema.Resource {
 		UpdateContext: resourceGitLabIntegrationUpdate,
 		DeleteContext: resourceGitLabIntegrationDelete,
 
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 			if diff.HasChange(gitLabIsDefault) {
 				isDefault := diff.Get(gitLabIsDefault).(bool)
 				spaceID := diff.Get(gitLabSpaceID).(string)
@@ -145,7 +145,7 @@ func resourceGitLabIntegration() *schema.Resource {
 	}
 }
 
-func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	token, diags := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
 	if diags != nil {
 		return diags
@@ -155,7 +155,7 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 		CreateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $token, customInput: $customInput)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"customInput": &vcs.CustomVCSInput{
 			Name:           toString(d.Get(gitLabName)),
 			IsDefault:      toOptionalBool(d.Get(gitLabIsDefault)),
@@ -179,12 +179,12 @@ func resourceGitLabIntegrationCreate(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		GitLabIntegration *structs.GitLabIntegration `graphql:"gitlabIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": d.Id()}
+	variables := map[string]any{"id": d.Id()}
 	if err := meta.(*internal.Client).Query(ctx, "GitLabIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the gitlab integration: %v", err)
 	}
@@ -198,7 +198,7 @@ func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	token, diags := internal.ExtractWriteOnlyField(gitLabToken, gitLabTokenWo, gitLabTokenWoVersion, d)
 	if diags != nil {
 		return diags
@@ -208,7 +208,7 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 		UpdateGitLabIntegration structs.GitLabIntegration `graphql:"gitlabIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, privateToken: $privateToken, customInput: $customInput)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"privateToken":   toOptionalString(token),
 		"apiHost":        toString(d.Get(gitLabAPIHost)),
 		"userFacingHost": toString(d.Get(gitLabUserFacingHost)),
@@ -233,12 +233,12 @@ func resourceGitLabIntegrationUpdate(ctx context.Context, d *schema.ResourceData
 	return ret
 }
 
-func resourceGitLabIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGitLabIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteGitLabIntegration *structs.GitLabIntegration `graphql:"gitlabIntegrationDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(d.Id()),
 	}
 
@@ -264,7 +264,7 @@ func fillGitLabIntegrationResults(d *schema.ResourceData, gitLabIntegration *str
 	d.Set(gitLabVCSChecks, gitLabIntegration.VCSChecks)
 	d.Set(gitLabUseGitCheckout, gitLabIntegration.UseGitCheckout)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range gitLabIntegration.Labels {
 		labels.Add(label)
 	}

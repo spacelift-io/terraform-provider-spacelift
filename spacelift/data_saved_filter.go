@@ -56,7 +56,7 @@ func dataSavedFilter() *schema.Resource {
 	}
 }
 
-func dataFilterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataFilterRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Filter *struct {
 			ID        string `graphql:"id"`
@@ -69,7 +69,7 @@ func dataFilterRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 
 	id := d.Get("filter_id")
-	variables := map[string]interface{}{"id": id}
+	variables := map[string]any{"id": id}
 
 	if err := meta.(*internal.Client).Query(ctx, "savedFilter", &query, variables); err != nil {
 		return diag.Errorf("could not query for filter: %v", err)

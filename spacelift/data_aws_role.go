@@ -80,7 +80,7 @@ func dataAWSRole() *schema.Resource {
 	}
 }
 
-func dataAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
 		return dataModuleAWSRoleRead(ctx, d, meta)
 	}
@@ -88,13 +88,13 @@ func dataAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface
 	return dataStackAWSRoleRead(ctx, d, meta)
 }
 
-func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	moduleID := d.Get("module_id")
-	variables := map[string]interface{}{"id": toID(moduleID)}
+	variables := map[string]any{"id": toID(moduleID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "ModuleAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
@@ -120,13 +120,13 @@ func dataModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	stackID := d.Get("stack_id")
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)

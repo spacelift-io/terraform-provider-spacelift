@@ -55,14 +55,14 @@ func dataSpace() *schema.Resource {
 	}
 }
 
-func dataSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Space *structs.Space `graphql:"space(id: $id)"`
 	}
 
 	spaceID := d.Get("space_id")
 
-	variables := map[string]interface{}{"id": toID(spaceID)}
+	variables := map[string]any{"id": toID(spaceID)}
 	if err := meta.(*internal.Client).Query(ctx, "SpaceRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for space: %v", err)
 	}
@@ -77,7 +77,7 @@ func dataSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	d.Set("description", space.Description)
 	d.Set("inherit_entities", space.InheritEntities)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range space.Labels {
 		labels.Add(label)
 	}

@@ -46,11 +46,11 @@ func dataVCSAgentPools() *schema.Resource {
 	}
 }
 
-func dataVCSAgentPoolsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataVCSAgentPoolsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		VCSAgentPools []*structs.VCSAgentPool `graphql:"vcsAgentPools()"`
 	}
-	variables := map[string]interface{}{}
+	variables := map[string]any{}
 
 	if err := meta.(*internal.Client).Query(ctx, "VCSAgentPoolsRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for VCS Agent pools: %v", err)
@@ -73,8 +73,8 @@ func dataVCSAgentPoolsRead(ctx context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func flattenDataVCSAgentPoolsList(vcsAgentPools []*structs.VCSAgentPool) []map[string]interface{} {
-	out := make([]map[string]interface{}, len(vcsAgentPools))
+func flattenDataVCSAgentPoolsList(vcsAgentPools []*structs.VCSAgentPool) []map[string]any {
+	out := make([]map[string]any, len(vcsAgentPools))
 
 	for index, ap := range vcsAgentPools {
 		var description *string
@@ -85,7 +85,7 @@ func flattenDataVCSAgentPoolsList(vcsAgentPools []*structs.VCSAgentPool) []map[s
 			description = nil
 		}
 
-		out[index] = map[string]interface{}{
+		out[index] = map[string]any{
 			"vcs_agent_pool_id": ap.ID,
 			"name":              ap.Name,
 			"description":       description,

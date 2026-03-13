@@ -67,8 +67,8 @@ func resourceUser() *schema.Resource {
 	}
 }
 
-func userPolicyHash(v interface{}) int {
-	m, ok := v.(map[string]interface{})
+func userPolicyHash(v any) int {
+	m, ok := v.(map[string]any)
 	if !ok {
 		return 0
 	}
@@ -80,7 +80,7 @@ func userPolicyHash(v interface{}) int {
 	return schema.HashString(key)
 }
 
-func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i any) diag.Diagnostics {
 	// send an Invite (create) mutation to the API
 	var mutation struct {
 		User *structs.User `graphql:"managedUserInvite(input: $input)"`
@@ -95,7 +95,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface
 		return diag.Errorf("invitation_email is required for new users")
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.ManagedUserInviteInput{
 			InvitationEmail: email,
 			Username:        toString(d.Get("username")),
@@ -113,12 +113,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, i interface
 	return resourceUserRead(ctx, d, i)
 }
 
-func resourceUserRead(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, i any) diag.Diagnostics {
 	// send a read query to the API
 	var query struct {
 		User *structs.User `graphql:"managedUser(id: $id)"`
 	}
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 	if err := i.(*internal.Client).Query(ctx, "ManagedUser", &query, variables); err != nil {
 		return diag.Errorf("could not query for user mapping: %v", err)
 	}
@@ -132,9 +132,9 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, i interface{}
 	// if found, update the TF state
 	d.Set("invitation_email", query.User.InvitationEmail)
 	d.Set("username", query.User.Username)
-	var accessList []interface{}
+	var accessList []any
 	for _, a := range query.User.AccessRules {
-		accessList = append(accessList, map[string]interface{}{
+		accessList = append(accessList, map[string]any{
 			"space_id": a.Space,
 			"role":     a.SpaceAccessLevel,
 		})
@@ -144,7 +144,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, i interface{}
 	return nil
 }
 
-func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i any) diag.Diagnostics {
 	// input validation
 	if d.HasChange("invitation_email") {
 		return diag.Errorf("invitation_email cannot be changed")
@@ -159,7 +159,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i interface
 	var mutation struct {
 		User *structs.User `graphql:"managedUserUpdate(input: $input)"`
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.ManagedUserUpdateInput{
 			ID:          toID(d.Id()),
 			AccessRules: getAccessRules(d),
@@ -175,12 +175,12 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, i interface
 	return ret
 }
 
-func resourceUserDelete(ctx context.Context, d *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, i any) diag.Diagnostics {
 	// send a delete query to the API
 	var mutation struct {
 		User *structs.User `graphql:"managedUserDelete(id: $id)"`
 	}
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 	if err := i.(*internal.Client).Mutate(ctx, "ManagedUserDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete user mapping %s: %v", d.Id(), internal.FromSpaceliftError(err))
 	}

@@ -109,7 +109,7 @@ func dataTemplateDeployment() *schema.Resource {
 	}
 }
 
-func dataTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	templateID := d.Get("template_id").(string)
 	deploymentID := d.Get("deployment_id").(string)
 
@@ -117,7 +117,7 @@ func dataTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, met
 		TemplateDeployment *structs.TemplateDeployment `graphql:"blueprintDeployment(id: $id, blueprintID: $blueprintID)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":          toID(deploymentID),
 		"blueprintID": toID(templateID),
 	}
@@ -150,9 +150,9 @@ func dataTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// Set input values
-	inputList := make([]map[string]interface{}, len(deployment.Inputs))
+	inputList := make([]map[string]any, len(deployment.Inputs))
 	for i, input := range deployment.Inputs {
-		in := map[string]interface{}{
+		in := map[string]any{
 			"id":       input.ID,
 			"value":    input.Value,
 			"secret":   input.Secret,

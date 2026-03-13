@@ -72,12 +72,12 @@ func resourceTemplate() *schema.Resource {
 	}
 }
 
-func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		BlueprintVersionedGroup structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroupCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": templateCreateInput(d),
 	}
 
@@ -90,12 +90,12 @@ func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta in
 	return resourceTemplateRead(ctx, d, meta)
 }
 
-func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		BlueprintVersionedGroup *structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroup(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": graphql.ID(d.Id()),
 	}
 
@@ -120,7 +120,7 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta inte
 		d.Set("description", *query.BlueprintVersionedGroup.Description)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range query.BlueprintVersionedGroup.Labels {
 		labels.Add(label)
 	}
@@ -129,12 +129,12 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		BlueprintVersionedGroup structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroupUpdate(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    graphql.ID(d.Id()),
 		"input": templateUpdateInput(d),
 	}
@@ -146,12 +146,12 @@ func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	return resourceTemplateRead(ctx, d, meta)
 }
 
-func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		BlueprintVersionedGroup *structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroupDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": graphql.ID(d.Id()),
 	}
 

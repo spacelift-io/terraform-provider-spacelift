@@ -109,11 +109,11 @@ func dataAzureIntegrations() *schema.Resource {
 	}
 }
 
-func dataAzureIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAzureIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AzureIntegrations []*structs.AzureIntegration `graphql:"azureIntegrations()"`
 	}
-	if err := meta.(*internal.Client).Query(ctx, "azureIntegrations", &query, map[string]interface{}{}); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "azureIntegrations", &query, map[string]any{}); err != nil {
 		return diag.Errorf("could not query for azure integrations: %v", err)
 	}
 
@@ -134,8 +134,8 @@ func dataAzureIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func flattenDataAzureIntegrationsList(integrations []*structs.AzureIntegration) []map[string]interface{} {
-	mapped := make([]map[string]interface{}, len(integrations))
+func flattenDataAzureIntegrationsList(integrations []*structs.AzureIntegration) []map[string]any {
+	mapped := make([]map[string]any, len(integrations))
 
 	for index, integration := range integrations {
 		integrationToMap := integration.ToMap()

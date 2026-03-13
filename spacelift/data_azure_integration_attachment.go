@@ -66,7 +66,7 @@ func dataAzureIntegrationAttachment() *schema.Resource {
 	}
 }
 
-func dataAzureIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAzureIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AzureIntegration *struct {
 			Attachment *structs.AzureIntegrationAttachment `graphql:"attachedStack(id: $projectId)"`
@@ -76,7 +76,7 @@ func dataAzureIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceD
 	integrationID := toID(d.Get("integration_id"))
 	projectID := toID(projectID(d))
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"integrationId": integrationID,
 		"projectId":     projectID,
 	}

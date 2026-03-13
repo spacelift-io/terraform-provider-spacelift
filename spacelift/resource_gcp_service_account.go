@@ -76,7 +76,7 @@ func resourceGCPServiceAccount() *schema.Resource {
 	}
 }
 
-func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateGCPIntegration struct {
 			Activated bool `graphql:"activated"`
@@ -104,7 +104,7 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 		ID = moduleID
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":          toID(ID),
 		"tokenScopes": tokenScopes,
 	}
@@ -124,7 +124,7 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 	return resourceGCPServiceAccountRead(ctx, d, meta)
 }
 
-func resourceGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
 		return resourceModuleGCPServiceAccountReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
 			d.SetId("")
@@ -138,14 +138,14 @@ func resourceGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, 
 	})
 }
 
-func resourceGCPServiceAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGCPServiceAccountDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteGCPIntegration struct {
 			Activated bool `graphql:"activated"`
 		} `graphql:"stackIntegrationGcpDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "GCPServiceAccountDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack GCP service account: %v", err)
@@ -160,12 +160,12 @@ func resourceGCPServiceAccountDelete(ctx context.Context, d *schema.ResourceData
 	return nil
 }
 
-func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta interface{}, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
+func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta any, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "ModuleGCPServiceAccountRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
@@ -184,7 +184,7 @@ func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema
 
 	d.Set("service_account_email", *serviceAccountEmail)
 
-	tokenScopes := schema.NewSet(schema.HashString, []interface{}{})
+	tokenScopes := schema.NewSet(schema.HashString, []any{})
 	for _, scope := range integration.TokenScopes {
 		tokenScopes.Add(scope)
 	}
@@ -193,12 +193,12 @@ func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema
 	return nil
 }
 
-func resourceStackGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta interface{}, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
+func resourceStackGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta any, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackGCPServiceAccountRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
@@ -217,7 +217,7 @@ func resourceStackGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.
 
 	d.Set("service_account_email", *serviceAccountEmail)
 
-	tokenScopes := schema.NewSet(schema.HashString, []interface{}{})
+	tokenScopes := schema.NewSet(schema.HashString, []any{})
 	for _, scope := range integration.TokenScopes {
 		tokenScopes.Add(scope)
 	}

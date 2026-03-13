@@ -62,7 +62,7 @@ func dataRole() *schema.Resource {
 	}
 }
 
-func dataRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	filterToRoleID := d.Get("role_id").(string)
 	filterToRoleSlug := d.Get("slug").(string)
 
@@ -114,7 +114,7 @@ func dataRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("description", role.Description)
 	d.Set("is_system", role.IsSystem)
 
-	actions := schema.NewSet(schema.HashString, []interface{}{})
+	actions := schema.NewSet(schema.HashString, []any{})
 	for _, action := range role.Actions {
 		actions.Add(string(action))
 	}

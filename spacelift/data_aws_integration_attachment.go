@@ -58,7 +58,7 @@ func dataAWSIntegrationAttachment() *schema.Resource {
 	}
 }
 
-func dataAWSIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAWSIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AWSIntegration *struct {
 			Attachment *structs.AWSIntegrationAttachment `graphql:"attachedStack(id: $projectId)"`
@@ -68,7 +68,7 @@ func dataAWSIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceDat
 	integrationID := toID(d.Get("integration_id"))
 	projectID := toID(projectID(d))
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"integrationId": integrationID,
 		"projectId":     projectID,
 	}

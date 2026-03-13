@@ -55,13 +55,13 @@ func dataIdpGroupMapping() *schema.Resource {
 	}
 }
 
-func dataIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	name := d.Get("name").(string)
 
 	var query struct {
 		UserGroups []structs.UserGroup `graphql:"managedUserGroups"`
 	}
-	if err := meta.(*internal.Client).Query(ctx, "ManagedUserGroupsRead", &query, map[string]interface{}{}); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ManagedUserGroupsRead", &query, map[string]any{}); err != nil {
 		return diag.Errorf("could not query for IdP group mappings: %v", err)
 	}
 
@@ -80,9 +80,9 @@ func dataIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta i
 	d.SetId(userGroup.ID)
 	d.Set("description", userGroup.Description)
 
-	var accessList []interface{}
+	var accessList []any
 	for _, a := range userGroup.AccessRules {
-		accessList = append(accessList, map[string]interface{}{
+		accessList = append(accessList, map[string]any{
 			"space_id": a.Space,
 			"role":     a.SpaceAccessLevel,
 		})

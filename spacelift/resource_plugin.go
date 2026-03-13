@@ -85,7 +85,7 @@ func resourcePlugin() *schema.Resource {
 	}
 }
 
-func resourcePluginCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePluginCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		InstallPlugin structs.Plugin `graphql:"pluginInstall(input: $input)"`
 	}
@@ -101,7 +101,7 @@ func resourcePluginCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		PluginTemplate *structs.PluginTemplate `graphql:"pluginTemplate(id: $id)"`
 	}
 
-	templateVars := map[string]interface{}{"id": toID(d.Get("plugin_template_id"))}
+	templateVars := map[string]any{"id": toID(d.Get("plugin_template_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "PluginTemplateReadForParams", &templateQuery, templateVars); err != nil {
 		return diag.Errorf("could not query for plugin template: %v", err)
 	}
@@ -111,11 +111,11 @@ func resourcePluginCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// Get user-provided parameters (may be empty)
-	var params map[string]interface{}
+	var params map[string]any
 	if parametersMap, ok := d.GetOk("parameters"); ok {
-		params = parametersMap.(map[string]interface{})
+		params = parametersMap.(map[string]any)
 	} else {
-		params = make(map[string]interface{})
+		params = make(map[string]any)
 	}
 
 	// Build a map of valid template parameter IDs for validation
@@ -172,7 +172,7 @@ func resourcePluginCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		input.Labels = &labels
 	}
 
-	variables := map[string]interface{}{"input": input}
+	variables := map[string]any{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PluginInstall", &mutation, variables); err != nil {
 		return diag.Errorf("could not install plugin: %v", internal.FromSpaceliftError(err))
@@ -183,12 +183,12 @@ func resourcePluginCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	return resourcePluginRead(ctx, d, meta)
 }
 
-func resourcePluginRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePluginRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Plugin *structs.Plugin `graphql:"plugin(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "PluginRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for plugin: %v", err)
 	}
@@ -203,7 +203,7 @@ func resourcePluginRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("name", plugin.Name)
 	d.Set("stack_label", plugin.LabelIdentifier)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range plugin.Labels {
 		labels.Add(label)
 	}
@@ -217,12 +217,12 @@ func resourcePluginRead(ctx context.Context, d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourcePluginDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePluginDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeletePlugin *structs.Plugin `graphql:"pluginDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PluginDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete plugin: %v", internal.FromSpaceliftError(err))

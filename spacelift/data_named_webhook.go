@@ -72,13 +72,13 @@ func dataNamedWebhook() *schema.Resource {
 	}
 }
 
-func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Webhook *structs.NamedWebhooksIntegration `graphql:"namedWebhooksIntegration(id: $id)"`
 	}
 
 	webhookID := d.Get("webhook_id").(string)
-	variables := map[string]interface{}{"id": toID(webhookID)}
+	variables := map[string]any{"id": toID(webhookID)}
 	if err := meta.(*internal.Client).Query(ctx, "GetNamedWebhook", &query, variables); err != nil {
 		return diag.Errorf("could not query for named webhook: %v", err)
 	}
@@ -95,13 +95,13 @@ func dataNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("space_id", wh.Space.ID)
 	d.Set("retry_on_failure", wh.RetryOnFailure)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range wh.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
-	shk := schema.NewSet(schema.HashString, []interface{}{})
+	shk := schema.NewSet(schema.HashString, []any{})
 	for _, key := range wh.SecretHeaders {
 		shk.Add(key)
 	}

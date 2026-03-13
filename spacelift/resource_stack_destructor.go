@@ -63,17 +63,17 @@ func resourceStackDestructor() *schema.Resource {
 	}
 }
 
-func resourceStackDestructorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDestructorCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	d.SetId(fmt.Sprintf("destructor-%d", time.Now().Unix()))
 	return resourceStackDestructorRead(ctx, d, meta)
 }
 
-func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Get("stack_id"))}
+	variables := map[string]any{"id": graphql.ID(d.Get("stack_id"))}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackDestructorRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
@@ -86,14 +86,14 @@ func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDestructorDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if deactivated := d.Get("deactivated"); deactivated != nil && deactivated.(bool) {
 		d.SetId("")
 		return nil
 	}
 
 	stackID := d.Get("stack_id").(string)
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 
 	if discardRuns := d.Get("discard_runs"); discardRuns != nil && discardRuns.(bool) {
 		var mutation struct {
@@ -156,7 +156,7 @@ func waitForStackUnblocked(ctx context.Context, client *internal.Client, id stri
 			} `graphql:"stack(id: $id)"`
 		}
 
-		variables := map[string]interface{}{"id": graphql.ID(id)}
+		variables := map[string]any{"id": graphql.ID(id)}
 
 		if err := client.Query(ctx, "StackCheckBlocker", &query, variables); err != nil {
 			return diag.Errorf("could not query for stack %s blocker status: %v", id, err)
@@ -190,7 +190,7 @@ func waitForDestroy(ctx context.Context, client *internal.Client, id string) dia
 			Stack *structs.Stack `graphql:"stack(id: $id)"`
 		}
 
-		variables := map[string]interface{}{"id": graphql.ID(id)}
+		variables := map[string]any{"id": graphql.ID(id)}
 
 		if err := client.Query(ctx, "StackCheckState", &query, variables); err != nil {
 			return diag.Errorf("could not query for stack %s: %v", id, err)

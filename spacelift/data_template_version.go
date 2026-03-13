@@ -76,7 +76,7 @@ func dataTemplateVersion() *schema.Resource {
 	}
 }
 
-func dataTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	templateID := d.Get("template_id").(string)
 	versionID := d.Get("version_id").(string)
 
@@ -86,7 +86,7 @@ func dataTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta i
 		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"templateId": graphql.ID(templateID),
 		"versionId":  graphql.ID(versionID),
 	}

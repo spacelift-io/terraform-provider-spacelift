@@ -35,12 +35,12 @@ func resourceSecurityEmail() *schema.Resource {
 	}
 }
 
-func resourceSecurityEmailCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceSecurityEmailCreate(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var mutation struct {
 		SecurityEmail *string `graphql:"accountUpdateSecurityEmail(securityEmail: $securityEmail)"`
 	}
 
-	variables := map[string]interface{}{"securityEmail": toString(data.Get("email"))}
+	variables := map[string]any{"securityEmail": toString(data.Get("email"))}
 	if err := i.(*internal.Client).Mutate(ctx, "AccountUpdateSecurityEmail", &mutation, variables); err != nil {
 		return diag.Errorf("could not create security email: %v", err)
 	}
@@ -50,7 +50,7 @@ func resourceSecurityEmailCreate(ctx context.Context, data *schema.ResourceData,
 	return resourceSecurityEmailRead(ctx, data, i)
 }
 
-func resourceSecurityEmailRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceSecurityEmailRead(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var query struct {
 		SecurityEmail *string `graphql:"securityEmail"`
 	}
@@ -68,11 +68,11 @@ func resourceSecurityEmailRead(ctx context.Context, data *schema.ResourceData, i
 	return nil
 }
 
-func resourceSecurityEmailUpdate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceSecurityEmailUpdate(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var mutation struct {
 		SecurityEmail *string `graphql:"accountUpdateSecurityEmail(securityEmail: $email)"`
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"email": toString(data.Get("email")),
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AccountUpdateSecurityEmail", &mutation, variables); err != nil {
@@ -82,7 +82,7 @@ func resourceSecurityEmailUpdate(ctx context.Context, data *schema.ResourceData,
 	return resourceSecurityEmailRead(ctx, data, i)
 }
 
-func resourceSecurityEmailDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceSecurityEmailDelete(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	data.SetId("")
 	return diag.Diagnostics{{
 		Severity: diag.Warning,

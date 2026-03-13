@@ -78,13 +78,13 @@ func getStackIDFromToken(token string) (string, error) {
 	return stackID, nil
 }
 
-func getSpaceForStack(ctx context.Context, stackID string, meta interface{}) (structs.Space, error) {
+func getSpaceForStack(ctx context.Context, stackID string, meta any) (structs.Space, error) {
 	var query struct {
 		Stack  *structs.Stack  `graphql:"stack(id: $id)"`
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(strings.TrimRight(stackID, "/"))}
+	variables := map[string]any{"id": toID(strings.TrimRight(stackID, "/"))}
 	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		if strings.Contains(err.Error(), "denied") {
 			return structs.Space{}, fmt.Errorf("could not query for stack: %v, is this stack administrative?", err)
@@ -105,7 +105,7 @@ func getSpaceForStack(ctx context.Context, stackID string, meta interface{}) (st
 	return space, nil
 }
 
-func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stackID, err := getStackIDFromToken(meta.(*internal.Client).Token)
 	if err != nil {
 		return diag.Errorf("%v", err)
@@ -121,7 +121,7 @@ func dataCurrentSpaceRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("description", space.Description)
 	d.Set("inherit_entities", space.InheritEntities)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range space.Labels {
 		labels.Add(label)
 	}

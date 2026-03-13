@@ -62,12 +62,12 @@ func dataWorkerPools() *schema.Resource {
 	}
 }
 
-func dataWorkerPoolsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataWorkerPoolsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 
 	var query struct {
 		WorkerPools []*structs.WorkerPool `graphql:"workerPools()"`
 	}
-	variables := map[string]interface{}{}
+	variables := map[string]any{}
 
 	if err := meta.(*internal.Client).Query(ctx, "WorkerPoolsRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for worker pools: %v", err)
@@ -90,8 +90,8 @@ func dataWorkerPoolsRead(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func flattenDataWorkerPoolsList(workerPools []*structs.WorkerPool) []map[string]interface{} {
-	wps := make([]map[string]interface{}, len(workerPools))
+func flattenDataWorkerPoolsList(workerPools []*structs.WorkerPool) []map[string]any {
+	wps := make([]map[string]any, len(workerPools))
 
 	for index, wp := range workerPools {
 		var description *string
@@ -102,7 +102,7 @@ func flattenDataWorkerPoolsList(workerPools []*structs.WorkerPool) []map[string]
 			description = nil
 		}
 
-		wps[index] = map[string]interface{}{
+		wps[index] = map[string]any{
 			"worker_pool_id":            wp.ID,
 			"name":                      wp.Name,
 			"config":                    wp.Config,

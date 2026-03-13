@@ -65,7 +65,7 @@ func dataAWSIntegrationAttachmentExternalID() *schema.Resource {
 	}
 }
 
-func dataAWSIntegrationAttachmentExternalIDRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAWSIntegrationAttachmentExternalIDRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Integration *struct {
 			ID         string `graphql:"id"`
@@ -85,7 +85,7 @@ func dataAWSIntegrationAttachmentExternalIDRead(ctx context.Context, d *schema.R
 		return diag.Errorf("at least one of either 'read' or 'write' must be true")
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":      id,
 		"stackId": projectID,
 		"read":    graphql.Boolean(read),

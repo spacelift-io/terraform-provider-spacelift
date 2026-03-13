@@ -129,12 +129,12 @@ func dataContext() *schema.Resource {
 	}
 }
 
-func dataContextRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataContextRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Context *structs.Context `graphql:"context(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("context_id"))}
+	variables := map[string]any{"id": toID(d.Get("context_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "ContextRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for context: %v", err)
 	}
@@ -154,7 +154,7 @@ func dataContextRead(ctx context.Context, d *schema.ResourceData, meta interface
 		d.Set("description", nil)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range context.Labels {
 		labels.Add(label)
 	}

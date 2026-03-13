@@ -59,7 +59,7 @@ func resourceVersion() *schema.Resource {
 	}
 }
 
-func resourceVersionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceVersionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Version struct {
 			ID string
@@ -68,7 +68,7 @@ func resourceVersionCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	moduleID := d.Get("module_id")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"module":  toID(moduleID),
 		"sha":     (*graphql.String)(nil),
 		"version": (*graphql.String)(nil),
@@ -102,7 +102,7 @@ func waitForVersionCreate(ctx context.Context, client *internal.Client, versionI
 	ticker := time.NewTicker(time.Second * 5)
 	defer ticker.Stop()
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"moduleId":  graphql.ID(moduleID),
 		"versionId": graphql.ID(versionID),
 	}

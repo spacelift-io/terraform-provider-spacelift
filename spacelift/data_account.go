@@ -34,7 +34,7 @@ func dataAccount() *schema.Resource {
 	}
 }
 
-func dataAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAccountRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Name         string `graphql:"name"`
 		Tier         string `graphql:"tier"`

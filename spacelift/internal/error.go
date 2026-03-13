@@ -38,7 +38,7 @@ func parseGraphqlErrors(graphErrs graphql.GraphQLErrors) error {
 	return errors.New(strings.Join(errorParts, ", "))
 }
 
-func parseExtensions(ext map[string]interface{}) string {
+func parseExtensions(ext map[string]any) string {
 	errorParts := make([]string, 0, len(ext))
 	for k, v := range ext {
 		errorParts = append(errorParts, fmt.Sprintf("%s: %v", k, v))

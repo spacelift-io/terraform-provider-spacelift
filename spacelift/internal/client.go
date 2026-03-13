@@ -43,14 +43,14 @@ func NewClient(endpoint string, token string, requestsPerSecond, maxBurst *int) 
 }
 
 // Mutate runs a GraphQL mutation.
-func (c *Client) Mutate(ctx context.Context, mutationName string, m interface{}, variables map[string]interface{}) error {
+func (c *Client) Mutate(ctx context.Context, mutationName string, m any, variables map[string]any) error {
 	client := c.client()
 
 	return client.Mutate(ctx, m, variables, graphql.WithHeader("Spacelift-GraphQL-Mutation", mutationName))
 }
 
 // Query runs a GraphQL query.
-func (c *Client) Query(ctx context.Context, queryName string, q interface{}, variables map[string]interface{}) error {
+func (c *Client) Query(ctx context.Context, queryName string, q any, variables map[string]any) error {
 	client := c.client()
 
 	err := client.Query(ctx, q, variables, graphql.WithHeader("Spacelift-GraphQL-Query", queryName))

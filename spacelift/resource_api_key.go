@@ -108,8 +108,8 @@ func apiKeyCreateInput(d *schema.ResourceData) structs.ApiKeyInput {
 	input.IDPGroups = idpGroups
 
 	// Add OIDC configuration if provided
-	if oidcList, ok := d.Get("oidc").([]interface{}); ok && len(oidcList) > 0 {
-		if oidcMap, ok := oidcList[0].(map[string]interface{}); ok {
+	if oidcList, ok := d.Get("oidc").([]any); ok && len(oidcList) > 0 {
+		if oidcMap, ok := oidcList[0].(map[string]any); ok {
 			input.OIDC = &structs.APIKeyInputOIDC{
 				Issuer:            graphql.String(oidcMap["issuer"].(string)),
 				ClientID:          graphql.String(oidcMap["client_id"].(string)),
@@ -121,7 +121,7 @@ func apiKeyCreateInput(d *schema.ResourceData) structs.ApiKeyInput {
 	return input
 }
 
-func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*internal.Client)
 
 	// Create the API key first
@@ -129,7 +129,7 @@ func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		APIKey structs.APIKey `graphql:"apiKeyCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": apiKeyCreateInput(d),
 	}
 
@@ -146,12 +146,12 @@ func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	return resourceAPIKeyRead(ctx, d, meta)
 }
 
-func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		APIKey *structs.APIKey `graphql:"apiKey(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "APIKeyRead", &query, variables); err != nil {
 		if err.Error() == "could not find api key" {
 			d.SetId("")
@@ -170,7 +170,7 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("name", apiKey.Name)
 	d.Set("type", string(apiKey.Type))
 
-	idpGroups := schema.NewSet(schema.HashString, []interface{}{})
+	idpGroups := schema.NewSet(schema.HashString, []any{})
 	for _, team := range apiKey.IDPGroups {
 		idpGroups.Add(team)
 	}
@@ -198,7 +198,7 @@ func apiKeyUpdateInput(d *schema.ResourceData) structs.ApiKeyUpdateInput {
 	return input
 }
 
-func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	client := meta.(*internal.Client)
 	apiKeyID := d.Id()
 
@@ -208,7 +208,7 @@ func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			APIKey structs.APIKey `graphql:"apiKeyUpdate(id: $id, input: $input)"`
 		}
 
-		variables := map[string]interface{}{
+		variables := map[string]any{
 			"id":    graphql.ID(apiKeyID),
 			"input": apiKeyUpdateInput(d),
 		}
@@ -221,12 +221,12 @@ func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	return resourceAPIKeyRead(ctx, d, meta)
 }
 
-func resourceAPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAPIKeyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		APIKey *structs.APIKey `graphql:"apiKeyDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "APIKeyDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete API key: %v", err)

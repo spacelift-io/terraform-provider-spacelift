@@ -97,7 +97,7 @@ func resourceTask() *schema.Resource {
 	}
 }
 
-func resourceTaskCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTaskCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	task, err := structs.NewTaskInput(d)
 	if err != nil {
 		return diag.Errorf("could not extract task: %s", err)
@@ -107,7 +107,7 @@ func resourceTaskCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		CreateTask structs.Task `graphql:"taskCreate(stack: $stack, command: $command, skipInitialization: $skipInitialization)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack":              graphql.ID(task.StackID),
 		"command":            graphql.String(task.Command),
 		"skipInitialization": graphql.Boolean(!task.Init),
@@ -119,7 +119,7 @@ func resourceTaskCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 
 	if waitRaw, ok := d.GetOk("wait"); ok {
-		wait := structs.NewWaitConfiguration(waitRaw.([]interface{}))
+		wait := structs.NewWaitConfiguration(waitRaw.([]any))
 		if d := wait.Wait(ctx, d, client, task.StackID, mutation.CreateTask.ID.(string)); len(d) > 0 {
 			return d
 		}

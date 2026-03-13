@@ -119,7 +119,7 @@ func resourceAzureIntegration() *schema.Resource {
 	}
 }
 
-func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationCreate(name: $name, tenantID: $tenantID, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space, autoattachEnabled: $autoattachEnabled)"`
 	}
@@ -132,7 +132,7 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"name":                  toString(d.Get("name")),
 		"tenantID":              toString(d.Get("tenant_id")),
 		"labels":                labels,
@@ -158,12 +158,12 @@ func resourceAzureIntegrationCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceAzureIntegrationRead(ctx, d, meta)
 }
 
-func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AzureIntegration *structs.AzureIntegration `graphql:"azureIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "AzureIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the Azure integration: %v", err)
 	}
@@ -177,7 +177,7 @@ func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateAzureIntegration structs.AzureIntegration `graphql:"azureIntegrationUpdate(id: $id, name: $name, labels: $labels, defaultSubscriptionId: $defaultSubscriptionId, space: $space, autoattachEnabled: $autoattachEnabled)"`
 	}
@@ -190,7 +190,7 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":                    graphql.ID(d.Id()),
 		"name":                  toString(d.Get("name")),
 		"labels":                labels,
@@ -216,12 +216,12 @@ func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData,
 	return append(ret, resourceAzureIntegrationRead(ctx, d, meta)...)
 }
 
-func resourceAzureIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteAzureIntegration *structs.AzureIntegration `graphql:"azureIntegrationDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "AzureIntegrationDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete the Azure integration: %v", internal.FromSpaceliftError(err))

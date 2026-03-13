@@ -21,7 +21,7 @@ func dataCurrentStack() *schema.Resource {
 	}
 }
 
-func dataCurrentStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataCurrentStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stackID, err := getStackIDFromToken(meta.(*internal.Client).Token)
 	if err != nil {
 		return diag.Errorf("%v", err)

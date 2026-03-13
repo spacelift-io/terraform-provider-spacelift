@@ -519,13 +519,13 @@ func dataStack() *schema.Resource {
 	}
 }
 
-func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	stackID := d.Get("stack_id")
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 	if err := meta.(*internal.Client).Query(ctx, "StackRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
 	}
@@ -570,26 +570,26 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 		return diag.FromErr(err)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range stack.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
-	globs := schema.NewSet(schema.HashString, []interface{}{})
+	globs := schema.NewSet(schema.HashString, []any{})
 	for _, gb := range stack.AdditionalProjectGlobs {
 		globs.Add(gb)
 	}
 	d.Set("additional_project_globs", globs)
 
-	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []any{})
 	for _, path := range stack.GitSparseCheckoutPaths {
 		gitSparseCheckoutPaths.Add(path)
 	}
 	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
 	if iacKey, iacSettings := stack.IaCSettings(); iacKey != "" {
-		if err := d.Set(iacKey, []interface{}{iacSettings}); err != nil {
+		if err := d.Set(iacKey, []any{iacSettings}); err != nil {
 			return diag.Errorf("could not set IaC settings: %v", err)
 		}
 	} else { // this is a Terraform stack

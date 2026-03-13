@@ -57,14 +57,14 @@ func dataUser() *schema.Resource {
 	}
 }
 
-func dataUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataUserRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	username := d.Get("username").(string)
 
 	var query struct {
 		ManagedUsers []structs.User `graphql:"managedUsers"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "ManagedUsersRead", &query, map[string]interface{}{}); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "ManagedUsersRead", &query, map[string]any{}); err != nil {
 		return diag.Errorf("could not query for users: %v", err)
 	}
 
@@ -84,9 +84,9 @@ func dataUserRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	d.Set("username", user.Username)
 	d.Set("invitation_email", user.InvitationEmail)
 
-	var accessList []interface{}
+	var accessList []any
 	for _, a := range user.AccessRules {
-		accessList = append(accessList, map[string]interface{}{
+		accessList = append(accessList, map[string]any{
 			"space_id": a.Space,
 			"role":     a.SpaceAccessLevel,
 		})

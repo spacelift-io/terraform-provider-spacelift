@@ -76,7 +76,7 @@ func dataPolicies() *schema.Resource {
 	}
 }
 
-func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	d.SetId(fmt.Sprintf("policies/%s/%s", d.Get("type").(string), d.Get("labels").(*schema.Set).List()))
 	var query struct {
 		Policies []struct {
@@ -99,7 +99,7 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	labelsRaw, labelsSpecified := d.GetOk("labels")
 	requestedLabels := labelsRaw.(*schema.Set).List()
 
-	var policies []interface{}
+	var policies []any
 	for _, policy := range query.Policies {
 		if typeSpecified && policy.Type != requestedType {
 			continue
@@ -121,7 +121,7 @@ func dataPoliciesRead(ctx context.Context, d *schema.ResourceData, meta interfac
 				continue
 			}
 		}
-		policies = append(policies, map[string]interface{}{
+		policies = append(policies, map[string]any{
 			"id":          policy.ID,
 			"labels":      policy.Labels,
 			"name":        policy.Name,
