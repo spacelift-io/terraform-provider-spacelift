@@ -92,7 +92,7 @@ func dataAWSIntegration() *schema.Resource {
 	}
 }
 
-func dataAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	integrationID := d.Get("integration_id").(string)
 	name := d.Get("name").(string)
 	client := meta.(*internal.Client)
@@ -128,7 +128,7 @@ func findAWSIntegrationByID(ctx context.Context, integrationID string, client *i
 	var query struct {
 		AWSIntegration *structs.AWSIntegration `graphql:"awsIntegration(id: $id)"`
 	}
-	variables := map[string]interface{}{"id": graphql.ID(integrationID)}
+	variables := map[string]any{"id": graphql.ID(integrationID)}
 	if err := client.Query(ctx, "AWSIntegrationRead", &query, variables); err != nil {
 		return nil, diag.Errorf("could not query for the aws integration: %v", err)
 	}
@@ -140,7 +140,7 @@ func findAWSIntegrationByName(ctx context.Context, name string, client *internal
 	var query struct {
 		AWSIntegration *structs.AWSIntegration `graphql:"awsIntegrationByName(name: $name)"`
 	}
-	variables := map[string]interface{}{"name": graphql.String(name)}
+	variables := map[string]any{"name": graphql.String(name)}
 	if err := client.Query(ctx, "AWSIntegrationByNameRead", &query, variables); err != nil {
 		return nil, diag.Errorf("could not query for the aws integration: %v", err)
 	}

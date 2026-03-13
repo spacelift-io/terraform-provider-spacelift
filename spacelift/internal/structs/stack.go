@@ -112,7 +112,7 @@ type Stack struct {
 // ExportVCSSettings exports VCS settings into Terraform schema.
 func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
 	if fieldName, vcsSettings := s.VCSSettings(); fieldName != "" {
-		fieldValue := []interface{}{vcsSettings}
+		fieldValue := []any{vcsSettings}
 		if vcsSettings == nil {
 			fieldValue = nil
 		}
@@ -125,30 +125,30 @@ func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
 }
 
 // IaC returns IaC settings of a stack.
-func (s *Stack) IaCSettings() (string, map[string]interface{}) {
+func (s *Stack) IaCSettings() (string, map[string]any) {
 	switch s.VendorConfig.Typename {
 	case StackConfigVendorAnsible:
 		return "ansible", singleKeyMap("playbook", s.VendorConfig.Ansible.Playbook)
 	case StackConfigVendorCloudFormation:
-		return "cloudformation", map[string]interface{}{
+		return "cloudformation", map[string]any{
 			"entry_template_file": s.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              s.VendorConfig.CloudFormation.Region,
 			"stack_name":          s.VendorConfig.CloudFormation.StackName,
 			"template_bucket":     s.VendorConfig.CloudFormation.TemplateBucket,
 		}
 	case StackConfigVendorKubernetes:
-		return "kubernetes", map[string]interface{}{
+		return "kubernetes", map[string]any{
 			"namespace":                s.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version":          s.VendorConfig.Kubernetes.KubectlVersion,
 			"kubernetes_workflow_tool": s.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 	case StackConfigVendorPulumi:
-		return "pulumi", map[string]interface{}{
+		return "pulumi", map[string]any{
 			"login_url":  s.VendorConfig.Pulumi.LoginURL,
 			"stack_name": s.VendorConfig.Pulumi.StackName,
 		}
 	case StackConfigVendorTerragrunt:
-		return "terragrunt", map[string]interface{}{
+		return "terragrunt", map[string]any{
 			"terraform_version":      s.VendorConfig.Terragrunt.TerraformVersion,
 			"terragrunt_version":     s.VendorConfig.Terragrunt.TerragruntVersion,
 			"use_run_all":            s.VendorConfig.Terragrunt.UseRunAll,
@@ -162,13 +162,13 @@ func (s *Stack) IaCSettings() (string, map[string]interface{}) {
 }
 
 // VCSSettings returns VCS settings of a stack.
-func (s *Stack) VCSSettings() (string, map[string]interface{}) {
+func (s *Stack) VCSSettings() (string, map[string]any) {
 	switch s.Provider {
 	case VCSProviderAzureDevOps:
 		if s.VCSIntegration == nil {
 			return "azure_devops", nil
 		}
-		return "azure_devops", map[string]interface{}{
+		return "azure_devops", map[string]any{
 			"id":         s.VCSIntegration.ID,
 			"project":    s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
@@ -177,7 +177,7 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		if s.VCSIntegration == nil {
 			return "bitbucket_cloud", nil
 		}
-		return "bitbucket_cloud", map[string]interface{}{
+		return "bitbucket_cloud", map[string]any{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
@@ -186,7 +186,7 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		if s.VCSIntegration == nil {
 			return "bitbucket_datacenter", nil
 		}
-		return "bitbucket_datacenter", map[string]interface{}{
+		return "bitbucket_datacenter", map[string]any{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
@@ -195,7 +195,7 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		if s.VCSIntegration == nil {
 			return "github_enterprise", nil
 		}
-		return "github_enterprise", map[string]interface{}{
+		return "github_enterprise", map[string]any{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
@@ -204,13 +204,13 @@ func (s *Stack) VCSSettings() (string, map[string]interface{}) {
 		if s.VCSIntegration == nil {
 			return "gitlab", nil
 		}
-		return "gitlab", map[string]interface{}{
+		return "gitlab", map[string]any{
 			"id":         s.VCSIntegration.ID,
 			"namespace":  s.Namespace,
 			"is_default": s.VCSIntegration.IsDefault,
 		}
 	case VCSProviderRawGit:
-		return "raw_git", map[string]interface{}{
+		return "raw_git", map[string]any{
 			"namespace": s.Namespace,
 			"url":       s.RepositoryURL,
 		}
@@ -257,19 +257,19 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		return err
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range stack.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
-	globs := schema.NewSet(schema.HashString, []interface{}{})
+	globs := schema.NewSet(schema.HashString, []any{})
 	for _, gb := range stack.AdditionalProjectGlobs {
 		globs.Add(gb)
 	}
 	d.Set("additional_project_globs", globs)
 
-	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []any{})
 	for _, path := range stack.GitSparseCheckoutPaths {
 		gitSparseCheckoutPaths.Add(path)
 	}
@@ -277,37 +277,37 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 
 	switch stack.VendorConfig.Typename {
 	case StackConfigVendorAnsible:
-		m := map[string]interface{}{
+		m := map[string]any{
 			"playbook": stack.VendorConfig.Ansible.Playbook,
 		}
 
-		d.Set("ansible", []interface{}{m})
+		d.Set("ansible", []any{m})
 	case StackConfigVendorCloudFormation:
-		m := map[string]interface{}{
+		m := map[string]any{
 			"entry_template_file": stack.VendorConfig.CloudFormation.EntryTemplateName,
 			"region":              stack.VendorConfig.CloudFormation.Region,
 			"stack_name":          stack.VendorConfig.CloudFormation.StackName,
 			"template_bucket":     stack.VendorConfig.CloudFormation.TemplateBucket,
 		}
 
-		d.Set("cloudformation", []interface{}{m})
+		d.Set("cloudformation", []any{m})
 	case StackConfigVendorKubernetes:
-		m := map[string]interface{}{
+		m := map[string]any{
 			"namespace":                stack.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version":          stack.VendorConfig.Kubernetes.KubectlVersion,
 			"kubernetes_workflow_tool": stack.VendorConfig.Kubernetes.KubernetesWorkflowTool,
 		}
 
-		d.Set("kubernetes", []interface{}{m})
+		d.Set("kubernetes", []any{m})
 	case StackConfigVendorPulumi:
-		m := map[string]interface{}{
+		m := map[string]any{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
 			"stack_name": stack.VendorConfig.Pulumi.StackName,
 		}
 
-		d.Set("pulumi", []interface{}{m})
+		d.Set("pulumi", []any{m})
 	case StackConfigVendorTerragrunt:
-		m := map[string]interface{}{
+		m := map[string]any{
 			"terraform_version":      stack.VendorConfig.Terragrunt.TerraformVersion,
 			"terragrunt_version":     stack.VendorConfig.Terragrunt.TerragruntVersion,
 			"use_run_all":            stack.VendorConfig.Terragrunt.UseRunAll,
@@ -316,7 +316,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 			"tool":                   stack.VendorConfig.Terragrunt.Tool,
 		}
 
-		d.Set("terragrunt", []interface{}{m})
+		d.Set("terragrunt", []any{m})
 
 	default:
 		d.Set("terraform_smart_sanitization", stack.VendorConfig.Terraform.UseSmartSanitization)
@@ -339,6 +339,6 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 	return nil
 }
 
-func singleKeyMap(key, val string) map[string]interface{} {
-	return map[string]interface{}{key: val}
+func singleKeyMap(key, val string) map[string]any {
+	return map[string]any{key: val}
 }

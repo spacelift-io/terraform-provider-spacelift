@@ -75,7 +75,7 @@ func resourceNamedWebhookSecretHeader() *schema.Resource {
 	}
 }
 
-func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	value, diags := internal.ExtractWriteOnlyField("value", "value_wo", "value:value_wo_version", d)
 	if diags != nil {
 		return diags
@@ -88,7 +88,7 @@ func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.Resou
 	}
 
 	webhookID, _ := d.GetOk("webhook_id")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(webhookID),
 		"input": structs.NamedWebhookHeaderInput{
 			Entries: []structs.KeyValuePair{
@@ -110,7 +110,7 @@ func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.Resou
 	return append(ret, resourceNamedWebhookSecretHeaderRead(ctx, d, meta)...)
 }
 
-func resourceNamedWebhookSecretHeaderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookSecretHeaderRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 2)
 	if len(idParts) != 2 {
 		return diag.Errorf("unexpected resource ID: %s", d.Id())
@@ -122,7 +122,7 @@ func resourceNamedWebhookSecretHeaderRead(ctx context.Context, d *schema.Resourc
 
 	resourceID, variableKey := idParts[0], idParts[1]
 
-	variables := map[string]interface{}{"id": graphql.ID(resourceID)}
+	variables := map[string]any{"id": graphql.ID(resourceID)}
 	if err := meta.(*internal.Client).Query(ctx, "GetNamedWebhook", &query, variables); err != nil {
 		return diag.Errorf("could not query for named webhook: %v", err)
 	}
@@ -151,7 +151,7 @@ func resourceNamedWebhookSecretHeaderRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceNamedWebhookSecretHeaderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookSecretHeaderDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 2)
 	if len(idParts) != 2 {
 		return diag.Errorf("unexpected resource ID: %s", d.Id())
@@ -164,7 +164,7 @@ func resourceNamedWebhookSecretHeaderDelete(ctx context.Context, d *schema.Resou
 	}
 
 	resourceID, variableKey := idParts[0], idParts[1]
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":         toID(resourceID),
 		"headerKeys": []graphql.String{graphql.String(variableKey)},
 	}

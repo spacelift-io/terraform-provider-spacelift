@@ -51,7 +51,7 @@ func dataDriftDetection() *schema.Resource {
 	}
 }
 
-func dataDriftDetectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataDriftDetectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var ret diag.Diagnostics
 
 	stackID := d.Get("stack_id")

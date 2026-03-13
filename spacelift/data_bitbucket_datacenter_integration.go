@@ -104,7 +104,7 @@ func dataBitbucketDatacenterIntegration() *schema.Resource {
 	}
 }
 
-func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		BitbucketDataCenterIntegration *struct {
 			ID          string `graphql:"id"`
@@ -125,7 +125,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 		} `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": ""}
+	variables := map[string]any{"id": ""}
 	if id, ok := d.GetOk(bitbucketDatacenterID); ok && id != "" {
 		variables["id"] = toID(id)
 	}
@@ -151,7 +151,7 @@ func dataBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.Resou
 	d.Set(bitbucketDatacenterUserFacingHost, bitbucketDatacenterIntegration.UserFacingHost)
 	d.Set(bitbucketDatacenterUsername, bitbucketDatacenterIntegration.Username)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range bitbucketDatacenterIntegration.Labels {
 		labels.Add(label)
 	}

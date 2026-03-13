@@ -55,7 +55,7 @@ func dataStackOutputs() *schema.Resource {
 	}
 }
 
-func dataStackOutputsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataStackOutputsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
 			Outputs []structs.StackOutput `graphql:"outputs"`
@@ -63,7 +63,7 @@ func dataStackOutputsRead(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	stackID := d.Get("stack_id")
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 	if err := meta.(*internal.Client).Query(ctx, "StackOutputsRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack outputs: %v", err)
 	}

@@ -43,11 +43,11 @@ func resourceStackActivator() *schema.Resource {
 	}
 }
 
-func resourceStackActivatorCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackActivatorCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceStackActivatorUpdate(ctx, d, meta)
 }
 
-func resourceStackActivatorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackActivatorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stack, err := queryStack(ctx, d, meta)
 	if err != nil {
 		return diag.Errorf("failed to retrieve stack: %v", internal.FromSpaceliftError(err))
@@ -64,7 +64,7 @@ func resourceStackActivatorRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceStackActivatorUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackActivatorUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stack, err := queryStack(ctx, d, meta)
 	if err != nil {
 		return diag.Errorf("failed to retrieve stack: %v", internal.FromSpaceliftError(err))
@@ -86,18 +86,18 @@ func resourceStackActivatorUpdate(ctx context.Context, d *schema.ResourceData, m
 	return disableStack(ctx, d, meta)
 }
 
-func queryStack(ctx context.Context, d *schema.ResourceData, meta interface{}) (*structs.Stack, error) {
+func queryStack(ctx context.Context, d *schema.ResourceData, meta any) (*structs.Stack, error) {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
-	variables := map[string]interface{}{"id": graphql.ID(d.Get("stack_id"))}
+	variables := map[string]any{"id": graphql.ID(d.Get("stack_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "StackActivatorRead", &query, variables); err != nil {
 		return nil, err
 	}
 	return query.Stack, nil
 }
 
-func enableStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func enableStack(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		EnableStack *structs.Stack `graphql:"stackEnable(id: $id)"`
 	}
@@ -105,7 +105,7 @@ func enableStack(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	if !ok {
 		return diag.Errorf("invalid stack ID")
 	}
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 	if err := meta.(*internal.Client).Mutate(ctx, "StackActivatorEnable", &mutation, variables); err != nil {
 		return diag.Errorf("could not enable stack %s: %v", stackID, internal.FromSpaceliftError(err))
 	}
@@ -113,7 +113,7 @@ func enableStack(ctx context.Context, d *schema.ResourceData, meta interface{}) 
 	return nil
 }
 
-func disableStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func disableStack(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		EnableStack *structs.Stack `graphql:"stackDisable(id: $id)"`
 	}
@@ -121,7 +121,7 @@ func disableStack(ctx context.Context, d *schema.ResourceData, meta interface{})
 	if !ok {
 		return diag.Errorf("invalid stack ID")
 	}
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 	if err := meta.(*internal.Client).Mutate(ctx, "StackActivatorDisable", &mutation, variables); err != nil {
 		return diag.Errorf("could not enable stack %s: %v", stackID, internal.FromSpaceliftError(err))
 	}

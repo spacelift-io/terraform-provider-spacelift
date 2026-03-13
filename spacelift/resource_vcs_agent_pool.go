@@ -50,12 +50,12 @@ func resourceVCSAgentPool() *schema.Resource {
 	}
 }
 
-func resourceVCSAgentPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceVCSAgentPoolCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateVCSAgentPool structs.VCSAgentPool `graphql:"vcsAgentPoolCreate(name: $name, description: $description)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
 	}
@@ -74,12 +74,12 @@ func resourceVCSAgentPoolCreate(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceVCSAgentPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceVCSAgentPoolRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		VCSAgentPool *structs.VCSAgentPool `graphql:"vcsAgentPool(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "VCSAgentPoolRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the VCS agent pool: %v", err)
 	}
@@ -102,12 +102,12 @@ func resourceVCSAgentPoolRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceVCSAgentPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceVCSAgentPoolUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateVCSAgentPool structs.VCSAgentPool `graphql:"vcsAgentPoolUpdate(id: $id, name: $name, description: $description)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":          toID(d.Id()),
 		"name":        toString(d.Get("name")),
 		"description": (*graphql.String)(nil),
@@ -128,12 +128,12 @@ func resourceVCSAgentPoolUpdate(ctx context.Context, d *schema.ResourceData, met
 	return ret
 }
 
-func resourceVCSAgentPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceVCSAgentPoolDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteVCSAgentPool *structs.VCSAgentPool `graphql:"vcsAgentPoolDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "VCSAgentPoolDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete context: %v", internal.FromSpaceliftError(err))

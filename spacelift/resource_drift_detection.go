@@ -65,7 +65,7 @@ func resourceDriftDetection() *schema.Resource {
 	}
 }
 
-func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateDriftDetectionIntegration struct {
 			Reconcile   bool     `graphql:"reconcile"`
@@ -76,19 +76,19 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	var scheduleExpressions []graphql.String
-	for _, expr := range d.Get("schedule").([]interface{}) {
+	for _, expr := range d.Get("schedule").([]any) {
 		scheduleExpressions = append(scheduleExpressions, graphql.String(expr.(string)))
 	}
 
 	stackID := d.Get("stack_id").(string)
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(stackID),
 		"input": structs.DriftDetectionIntegrationInput{
 			Reconcile:   graphql.Boolean(d.Get("reconcile").(bool)),
 			IgnoreState: graphql.Boolean(d.Get("ignore_state").(bool)),
 			Schedule:    scheduleExpressions,
-			Timezone:    graphql.NewString(graphql.String(d.Get("timezone").(string))),
+			Timezone:    new(graphql.String(d.Get("timezone").(string))),
 		},
 	}
 
@@ -101,7 +101,7 @@ func resourceDriftDetectionCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceDriftDetectionRead(ctx, d, meta)
 }
 
-func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateDriftDetectionIntegration struct {
 			Reconcile   bool     `graphql:"reconcile"`
@@ -112,19 +112,19 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	var scheduleExpressions []graphql.String
-	for _, expr := range d.Get("schedule").([]interface{}) {
+	for _, expr := range d.Get("schedule").([]any) {
 		scheduleExpressions = append(scheduleExpressions, graphql.String(expr.(string)))
 	}
 
 	stackID := d.Get("stack_id").(string)
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(stackID),
 		"input": structs.DriftDetectionIntegrationInput{
 			Reconcile:   graphql.Boolean(d.Get("reconcile").(bool)),
 			IgnoreState: graphql.Boolean(d.Get("ignore_state").(bool)),
 			Schedule:    scheduleExpressions,
-			Timezone:    graphql.NewString(graphql.String(d.Get("timezone").(string))),
+			Timezone:    new(graphql.String(d.Get("timezone").(string))),
 		},
 	}
 
@@ -135,21 +135,21 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 	return resourceDriftDetectionRead(ctx, d, meta)
 }
 
-func resourceDriftDetectionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDriftDetectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceStackDriftDetectionReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
 		d.SetId("")
 		return nil
 	})
 }
 
-func resourceDriftDetectionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDriftDetectionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteDriftDetectionIntegration struct {
 			Deleted bool `graphql:"deleted"`
 		} `graphql:"stackIntegrationDriftDetectionDelete(stack: $stack)"`
 	}
 
-	variables := map[string]interface{}{"stack": toID(d.Id())}
+	variables := map[string]any{"stack": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "DriftDetectionDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete drift detection integration for stack: %v", err)
@@ -160,12 +160,12 @@ func resourceDriftDetectionDelete(ctx context.Context, d *schema.ResourceData, m
 	return nil
 }
 
-func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.ResourceData, meta interface{}, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
+func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.ResourceData, meta any, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackDriftDetectionRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
@@ -186,7 +186,7 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 	d.Set("timezone", integration.Timezone)
 	d.Set("ignore_state", integration.IgnoreState)
 
-	schedule := make([]interface{}, len(integration.Schedule))
+	schedule := make([]any, len(integration.Schedule))
 	for i, expr := range integration.Schedule {
 		schedule[i] = expr
 	}

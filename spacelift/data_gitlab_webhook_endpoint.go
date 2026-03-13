@@ -31,7 +31,7 @@ func dataGitlabWebhookEndpoint() *schema.Resource {
 	}
 }
 
-func dataGitlabWebhookEndpointRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataGitlabWebhookEndpointRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 
 	var query struct {
 		GitlabWebhooksEndpoint string `graphql:"gitlabWebhooksEndpoint"`

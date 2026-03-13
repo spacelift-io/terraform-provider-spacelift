@@ -65,14 +65,14 @@ func dataTemplate() *schema.Resource {
 	}
 }
 
-func dataTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		BlueprintVersionedGroup *structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroup(id: $id)"`
 	}
 
 	templateID := d.Get("template_id")
 
-	variables := map[string]interface{}{"id": toID(templateID)}
+	variables := map[string]any{"id": toID(templateID)}
 	if err := meta.(*internal.Client).Query(ctx, "TemplateRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for template: %v", err)
 	}
@@ -95,7 +95,7 @@ func dataTemplateRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		d.Set("description", *template.Description)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range template.Labels {
 		labels.Add(label)
 	}

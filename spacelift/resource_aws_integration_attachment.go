@@ -73,11 +73,11 @@ func resourceAWSIntegrationAttachment() *schema.Resource {
 	}
 }
 
-func resourceAWSIntegrationAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	projectID := projectID(d)
 
 	var err error
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		err = resourceAWSIntegrationAttachmentAttach(ctx, meta.(*internal.Client), projectID, d)
 		if err == nil || !strings.Contains(err.Error(), "you need to configure trust relationship") || i == 4 {
 			break
@@ -101,7 +101,7 @@ func resourceAWSIntegrationAttachmentAttach(ctx context.Context, client *interna
 		AWSIntegrationAttach structs.AWSIntegrationAttachment `graphql:"awsIntegrationAttach(id: $id, stack: $projectId, read: $read, write: $write)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":        toID(d.Get("integration_id")),
 		"projectId": projectID,
 		"read":      graphql.Boolean(d.Get("read").(bool)),
@@ -115,7 +115,7 @@ func resourceAWSIntegrationAttachmentAttach(ctx context.Context, client *interna
 	return nil
 }
 
-func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AWSIntegration *struct {
 			Attachment *structs.AWSIntegrationAttachment `graphql:"attachedStack(id: $projectId)"`
@@ -128,7 +128,7 @@ func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.Resourc
 	}
 	integrationID, projectID := idComponents[0], idComponents[1]
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"integrationId": toID(integrationID),
 		"projectId":     toID(projectID),
 	}
@@ -150,12 +150,12 @@ func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceAWSIntegrationAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AWSIntegrationAttachmentUpdate structs.AWSIntegrationAttachment `graphql:"awsIntegrationAttachmentUpdate(id: $id, read: $read, write: $write)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Get("attachment_id")),
 		"read":  graphql.Boolean(d.Get("read").(bool)),
 		"write": graphql.Boolean(d.Get("write").(bool)),
@@ -168,12 +168,12 @@ func resourceAWSIntegrationAttachmentUpdate(ctx context.Context, d *schema.Resou
 	return resourceAWSIntegrationAttachmentRead(ctx, d, meta)
 }
 
-func resourceAWSIntegrationAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AWSIntegrationAttachmentDelete *structs.AWSIntegrationAttachment `graphql:"awsIntegrationDetach(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("attachment_id"))}
+	variables := map[string]any{"id": toID(d.Get("attachment_id"))}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "awsIntegrationAttachmentDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not detach the aws integration: %v", internal.FromSpaceliftError(err))

@@ -172,7 +172,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 }
 
 func configureProvider(commit, version string) schema.ConfigureContextFunc {
-	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 		var useAPIKey bool
 		var client *internal.Client
 		var err error
@@ -274,7 +274,7 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 		} `graphql:"apiKeyUser(id: $id, secret: $secret)"`
 	}
 
-	err := rawClient.Mutate(context.Background(), &mutation, map[string]interface{}{
+	err := rawClient.Mutate(context.Background(), &mutation, map[string]any{
 		"id":     graphql.ID(apiKeyID),
 		"secret": graphql.String(apiKeySecret),
 	})

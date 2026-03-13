@@ -51,7 +51,7 @@ func dataModules() *schema.Resource {
 	}
 }
 
-func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var conditions []search.SearchQueryPredicate
 
 	conditions = append(conditions, predicates.BuildBoolean(d, "administrative")...)
@@ -77,10 +77,10 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 		Predicates: &conditions,
 	}
 
-	var modules []interface{}
+	var modules []any
 
 	for {
-		variables := map[string]interface{}{"input": input}
+		variables := map[string]any{"input": input}
 
 		if err := meta.(*internal.Client).Query(ctx, "ModulesPage", &query, variables); err != nil {
 			return diag.Errorf("could not query for modules: %v", err)
@@ -89,7 +89,7 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 		for _, edge := range query.SearchModulesOutput.Edges {
 			node := edge.Node
 
-			module := map[string]interface{}{
+			module := map[string]any{
 				"administrative":                   node.Administrative,
 				"aws_assume_role_policy_statement": node.Integrations.AWS.AssumeRolePolicyStatement,
 				"branch":                           node.Branch,
@@ -113,8 +113,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 				module["worker_pool_id"] = workerPool.ID
 			}
 
-			sharedAccountsList := []interface{}{}
-			spaceSharesList := []interface{}{}
+			sharedAccountsList := []any{}
+			spaceSharesList := []any{}
 			for _, share := range node.ModuleShares {
 				if share.To.Space != nil {
 					spaceSharesList = append(spaceSharesList, share.To.Space.ID)
@@ -128,8 +128,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 			switch node.Provider {
 			case structs.VCSProviderAzureDevOps:
 				if node.VCSIntegration != nil {
-					module["azure_devops"] = []interface{}{
-						map[string]interface{}{
+					module["azure_devops"] = []any{
+						map[string]any{
 							"id":         node.VCSIntegration.ID,
 							"project":    node.Namespace,
 							"is_default": node.VCSIntegration.IsDefault,
@@ -138,8 +138,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 				}
 			case structs.VCSProviderBitbucketCloud:
 				if node.VCSIntegration != nil {
-					module["bitbucket_cloud"] = []interface{}{
-						map[string]interface{}{
+					module["bitbucket_cloud"] = []any{
+						map[string]any{
 							"id":         node.VCSIntegration.ID,
 							"namespace":  node.Namespace,
 							"is_default": node.VCSIntegration.IsDefault,
@@ -148,8 +148,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 				}
 			case structs.VCSProviderBitbucketDatacenter:
 				if node.VCSIntegration != nil {
-					module["bitbucket_datacenter"] = []interface{}{
-						map[string]interface{}{
+					module["bitbucket_datacenter"] = []any{
+						map[string]any{
 							"id":         node.VCSIntegration.ID,
 							"namespace":  node.Namespace,
 							"is_default": node.VCSIntegration.IsDefault,
@@ -158,8 +158,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 				}
 			case structs.VCSProviderGitHubEnterprise:
 				if node.VCSIntegration != nil {
-					module["github_enterprise"] = []interface{}{
-						map[string]interface{}{
+					module["github_enterprise"] = []any{
+						map[string]any{
 							"id":         node.VCSIntegration.ID,
 							"namespace":  node.Namespace,
 							"is_default": node.VCSIntegration.IsDefault,
@@ -168,8 +168,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 				}
 			case structs.VCSProviderGitlab:
 				if node.VCSIntegration != nil {
-					module["gitlab"] = []interface{}{
-						map[string]interface{}{
+					module["gitlab"] = []any{
+						map[string]any{
 							"id":         node.VCSIntegration.ID,
 							"namespace":  node.Namespace,
 							"is_default": node.VCSIntegration.IsDefault,
@@ -177,8 +177,8 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta interface
 					}
 				}
 			case structs.VCSProviderRawGit:
-				module["raw_git"] = []interface{}{
-					map[string]interface{}{
+				module["raw_git"] = []any{
+					map[string]any{
 						"namespace": node.Namespace,
 						"url":       node.RepositoryURL,
 					},

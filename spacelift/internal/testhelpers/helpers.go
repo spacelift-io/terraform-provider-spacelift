@@ -71,7 +71,7 @@ func CheckIfResourceNestedAttributeContainsResourceAttribute(firstResourceName s
 		}
 
 		matchers := make([]string, firstResourceAttributeCount)
-		for i := 0; i < firstResourceAttributeCount; i++ {
+		for i := range firstResourceAttributeCount {
 			matchers[i] = fmt.Sprintf("%s.%d.%s", firstResourceKeys[0], i, firstResourceKeys[1])
 		}
 

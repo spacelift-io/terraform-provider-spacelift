@@ -71,12 +71,12 @@ type ModuleShareModule struct {
 // ExportVCSSettings exports VCS settings into Terraform schema.
 func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 	var fieldName string
-	var vcsSettings map[string]interface{}
+	var vcsSettings map[string]any
 
 	switch m.Provider {
 	case VCSProviderAzureDevOps:
 		if m.VCSIntegration != nil {
-			vcsSettings = map[string]interface{}{
+			vcsSettings = map[string]any{
 				"id":         m.VCSIntegration.ID,
 				"project":    m.Namespace,
 				"is_default": m.VCSIntegration.IsDefault,
@@ -85,7 +85,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		fieldName = "azure_devops"
 	case VCSProviderBitbucketCloud:
 		if m.VCSIntegration != nil {
-			vcsSettings = map[string]interface{}{
+			vcsSettings = map[string]any{
 				"id":         m.VCSIntegration.ID,
 				"namespace":  m.Namespace,
 				"is_default": m.VCSIntegration.IsDefault,
@@ -94,7 +94,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		fieldName = "bitbucket_cloud"
 	case VCSProviderBitbucketDatacenter:
 		if m.VCSIntegration != nil {
-			vcsSettings = map[string]interface{}{
+			vcsSettings = map[string]any{
 				"id":         m.VCSIntegration.ID,
 				"namespace":  m.Namespace,
 				"is_default": m.VCSIntegration.IsDefault,
@@ -103,7 +103,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		fieldName = "bitbucket_datacenter"
 	case VCSProviderGitHubEnterprise:
 		if m.VCSIntegration != nil {
-			vcsSettings = map[string]interface{}{
+			vcsSettings = map[string]any{
 				"id":         m.VCSIntegration.ID,
 				"namespace":  m.Namespace,
 				"is_default": m.VCSIntegration.IsDefault,
@@ -112,7 +112,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		fieldName = "github_enterprise"
 	case VCSProviderGitlab:
 		if m.VCSIntegration != nil {
-			vcsSettings = map[string]interface{}{
+			vcsSettings = map[string]any{
 				"id":         m.VCSIntegration.ID,
 				"namespace":  m.Namespace,
 				"is_default": m.VCSIntegration.IsDefault,
@@ -120,7 +120,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		}
 		fieldName = "gitlab"
 	case VCSProviderRawGit:
-		vcsSettings = map[string]interface{}{
+		vcsSettings = map[string]any{
 			"namespace": m.Namespace,
 			"url":       m.RepositoryURL,
 		}
@@ -128,7 +128,7 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 	}
 
 	if fieldName != "" {
-		if err := d.Set(fieldName, []interface{}{vcsSettings}); err != nil {
+		if err := d.Set(fieldName, []any{vcsSettings}); err != nil {
 			return errors.Wrapf(err, "error setting %s (resource)", fieldName)
 		}
 	}

@@ -29,7 +29,7 @@ func dataRoleActions() *schema.Resource {
 	}
 }
 
-func dataRoleActionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataRoleActionsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	introspectionClient := internal.NewIntrospectionClient(meta.(*internal.Client))
 
 	enumValues, err := introspectionClient.GetEnumValues(ctx, "Action")

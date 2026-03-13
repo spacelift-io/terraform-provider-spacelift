@@ -46,8 +46,8 @@ func dataContextAttachment() *schema.Resource {
 	}
 }
 
-func dataContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	variables := map[string]interface{}{
+func dataContextAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	variables := map[string]any{
 		"context": toID(d.Get("context_id").(string)),
 	}
 

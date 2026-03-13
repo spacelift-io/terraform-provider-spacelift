@@ -56,7 +56,7 @@ func dataWebhook() *schema.Resource {
 	}
 }
 
-func dataWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataWebhookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
 		return dataModuleWebhookRead(ctx, d, meta)
 	}
@@ -64,14 +64,14 @@ func dataWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface
 	return dataStackWebhookRead(ctx, d, meta)
 }
 
-func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	moduleID := d.Get("module_id").(string)
 	webhookID := d.Get("webhook_id").(string)
-	variables := map[string]interface{}{"id": toID(moduleID)}
+	variables := map[string]any{"id": toID(moduleID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "ModuleWebhookRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
@@ -100,14 +100,14 @@ func dataModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	return nil
 }
-func dataStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
 	stackID := d.Get("stack_id").(string)
 	webhookID := d.Get("webhook_id").(string)
-	variables := map[string]interface{}{"id": toID(stackID)}
+	variables := map[string]any{"id": toID(stackID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackWebhookRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)

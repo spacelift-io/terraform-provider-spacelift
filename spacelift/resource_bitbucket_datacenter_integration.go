@@ -136,7 +136,7 @@ func resourceBitbucketDatacenterIntegration() *schema.Resource {
 	}
 }
 
-func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	token, diags := internal.ExtractWriteOnlyField(bitbucketDatacenterAccessToken, bitbucketDatacenterAccessTokenWo, bitbucketDatacenterAccessTokenWoVersion, d)
 	if diags != nil {
 		return diags
@@ -146,7 +146,7 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 		CreateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationCreate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"customInput": &vcs.CustomVCSInput{
 			Name:           toString(d.Get(bitbucketDatacenterName)),
 			IsDefault:      toOptionalBool(d.Get(bitbucketDatacenterIsDefault)),
@@ -171,12 +171,12 @@ func resourceBitbucketDatacenterIntegrationCreate(ctx context.Context, d *schema
 	return nil
 }
 
-func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		BitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": d.Id()}
+	variables := map[string]any{"id": d.Id()}
 	if err := meta.(*internal.Client).Query(ctx, "BitbucketDatacenterIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the bitbucket datacenter integration: %v", err)
 	}
@@ -190,7 +190,7 @@ func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.R
 	return nil
 }
 
-func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	token, diags := internal.ExtractWriteOnlyField(bitbucketDatacenterAccessToken, bitbucketDatacenterAccessTokenWo, bitbucketDatacenterAccessTokenWoVersion, d)
 	if diags != nil {
 		return diags
@@ -200,7 +200,7 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 		UpdateBitbucketDatacenterIntegration structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationUpdate(apiHost: $apiHost, userFacingHost: $userFacingHost, username: $username, accessToken: $accessToken, customInput: $customInput)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"apiHost":        toString(d.Get(bitbucketDatacenterAPIHost)),
 		"userFacingHost": toString(d.Get(bitbucketDatacenterUserFacingHost)),
 		"username":       toOptionalString(d.Get(bitbucketDatacenterUsername)),
@@ -226,12 +226,12 @@ func resourceBitbucketDatacenterIntegrationUpdate(ctx context.Context, d *schema
 	return ret
 }
 
-func resourceBitbucketDatacenterIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBitbucketDatacenterIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteBitbucketDatacenterIntegration *structs.BitbucketDatacenterIntegration `graphql:"bitbucketDatacenterIntegrationDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(d.Id()),
 	}
 
@@ -257,7 +257,7 @@ func fillBitbucketDatacenterIntegrationResults(d *schema.ResourceData, bitbucket
 	d.Set(bitbucketDatacenterName, bitbucketDatacenterIntegration.Name)
 	d.Set(bitbucketDatacenterDescription, bitbucketDatacenterIntegration.Description)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range bitbucketDatacenterIntegration.Labels {
 		labels.Add(label)
 	}

@@ -56,7 +56,7 @@ func PopulateRunSchedule(d *schema.ResourceData, r *ScheduledRun) diag.Diagnosti
 		if err != nil {
 			return err
 		}
-		if err := d.Set("runtime_config", []interface{}{runtimeConfig}); err != nil {
+		if err := d.Set("runtime_config", []any{runtimeConfig}); err != nil {
 			return diag.Errorf("could not set \"runtime_config\" attribute")
 		}
 	}

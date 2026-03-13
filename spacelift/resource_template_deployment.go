@@ -134,12 +134,12 @@ func resourceTemplateDeployment() *schema.Resource {
 	}
 }
 
-func resourceTemplateDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		TemplateDeployment structs.TemplateDeployment `graphql:"blueprintDeploymentCreate(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Get("template_version_id")),
 		"input": templateDeploymentCreateInput(d),
 	}
@@ -164,7 +164,7 @@ func resourceTemplateDeploymentCreate(ctx context.Context, d *schema.ResourceDat
 	return resourceTemplateDeploymentRead(ctx, d, meta)
 }
 
-func resourceTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	deploymentID, templateID, err := parseDeploymentID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -174,7 +174,7 @@ func resourceTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData,
 		TemplateDeployment *structs.TemplateDeployment `graphql:"blueprintDeployment(id: $id, blueprintID: $blueprintID)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":          toID(deploymentID),
 		"blueprintID": toID(templateID),
 	}
@@ -233,7 +233,7 @@ func resourceTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	deploymentID, templateID, err := parseDeploymentID(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -246,15 +246,15 @@ func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceDat
 	inputs := structs.BlueprintDeploymentUpdateInput{}
 
 	if d.HasChange("template_version_id") {
-		inputs.VersionID = graphql.NewID(graphql.ID(d.Get("template_version_id").(string)))
+		inputs.VersionID = new(graphql.ID(d.Get("template_version_id").(string)))
 	}
 
 	if d.HasChange("description") {
-		inputs.Description = graphql.NewString(graphql.String(d.Get("description").(string)))
+		inputs.Description = new(graphql.String(d.Get("description").(string)))
 	}
 
 	if d.HasChange("name") {
-		inputs.Name = graphql.NewString(graphql.String(d.Get("name").(string)))
+		inputs.Name = new(graphql.String(d.Get("name").(string)))
 	}
 
 	if d.HasChange("input") {
@@ -293,12 +293,12 @@ func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceDat
 	return resourceTemplateDeploymentRead(ctx, d, meta)
 }
 
-func resourceTemplateDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		TemplateDeployment *structs.TemplateDeployment `graphql:"blueprintDeploymentDelete(id: $id, blueprintID: $blueprintID)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":          toID(d.Get("deployment_id").(string)),
 		"blueprintID": toID(d.Get("template_id").(string)),
 	}

@@ -24,7 +24,7 @@ func resourceTemplateVersion() *schema.Resource {
 		UpdateContext: resourceTemplateVersionUpdate,
 		DeleteContext: resourceTemplateVersionDelete,
 
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta interface{}) error {
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 
 			oldState, newState := diff.GetChange("state")
 			rawTemplate, ok := diff.Get("template").(string)
@@ -117,12 +117,12 @@ func resourceTemplateVersion() *schema.Resource {
 	}
 }
 
-func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintVersionCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": templateVersionCreateInput(d),
 	}
 
@@ -135,7 +135,7 @@ func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceTemplateVersionRead(ctx, d, meta)
 }
 
-func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	templateID := d.Get("template_id").(string)
 	versionID := d.Id()
 
@@ -145,7 +145,7 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"templateId": graphql.ID(templateID),
 		"versionId":  graphql.ID(versionID),
 	}
@@ -189,12 +189,12 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintVersionUpdate(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    graphql.ID(d.Id()),
 		"input": templateVersionUpdateInput(d),
 	}
@@ -206,12 +206,12 @@ func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, 
 	return resourceTemplateVersionRead(ctx, d, meta)
 }
 
-func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Blueprint *structs.Blueprint `graphql:"blueprintVersionDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": graphql.ID(d.Id()),
 	}
 
@@ -224,7 +224,7 @@ func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceTemplateVersionImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceTemplateVersionImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	importID := d.Id()
 
 	// ULID is always 26 characters, format is: template_id-ulid
@@ -248,7 +248,7 @@ func resourceTemplateVersionImport(ctx context.Context, d *schema.ResourceData, 
 		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"templateId": graphql.ID(templateID),
 		"versionId":  graphql.ID(versionULID),
 	}

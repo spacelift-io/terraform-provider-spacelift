@@ -85,7 +85,7 @@ func resourceRoleAttachment() *schema.Resource {
 	}
 }
 
-func resourceRoleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	apiKeyID := d.Get("api_key_id").(string)
 	stackID := d.Get("stack_id").(string)
 	userID := d.Get("user_id").(string)
@@ -105,12 +105,12 @@ func resourceRoleAttachmentCreate(ctx context.Context, d *schema.ResourceData, m
 	return createIDPGroupMappingRoleBinding(ctx, d, meta)
 }
 
-func createAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateRoleBinding structs.APIKeyRoleBinding `graphql:"apiKeyRoleBindingCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.ApiKeyRoleBindingInput{
 			APIKeyID: toID(d.Get("api_key_id").(string)),
 			RoleID:   toID(d.Get("role_id").(string)),
@@ -127,12 +127,12 @@ func createAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta i
 	return resourceRoleAttachmentRead(ctx, d, meta)
 }
 
-func createUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateRoleBindings []structs.UserRoleBinding `graphql:"userRoleBindingBatchCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.UserRoleBindingBatchInput{
 			Bindings: []structs.UserRoleBindingInput{
 				{
@@ -157,12 +157,12 @@ func createUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta int
 	return resourceRoleAttachmentRead(ctx, d, meta)
 }
 
-func createIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateRoleBinding structs.UserGroupRoleBinding `graphql:"userGroupRoleBindingCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.UserGroupRoleBindingInput{
 			UserGroupID: toID(d.Get("idp_group_mapping_id").(string)),
 			RoleID:      toID(d.Get("role_id").(string)),
@@ -179,12 +179,12 @@ func createIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceDat
 	return resourceRoleAttachmentRead(ctx, d, meta)
 }
 
-func createStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func createStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateRoleBinding structs.StackRoleBinding `graphql:"stackRoleBindingCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.StackRoleBindingInput{
 			StackID: toID(d.Get("stack_id").(string)),
 			RoleID:  toID(d.Get("role_id").(string)),
@@ -201,7 +201,7 @@ func createStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta in
 	return resourceRoleAttachmentRead(ctx, d, meta)
 }
 
-func resourceRoleAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	id := d.Id()
 
 	if strings.HasPrefix(id, apiKeyRoleAttachmentPrefix) {
@@ -219,13 +219,13 @@ func resourceRoleAttachmentRead(ctx context.Context, d *schema.ResourceData, met
 	return readIDPGroupMappingRoleBinding(ctx, d, meta)
 }
 
-func readAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		APIKeyRoleBinding *structs.APIKeyRoleBinding `graphql:"apiKeyRoleBinding(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), apiKeyRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -247,13 +247,13 @@ func readAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func readUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		UserRoleBinding *structs.UserRoleBinding `graphql:"userRoleBinding(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), userRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -275,13 +275,13 @@ func readUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta inter
 	return nil
 }
 
-func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		UserGroupRoleBinding *structs.UserGroupRoleBinding `graphql:"userGroupRoleBinding(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), idpGroupMappingRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -303,13 +303,13 @@ func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData,
 	return nil
 }
 
-func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		StackRoleBinding *structs.StackRoleBinding `graphql:"stackRoleBinding(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), stackRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -337,7 +337,7 @@ func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceRoleAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	id := d.Id()
 
 	if strings.HasPrefix(id, apiKeyRoleAttachmentPrefix) {
@@ -355,13 +355,13 @@ func resourceRoleAttachmentDelete(ctx context.Context, d *schema.ResourceData, m
 	return deleteIDPGroupMappingRoleBinding(ctx, d, meta)
 }
 
-func deleteAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteRoleBinding *structs.APIKeyRoleBinding `graphql:"apiKeyRoleBindingDelete(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), apiKeyRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -369,13 +369,13 @@ func deleteAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta i
 	return handleRoleBindingDeleteError(err, d, "could not delete role attachment")
 }
 
-func deleteUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteRoleBinding *structs.UserRoleBinding `graphql:"userRoleBindingDelete(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), userRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -383,13 +383,13 @@ func deleteUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta int
 	return handleRoleBindingDeleteError(err, d, "could not delete user role binding")
 }
 
-func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteRoleBinding *structs.UserGroupRoleBinding `graphql:"userGroupRoleBindingDelete(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), idpGroupMappingRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 
@@ -397,13 +397,13 @@ func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceDat
 	return handleRoleBindingDeleteError(err, d, "could not delete user group role binding")
 }
 
-func deleteStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func deleteStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteRoleBinding *structs.StackRoleBinding `graphql:"stackRoleBindingDelete(id: $id)"`
 	}
 
 	id := strings.TrimPrefix(d.Id(), stackRoleAttachmentPrefix+"/")
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(id),
 	}
 

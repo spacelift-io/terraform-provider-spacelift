@@ -78,7 +78,7 @@ func dataGitlabIntegration() *schema.Resource {
 	}
 }
 
-func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 
 	var query struct {
 		GitlabIntegration *struct {
@@ -98,7 +98,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		} `graphql:"gitlabIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": ""}
+	variables := map[string]any{"id": ""}
 
 	if id, ok := d.GetOk(gitLabID); ok && id != "" {
 		variables["id"] = toID(id)
@@ -123,7 +123,7 @@ func dataGitlabIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set(gitLabIsDefault, gitLabIntegration.IsDefault)
 	d.Set(gitLabSpaceID, gitLabIntegration.Space.ID)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range gitLabIntegration.Labels {
 		labels.Add(label)
 	}

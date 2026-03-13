@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func importIntegration(_ context.Context, d *schema.ResourceData, _ interface{}) ([]*schema.ResourceData, error) {
+func importIntegration(_ context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
 	ID := d.Id()
 
 	parts := strings.Split(ID, "/")

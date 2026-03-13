@@ -61,14 +61,14 @@ func dataWorkerPool() *schema.Resource {
 	}
 }
 
-func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPool(id: $id)"`
 	}
 
 	workerPoolID := d.Get("worker_pool_id").(string)
 
-	variables := map[string]interface{}{"id": toID(workerPoolID)}
+	variables := map[string]any{"id": toID(workerPoolID)}
 	if err := meta.(*internal.Client).Query(ctx, "WorkerPoolRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for worker pool: %v", err)
 	}
@@ -89,7 +89,7 @@ func dataWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interf
 		d.Set("description", nil)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range workerPool.Labels {
 		labels.Add(label)
 	}

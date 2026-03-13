@@ -13,8 +13,8 @@ func BuildBoolean(d *schema.ResourceData, schemaName string, optionalPredicateNa
 		return
 	}
 
-	for _, element := range field.([]interface{}) {
-		predicate := element.(map[string]interface{})
+	for _, element := range field.([]any) {
+		predicate := element.(map[string]any)
 		if predicate["equals"] == nil {
 			continue
 		}
@@ -36,14 +36,14 @@ func BuildStringOrEnum(d *schema.ResourceData, isEnum bool, schemaName string, o
 		return nil
 	}
 
-	for _, element := range field.([]interface{}) {
-		predicate := element.(map[string]interface{})
+	for _, element := range field.([]any) {
+		predicate := element.(map[string]any)
 		if predicate["any_of"] == nil {
 			continue
 		}
 
 		var matches []graphql.String
-		for _, element := range predicate["any_of"].([]interface{}) {
+		for _, element := range predicate["any_of"].([]any) {
 			matches = append(matches, graphql.String(element.(string)))
 		}
 

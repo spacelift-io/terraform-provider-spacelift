@@ -60,7 +60,7 @@ func dataScheduledTask() *schema.Resource {
 	}
 }
 
-func dataScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	scheduledTaskID := d.Get("scheduled_task_id").(string)
 
 	idParts := strings.SplitN(scheduledTaskID, "/", 2)
@@ -86,7 +86,7 @@ func dataScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta int
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	variables := map[string]interface{}{"stack": toID(stackID), "id": toID(scheduleID)}
+	variables := map[string]any{"stack": toID(stackID), "id": toID(scheduleID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackScheduledTaskRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for scheduled_task: %v", internal.FromSpaceliftError(err))

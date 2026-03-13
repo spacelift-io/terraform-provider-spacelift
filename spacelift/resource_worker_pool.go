@@ -96,14 +96,14 @@ func resourceWorkerPool() *schema.Resource {
 	}
 }
 
-func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	name := d.Get("name").(string)
 
 	var mutation struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPoolCreate(name: $name, certificateSigningRequest: $csr, description: $description, labels: $labels, space: $space, driftDetectionRunLimit: $drift_detection_run_limit)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"name":                      graphql.String(name),
 		"description":               (*graphql.String)(nil),
 		"labels":                    []graphql.String(nil),
@@ -186,12 +186,12 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPool(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "WorkerPoolRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for worker pool: %v", err)
 	}
@@ -209,7 +209,7 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 		d.Set("description", *description)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range query.WorkerPool.Labels {
 		labels.Add(label)
 	}
@@ -224,7 +224,7 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta in
 	return nil
 }
 
-func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	name := d.Get("name").(string)
 
 	// If CSR has changed, use workerPoolReset mutation
@@ -234,7 +234,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		csrString := d.Get("csr").(string)
-		resetVariables := map[string]interface{}{
+		resetVariables := map[string]any{
 			"id":  toID(d.Id()),
 			"csr": graphql.String(csrString),
 		}
@@ -255,7 +255,7 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		WorkerPool structs.WorkerPool `graphql:"workerPoolUpdate(id: $id, name: $name, description: $description, labels: $labels, space: $space, driftDetectionRunLimit: $drift_detection_run_limit)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":                        toID(d.Id()),
 		"name":                      graphql.String(name),
 		"description":               (*graphql.String)(nil),
@@ -289,12 +289,12 @@ func resourceWorkerPoolUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	return append(ret, resourceWorkerPoolRead(ctx, d, meta)...)
 }
 
-func resourceWorkerPoolDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkerPoolDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		WorkerPool *structs.WorkerPool `graphql:"workerPoolDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "WorkerPoolDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete worker pool: %v", internal.FromSpaceliftError(err))

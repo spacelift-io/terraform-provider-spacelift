@@ -97,7 +97,7 @@ func resourceAWSRole() *schema.Resource {
 	}
 }
 
-func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var ID string
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
@@ -116,7 +116,7 @@ func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	var err error
 
-	for i := 0; i < 5; i++ {
+	for i := range 5 {
 		err = resourceAWSRoleSet(ctx, meta.(*internal.Client), ID, d)
 		if err == nil || !strings.Contains(err.Error(), "you need to configure trust relationship") || i == 4 {
 			break
@@ -135,7 +135,7 @@ func resourceAWSRoleCreate(ctx context.Context, d *schema.ResourceData, meta int
 	return resourceAWSRoleRead(ctx, d, meta)
 }
 
-func resourceAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
 		return resourceModuleAWSRoleRead(ctx, d, meta)
 	}
@@ -143,12 +143,12 @@ func resourceAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta inter
 	return resourceStackAWSRoleRead(ctx, d, meta)
 }
 
-func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "ModuleAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
@@ -164,12 +164,12 @@ func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackAWSRoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for stack: %v", err)
@@ -185,7 +185,7 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceAWSRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSRoleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var ID string
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
@@ -203,14 +203,14 @@ func resourceAWSRoleUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	return ret
 }
 
-func resourceAWSRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSRoleDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AttachAWSRole struct {
 			Activated bool `graphql:"activated"`
 		} `graphql:"stackIntegrationAwsDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{}
+	variables := map[string]any{}
 
 	if stackID, ok := d.GetOk("stack_id"); ok {
 		variables["id"] = stackID.(string)
@@ -237,7 +237,7 @@ func resourceAWSRoleSet(ctx context.Context, client *internal.Client, id string,
 		} `graphql:"stackIntegrationAwsCreate(id: $id, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, region: $region)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":                          toID(id),
 		"roleArn":                     graphql.String(d.Get("role_arn").(string)),
 		"generateCredentialsInWorker": graphql.Boolean(d.Get("generate_credentials_in_worker").(bool)),

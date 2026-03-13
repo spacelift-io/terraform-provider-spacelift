@@ -220,7 +220,7 @@ func dataScheduledRun() *schema.Resource {
 	}
 }
 
-func dataScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	scheduledRunID := d.Get("scheduled_run_id").(string)
 
 	idParts := strings.SplitN(scheduledRunID, "/", 2)
@@ -246,7 +246,7 @@ func dataScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta inte
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(stackID),
 		"id":    toID(scheduleID),
 	}

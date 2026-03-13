@@ -43,14 +43,14 @@ func resourceWorkerPoolRecycle() *schema.Resource {
 	}
 }
 
-func resourceWorkerPoolRecycleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkerPoolRecycleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	workerPoolID := d.Get("worker_pool_id").(string)
 
 	var mutation struct {
 		WorkerPoolCycle graphql.Boolean `graphql:"workerPoolCycle(id: $workerPoolId)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"workerPoolId": graphql.ID(workerPoolID),
 	}
 

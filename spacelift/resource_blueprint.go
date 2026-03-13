@@ -74,7 +74,7 @@ func resourceBlueprint() *schema.Resource {
 	}
 }
 
-func validateStateEnum(in interface{}, path cty.Path) diag.Diagnostics {
+func validateStateEnum(in any, path cty.Path) diag.Diagnostics {
 	if in != "DRAFT" && in != "PUBLISHED" {
 		return diag.Errorf("%s must be either DRAFT or PUBLISHED", path)
 	}
@@ -82,12 +82,12 @@ func validateStateEnum(in interface{}, path cty.Path) diag.Diagnostics {
 	return nil
 }
 
-func resourceBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": blueprintCreateInput(d),
 	}
 
@@ -100,12 +100,12 @@ func resourceBlueprintCreate(ctx context.Context, d *schema.ResourceData, meta i
 	return resourceBlueprintRead(ctx, d, meta)
 }
 
-func resourceBlueprintRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Blueprint *structs.Blueprint `graphql:"blueprint(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": graphql.ID(d.Id()),
 	}
 
@@ -129,7 +129,7 @@ func resourceBlueprintRead(ctx context.Context, d *schema.ResourceData, meta int
 		d.Set("template", *query.Blueprint.RawTemplate)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range query.Blueprint.Labels {
 		labels.Add(label)
 	}
@@ -138,12 +138,12 @@ func resourceBlueprintRead(ctx context.Context, d *schema.ResourceData, meta int
 	return nil
 }
 
-func resourceBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Blueprint structs.Blueprint `graphql:"blueprintUpdate(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    graphql.ID(d.Id()),
 		"input": blueprintCreateInput(d),
 	}
@@ -155,14 +155,14 @@ func resourceBlueprintUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	return resourceBlueprintRead(ctx, d, meta)
 }
 
-func resourceBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceBlueprintDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		Blueprint struct {
 			ID string `graphql:"id"`
 		} `graphql:"blueprintDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": graphql.ID(d.Id()),
 	}
 

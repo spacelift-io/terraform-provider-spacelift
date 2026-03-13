@@ -41,12 +41,12 @@ func dataVCSAgentPool() *schema.Resource {
 	}
 }
 
-func dataVcsAgentPoolRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataVcsAgentPoolRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		VCSAgentPool *structs.VCSAgentPool `graphql:"vcsAgentPool(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("vcs_agent_pool_id"))}
+	variables := map[string]any{"id": toID(d.Get("vcs_agent_pool_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "VCSAgentPoolRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the VCS agent pool: %v", err)
 	}

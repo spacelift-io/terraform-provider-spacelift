@@ -10,12 +10,12 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-func verifyModule(ctx context.Context, moduleID string, meta interface{}) error {
+func verifyModule(ctx context.Context, moduleID string, meta any) error {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(moduleID)}
+	variables := map[string]any{"id": graphql.ID(moduleID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "ModuleVerifyExistence", &query, variables); err != nil {
 		return errors.Wrap(err, "could not query for module")
@@ -28,12 +28,12 @@ func verifyModule(ctx context.Context, moduleID string, meta interface{}) error 
 	return nil
 }
 
-func verifyStack(ctx context.Context, stackID string, meta interface{}) error {
+func verifyStack(ctx context.Context, stackID string, meta any) error {
 	var query struct {
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(stackID)}
+	variables := map[string]any{"id": graphql.ID(stackID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackVerifyExistence", &query, variables); err != nil {
 		return errors.Wrap(err, "could not query for stack")

@@ -80,14 +80,14 @@ func resourceAzureIntegrationAttachment() *schema.Resource {
 	}
 }
 
-func resourceAzureIntegrationAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AzureIntegrationAttach structs.AzureIntegrationAttachment `graphql:"azureIntegrationAttach(id: $id, stack: $projectId, read: $read, write: $write, subscriptionId: $subscriptionId)"`
 	}
 
 	projectID := projectID(d)
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":             toID(d.Get("integration_id")),
 		"projectId":      projectID,
 		"read":           graphql.Boolean(d.Get("read").(bool)),
@@ -108,7 +108,7 @@ func resourceAzureIntegrationAttachmentCreate(ctx context.Context, d *schema.Res
 	return resourceAzureIntegrationAttachmentRead(ctx, d, meta)
 }
 
-func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AzureIntegration *struct {
 			Attachment *structs.AzureIntegrationAttachment `graphql:"attachedStack(id: $projectId)"`
@@ -121,7 +121,7 @@ func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.Resou
 	}
 	integrationID, projectID := idComponents[0], idComponents[1]
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"integrationId": toID(integrationID),
 		"projectId":     toID(projectID),
 	}
@@ -143,12 +143,12 @@ func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceAzureIntegrationAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationAttachmentUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AzureIntegrationAttachmentUpdate structs.AzureIntegrationAttachment `graphql:"azureIntegrationAttachmentUpdate(id: $id, read: $read, write: $write, subscriptionId: $subscriptionId)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":             toID(d.Get("attachment_id")),
 		"read":           graphql.Boolean(d.Get("read").(bool)),
 		"write":          graphql.Boolean(d.Get("write").(bool)),
@@ -166,12 +166,12 @@ func resourceAzureIntegrationAttachmentUpdate(ctx context.Context, d *schema.Res
 	return resourceAzureIntegrationAttachmentRead(ctx, d, meta)
 }
 
-func resourceAzureIntegrationAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAzureIntegrationAttachmentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		AzureIntegrationAttachmentDelete *structs.AzureIntegrationAttachment `graphql:"azureIntegrationDetach(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("attachment_id"))}
+	variables := map[string]any{"id": toID(d.Get("attachment_id"))}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "AzureIntegrationAttachmentDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not detach the Azure integration: %v", internal.FromSpaceliftError(err))

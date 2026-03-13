@@ -59,7 +59,7 @@ func dataGCPServiceAccount() *schema.Resource {
 	}
 }
 
-func dataGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var ret diag.Diagnostics
 
 	if stackID, ok := d.GetOk("stack_id"); ok {

@@ -37,7 +37,7 @@ func dataIPs() *schema.Resource {
 	}
 }
 
-func ipsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ipsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	d.SetId("spacelift-ips")
 
 	var query struct {
@@ -49,7 +49,7 @@ func ipsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag
 		return diag.Errorf("could not query for outgoing IP addresses: %v", err)
 	}
 
-	ips := schema.NewSet(schema.HashString, []interface{}{})
+	ips := schema.NewSet(schema.HashString, []any{})
 	for _, ip := range query.IPs {
 		ips.Add(ip)
 	}

@@ -126,7 +126,7 @@ func resourcePluginTemplate() *schema.Resource {
 	}
 }
 
-func resourcePluginTemplateCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePluginTemplateCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreatePluginTemplate structs.PluginTemplate `graphql:"pluginTemplateCreate(input: $input)"`
 	}
@@ -149,7 +149,7 @@ func resourcePluginTemplateCreate(ctx context.Context, d *schema.ResourceData, m
 		input.Labels = &labels
 	}
 
-	variables := map[string]interface{}{"input": input}
+	variables := map[string]any{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PluginTemplateCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create plugin template: %v", internal.FromSpaceliftError(err))
@@ -160,12 +160,12 @@ func resourcePluginTemplateCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourcePluginTemplateRead(ctx, d, meta)
 }
 
-func resourcePluginTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePluginTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		PluginTemplate *structs.PluginTemplate `graphql:"pluginTemplate(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "PluginTemplateRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for plugin template: %v", err)
 	}
@@ -189,16 +189,16 @@ func resourcePluginTemplateRead(ctx context.Context, d *schema.ResourceData, met
 		d.Set("description", nil)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range template.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
 	// Set parameters
-	parameters := make([]map[string]interface{}, len(template.Parameters))
+	parameters := make([]map[string]any, len(template.Parameters))
 	for i, param := range template.Parameters {
-		p := map[string]interface{}{
+		p := map[string]any{
 			"id":        param.ID,
 			"name":      param.Name,
 			"type":      param.Type,
@@ -221,12 +221,12 @@ func resourcePluginTemplateRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourcePluginTemplateDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePluginTemplateDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeletePluginTemplate *structs.PluginTemplate `graphql:"pluginTemplateDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PluginTemplateDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete plugin template: %v", internal.FromSpaceliftError(err))
