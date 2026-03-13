@@ -14,7 +14,8 @@ func toBool(input any) graphql.Boolean {
 }
 
 func toOptionalBool(input any) *graphql.Boolean {
-	return new(toBool(input))
+	v := toBool(input)
+	return &v
 }
 
 func toID(input any) graphql.ID {
@@ -22,7 +23,8 @@ func toID(input any) graphql.ID {
 }
 
 func toOptionalString(input any) *graphql.String {
-	return new(toString(input))
+	v := toString(input)
+	return &v
 }
 
 func toString(input any) graphql.String {
@@ -35,7 +37,7 @@ func toMap(input any) map[string]any {
 
 func toOptionalInt(input any) *graphql.Int {
 	v := graphql.Int(input.(int)) //nolint:gosec // safe: value known to fit in int32
-	return new(v)
+	return &v
 }
 
 func listToStringList(input any) []graphql.String {
