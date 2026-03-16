@@ -254,14 +254,17 @@ func buildClientFromToken(token string) (*internal.Client, error) {
 }
 
 func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error) {
-	// Since validation runs first, we can safely assume that the data is there.
+	endpoint := d.Get("api_key_endpoint").(string)
+	keyID := d.Get("api_key_id").(string)
+	keySecret := d.Get("api_key_secret").(string)
+	return buildClientFromAPIKeyParams(endpoint, keyID, keySecret)
+}
 
-	// Handle / at api_key_endpoint
-	endpoint := strings.TrimSuffix(d.Get("api_key_endpoint").(string), "/")
+// buildClientFromAPIKeyParams builds an internal.Client from plain string credentials.
+// Used by the Plugin Framework provider's Configure method.
+func buildClientFromAPIKeyParams(endpoint, keyID, keySecret string) (*internal.Client, error) {
+	endpoint = strings.TrimSuffix(endpoint, "/")
 	endpoint = fmt.Sprintf("%s/graphql", endpoint)
-
-	apiKeyID := d.Get("api_key_id").(string)
-	apiKeySecret := d.Get("api_key_secret").(string)
 
 	retryableClient := retryablehttp.NewClient()
 	retryableClient.Logger = nil
@@ -275,10 +278,9 @@ func buildClientFromAPIKeyData(d *schema.ResourceData) (*internal.Client, error)
 	}
 
 	err := rawClient.Mutate(context.Background(), &mutation, map[string]any{
-		"id":     graphql.ID(apiKeyID),
-		"secret": graphql.String(apiKeySecret),
+		"id":     graphql.ID(keyID),
+		"secret": graphql.String(keySecret),
 	})
-
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get API user data")
 	}
