@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -31,7 +30,7 @@ func TestNamedWebhookResource(t *testing.T) {
 			`, endpoint, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsFramework(t, []resource.TestStep{
 			{
 				Config: config("https://bacon.net"),
 				Check: Resource(
@@ -72,7 +71,7 @@ func TestNamedWebhookResource(t *testing.T) {
 			`, endpoint, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsFramework(t, []resource.TestStep{
 			{
 				Config: config("https://bacon.net"),
 				Check: Resource(
@@ -106,7 +105,7 @@ func TestNamedWebhookResource(t *testing.T) {
 			`, endpoint, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsFramework(t, []resource.TestStep{
 			{
 				Config: config("https://bacon.net"),
 				Check: Resource(
@@ -160,13 +159,10 @@ func TestNamedWebhookResourceMigration(t *testing.T) {
 			},
 			{
 				// Step 2: Framework provider reads the existing state — must produce no diff.
+				// PlanOnly: true causes the test to fail if there are any planned changes.
 				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories(),
 				Config:                   testConfig,
-				ConfigPlanChecks: resource.ConfigPlanChecks{
-					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
-					},
-				},
+				PlanOnly:                 true,
 			},
 		},
 	})
