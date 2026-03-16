@@ -134,7 +134,6 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_module":                           resourceModule(),
 				"spacelift_mounted_file":                     resourceMountedFile(),
 				"spacelift_named_webhook_secret_header":      resourceNamedWebhookSecretHeader(),
-				"spacelift_named_webhook":                    resourceNamedWebhook(),
 				"spacelift_plugin":                           resourcePlugin(),
 				"spacelift_plugin_template":                  resourcePluginTemplate(),
 				"spacelift_policy_attachment":                resourcePolicyAttachment(),
