@@ -6,6 +6,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
+	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0
 	github.com/kelseyhightower/envconfig v1.4.0
