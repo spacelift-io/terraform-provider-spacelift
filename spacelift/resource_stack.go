@@ -50,7 +50,7 @@ func resourceStack() *schema.Resource {
 			{
 				Version: 0,
 				Type:    resourceStackResourceV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: func(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+				Upgrade: func(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
 					// This function will upgrade any existing state files and will remove any data saved to the `import_state` key.
 					rawState["import_state"] = ""
 					return rawState, nil
@@ -705,7 +705,7 @@ func resourceStack() *schema.Resource {
 	}
 }
 
-func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateStack structs.Stack `graphql:"stackCreate(input: $input, manageState: $manageState, stackObjectID: $stackObjectID, slug: $slug)"`
 	}
@@ -720,7 +720,7 @@ func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		isStateManaged = isStateManaged || bool(*stackInput.VendorConfig.TerragruntInput.UseStateManagement)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input":         stackInput,
 		"manageState":   graphql.Boolean(manageState),
 		"stackObjectID": (*graphql.String)(nil),
@@ -782,7 +782,7 @@ func getStackByID(ctx context.Context, client *internal.Client, stackID string) 
 		Stack *structs.Stack `graphql:"stack(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(stackID)}
+	variables := map[string]any{"id": graphql.ID(stackID)}
 
 	if err := client.Query(ctx, "StackRead", &query, variables); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack")
@@ -791,7 +791,7 @@ func getStackByID(ctx context.Context, client *internal.Client, stackID string) 
 	return query.Stack, nil
 }
 
-func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stack, err := getStackByID(ctx, meta.(*internal.Client), d.Id())
 	if err != nil {
 		return diag.FromErr(err)
@@ -809,12 +809,12 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateStack structs.Stack `graphql:"stackUpdate(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Id()),
 		"input": stackInput(d),
 	}
@@ -828,12 +828,12 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	return append(ret, resourceStackRead(ctx, d, meta)...)
 }
 
-func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
@@ -904,35 +904,35 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 
 	ret.Provider = graphql.NewString("GITHUB")
 
-	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
-		azureSettings := azureDevOps[0].(map[string]interface{})
+	if azureDevOps, ok := d.Get("azure_devops").([]any); ok && len(azureDevOps) > 0 {
+		azureSettings := azureDevOps[0].(map[string]any)
 		if id, ok := azureSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id.(string))
 		}
-		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]interface{})["project"])
+		ret.Namespace = toOptionalString(azureDevOps[0].(map[string]any)["project"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderAzureDevOps))
 	}
 
-	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
-		bitbucketCloudSettings := bitbucketCloud[0].(map[string]interface{})
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]any); ok && len(bitbucketCloud) > 0 {
+		bitbucketCloudSettings := bitbucketCloud[0].(map[string]any)
 		if id, ok := bitbucketCloudSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id.(string))
 		}
-		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]interface{})["namespace"])
+		ret.Namespace = toOptionalString(bitbucketCloud[0].(map[string]any)["namespace"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketCloud))
 	}
 
-	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
-		bitbucketDatacenterSettings := bitbucketDatacenter[0].(map[string]interface{})
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]any); ok && len(bitbucketDatacenter) > 0 {
+		bitbucketDatacenterSettings := bitbucketDatacenter[0].(map[string]any)
 		if id, ok := bitbucketDatacenterSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id.(string))
 		}
-		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+		ret.Namespace = toOptionalString(bitbucketDatacenter[0].(map[string]any)["namespace"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketDatacenter))
 	}
 
-	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
-		ghEnterpriseSettings := githubEnterprise[0].(map[string]interface{})
+	if githubEnterprise, ok := d.Get("github_enterprise").([]any); ok && len(githubEnterprise) > 0 {
+		ghEnterpriseSettings := githubEnterprise[0].(map[string]any)
 		if id, ok := ghEnterpriseSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id)
 		}
@@ -940,8 +940,8 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderGitHubEnterprise))
 	}
 
-	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
-		gitlabSettings := gitlab[0].(map[string]interface{})
+	if gitlab, ok := d.Get("gitlab").([]any); ok && len(gitlab) > 0 {
+		gitlabSettings := gitlab[0].(map[string]any)
 		if id, ok := gitlabSettings["id"]; ok && id != nil && id.(string) != "" {
 			ret.VCSIntegrationID = graphql.NewID(id.(string))
 		}
@@ -949,14 +949,14 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderGitlab))
 	}
 
-	if rawGit, ok := d.Get("raw_git").([]interface{}); ok && len(rawGit) > 0 {
+	if rawGit, ok := d.Get("raw_git").([]any); ok && len(rawGit) > 0 {
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderRawGit))
-		ret.Namespace = toOptionalString(rawGit[0].(map[string]interface{})["namespace"])
-		ret.RepositoryURL = toOptionalString(rawGit[0].(map[string]interface{})["url"])
+		ret.Namespace = toOptionalString(rawGit[0].(map[string]any)["namespace"])
+		ret.RepositoryURL = toOptionalString(rawGit[0].(map[string]any)["url"])
 	}
 
-	if showcase, ok := d.Get("showcase").([]interface{}); ok && len(showcase) > 0 {
-		ret.Namespace = toOptionalString(showcase[0].(map[string]interface{})["namespace"])
+	if showcase, ok := d.Get("showcase").([]any); ok && len(showcase) > 0 {
+		ret.Namespace = toOptionalString(showcase[0].(map[string]any)["namespace"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderShowcases))
 	}
 
@@ -1006,23 +1006,23 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 }
 
 func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
-	if cloudFormation, ok := d.Get("cloudformation").([]interface{}); ok && len(cloudFormation) > 0 {
+	if cloudFormation, ok := d.Get("cloudformation").([]any); ok && len(cloudFormation) > 0 {
 		return &structs.VendorConfigInput{
 			CloudFormationInput: &structs.CloudFormationInput{
-				EntryTemplateFile: toString(cloudFormation[0].(map[string]interface{})["entry_template_file"]),
-				Region:            toString(cloudFormation[0].(map[string]interface{})["region"]),
-				StackName:         toString(cloudFormation[0].(map[string]interface{})["stack_name"]),
-				TemplateBucket:    toString(cloudFormation[0].(map[string]interface{})["template_bucket"]),
+				EntryTemplateFile: toString(cloudFormation[0].(map[string]any)["entry_template_file"]),
+				Region:            toString(cloudFormation[0].(map[string]any)["region"]),
+				StackName:         toString(cloudFormation[0].(map[string]any)["stack_name"]),
+				TemplateBucket:    toString(cloudFormation[0].(map[string]any)["template_bucket"]),
 			},
 		}
 	}
 
-	if kubernetes, ok := d.Get("kubernetes").([]interface{}); ok && len(kubernetes) > 0 {
+	if kubernetes, ok := d.Get("kubernetes").([]any); ok && len(kubernetes) > 0 {
 		vendorConfig := &structs.VendorConfigInput{
 			Kubernetes: &structs.KubernetesInput{},
 		}
 
-		if kubernetesSettings, ok := kubernetes[0].(map[string]interface{}); ok {
+		if kubernetesSettings, ok := kubernetes[0].(map[string]any); ok {
 			vendorConfig.Kubernetes.Namespace = toString(kubernetesSettings["namespace"])
 			if s := toOptionalString(kubernetesSettings["kubectl_version"]); *s != "" {
 				vendorConfig.Kubernetes.KubectlVersion = s
@@ -1034,42 +1034,42 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 		return vendorConfig
 	}
 
-	if pulumi, ok := d.Get("pulumi").([]interface{}); ok && len(pulumi) > 0 {
+	if pulumi, ok := d.Get("pulumi").([]any); ok && len(pulumi) > 0 {
 		return &structs.VendorConfigInput{
 			Pulumi: &structs.PulumiInput{
-				LoginURL:  toString(pulumi[0].(map[string]interface{})["login_url"]),
-				StackName: toString(pulumi[0].(map[string]interface{})["stack_name"]),
+				LoginURL:  toString(pulumi[0].(map[string]any)["login_url"]),
+				StackName: toString(pulumi[0].(map[string]any)["stack_name"]),
 			},
 		}
 	}
 
-	if ansible, ok := d.Get("ansible").([]interface{}); ok && len(ansible) > 0 {
+	if ansible, ok := d.Get("ansible").([]any); ok && len(ansible) > 0 {
 		return &structs.VendorConfigInput{
 			AnsibleInput: &structs.AnsibleInput{
-				Playbook: toString(ansible[0].(map[string]interface{})["playbook"]),
+				Playbook: toString(ansible[0].(map[string]any)["playbook"]),
 			},
 		}
 	}
 
-	if terragrunt, ok := d.Get("terragrunt").([]interface{}); ok && len(terragrunt) > 0 {
+	if terragrunt, ok := d.Get("terragrunt").([]any); ok && len(terragrunt) > 0 {
 		terragruntConfig := structs.TerragruntInput{
-			UseRunAll:            toBool(terragrunt[0].(map[string]interface{})["use_run_all"]),
-			UseSmartSanitization: toBool(terragrunt[0].(map[string]interface{})["use_smart_sanitization"]),
+			UseRunAll:            toBool(terragrunt[0].(map[string]any)["use_run_all"]),
+			UseSmartSanitization: toBool(terragrunt[0].(map[string]any)["use_smart_sanitization"]),
 		}
 
-		if version, ok := terragrunt[0].(map[string]interface{})["terraform_version"]; ok && version.(string) != "" {
+		if version, ok := terragrunt[0].(map[string]any)["terraform_version"]; ok && version.(string) != "" {
 			terragruntConfig.TerraformVersion = toOptionalString(version)
 		}
 
-		if version, ok := terragrunt[0].(map[string]interface{})["terragrunt_version"]; ok && version.(string) != "" {
+		if version, ok := terragrunt[0].(map[string]any)["terragrunt_version"]; ok && version.(string) != "" {
 			terragruntConfig.TerragruntVersion = toOptionalString(version)
 		}
 
-		if tool, ok := terragrunt[0].(map[string]interface{})["tool"]; ok && tool.(string) != "" {
+		if tool, ok := terragrunt[0].(map[string]any)["tool"]; ok && tool.(string) != "" {
 			terragruntConfig.Tool = toOptionalString(tool)
 		}
 
-		if useStateManagement, ok := terragrunt[0].(map[string]interface{})["use_state_management"]; ok {
+		if useStateManagement, ok := terragrunt[0].(map[string]any)["use_state_management"]; ok {
 			terragruntConfig.UseStateManagement = toOptionalBool(useStateManagement)
 		}
 
@@ -1153,14 +1153,14 @@ func shouldWeReComputeTerraformVersionForTerraformWorkflowTool(d *schema.Resourc
 func getStrings(d *schema.ResourceData, fieldName string) []graphql.String {
 	values := []graphql.String{}
 	if commands, ok := d.GetOk(fieldName); ok {
-		for _, cmd := range commands.([]interface{}) {
+		for _, cmd := range commands.([]any) {
 			values = append(values, graphql.String(cmd.(string)))
 		}
 	}
 	return values
 }
 
-func uploadStateFile(ctx context.Context, content string, meta interface{}) (string, error) {
+func uploadStateFile(ctx context.Context, content string, meta any) (string, error) {
 	var mutation struct {
 		StateUploadURL struct {
 			ObjectID string `graphql:"objectId"`
@@ -1194,7 +1194,7 @@ func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {
 	return d.Id() != ""
 }
 
-func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	stackID := d.Id()
 	if stackID == "" {
 		return nil, errors.New("stack ID is required to import a stack")

@@ -87,7 +87,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 	}
 }
 
-func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", data)
 	if diags != nil {
 		return diags
@@ -109,7 +109,7 @@ func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceD
 		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": input,
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookCreate", &mutation, variables); err != nil {
@@ -121,7 +121,7 @@ func resourceAuditTrailWebhookCreate(ctx context.Context, data *schema.ResourceD
 	return resourceAuditTrailWebhookRead(ctx, data, i)
 }
 
-func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var query struct {
 		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailWebhook"`
 	}
@@ -143,7 +143,7 @@ func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceDat
 	return nil
 }
 
-func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var mutation struct {
 		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailSetWebhook(input: $input)"`
 	}
@@ -158,7 +158,7 @@ func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceD
 		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": input,
 	}
 	if err := i.(*internal.Client).Mutate(ctx, "AuditTrailWebhookUpdate", &mutation, variables); err != nil {
@@ -168,7 +168,7 @@ func resourceAuditTrailWebhookUpdate(ctx context.Context, data *schema.ResourceD
 	return resourceAuditTrailWebhookRead(ctx, data, i)
 }
 
-func resourceAuditTrailWebhookDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceAuditTrailWebhookDelete(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var mutation struct {
 		AuditTrailWebhook *structs.AuditTrailWebhookRead `graphql:"auditTrailDeleteWebhook"`
 	}

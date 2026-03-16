@@ -23,11 +23,11 @@ type WaitConfiguration struct {
 	continueOnTimeout bool
 }
 
-func NewWaitConfiguration(input []interface{}) *WaitConfiguration {
+func NewWaitConfiguration(input []any) *WaitConfiguration {
 	if len(input) == 0 {
 		return nil
 	}
-	v := input[0].(map[string]interface{})
+	v := input[0].(map[string]any)
 	cfg := &WaitConfiguration{
 		disabled:          v["disabled"].(bool),
 		continueOnState:   []string{},
@@ -148,7 +148,7 @@ func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID 
 		} `graphql:"stack(id: $stackId)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stackId": graphql.ID(stackID),
 		"runId":   graphql.ID(runID),
 	}
@@ -160,7 +160,7 @@ func getStackRunStateByID(ctx context.Context, client *internal.Client, stackID 
 	rrs := query.Stack.RunResourceState
 
 	currentState := strings.ToLower(string(rrs.State))
-	tflog.Debug(ctx, "current state of run", map[string]interface{}{
+	tflog.Debug(ctx, "current state of run", map[string]any{
 		"stackID":      stackID,
 		"runID":        runID,
 		"currentState": currentState,

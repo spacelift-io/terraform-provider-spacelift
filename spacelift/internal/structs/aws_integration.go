@@ -25,8 +25,8 @@ func (i *AWSIntegration) PopulateResourceData(d *schema.ResourceData) {
 	}
 }
 
-func (i *AWSIntegration) ToMap() map[string]interface{} {
-	return map[string]interface{}{
+func (i *AWSIntegration) ToMap() map[string]any {
+	return map[string]any{
 		"duration_seconds":               i.DurationSeconds,
 		"generate_credentials_in_worker": i.GenerateCredentialsInWorker,
 		"external_id":                    i.ExternalID,
@@ -41,7 +41,7 @@ func (i *AWSIntegration) ToMap() map[string]interface{} {
 }
 
 func (i *AWSIntegration) getLabelsSet() *schema.Set {
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range i.Labels {
 		labels.Add(label)
 	}

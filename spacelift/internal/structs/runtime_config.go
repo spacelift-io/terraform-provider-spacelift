@@ -64,8 +64,8 @@ type RuntimeConfigInput struct {
 	BeforePlan    *[]graphql.String `json:"beforePlan,omitempty"`
 }
 
-func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Diagnostics) {
-	result := make(map[string]interface{})
+func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]any, diag.Diagnostics) {
+	result := make(map[string]any)
 
 	if r.ProjectRoot != "" {
 		result["project_root"] = r.ProjectRoot
@@ -84,9 +84,9 @@ func ExportRuntimeConfigToMap(r *RuntimeConfig) (map[string]interface{}, diag.Di
 	}
 
 	if len(r.Environment) > 0 {
-		l := make([]map[string]interface{}, 0, len(r.Environment))
+		l := make([]map[string]any, 0, len(r.Environment))
 		for _, e := range r.Environment {
-			l = append(l, map[string]interface{}{
+			l = append(l, map[string]any{
 				"key":   e.Key,
 				"value": e.Value,
 			})

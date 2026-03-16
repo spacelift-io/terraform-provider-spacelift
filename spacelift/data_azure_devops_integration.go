@@ -92,7 +92,7 @@ func dataAzureDevopsIntegration() *schema.Resource {
 	}
 }
 
-func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AzureDevOpsIntegration *struct {
 			ID          string `graphql:"id"`
@@ -111,7 +111,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 		} `graphql:"azureDevOpsRepoIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": ""}
+	variables := map[string]any{"id": ""}
 
 	if id, ok := d.GetOk(azureDevopsID); ok && id != "" {
 		variables["id"] = toID(id)
@@ -136,7 +136,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 	d.Set(azureDevopsWebhookPassword, azureDevopsIntegration.WebhookPassword)
 	d.Set(azureDevopsWebhookURL, azureDevopsIntegration.WebhookURL)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range azureDevopsIntegration.Labels {
 		labels.Add(label)
 	}

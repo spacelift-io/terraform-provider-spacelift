@@ -58,7 +58,7 @@ func resourceStackDependencyReference() *schema.Resource {
 	}
 }
 
-func resourceStackDependencyReferenceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDependencyReferenceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		StackDependencyReference structs.StackDependencyReference `graphql:"stackDependenciesAddReference(stackDependencyID: $stackDependencyID, reference: $reference)"`
 	}
@@ -68,7 +68,7 @@ func resourceStackDependencyReferenceCreate(ctx context.Context, d *schema.Resou
 		return diags
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stackDependencyID": toID(depID),
 		"reference": structs.StackDependencyReferenceInput{
 			OutputName:    toString(d.Get("output_name")),
@@ -90,7 +90,7 @@ func resourceStackDependencyReferenceCreate(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
 			Dependency *struct {
@@ -104,7 +104,7 @@ func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.Resourc
 		return diag.FromErr(err)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack_id":      toID(stackID),
 		"dependency_id": toID(depID),
 		"reference_id":  toID(refID),
@@ -141,7 +141,7 @@ func resourceStackDependencyReferenceRead(ctx context.Context, d *schema.Resourc
 	return nil
 }
 
-func resourceStackDependencyReferenceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDependencyReferenceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		StackDependencyReference structs.StackDependencyReference `graphql:"stackDependenciesUpdateReference(reference: $reference)"`
 	}
@@ -151,7 +151,7 @@ func resourceStackDependencyReferenceUpdate(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"reference": structs.StackDependencyReferenceUpdateInput{
 			ID:            toID(refID),
 			OutputName:    toString(d.Get("output_name")),
@@ -173,7 +173,7 @@ func resourceStackDependencyReferenceUpdate(ctx context.Context, d *schema.Resou
 	return nil
 }
 
-func resourceStackDependencyReferenceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceStackDependencyReferenceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		StackDependencyReference *structs.StackDependencyReference `graphql:"stackDependenciesDeleteReference(id: $id)"`
 	}
@@ -183,7 +183,7 @@ func resourceStackDependencyReferenceDelete(ctx context.Context, d *schema.Resou
 		return diag.FromErr(err)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(refID),
 	}
 

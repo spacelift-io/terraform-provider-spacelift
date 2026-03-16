@@ -58,7 +58,7 @@ func resourceScheduledDeleteStack() *schema.Resource {
 	}
 }
 
-func resourceScheduledDeleteStackCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledDeleteStackCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	at := d.Get("at").(int)
 	deleteResources := d.Get("delete_resources").(bool)
 
@@ -66,11 +66,11 @@ func resourceScheduledDeleteStackCreate(ctx context.Context, d *schema.ResourceD
 		CreateDeleteSchedule structs.ScheduledStackDelete `graphql:"stackScheduledDeleteCreate(stack: $stack, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(d.Get("stack_id").(string)),
 		"input": structs.ScheduledDeleteInput{
 			ShouldDeleteResources: graphql.Boolean(deleteResources),
-			TimestampSchedule:     graphql.NewInt(graphql.Int(at)), //nolint:gosec // safe: value known to fit in int32
+			TimestampSchedule:     new(graphql.Int(at)), //nolint:gosec // safe: value known to fit in int32
 		},
 	}
 
@@ -83,7 +83,7 @@ func resourceScheduledDeleteStackCreate(ctx context.Context, d *schema.ResourceD
 	return resourceScheduledDeleteStackRead(ctx, d, meta)
 }
 
-func resourceScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var err error
 
 	idParts := strings.SplitN(d.Id(), "/", 2)
@@ -107,7 +107,7 @@ func resourceScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceDat
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "StackSchedulingRead", &query, map[string]interface{}{"stack": toID(stackID), "id": toID(scheduleID)}); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "StackSchedulingRead", &query, map[string]any{"stack": toID(stackID), "id": toID(scheduleID)}); err != nil {
 		return diag.Errorf("could not query for scheduled stack_delete: %v", internal.FromSpaceliftError(err))
 	}
 
@@ -123,7 +123,7 @@ func resourceScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceDat
 	return nil
 }
 
-func resourceScheduledDeleteStackUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledDeleteStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var err error
 
 	idParts := strings.SplitN(d.Id(), "/", 2)
@@ -146,12 +146,12 @@ func resourceScheduledDeleteStackUpdate(ctx context.Context, d *schema.ResourceD
 		UpdateDeleteSchedule structs.ScheduledStackDelete `graphql:"stackScheduledDeleteUpdate(stack: $stack, scheduledDelete: $scheduledDelete, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack":           toID(stackID),
 		"scheduledDelete": toID(scheduleID),
 		"input": structs.ScheduledDeleteInput{
 			ShouldDeleteResources: graphql.Boolean(deleteResources),
-			TimestampSchedule:     graphql.NewInt(graphql.Int(at)), //nolint:gosec // safe: value known to fit in int32
+			TimestampSchedule:     new(graphql.Int(at)), //nolint:gosec // safe: value known to fit in int32
 		},
 	}
 
@@ -162,7 +162,7 @@ func resourceScheduledDeleteStackUpdate(ctx context.Context, d *schema.ResourceD
 	return resourceScheduledDeleteStackRead(ctx, d, meta)
 }
 
-func resourceScheduledDeleteStackDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledDeleteStackDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 2)
 	if len(idParts) != 2 {
 		return diag.Errorf("unexpected resource ID: %s", d.Id())
@@ -174,7 +174,7 @@ func resourceScheduledDeleteStackDelete(ctx context.Context, d *schema.ResourceD
 		DeleteDeleteStackSchedule structs.ScheduledStackDelete `graphql:"stackScheduledDeleteDelete(stack: $stack, scheduledDelete: $scheduledDelete)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledStackDeleteDelete", &mutation, map[string]interface{}{
+	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledStackDeleteDelete", &mutation, map[string]any{
 		"stack":           toID(stackID),
 		"scheduledDelete": toID(scheduleID),
 	}); err != nil {

@@ -70,7 +70,7 @@ func dataEnvironmentVariable() *schema.Resource {
 	}
 }
 
-func dataEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("context_id"); ok {
 		return dataEnvironmentVariableReadContext(ctx, d, meta)
 	}
@@ -82,7 +82,7 @@ func dataEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData, me
 	return dataEnvironmentVariableReadStack(ctx, d, meta)
 }
 
-func dataEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -92,7 +92,7 @@ func dataEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceD
 	contextID := d.Get("context_id")
 	variableName := d.Get("name")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"context": toID(contextID),
 		"id":      toID(variableName),
 	}
@@ -121,7 +121,7 @@ func dataEnvironmentVariableReadContext(ctx context.Context, d *schema.ResourceD
 	return nil
 }
 
-func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -131,7 +131,7 @@ func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceDa
 	moduleID := d.Get("module_id")
 	variableName := d.Get("name")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"module": toID(moduleID),
 		"id":     toID(variableName),
 	}
@@ -155,7 +155,7 @@ func dataEnvironmentVariableReadModule(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func dataEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -165,7 +165,7 @@ func dataEnvironmentVariableReadStack(ctx context.Context, d *schema.ResourceDat
 	stackID := d.Get("stack_id")
 	variableName := d.Get("name")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(stackID),
 		"id":    toID(variableName),
 	}

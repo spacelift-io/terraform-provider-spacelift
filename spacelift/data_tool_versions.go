@@ -34,7 +34,7 @@ func dataToolVersions() *schema.Resource {
 	}
 }
 
-func dataToolVersionsValidateInput(i interface{}, p cty.Path) diag.Diagnostics {
+func dataToolVersionsValidateInput(i any, p cty.Path) diag.Diagnostics {
 	tool := i.(string)
 
 	validTools := []string{
@@ -51,7 +51,7 @@ func dataToolVersionsValidateInput(i interface{}, p cty.Path) diag.Diagnostics {
 	return nil
 }
 
-func dataToolVersionsRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataToolVersionsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	tool := d.Get("tool").(string)
 	switch tool {
 	case "KUBECTL":

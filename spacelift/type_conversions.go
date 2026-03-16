@@ -9,41 +9,43 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-func toBool(input interface{}) graphql.Boolean {
+func toBool(input any) graphql.Boolean {
 	return graphql.Boolean(input.(bool))
 }
 
-func toOptionalBool(input interface{}) *graphql.Boolean {
-	return graphql.NewBoolean(toBool(input))
+func toOptionalBool(input any) *graphql.Boolean {
+	v := toBool(input)
+	return &v
 }
 
-func toID(input interface{}) graphql.ID {
+func toID(input any) graphql.ID {
 	return graphql.ID(input)
 }
 
-func toOptionalString(input interface{}) *graphql.String {
-	return graphql.NewString(toString(input))
+func toOptionalString(input any) *graphql.String {
+	v := toString(input)
+	return &v
 }
 
-func toString(input interface{}) graphql.String {
+func toString(input any) graphql.String {
 	return graphql.String(input.(string))
 }
 
-func toMap(input interface{}) map[string]interface{} {
-	return input.(map[string]interface{})
+func toMap(input any) map[string]any {
+	return input.(map[string]any)
 }
 
-func toOptionalInt(input interface{}) *graphql.Int {
+func toOptionalInt(input any) *graphql.Int {
 	v := graphql.Int(input.(int)) //nolint:gosec // safe: value known to fit in int32
-	return graphql.NewInt(v)
+	return &v
 }
 
-func listToStringList(input interface{}) []graphql.String {
+func listToStringList(input any) []graphql.String {
 	if input == nil {
 		return nil
 	}
 
-	v := input.([]interface{})
+	v := input.([]any)
 	var arr []graphql.String
 	if len(v) > 0 {
 		for _, expr := range v {
@@ -53,7 +55,7 @@ func listToStringList(input interface{}) []graphql.String {
 	return arr
 }
 
-func listToOptionalStringList(input interface{}) *[]graphql.String {
+func listToOptionalStringList(input any) *[]graphql.String {
 	l := listToStringList(input)
 	if l == nil {
 		return nil
@@ -61,7 +63,7 @@ func listToOptionalStringList(input interface{}) *[]graphql.String {
 	return &l
 }
 
-func setToOptionalStringList(input interface{}) *[]graphql.String {
+func setToOptionalStringList(input any) *[]graphql.String {
 	if input == nil {
 		return nil
 	}
@@ -77,7 +79,7 @@ func setToOptionalStringList(input interface{}) *[]graphql.String {
 	return nil
 }
 
-func toOptionalStringMap(input interface{}) *structs.StringMap {
+func toOptionalStringMap(input any) *structs.StringMap {
 	var customHeaders structs.StringMap
 	for k, v := range toMap(input) {
 		customHeaders.Entries = append(customHeaders.Entries, structs.KeyValuePair{
@@ -112,7 +114,7 @@ func getOptionalBool(d *schema.ResourceData, key string) *graphql.Boolean {
 
 // convertToString converts various types to their string representation
 // This is used for plugin parameters where the API expects strings but users provide typed values
-func convertToString(input interface{}) string {
+func convertToString(input any) string {
 	if input == nil {
 		return ""
 	}

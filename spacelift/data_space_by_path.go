@@ -61,7 +61,7 @@ func dataSpaceByPath() *schema.Resource {
 	}
 }
 
-func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	path := d.Get("space_path").(string)
 
 	if strings.HasPrefix(path, "/") {
@@ -72,7 +72,7 @@ func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta inter
 		Spaces []*structs.Space `graphql:"spaces"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "SpaceRead", &query, map[string]interface{}{}); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "SpaceRead", &query, map[string]any{}); err != nil {
 		return diag.Errorf("could not query for spaces: %v", err)
 	}
 
@@ -104,7 +104,7 @@ func dataSpaceByPathRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("description", space.Description)
 	d.Set("inherit_entities", space.InheritEntities)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range space.Labels {
 		labels.Add(label)
 	}

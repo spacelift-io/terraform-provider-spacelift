@@ -61,7 +61,7 @@ func resourceTerraformProvider() *schema.Resource {
 	}
 }
 
-func resourceTerraformProviderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTerraformProviderCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var createMutation struct {
 		CreateTerraformProvider structs.TerraformProvider `graphql:"terraformProviderCreate(type: $type, space: $space, description: $description, labels: $labels)"`
 	}
@@ -111,12 +111,12 @@ func resourceTerraformProviderCreate(ctx context.Context, d *schema.ResourceData
 	return resourceTerraformProviderRead(ctx, d, meta)
 }
 
-func resourceTerraformProviderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTerraformProviderRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		TerraformProvider *structs.TerraformProvider `graphql:"terraformProvider(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(d.Id()),
 	}
 
@@ -138,7 +138,7 @@ func resourceTerraformProviderRead(ctx context.Context, d *schema.ResourceData, 
 	return nil
 }
 
-func resourceTerraformProviderUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTerraformProviderUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var updateMutation struct {
 		TerraformProviderUpdate structs.TerraformProvider `graphql:"terraformProviderUpdate(id: $id, space: $space, description: $description, labels: $labels)"`
 	}
@@ -190,7 +190,7 @@ func resourceTerraformProviderUpdate(ctx context.Context, d *schema.ResourceData
 	return ret
 }
 
-func resourceTerraformProviderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTerraformProviderDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		TerraformProviderDelete *structs.TerraformProvider `graphql:"terraformProviderDelete(id: $id)"`
 	}

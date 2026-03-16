@@ -98,7 +98,7 @@ func resourceAWSIntegration() *schema.Resource {
 	}
 }
 
-func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationCreate(name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region, autoattachEnabled: $autoattachEnabled, tagAssumeRole: $tagAssumeRole)"`
 	}
@@ -111,7 +111,7 @@ func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"name":                        toString(d.Get("name")),
 		"roleArn":                     toString(d.Get("role_arn")),
 		"externalID":                  toString(d.Get("external_id")),
@@ -141,12 +141,12 @@ func resourceAWSIntegrationCreate(ctx context.Context, d *schema.ResourceData, m
 	return resourceAWSIntegrationRead(ctx, d, meta)
 }
 
-func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		AWSIntegration *structs.AWSIntegration `graphql:"awsIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "AWSIntegrationRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for the AWS integration: %v", err)
 	}
@@ -160,7 +160,7 @@ func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateAWSIntegration structs.AWSIntegration `graphql:"awsIntegrationUpdate(id: $id, name: $name, roleArn: $roleArn, generateCredentialsInWorker: $generateCredentialsInWorker, externalID: $externalID, durationSeconds: $durationSeconds, labels: $labels, space: $space, region: $region, autoattachEnabled: $autoattachEnabled, tagAssumeRole: $tagAssumeRole)"`
 	}
@@ -173,7 +173,7 @@ func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":                          graphql.ID(d.Id()),
 		"name":                        toString(d.Get("name")),
 		"roleArn":                     toString(d.Get("role_arn")),
@@ -204,12 +204,12 @@ func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, m
 	return append(ret, resourceAWSIntegrationRead(ctx, d, meta)...)
 }
 
-func resourceAWSIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceAWSIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteAWSIntegration *structs.AWSIntegration `graphql:"awsIntegrationDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "AWSIntegrationDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete the AWS integration: %v", internal.FromSpaceliftError(err))

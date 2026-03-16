@@ -75,12 +75,12 @@ func resourceIdpGroupMapping() *schema.Resource {
 	}
 }
 
-func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// send a create query to the API
 	var mutation struct {
 		UserGroup *structs.UserGroup `graphql:"managedUserGroupCreate(input: $input)"`
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.ManagedUserGroupCreateInput{
 			Name:        toString(d.Get("name")),
 			Description: toString(d.Get("description")),
@@ -98,12 +98,12 @@ func resourceIdpGroupMappingCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceIdpGroupMappingRead(ctx, d, meta)
 }
 
-func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// send a read query to the API
 	var query struct {
 		UserGroup *structs.UserGroup `graphql:"managedUserGroup(id: $id)"`
 	}
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "ManagedUserGroupRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for IdP group mapping: %v", err)
 	}
@@ -117,9 +117,9 @@ func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, me
 
 	// if found, update the TF state
 	d.Set("name", userGroup.Name)
-	var accessList []interface{}
+	var accessList []any
 	for _, a := range userGroup.AccessRules {
-		accessList = append(accessList, map[string]interface{}{
+		accessList = append(accessList, map[string]any{
 			"space_id": a.Space,
 			"role":     a.SpaceAccessLevel,
 		})
@@ -130,14 +130,14 @@ func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, me
 
 }
 
-func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var ret diag.Diagnostics
 
 	// send an update query to the API
 	var mutation struct {
 		UserGroup *structs.UserGroup `graphql:"managedUserGroupUpdate(input: $input)"`
 	}
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": structs.ManagedUserGroupUpdateInput{
 			ID:          toID(d.Id()),
 			AccessRules: getAccessRules(d),
@@ -154,12 +154,12 @@ func resourceIdpGroupMappingUpdate(ctx context.Context, d *schema.ResourceData, 
 	return ret
 }
 
-func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIdpGroupMappingDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// send a delete query to the API
 	var mutation struct {
 		UserGroup *structs.UserGroup `graphql:"managedUserGroupDelete(id: $id)"`
 	}
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 	if err := meta.(*internal.Client).Mutate(ctx, "ManagedUserGroupDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete IdP group mapping: %v", internal.FromSpaceliftError(err))
 	}
@@ -175,7 +175,7 @@ func getAccessRules(d *schema.ResourceData) []structs.SpaceAccessRuleInput {
 
 	if policies, ok := d.Get("policy").(*schema.Set); ok {
 		for _, a := range policies.List() {
-			access := a.(map[string]interface{})
+			access := a.(map[string]any)
 			accessRules = append(accessRules, structs.SpaceAccessRuleInput{
 				Space:            toID(access["space_id"]),
 				SpaceAccessLevel: structs.SpaceAccessLevel(access["role"].(string)),

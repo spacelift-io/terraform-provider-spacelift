@@ -96,25 +96,25 @@ func resourceRun() *schema.Resource {
 	}
 }
 
-func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		ID string `graphql:"runResourceCreate(stack: $stack, commitSha: $sha, proposed: $proposed)"`
 	}
 
 	stackID := d.Get("stack_id").(string)
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack":    toID(stackID),
 		"sha":      (*graphql.String)(nil),
 		"proposed": (*graphql.Boolean)(nil),
 	}
 
 	if sha, ok := d.GetOk("commit_sha"); ok {
-		variables["sha"] = graphql.NewString(graphql.String(sha.(string)))
+		variables["sha"] = new(graphql.String(sha.(string)))
 	}
 
 	if proposed, ok := d.GetOk("proposed"); ok {
-		variables["proposed"] = graphql.NewBoolean(graphql.Boolean(proposed.(bool)))
+		variables["proposed"] = new(graphql.Boolean(proposed.(bool)))
 	}
 
 	client := meta.(*internal.Client)
@@ -123,7 +123,7 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 	}
 
 	if waitRaw, ok := d.GetOk("wait"); ok {
-		wait := structs.NewWaitConfiguration(waitRaw.([]interface{}))
+		wait := structs.NewWaitConfiguration(waitRaw.([]any))
 		if diag := wait.Wait(ctx, d, client, stackID, mutation.ID); len(diag) > 0 {
 			return diag
 		}

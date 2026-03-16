@@ -56,7 +56,7 @@ func dataStacks() *schema.Resource {
 	}
 }
 
-func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// Build the conditions.
 	var conditions []search.SearchQueryPredicate
 
@@ -86,10 +86,10 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		Predicates: &conditions,
 	}
 
-	var stacks []interface{}
+	var stacks []any
 
 	for {
-		variables := map[string]interface{}{"input": input}
+		variables := map[string]any{"input": input}
 
 		if err := meta.(*internal.Client).Query(ctx, "StacksPage", &query, variables); err != nil {
 			return diag.Errorf("could not query for stacks: %v", err)
@@ -98,7 +98,7 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		for _, edge := range query.SearchStacksOutput.Edges {
 			node := edge.Node
 
-			stack := map[string]interface{}{
+			stack := map[string]any{
 				"administrative":                   node.Administrative,
 				"after_apply":                      node.AfterApply,
 				"after_destroy":                    node.AfterDestroy,
@@ -136,7 +136,7 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 			}
 
 			if vcsKey, vcsSettings := node.VCSSettings(); vcsKey != "" {
-				vcsValue := []interface{}{vcsSettings}
+				vcsValue := []any{vcsSettings}
 				if vcsSettings == nil {
 					vcsValue = nil
 				}
@@ -144,7 +144,7 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta interface{
 			}
 
 			if iacKey, iacSettings := node.IaCSettings(); iacKey != "" {
-				stack[iacKey] = []interface{}{iacSettings}
+				stack[iacKey] = []any{iacSettings}
 			} else { // this is a Terraform stack
 				stack["terraform_version"] = node.VendorConfig.Terraform.Version
 				stack["terraform_workspace"] = node.VendorConfig.Terraform.Workspace

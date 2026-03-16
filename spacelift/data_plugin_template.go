@@ -111,12 +111,12 @@ func dataPluginTemplate() *schema.Resource {
 	}
 }
 
-func dataPluginTemplateRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataPluginTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		PluginTemplate *structs.PluginTemplate `graphql:"pluginTemplate(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("plugin_template_id"))}
+	variables := map[string]any{"id": toID(d.Get("plugin_template_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "PluginTemplateRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for plugin template: %v", err)
 	}
@@ -139,16 +139,16 @@ func dataPluginTemplateRead(ctx context.Context, d *schema.ResourceData, meta in
 		d.Set("description", nil)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range template.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
 	// Set parameters
-	parameters := make([]map[string]interface{}, len(template.Parameters))
+	parameters := make([]map[string]any, len(template.Parameters))
 	for i, param := range template.Parameters {
-		p := map[string]interface{}{
+		p := map[string]any{
 			"id":        param.ID,
 			"name":      param.Name,
 			"type":      param.Type,

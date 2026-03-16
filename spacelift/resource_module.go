@@ -335,12 +335,12 @@ func resourceModule() *schema.Resource {
 	}
 }
 
-func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateModule *structs.Module `graphql:"moduleCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": moduleCreateInput(d),
 	}
 
@@ -355,7 +355,7 @@ func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 			MakeModulePublic *structs.Module `graphql:"modulePublish(id: $id)"`
 		}
 
-		publicVariables := map[string]interface{}{"id": graphql.ID(mutation.CreateModule.ID)}
+		publicVariables := map[string]any{"id": graphql.ID(mutation.CreateModule.ID)}
 
 		if err := meta.(*internal.Client).Mutate(ctx, "ModulePublish", &publicMutation, publicVariables); err != nil {
 			return diag.Errorf("could not make module public: %v", internal.FromSpaceliftError(err))
@@ -369,12 +369,12 @@ func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	return resourceModuleRead(ctx, d, meta)
 }
 
-func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 
 	if err := meta.(*internal.Client).Query(ctx, "ModuleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
@@ -409,7 +409,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 		d.Set("runner_image", *module.RunnerImage)
 	}
 
-	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []any{})
 	for _, path := range module.GitSparseCheckoutPaths {
 		gitSparseCheckoutPaths.Add(path)
 	}
@@ -419,13 +419,13 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range module.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
-	sharedAccounts := schema.NewSet(schema.HashString, []interface{}{})
+	sharedAccounts := schema.NewSet(schema.HashString, []any{})
 	for _, share := range module.ModuleShares {
 		if share.To.Space == nil {
 			sharedAccounts.Add(share.To.Account.Subdomain)
@@ -433,7 +433,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	}
 	d.Set("shared_accounts", sharedAccounts)
 
-	spaceShares := schema.NewSet(schema.HashString, []interface{}{})
+	spaceShares := schema.NewSet(schema.HashString, []any{})
 	for _, share := range module.ModuleShares {
 		if share.To.Space != nil {
 			spaceShares.Add(share.To.Space.ID)
@@ -454,12 +454,12 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateModule structs.Module `graphql:"moduleUpdateV2(id: $id, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Id()),
 		"input": moduleUpdateV2Input(d),
 	}
@@ -477,7 +477,7 @@ func resourceModuleUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	return append(ret, resourceModuleRead(ctx, d, meta)...)
 }
 
-func updateModuleShares(ctx context.Context, d *schema.ResourceData, meta interface{}) error {
+func updateModuleShares(ctx context.Context, d *schema.ResourceData, meta any) error {
 	if !d.HasChange("space_shares") {
 		return nil
 	}
@@ -510,7 +510,7 @@ func updateModuleShares(ctx context.Context, d *schema.ResourceData, meta interf
 		Spaces:   spaceShares,
 	}
 
-	shareVariables := map[string]interface{}{
+	shareVariables := map[string]any{
 		"id":    graphql.ID(d.Id()),
 		"input": shareInput,
 	}
@@ -522,12 +522,12 @@ func updateModuleShares(ctx context.Context, d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteModule *structs.Module `graphql:"moduleDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "ModuleDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete module: %v", internal.FromSpaceliftError(err))
@@ -541,8 +541,8 @@ func resourceModuleDelete(ctx context.Context, d *schema.ResourceData, meta inte
 func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace *graphql.String, repositoryURL *graphql.String, vcsIntegrationID *graphql.ID) {
 	provider = graphql.NewString("GITHUB")
 
-	if azureDevOps, ok := d.Get("azure_devops").([]interface{}); ok && len(azureDevOps) > 0 {
-		azureSettings := azureDevOps[0].(map[string]interface{})
+	if azureDevOps, ok := d.Get("azure_devops").([]any); ok && len(azureDevOps) > 0 {
+		azureSettings := azureDevOps[0].(map[string]any)
 		if id, ok := azureSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
@@ -552,8 +552,8 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		return
 	}
 
-	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]interface{}); ok && len(bitbucketCloud) > 0 {
-		bitbucketCloudSettings := bitbucketCloud[0].(map[string]interface{})
+	if bitbucketCloud, ok := d.Get("bitbucket_cloud").([]any); ok && len(bitbucketCloud) > 0 {
+		bitbucketCloudSettings := bitbucketCloud[0].(map[string]any)
 		if id, ok := bitbucketCloudSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
@@ -563,19 +563,19 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		return
 	}
 
-	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]interface{}); ok && len(bitbucketDatacenter) > 0 {
-		bitbucketDatacenterSettings := bitbucketDatacenter[0].(map[string]interface{})
+	if bitbucketDatacenter, ok := d.Get("bitbucket_datacenter").([]any); ok && len(bitbucketDatacenter) > 0 {
+		bitbucketDatacenterSettings := bitbucketDatacenter[0].(map[string]any)
 		if id, ok := bitbucketDatacenterSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
-		namespace = toOptionalString(bitbucketDatacenter[0].(map[string]interface{})["namespace"])
+		namespace = toOptionalString(bitbucketDatacenter[0].(map[string]any)["namespace"])
 		provider = graphql.NewString(graphql.String(structs.VCSProviderBitbucketDatacenter))
 
 		return
 	}
 
-	if githubEnterprise, ok := d.Get("github_enterprise").([]interface{}); ok && len(githubEnterprise) > 0 {
-		ghEnterpriseSettings := githubEnterprise[0].(map[string]interface{})
+	if githubEnterprise, ok := d.Get("github_enterprise").([]any); ok && len(githubEnterprise) > 0 {
+		ghEnterpriseSettings := githubEnterprise[0].(map[string]any)
 		if id, ok := ghEnterpriseSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id)
 		}
@@ -585,8 +585,8 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		return
 	}
 
-	if gitlab, ok := d.Get("gitlab").([]interface{}); ok && len(gitlab) > 0 {
-		gitlabSettings := gitlab[0].(map[string]interface{})
+	if gitlab, ok := d.Get("gitlab").([]any); ok && len(gitlab) > 0 {
+		gitlabSettings := gitlab[0].(map[string]any)
 		if id, ok := gitlabSettings["id"]; ok && id != nil && id.(string) != "" {
 			vcsIntegrationID = graphql.NewID(id.(string))
 		}
@@ -594,9 +594,9 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		provider = graphql.NewString(graphql.String(structs.VCSProviderGitlab))
 	}
 
-	if rawGit, ok := d.Get("raw_git").([]interface{}); ok && len(rawGit) > 0 {
-		repositoryURL = toOptionalString(rawGit[0].(map[string]interface{})["url"])
-		namespace = toOptionalString(rawGit[0].(map[string]interface{})["namespace"])
+	if rawGit, ok := d.Get("raw_git").([]any); ok && len(rawGit) > 0 {
+		repositoryURL = toOptionalString(rawGit[0].(map[string]any)["url"])
+		namespace = toOptionalString(rawGit[0].(map[string]any)["namespace"])
 		provider = graphql.NewString(graphql.String(structs.VCSProviderRawGit))
 	}
 

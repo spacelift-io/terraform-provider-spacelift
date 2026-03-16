@@ -82,7 +82,7 @@ func resourceScheduledTask() *schema.Resource {
 	}
 }
 
-func resourceScheduledTaskCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledTaskCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	scheduledTask, err := getScheduledTask(d)
 	if err != nil {
 		return diag.Errorf("could not extract scheduled task: %s", err)
@@ -97,7 +97,7 @@ func resourceScheduledTaskCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if scheduledTask.At != nil {
-		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledTask.At)) //nolint:gosec // safe: value known to fit in int32
+		input.TimestampSchedule = new(graphql.Int(*scheduledTask.At)) //nolint:gosec // safe: value known to fit in int32
 	} else {
 		var scheduleExpressions []graphql.String
 		for _, expr := range scheduledTask.Every {
@@ -105,10 +105,10 @@ func resourceScheduledTaskCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 
 		input.CronSchedule = scheduleExpressions
-		input.Timezone = graphql.NewString(graphql.String(scheduledTask.Timezone))
+		input.Timezone = new(graphql.String(scheduledTask.Timezone))
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(d.Get("stack_id").(string)),
 		"input": input,
 	}
@@ -122,7 +122,7 @@ func resourceScheduledTaskCreate(ctx context.Context, d *schema.ResourceData, me
 	return resourceScheduledTaskRead(ctx, d, meta)
 }
 
-func resourceScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var err error
 
 	idParts := strings.SplitN(d.Id(), "/", 2)
@@ -146,7 +146,7 @@ func resourceScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	variables := map[string]interface{}{"stack": toID(stackID), "id": toID(scheduleID)}
+	variables := map[string]any{"stack": toID(stackID), "id": toID(scheduleID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackScheduledTaskRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for scheduled `task` config: %v", internal.FromSpaceliftError(err))
@@ -164,7 +164,7 @@ func resourceScheduledTaskRead(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func resourceScheduledTaskUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledTaskUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	scheduledTask, err := getScheduledTask(d)
 	if err != nil {
 		return diag.Errorf("could not extract scheduled task: %s", err)
@@ -194,7 +194,7 @@ func resourceScheduledTaskUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if scheduledTask.At != nil {
-		input.TimestampSchedule = graphql.NewInt(graphql.Int(*scheduledTask.At)) //nolint:gosec // safe: value known to fit in int32
+		input.TimestampSchedule = new(graphql.Int(*scheduledTask.At)) //nolint:gosec // safe: value known to fit in int32
 	} else {
 		var scheduleExpressions []graphql.String
 		for _, expr := range scheduledTask.Every {
@@ -202,10 +202,10 @@ func resourceScheduledTaskUpdate(ctx context.Context, d *schema.ResourceData, me
 		}
 
 		input.CronSchedule = scheduleExpressions
-		input.Timezone = graphql.NewString(graphql.String(scheduledTask.Timezone))
+		input.Timezone = new(graphql.String(scheduledTask.Timezone))
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack":         toID(stackID),
 		"scheduledTask": toID(scheduleID),
 		"input":         input,
@@ -218,7 +218,7 @@ func resourceScheduledTaskUpdate(ctx context.Context, d *schema.ResourceData, me
 	return resourceScheduledTaskRead(ctx, d, meta)
 }
 
-func resourceScheduledTaskDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceScheduledTaskDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var err error
 
 	idParts := strings.SplitN(d.Id(), "/", 2)
@@ -236,7 +236,7 @@ func resourceScheduledTaskDelete(ctx context.Context, d *schema.ResourceData, me
 		DeleteTaskSchedule structs.ScheduledTask `graphql:"stackScheduledTaskDelete(stack: $stack, scheduledTask: $scheduledTask)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledTaskDelete", &mutation, map[string]interface{}{
+	if err := meta.(*internal.Client).Mutate(ctx, "ScheduledTaskDelete", &mutation, map[string]any{
 		"stack":         toID(stackID),
 		"scheduledTask": toID(scheduleID),
 	}); err != nil {
@@ -260,7 +260,7 @@ func getScheduledTask(d *schema.ResourceData) (*ScheduledTask, error) {
 	at, atOk := d.GetOk("at")
 
 	if everyOk && every != nil {
-		v := every.([]interface{})
+		v := every.([]any)
 		if len(v) > 0 {
 			var scheduleExpressions []string
 			for _, expr := range v {

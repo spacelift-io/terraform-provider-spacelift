@@ -92,12 +92,12 @@ func spaceCreateInput(d *schema.ResourceData) structs.SpaceInput {
 	return input
 }
 
-func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateSpace structs.Space `graphql:"spaceCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": spaceCreateInput(d),
 	}
 
@@ -110,12 +110,12 @@ func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	return resourceSpaceRead(ctx, d, meta)
 }
 
-func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Space *structs.Space `graphql:"space(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "SpaceRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for space: %v", err)
 	}
@@ -132,7 +132,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	if space.ParentSpace != nil {
 		d.Set("parent_space_id", *space.ParentSpace)
 	}
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range space.Labels {
 		labels.Add(label)
 	}
@@ -141,12 +141,12 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	return nil
 }
 
-func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateSpace structs.Space `graphql:"spaceUpdate(space: $space, input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"space": toID(d.Id()),
 		"input": spaceCreateInput(d),
 	}
@@ -158,12 +158,12 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	return resourceSpaceRead(ctx, d, meta)
 }
 
-func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteSpace *structs.Space `graphql:"spaceDelete(space: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "DeleteSpace", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete space: %v", spaceManagementError(err))

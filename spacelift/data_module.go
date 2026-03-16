@@ -262,13 +262,13 @@ func dataModule() *schema.Resource {
 	}
 }
 
-func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *structs.Module `graphql:"module(id: $id)"`
 	}
 
 	moduleID := d.Get("module_id")
-	variables := map[string]interface{}{"id": toID(moduleID)}
+	variables := map[string]any{"id": toID(moduleID)}
 	if err := meta.(*internal.Client).Query(ctx, "ModuleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for module: %v", err)
 	}
@@ -292,13 +292,13 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.FromErr(err)
 	}
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range module.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
 
-	sharedAccounts := schema.NewSet(schema.HashString, []interface{}{})
+	sharedAccounts := schema.NewSet(schema.HashString, []any{})
 	for _, share := range module.ModuleShares {
 		if share.To.Space == nil {
 			sharedAccounts.Add(share.To.Account.Subdomain)
@@ -306,7 +306,7 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	}
 	d.Set("shared_accounts", sharedAccounts)
 
-	spaceShares := schema.NewSet(schema.HashString, []interface{}{})
+	spaceShares := schema.NewSet(schema.HashString, []any{})
 	for _, share := range module.ModuleShares {
 		if share.To.Space != nil {
 			spaceShares.Add(share.To.Space.ID)
@@ -334,7 +334,7 @@ func dataModuleRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		d.Set("runner_image", nil)
 	}
 
-	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []interface{}{})
+	gitSparseCheckoutPaths := schema.NewSet(schema.HashString, []any{})
 	for _, path := range module.GitSparseCheckoutPaths {
 		gitSparseCheckoutPaths.Add(path)
 	}

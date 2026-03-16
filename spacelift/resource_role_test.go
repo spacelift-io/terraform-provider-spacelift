@@ -3,6 +3,7 @@ package spacelift
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -18,12 +19,12 @@ func TestRoleResource(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		config := func(name, description string, actions []string) string {
-			actionsList := ""
+			var actionsList strings.Builder
 			for i, action := range actions {
 				if i > 0 {
-					actionsList += ", "
+					actionsList.WriteString(", ")
 				}
-				actionsList += fmt.Sprintf(`"%s"`, action)
+				actionsList.WriteString(fmt.Sprintf(`"%s"`, action))
 			}
 
 			return fmt.Sprintf(`
@@ -32,7 +33,7 @@ func TestRoleResource(t *testing.T) {
 					description = "%s"
 					actions     = [%s]
 				}
-			`, name+randomID, description, actionsList)
+			`, name+randomID, description, actionsList.String())
 		}
 
 		testSteps(t, []resource.TestStep{

@@ -95,7 +95,7 @@ func resourceNamedWebhook() *schema.Resource {
 	}
 }
 
-func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
 	if diags != nil {
 		return diags
@@ -126,7 +126,7 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		}
 	}
 
-	variables := map[string]interface{}{"input": input}
+	variables := map[string]any{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "NamedWebhookCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create named webhook: %v", internal.FromSpaceliftError(err))
@@ -136,12 +136,12 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 	return resourceNamedWebhookRead(ctx, d, meta)
 }
 
-func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Webhook *structs.NamedWebhooksIntegration `graphql:"namedWebhooksIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "GetNamedWebhook", &query, variables); err != nil {
 		return diag.Errorf("could not query for named webhook: %v", err)
 	}
@@ -160,7 +160,7 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("secret", "")
 	d.Set("retry_on_failure", wh.RetryOnFailure)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range wh.Labels {
 		labels.Add(label)
 	}
@@ -169,7 +169,7 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	return nil
 }
 
-func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
 	if diags != nil {
 		return diags
@@ -211,7 +211,7 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(webhookID),
 		"input": input,
 	}
@@ -224,14 +224,14 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 	return append(ret, resourceNamedWebhookRead(ctx, d, meta)...)
 }
 
-func resourceNamedWebhookDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNamedWebhookDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		WebhooksIntegration struct {
 			ID string `graphql:"id"`
 		} `graphql:"namedWebhooksIntegrationDelete(id: $webhook)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"webhook": toID(d.Id()),
 	}
 

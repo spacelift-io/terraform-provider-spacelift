@@ -73,7 +73,7 @@ func resourceDefaultRunnerImageCreate(ctx context.Context, data *schema.Resource
 	return resourceDefaultRunnerImageRead(ctx, data, i)
 }
 
-func resourceDefaultRunnerImageRead(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceDefaultRunnerImageRead(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var query struct {
 		DefaultPublicWorkerPoolRunnerImage  *string `graphql:"defaultPublicWorkerPoolRunnerImage"`
 		DefaultPrivateWorkerPoolRunnerImage *string `graphql:"defaultPrivateWorkerPoolRunnerImage"`
@@ -106,7 +106,7 @@ func resourceDefaultRunnerImageRead(ctx context.Context, data *schema.ResourceDa
 	return nil
 }
 
-func resourceDefaultRunnerImageUpdate(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceDefaultRunnerImageUpdate(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var mutation struct {
 		Result *AccountUpdateDefaultWorkerPoolRunnerImagesResult `graphql:"accountUpdateDefaultWorkerPoolRunnerImages(privateWorkerPoolRunnerImage: $privateWorkerPoolRunnerImage, publicWorkerPoolRunnerImage: $publicWorkerPoolRunnerImage)"`
 	}
@@ -129,7 +129,7 @@ func resourceDefaultRunnerImageUpdate(ctx context.Context, data *schema.Resource
 	return resourceDefaultRunnerImageRead(ctx, data, i)
 }
 
-func resourceDefaultRunnerImageDelete(ctx context.Context, data *schema.ResourceData, i interface{}) diag.Diagnostics {
+func resourceDefaultRunnerImageDelete(ctx context.Context, data *schema.ResourceData, i any) diag.Diagnostics {
 	var mutation struct {
 		Result *AccountUpdateDefaultWorkerPoolRunnerImagesResult `graphql:"accountUpdateDefaultWorkerPoolRunnerImages(privateWorkerPoolRunnerImage: $privateWorkerPoolRunnerImage, publicWorkerPoolRunnerImage: $publicWorkerPoolRunnerImage)"`
 	}

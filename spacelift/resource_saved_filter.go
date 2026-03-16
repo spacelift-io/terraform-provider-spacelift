@@ -71,12 +71,12 @@ func resourceSavedFilter() *schema.Resource {
 	}
 }
 
-func resourceSavedFilterCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSavedFilterCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateFilter structs.SavedFilter `graphql:"savedFilterCreate(input: $input)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"input": savedFilterInput(d),
 	}
 
@@ -98,12 +98,12 @@ func savedFilterInput(d *schema.ResourceData) structs.SavedFilterInput {
 	}
 }
 
-func resourceSavedFilterRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSavedFilterRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Filter *structs.SavedFilter `graphql:"savedFilter(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(d.Id()),
 	}
 	if err := meta.(*internal.Client).Query(ctx, "savedFilter", &query, variables); err != nil {
@@ -124,12 +124,12 @@ func resourceSavedFilterRead(ctx context.Context, d *schema.ResourceData, meta i
 	return nil
 }
 
-func resourceSavedFilterUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSavedFilterUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateFilter structs.SavedFilter `graphql:"savedFilterUpdate(id: $id, name: $name, data: $data, isPublic: $isPublic)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":       toID(d.Id()),
 		"name":     toString(d.Get("name")),
 		"isPublic": toBool(d.Get("is_public")),
@@ -145,12 +145,12 @@ func resourceSavedFilterUpdate(ctx context.Context, d *schema.ResourceData, meta
 	return append(ret, resourceSavedFilterRead(ctx, d, meta)...)
 }
 
-func resourceSavedFilterDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSavedFilterDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteFilter *structs.SavedFilter `graphql:"savedFilterDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id": toID(d.Id()),
 	}
 

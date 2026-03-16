@@ -71,7 +71,7 @@ func dataSpaces() *schema.Resource {
 	}
 }
 
-func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Spaces []structs.Space `graphql:"spaces()"`
 	}
@@ -80,9 +80,9 @@ func dataSpacesRead(ctx context.Context, d *schema.ResourceData, meta interface{
 		return diag.Errorf("could not query for space: %v", err)
 	}
 
-	var spaces []interface{}
+	var spaces []any
 	for _, space := range internal.FilterByRequiredLabels(d, query.Spaces, func(space structs.Space) []string { return space.Labels }) {
-		spaces = append(spaces, map[string]interface{}{
+		spaces = append(spaces, map[string]any{
 			"space_id":         space.ID,
 			"name":             space.Name,
 			"description":      space.Description,

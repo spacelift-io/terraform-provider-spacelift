@@ -66,12 +66,12 @@ func dataPolicy() *schema.Resource {
 	}
 }
 
-func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Policy *structs.Policy `graphql:"policy(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("policy_id"))}
+	variables := map[string]any{"id": toID(d.Get("policy_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "PolicyRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for policy: %v", err)
 	}
@@ -89,7 +89,7 @@ func dataPolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("space_id", policy.Space)
 	d.Set("description", policy.Description)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range policy.Labels {
 		labels.Add(label)
 	}

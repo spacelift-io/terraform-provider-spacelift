@@ -113,13 +113,13 @@ func resourceEnvironmentVariable() *schema.Resource {
 	}
 }
 
-func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	value, diags := internal.ExtractWriteOnlyField("value", "value_wo", "value_wo_version", d)
 	if diags != nil {
 		return diags
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"config": structs.ConfigInput{
 			ID:          toID(d.Get("name")),
 			Type:        structs.ConfigType("ENVIRONMENT_VARIABLE"),
@@ -153,7 +153,7 @@ func resourceEnvironmentVariableCreate(ctx context.Context, d *schema.ResourceDa
 	return resourceEnvironmentVariableCreateModule(ctx, d, meta.(*internal.Client), variables)
 }
 
-func resourceEnvironmentVariableCreateContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
+func resourceEnvironmentVariableCreateContext(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]any) diag.Diagnostics {
 	var mutation struct {
 		AddContextConfig structs.ConfigElement `graphql:"contextConfigAdd(context: $context, config: $config)"`
 	}
@@ -167,7 +167,7 @@ func resourceEnvironmentVariableCreateContext(ctx context.Context, d *schema.Res
 	return resourceEnvironmentVariableRead(ctx, d, client)
 }
 
-func resourceEnvironmentVariableCreateModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
+func resourceEnvironmentVariableCreateModule(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]any) diag.Diagnostics {
 	var mutation struct {
 		AddModuleConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
@@ -181,7 +181,7 @@ func resourceEnvironmentVariableCreateModule(ctx context.Context, d *schema.Reso
 	return resourceEnvironmentVariableRead(ctx, d, client)
 }
 
-func resourceEnvironmentVariableCreateStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]interface{}) diag.Diagnostics {
+func resourceEnvironmentVariableCreateStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, variables map[string]any) diag.Diagnostics {
 	var mutation struct {
 		AddStackConfig structs.ConfigElement `graphql:"stackConfigAdd(stack: $stack, config: $config)"`
 	}
@@ -195,7 +195,7 @@ func resourceEnvironmentVariableCreateStack(ctx context.Context, d *schema.Resou
 	return resourceEnvironmentVariableRead(ctx, d, client)
 }
 
-func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 3)
 	if len(idParts) != 3 {
 		return diag.Errorf("unexpected resource ID: %s", d.Id())
@@ -255,7 +255,7 @@ func resourceEnvironmentVariableReadContext(ctx context.Context, d *schema.Resou
 		} `graphql:"context(id: $context)"`
 	}
 
-	if err := client.Query(ctx, "EnvironmentVariableReadContext", &query, map[string]interface{}{"context": toID(contextID), "id": toID(variableName)}); err != nil {
+	if err := client.Query(ctx, "EnvironmentVariableReadContext", &query, map[string]any{"context": toID(contextID), "id": toID(variableName)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for context environment variable")
 	}
 
@@ -275,7 +275,7 @@ func resourceEnvironmentVariableReadModule(ctx context.Context, d *schema.Resour
 		} `graphql:"module(id: $module)"`
 	}
 
-	if err := client.Query(ctx, "EnvironmentVariableReadModule", &query, map[string]interface{}{"module": toID(moduleID), "id": toID(variableName)}); err != nil {
+	if err := client.Query(ctx, "EnvironmentVariableReadModule", &query, map[string]any{"module": toID(moduleID), "id": toID(variableName)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for module environment variable")
 	}
 
@@ -295,7 +295,7 @@ func resourceEnvironmentVariableReadStack(ctx context.Context, d *schema.Resourc
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	if err := client.Query(ctx, "EnvironmentVariableReadStack", &query, map[string]interface{}{"stack": toID(stackID), "id": toID(variableName)}); err != nil {
+	if err := client.Query(ctx, "EnvironmentVariableReadStack", &query, map[string]any{"stack": toID(stackID), "id": toID(variableName)}); err != nil {
 		return nil, errors.Wrap(err, "could not query for stack environment variable")
 	}
 
@@ -308,7 +308,7 @@ func resourceEnvironmentVariableReadStack(ctx context.Context, d *schema.Resourc
 	return query.Stack.ConfigElement, nil
 }
 
-func resourceEnvironmentVariableDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEnvironmentVariableDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	idParts := strings.SplitN(d.Id(), "/", 3)
 	if len(idParts) != 3 {
 		return diag.Errorf("unexpected resource ID: %s", d.Id())
@@ -339,7 +339,7 @@ func resourceEnvironmentVariableDeleteContext(ctx context.Context, d *schema.Res
 		DeleteContextConfig *structs.ConfigElement `graphql:"contextConfigDelete(context: $context, id: $id)"`
 	}
 
-	return client.Mutate(ctx, "EnvironmentVariableDeleteContext", &mutation, map[string]interface{}{"context": toID(context), "id": toID(id)})
+	return client.Mutate(ctx, "EnvironmentVariableDeleteContext", &mutation, map[string]any{"context": toID(context), "id": toID(id)})
 }
 
 func resourceEnvironmentVariableDeleteStack(ctx context.Context, d *schema.ResourceData, client *internal.Client, stack, id string) error {
@@ -347,7 +347,7 @@ func resourceEnvironmentVariableDeleteStack(ctx context.Context, d *schema.Resou
 		DeleteStackConfig *structs.ConfigElement `graphql:"stackConfigDelete(stack: $stack, id: $id)"`
 	}
 
-	return client.Mutate(ctx, "EnvironmentVariableDeleteStack", &mutation, map[string]interface{}{"stack": toID(stack), "id": toID(id)})
+	return client.Mutate(ctx, "EnvironmentVariableDeleteStack", &mutation, map[string]any{"stack": toID(stack), "id": toID(id)})
 }
 
 func suppressValueChange(_, old, new string, d *schema.ResourceData) bool {

@@ -69,7 +69,7 @@ func dataMountedFile() *schema.Resource {
 	}
 }
 
-func dataMountedFileRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataMountedFileRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("context_id"); ok {
 		return dataMountedFileReadContext(ctx, d, meta)
 	}
@@ -81,7 +81,7 @@ func dataMountedFileRead(ctx context.Context, d *schema.ResourceData, meta inter
 	return dataMountedFileReadStack(ctx, d, meta)
 }
 
-func dataMountedFileReadContext(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataMountedFileReadContext(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Context *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -91,7 +91,7 @@ func dataMountedFileReadContext(ctx context.Context, d *schema.ResourceData, met
 	contextID := d.Get("context_id")
 	variableName := d.Get("relative_path")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"context": toID(contextID),
 		"id":      toID(variableName),
 	}
@@ -120,7 +120,7 @@ func dataMountedFileReadContext(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
-func dataMountedFileReadModule(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataMountedFileReadModule(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Module *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -130,7 +130,7 @@ func dataMountedFileReadModule(ctx context.Context, d *schema.ResourceData, meta
 	moduleID := d.Get("module_id")
 	variableName := d.Get("relative_path")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"module": toID(moduleID),
 		"id":     toID(variableName),
 	}
@@ -154,7 +154,7 @@ func dataMountedFileReadModule(ctx context.Context, d *schema.ResourceData, meta
 	return nil
 }
 
-func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Stack *struct {
 			ConfigElement *structs.ConfigElement `graphql:"configElement(id: $id)"`
@@ -164,7 +164,7 @@ func dataMountedFileReadStack(ctx context.Context, d *schema.ResourceData, meta 
 	stackID := d.Get("stack_id")
 	variableName := d.Get("relative_path")
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"stack": toID(stackID),
 		"id":    toID(variableName),
 	}

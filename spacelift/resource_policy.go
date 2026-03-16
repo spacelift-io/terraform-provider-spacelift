@@ -122,7 +122,7 @@ func resourcePolicy() *schema.Resource {
 	}
 }
 
-func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreatePolicy structs.Policy `graphql:"policyCreatev2(input: $input)"`
 	}
@@ -153,7 +153,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		input.EngineType = &et
 	}
 
-	variables := map[string]interface{}{"input": input}
+	variables := map[string]any{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyCreateV2", &mutation, variables); err != nil {
 		return diag.Errorf("could not create policy %v: %v", toString(d.Get("name")), internal.FromSpaceliftError(err))
@@ -164,12 +164,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	return resourcePolicyRead(ctx, d, meta)
 }
 
-func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Policy *structs.Policy `graphql:"policy(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "PolicyRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for policy: %v", err)
 	}
@@ -187,7 +187,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("description", policy.Description)
 	d.Set("engine_type", policy.EngineType)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range policy.Labels {
 		labels.Add(label)
 	}
@@ -203,7 +203,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	return nil
 }
 
-func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdatePolicy structs.Policy `graphql:"policyUpdatev2(id: $id, input: $input)"`
 	}
@@ -235,7 +235,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	var ret diag.Diagnostics
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Id()),
 		"input": input,
 	}
@@ -247,12 +247,12 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	return append(ret, resourcePolicyRead(ctx, d, meta)...)
 }
 
-func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeletePolicy *structs.Policy `graphql:"policyDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "PolicyDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete policy: %v", internal.FromSpaceliftError(err))

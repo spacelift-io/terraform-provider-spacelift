@@ -87,7 +87,7 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 	}
 }
 
-func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		BitbucketCloudIntegration *struct {
 			ID          string `graphql:"id"`
@@ -105,7 +105,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 		} `graphql:"bitbucketCloudIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": ""}
+	variables := map[string]any{"id": ""}
 
 	if id, ok := d.GetOk(bitbucketCloudID); ok && id != "" {
 		variables["id"] = toID(id)
@@ -130,7 +130,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(bitbucketCloudWebhookSecret, bitbucketCloudIntegration.WebhookSecret)
 	d.Set(bitbucketCloudWebhookURL, bitbucketCloudIntegration.WebhookURL)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range bitbucketCloudIntegration.Labels {
 		labels.Add(label)
 	}

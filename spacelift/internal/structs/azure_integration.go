@@ -28,8 +28,8 @@ func (i *AzureIntegration) PopulateResourceData(d *schema.ResourceData) {
 	}
 }
 
-func (i *AzureIntegration) ToMap() map[string]interface{} {
-	fields := map[string]interface{}{
+func (i *AzureIntegration) ToMap() map[string]any {
+	fields := map[string]any{
 		"admin_consent_provided": i.AdminConsentProvided,
 		"admin_consent_url":      i.AdminConsentURL,
 		"application_id":         i.ApplicationID,
@@ -57,7 +57,7 @@ func (i *AzureIntegration) ToMap() map[string]interface{} {
 }
 
 func (i *AzureIntegration) getLabelsSet() *schema.Set {
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range i.Labels {
 		labels.Add(label)
 	}

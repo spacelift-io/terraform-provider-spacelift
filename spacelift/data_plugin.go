@@ -57,12 +57,12 @@ func dataPlugin() *schema.Resource {
 	}
 }
 
-func dataPluginRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataPluginRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Plugin *structs.Plugin `graphql:"plugin(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Get("plugin_id"))}
+	variables := map[string]any{"id": toID(d.Get("plugin_id"))}
 	if err := meta.(*internal.Client).Query(ctx, "PluginRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for plugin: %v", err)
 	}
@@ -76,7 +76,7 @@ func dataPluginRead(ctx context.Context, d *schema.ResourceData, meta interface{
 	d.Set("name", plugin.Name)
 	d.Set("stack_label", plugin.LabelIdentifier)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range plugin.Labels {
 		labels.Add(label)
 	}

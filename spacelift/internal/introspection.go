@@ -49,7 +49,7 @@ func (c *IntrospectionClient) GetEnumValues(ctx context.Context, enumName string
 			for _, enumValue := range t.EnumValues {
 				values = append(values, enumValue.Name)
 			}
-			tflog.Debug(ctx, "Found enum values", map[string]interface{}{
+			tflog.Debug(ctx, "Found enum values", map[string]any{
 				"enumName": enumName,
 				"values":   values,
 			})

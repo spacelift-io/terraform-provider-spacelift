@@ -49,7 +49,7 @@ func dataScheduledDeleteStack() *schema.Resource {
 	}
 }
 
-func dataScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	scheduledDeleteStackID := d.Get("scheduled_delete_stack_id").(string)
 
 	idParts := strings.SplitN(scheduledDeleteStackID, "/", 2)
@@ -74,7 +74,7 @@ func dataScheduledDeleteStackRead(ctx context.Context, d *schema.ResourceData, m
 		} `graphql:"stack(id: $stack)"`
 	}
 
-	variables := map[string]interface{}{"stack": toID(stackID), "id": toID(scheduleID)}
+	variables := map[string]any{"stack": toID(stackID), "id": toID(scheduleID)}
 
 	if err := meta.(*internal.Client).Query(ctx, "StackScheduledDeleteStackRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for scheduled stack_delete: %v", internal.FromSpaceliftError(err))

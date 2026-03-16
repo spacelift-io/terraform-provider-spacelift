@@ -65,7 +65,7 @@ func resourceRole() *schema.Resource {
 	}
 }
 
-func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateRole structs.Role `graphql:"roleCreate(input: $input)"`
 	}
@@ -84,7 +84,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		input.Description = toOptionalString(description)
 	}
 
-	variables := map[string]interface{}{"input": input}
+	variables := map[string]any{"input": input}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "RoleCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create role: %v", internal.FromSpaceliftError(err))
@@ -95,12 +95,12 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceRoleRead(ctx, d, meta)
 }
 
-func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		Role *structs.Role `graphql:"role(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": graphql.ID(d.Id())}
+	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "RoleRead", &query, variables); err != nil {
 		return diag.Errorf("could not query for role: %v", err)
 	}
@@ -116,7 +116,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("slug", role.Slug)
 	d.Set("description", role.Description)
 
-	actions := schema.NewSet(schema.HashString, []interface{}{})
+	actions := schema.NewSet(schema.HashString, []any{})
 	for _, action := range role.Actions {
 		actions.Add(string(action))
 	}
@@ -125,7 +125,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		UpdateRole structs.Role `graphql:"roleUpdate(id: $id, input: $input)"`
 	}
@@ -149,7 +149,7 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		input.Actions = &actions
 	}
 
-	variables := map[string]interface{}{
+	variables := map[string]any{
 		"id":    toID(d.Id()),
 		"input": input,
 	}
@@ -161,12 +161,12 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceRoleRead(ctx, d, meta)
 }
 
-func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		DeleteRole *structs.Role `graphql:"roleDelete(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": toID(d.Id())}
+	variables := map[string]any{"id": toID(d.Id())}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "RoleDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete role: %v", internal.FromSpaceliftError(err))

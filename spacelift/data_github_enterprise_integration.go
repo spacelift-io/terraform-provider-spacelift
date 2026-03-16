@@ -98,7 +98,7 @@ func dataGithubEnterpriseIntegration() *schema.Resource {
 	}
 }
 
-func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
 		GithubEnterpriseIntegration *struct {
 			AppID         string `graphql:"appID"`
@@ -118,7 +118,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 		} `graphql:"githubEnterpriseIntegration(id: $id)"`
 	}
 
-	variables := map[string]interface{}{"id": ""}
+	variables := map[string]any{"id": ""}
 
 	if id, ok := d.GetOk(ghEnterpriseID); ok && id != "" {
 		variables["id"] = toID(id)
@@ -144,7 +144,7 @@ func dataGithubEnterpriseIntegrationRead(ctx context.Context, d *schema.Resource
 	d.Set(ghEnterpriseIsDefault, githubEnterpriseIntegration.IsDefault)
 	d.Set(ghEnterpriseSpaceID, githubEnterpriseIntegration.Space.ID)
 
-	labels := schema.NewSet(schema.HashString, []interface{}{})
+	labels := schema.NewSet(schema.HashString, []any{})
 	for _, label := range githubEnterpriseIntegration.Labels {
 		labels.Add(label)
 	}
