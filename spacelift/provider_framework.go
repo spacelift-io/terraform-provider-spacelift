@@ -124,7 +124,9 @@ func (p *frameworkProvider) Configure(ctx context.Context, req fwprovider.Config
 }
 
 func (p *frameworkProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewNamedWebhookResource,
+	}
 }
 
 func (p *frameworkProvider) DataSources(_ context.Context) []func() datasource.DataSource {

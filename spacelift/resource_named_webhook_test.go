@@ -30,7 +30,7 @@ func TestNamedWebhookResource(t *testing.T) {
 			`, endpoint, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsFramework(t, []resource.TestStep{
 			{
 				Config: config("https://bacon.net"),
 				Check: Resource(
@@ -71,7 +71,7 @@ func TestNamedWebhookResource(t *testing.T) {
 			`, endpoint, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsFramework(t, []resource.TestStep{
 			{
 				Config: config("https://bacon.net"),
 				Check: Resource(
@@ -105,7 +105,7 @@ func TestNamedWebhookResource(t *testing.T) {
 			`, endpoint, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsFramework(t, []resource.TestStep{
 			{
 				Config: config("https://bacon.net"),
 				Check: Resource(
@@ -125,5 +125,45 @@ func TestNamedWebhookResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"secret", "secret_wo_version"},
 			},
 		})
+	})
+}
+
+func TestNamedWebhookResourceMigration(t *testing.T) {
+	// lastSDKv2Release picks the latest published release, which is the last SDKv2-based version.
+	// Update this to a specific version constraint (e.g. "= 1.19.0") once the migration PR is merged.
+	const lastSDKv2Release = ">= 1.0"
+
+	randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+	testConfig := fmt.Sprintf(`
+		resource "spacelift_named_webhook" "migration_test" {
+			endpoint         = "https://migration-test.example.com"
+			space_id         = "root"
+			name             = "migration-test-%s"
+			enabled          = true
+			retry_on_failure = false
+		}
+	`, randomID)
+
+	resource.Test(t, resource.TestCase{
+		Steps: []resource.TestStep{
+			{
+				// Step 1: create state with the last SDKv2-based release.
+				ExternalProviders: map[string]resource.ExternalProvider{
+					"spacelift": {
+						Source:            "spacelift.io/spacelift-io/spacelift",
+						VersionConstraint: lastSDKv2Release,
+					},
+				},
+				Config: testConfig,
+			},
+			{
+				// Step 2: Framework provider reads the existing state — must produce no diff.
+				// PlanOnly: true causes the test to fail if there are any planned changes.
+				ProtoV6ProviderFactories: testAccProtoV6ProviderFactories(),
+				Config:                   testConfig,
+				PlanOnly:                 true,
+			},
+		},
 	})
 }

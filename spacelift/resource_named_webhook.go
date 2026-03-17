@@ -3,102 +3,163 @@ package spacelift
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
-	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
-func resourceNamedWebhook() *schema.Resource {
-	return &schema.Resource{
-		Description: "" +
-			"`spacelift_named_webhook` represents a named webhook endpoint used for creating webhooks" +
+type namedWebhookResource struct{ client *internal.Client }
+
+type namedWebhookModel struct {
+	ID              types.String `tfsdk:"id"`
+	Enabled         types.Bool   `tfsdk:"enabled"`
+	Endpoint        types.String `tfsdk:"endpoint"`
+	SpaceID         types.String `tfsdk:"space_id"`
+	Name            types.String `tfsdk:"name"`
+	Labels          types.Set    `tfsdk:"labels"`
+	Secret          types.String `tfsdk:"secret"`
+	SecretWo        types.String `tfsdk:"secret_wo"`
+	SecretWoVersion types.String `tfsdk:"secret_wo_version"`
+	RetryOnFailure  types.Bool   `tfsdk:"retry_on_failure"`
+}
+
+func NewNamedWebhookResource() resource.Resource { return &namedWebhookResource{} }
+
+func (r *namedWebhookResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = "spacelift_named_webhook"
+}
+
+func (r *namedWebhookResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Description: "`spacelift_named_webhook` represents a named webhook endpoint used for creating webhooks" +
 			"which are referred to in Notification policies to route messages.",
-
-		CreateContext: resourceNamedWebhookCreate,
-		ReadContext:   resourceNamedWebhookRead,
-		UpdateContext: resourceNamedWebhookUpdate,
-		DeleteContext: resourceNamedWebhookDelete,
-
-		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
-		},
-
-		Schema: map[string]*schema.Schema{
-			"enabled": {
-				Type:        schema.TypeBool,
-				Description: "enables or disables sending webhooks.",
-				Required:    true,
-			},
-			"endpoint": {
-				Type:             schema.TypeString,
-				Description:      "endpoint to send the requests to",
-				Required:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			"space_id": {
-				Type:             schema.TypeString,
-				Description:      "ID of the space the webhook is in",
-				Required:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			"name": {
-				Type:             schema.TypeString,
-				Description:      "the name for the webhook which will also be used to generate the id",
-				Required:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			"labels": {
-				Type:        schema.TypeSet,
-				Description: "labels for the webhook to use when referring in policies or filtering them",
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: validations.DisallowEmptyString,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The ID of this resource.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 				},
-				Optional: true,
 			},
-			"secret": {
-				Type:             schema.TypeString,
-				Description:      "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.",
-				Optional:         true,
-				Sensitive:        true,
-				Deprecated:       "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
-				DiffSuppressFunc: ignoreOnceCreated,
-				ConflictsWith:    []string{"secret_wo", "secret_wo_version"},
+			"enabled": schema.BoolAttribute{
+				Required:    true,
+				Description: "enables or disables sending webhooks.",
 			},
-			"secret_wo": {
-				Type:          schema.TypeString,
-				Description:   "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
-				Sensitive:     true,
-				Optional:      true,
-				WriteOnly:     true,
-				ConflictsWith: []string{"secret"},
-				RequiredWith:  []string{"secret_wo_version"},
+			"endpoint": schema.StringAttribute{
+				Required:    true,
+				Description: "endpoint to send the requests to",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
-			"secret_wo_version": {
-				Type:          schema.TypeString,
-				Description:   "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
-				Optional:      true,
-				ConflictsWith: []string{"secret"},
-				RequiredWith:  []string{"secret_wo"},
+			"space_id": schema.StringAttribute{
+				Required:    true,
+				Description: "ID of the space the webhook is in",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
-			"retry_on_failure": {
-				Type:        schema.TypeBool,
-				Description: "whether to retry the webhook in case of failure. Defaults to `false`.",
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "the name for the webhook which will also be used to generate the id",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"labels": schema.SetAttribute{
+				ElementType: types.StringType,
 				Optional:    true,
-				Default:     false,
+				Description: "labels for the webhook to use when referring in policies or filtering them",
+			},
+			"secret": schema.StringAttribute{
+				Optional:           true,
+				Sensitive:          true,
+				DeprecationMessage: "`secret` is deprecated. Please use secret_wo in combination with secret_wo_version",
+				Description:        "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. Note that once it's created, it will be just an empty string in the state due to security reasons.",
+				PlanModifiers: []planmodifier.String{
+					ignoreOnceCreatedModifier{},
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(
+						path.MatchRoot("secret_wo"),
+						path.MatchRoot("secret_wo_version"),
+					),
+				},
+			},
+			"secret_wo": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "secret used to sign each request so you're able to verify that the request comes from us. Defaults to an empty value. The secret is not stored in the state. Modify secret_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("secret")),
+					stringvalidator.AlsoRequires(path.MatchRoot("secret_wo_version")),
+				},
+			},
+			"secret_wo_version": schema.StringAttribute{
+				Optional:    true,
+				Description: "Used together with secret_wo to trigger an update to the secret. Increment this value when an update to secret_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("secret")),
+					stringvalidator.AlsoRequires(path.MatchRoot("secret_wo")),
+				},
+			},
+			"retry_on_failure": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "whether to retry the webhook in case of failure. Defaults to `false`.",
+				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
 }
 
-func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
-	if diags != nil {
-		return diags
+func (r *namedWebhookResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	r.client = req.ProviderData.(*internal.Client)
+}
+
+func (r *namedWebhookResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan namedWebhookModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	secret := namedWebhookExtractSecret(plan)
+
+	labels := make([]graphql.String, 0)
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
+		for _, label := range plan.Labels.Elements() {
+			labels = append(labels, graphql.String(label.(types.String).ValueString()))
+		}
+	}
+
+	input := structs.NamedWebhooksIntegrationInput{
+		Enabled:  graphql.Boolean(plan.Enabled.ValueBool()),
+		Endpoint: graphql.String(plan.Endpoint.ValueString()),
+		Space:    graphql.ID(plan.SpaceID.ValueString()),
+		Name:     graphql.String(plan.Name.ValueString()),
+		Secret:   toOptionalString(secret),
+		Labels:   labels,
+	}
+
+	if !plan.RetryOnFailure.IsNull() && !plan.RetryOnFailure.IsUnknown() {
+		input.RetryOnFailure = toOptionalBool(plan.RetryOnFailure.ValueBool())
 	}
 
 	var mutation struct {
@@ -107,139 +168,170 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 			Enabled bool   `graphql:"enabled"`
 		} `graphql:"namedWebhooksIntegrationCreate(input: $input)"`
 	}
+
+	if err := r.client.Mutate(ctx, "NamedWebhookCreate", &mutation, map[string]any{"input": input}); err != nil {
+		resp.Diagnostics.AddError("could not create named webhook", internal.FromSpaceliftError(err).Error())
+		return
+	}
+
+	plan.ID = types.StringValue(mutation.WebhooksIntegration.ID)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	r.readInto(ctx, plan.ID.ValueString(), &plan, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *namedWebhookResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state namedWebhookModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	r.readInto(ctx, state.ID.ValueString(), &state, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.ID.IsNull() {
+		// Resource was deleted outside Terraform.
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *namedWebhookResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan namedWebhookModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	labels := make([]graphql.String, 0)
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
+		for _, label := range plan.Labels.Elements() {
+			labels = append(labels, graphql.String(label.(types.String).ValueString()))
+		}
+	}
+
 	input := structs.NamedWebhooksIntegrationInput{
-		Enabled:  graphql.Boolean(d.Get("enabled").(bool)),
-		Endpoint: graphql.String(d.Get("endpoint").(string)),
-		Space:    graphql.ID(d.Get("space_id").(string)),
-		Name:     graphql.String(d.Get("name").(string)),
-		Secret:   toOptionalString(secret),
-		Labels:   []graphql.String{},
+		Enabled:  graphql.Boolean(plan.Enabled.ValueBool()),
+		Endpoint: graphql.String(plan.Endpoint.ValueString()),
+		Space:    graphql.ID(plan.SpaceID.ValueString()),
+		Name:     graphql.String(plan.Name.ValueString()),
+		Labels:   labels,
 	}
 
-	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		input.RetryOnFailure = toOptionalBool(retryOnFailure)
+	// Only send secret if explicitly provided — prevents accidental override on unrelated updates.
+	secret := namedWebhookExtractSecret(plan)
+	if secret != "" {
+		input.Secret = toOptionalString(secret)
 	}
 
-	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		for _, label := range labelSet.List() {
-			input.Labels = append(input.Labels, graphql.String(label.(string)))
-		}
-	}
-
-	variables := map[string]any{"input": input}
-
-	if err := meta.(*internal.Client).Mutate(ctx, "NamedWebhookCreate", &mutation, variables); err != nil {
-		return diag.Errorf("could not create named webhook: %v", internal.FromSpaceliftError(err))
-	}
-
-	d.SetId(mutation.WebhooksIntegration.ID)
-	return resourceNamedWebhookRead(ctx, d, meta)
-}
-
-func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	var query struct {
-		Webhook *structs.NamedWebhooksIntegration `graphql:"namedWebhooksIntegration(id: $id)"`
-	}
-
-	variables := map[string]any{"id": graphql.ID(d.Id())}
-	if err := meta.(*internal.Client).Query(ctx, "GetNamedWebhook", &query, variables); err != nil {
-		return diag.Errorf("could not query for named webhook: %v", err)
-	}
-
-	if query.Webhook == nil {
-		d.SetId("")
-		return nil
-	}
-
-	wh := query.Webhook
-	d.SetId(wh.ID)
-	d.Set("name", wh.Name)
-	d.Set("endpoint", wh.Endpoint)
-	d.Set("enabled", wh.Enabled)
-	d.Set("space_id", wh.Space.ID)
-	d.Set("secret", "")
-	d.Set("retry_on_failure", wh.RetryOnFailure)
-
-	labels := schema.NewSet(schema.HashString, []any{})
-	for _, label := range wh.Labels {
-		labels.Add(label)
-	}
-	d.Set("labels", labels)
-
-	return nil
-}
-
-func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	secret, diags := internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d)
-	if diags != nil {
-		return diags
-	}
-
-	webhookID := d.Id()
-
-	enabled := d.Get("enabled").(bool)
-	endpoint := d.Get("endpoint").(string)
-	spaceID := d.Get("space_id").(string)
-	name := d.Get("name").(string)
-
-	labels := []graphql.String{}
-	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
-		for _, label := range labelSet.List() {
-			labels = append(labels, graphql.String(label.(string)))
-		}
+	if !plan.RetryOnFailure.IsNull() && !plan.RetryOnFailure.IsUnknown() {
+		input.RetryOnFailure = toOptionalBool(plan.RetryOnFailure.ValueBool())
 	}
 
 	var mutation struct {
 		Webhook *structs.NamedWebhooksIntegration `graphql:"namedWebhooksIntegrationUpdate(id: $id, input: $input)"`
 	}
 
-	input := structs.NamedWebhooksIntegrationInput{
-		Enabled:  graphql.Boolean(enabled),
-		Endpoint: graphql.String(endpoint),
-		Name:     graphql.String(name),
-		Space:    graphql.String(spaceID),
-		Labels:   labels,
-	}
-
-	// since both secret and secret_wo field is optional this guard clause prevents accidental override
-	// of secrets if there were any changes unrelated to secret fields
-	if secret != "" {
-		input.Secret = toOptionalString(secret)
-	}
-
-	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		input.RetryOnFailure = toOptionalBool(retryOnFailure)
-	}
-
-	variables := map[string]any{
-		"id":    toID(webhookID),
+	if err := r.client.Mutate(ctx, "NamedWebhookUpdate", &mutation, map[string]any{
+		"id":    toID(plan.ID.ValueString()),
 		"input": input,
+	}); err != nil {
+		resp.Diagnostics.AddError("could not update named webhook", internal.FromSpaceliftError(err).Error())
+		return
 	}
 
-	var ret diag.Diagnostics
-	if err := meta.(*internal.Client).Mutate(ctx, "NamedWebhookUpdate", &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update named webhook: %v", internal.FromSpaceliftError(err))
+	r.readInto(ctx, plan.ID.ValueString(), &plan, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-
-	return append(ret, resourceNamedWebhookRead(ctx, d, meta)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func resourceNamedWebhookDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func (r *namedWebhookResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state namedWebhookModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var mutation struct {
 		WebhooksIntegration struct {
 			ID string `graphql:"id"`
 		} `graphql:"namedWebhooksIntegrationDelete(id: $webhook)"`
 	}
 
-	variables := map[string]any{
-		"webhook": toID(d.Id()),
+	if err := r.client.Mutate(ctx, "NamedWebhookDelete", &mutation, map[string]any{
+		"webhook": toID(state.ID.ValueString()),
+	}); err != nil {
+		resp.Diagnostics.AddError("could not delete named webhook", internal.FromSpaceliftError(err).Error())
+	}
+}
+
+func (r *namedWebhookResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+// readInto queries the API and populates model in place.
+// Sets model.ID to null when the webhook no longer exists (caller should call
+// resp.State.RemoveResource if ID is null after this returns).
+func (r *namedWebhookResource) readInto(ctx context.Context, id string, model *namedWebhookModel, diags *diag.Diagnostics) {
+	var query struct {
+		Webhook *structs.NamedWebhooksIntegration `graphql:"namedWebhooksIntegration(id: $id)"`
 	}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "NamedWebhookDelete", &mutation, variables); err != nil {
-		return diag.Errorf("could not delete named webhook: %v", internal.FromSpaceliftError(err))
+	if err := r.client.Query(ctx, "GetNamedWebhook", &query, map[string]any{"id": graphql.ID(id)}); err != nil {
+		diags.AddError("could not query named webhook", err.Error())
+		return
 	}
 
-	d.SetId("")
+	if query.Webhook == nil {
+		model.ID = types.StringNull()
+		return
+	}
 
-	return nil
+	wh := query.Webhook
+	model.ID = types.StringValue(wh.ID)
+	model.Name = types.StringValue(wh.Name)
+	model.Endpoint = types.StringValue(wh.Endpoint)
+	model.Enabled = types.BoolValue(wh.Enabled)
+	model.SpaceID = types.StringValue(wh.Space.ID)
+	model.Secret = types.StringValue("") // API never returns the real secret value.
+	if wh.RetryOnFailure != nil {
+		model.RetryOnFailure = types.BoolValue(*wh.RetryOnFailure)
+	} else {
+		model.RetryOnFailure = types.BoolValue(false)
+	}
+
+	labelValues := make([]attr.Value, len(wh.Labels))
+	for i, label := range wh.Labels {
+		labelValues[i] = types.StringValue(label)
+	}
+	labelsSet, d := types.SetValue(types.StringType, labelValues)
+	diags.Append(d...)
+	model.Labels = labelsSet
+}
+
+// namedWebhookExtractSecret returns the secret value from either the deprecated
+// `secret` field or the write-only `secret_wo` field, mirroring SDKv2's
+// internal.ExtractWriteOnlyField("secret", "secret_wo", "secret_wo_version", d).
+func namedWebhookExtractSecret(plan namedWebhookModel) string {
+	if !plan.Secret.IsNull() && !plan.Secret.IsUnknown() && plan.Secret.ValueString() != "" {
+		return plan.Secret.ValueString()
+	}
+	if !plan.SecretWo.IsNull() && !plan.SecretWo.IsUnknown() {
+		return plan.SecretWo.ValueString()
+	}
+	return ""
 }
