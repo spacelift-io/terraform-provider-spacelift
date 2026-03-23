@@ -132,14 +132,21 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, i any) diag.D
 	// if found, update the TF state
 	d.Set("invitation_email", query.User.InvitationEmail)
 	d.Set("username", query.User.Username)
-	var accessList []any
-	for _, a := range query.User.AccessRules {
-		accessList = append(accessList, map[string]any{
-			"space_id": a.Space,
-			"role":     a.SpaceAccessLevel,
-		})
+
+	// Only populate policy from the API when the config already defines policy
+	// blocks. d.GetOk returns false for an empty Optional TypeSet, so customers
+	// not using policy blocks see no phantom drift. On import there is no
+	// config, so policy is left empty — correct for a deprecated field.
+	if _, ok := d.GetOk("policy"); ok {
+		var accessList []any
+		for _, a := range query.User.AccessRules {
+			accessList = append(accessList, map[string]any{
+				"space_id": a.Space,
+				"role":     a.SpaceAccessLevel,
+			})
+		}
+		d.Set("policy", accessList)
 	}
-	d.Set("policy", accessList)
 
 	return nil
 }
