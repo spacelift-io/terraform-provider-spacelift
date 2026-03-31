@@ -59,6 +59,35 @@ func TestPolicyResource(t *testing.T) {
 		})
 	})
 
+	t.Run("creates an INTENT policy", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_policy" "test" {
+						name = "My intent policy %s"
+						body = <<EOF
+						package spacelift
+						deny["boom"] { true }
+						EOF
+						type = "INTENT"
+					}
+				`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("my-intent-policy")),
+					Attribute("type", Equals("INTENT")),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
+	})
+
 	t.Run("can remove all labels", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
