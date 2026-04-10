@@ -360,40 +360,8 @@ func parseScheduledRunInput(d *schema.ResourceData) (*structs.ScheduledRunInput,
 		cfg.Name = toString(name)
 	}
 
-	runtimeConfig, ok := d.Get("runtime_config").([]any)
-	if ok && len(runtimeConfig) > 0 {
-		mapped := runtimeConfig[0].(map[string]any)
-
-		environment := []structs.EnvVarInput{}
-		for _, e := range mapped["environment"].(*schema.Set).List() {
-			envMap := e.(map[string]any)
-			environment = append(environment, structs.EnvVarInput{
-				Key:   toString(envMap["key"]),
-				Value: toString(envMap["value"]),
-			})
-		}
-
-		cfg.RuntimeConfig = &structs.RuntimeConfigInput{
-			AfterApply:    listToOptionalStringList(mapped["after_apply"]),
-			AfterDestroy:  listToOptionalStringList(mapped["after_destroy"]),
-			AfterInit:     listToOptionalStringList(mapped["after_init"]),
-			AfterPerform:  listToOptionalStringList(mapped["after_perform"]),
-			AfterPlan:     listToOptionalStringList(mapped["after_plan"]),
-			AfterRun:      listToOptionalStringList(mapped["after_run"]),
-			BeforeApply:   listToOptionalStringList(mapped["before_apply"]),
-			BeforeDestroy: listToOptionalStringList(mapped["before_destroy"]),
-			BeforeInit:    listToOptionalStringList(mapped["before_init"]),
-			BeforePerform: listToOptionalStringList(mapped["before_perform"]),
-			BeforePlan:    listToOptionalStringList(mapped["before_plan"]),
-			Environment:   &environment,
-		}
-
-		if projectRoot := mapped["project_root"]; len(projectRoot.(string)) > 0 {
-			cfg.RuntimeConfig.ProjectRoot = toOptionalString(projectRoot)
-		}
-		if runnerImage := mapped["runner_image"]; len(runnerImage.(string)) > 0 {
-			cfg.RuntimeConfig.RunnerImage = toOptionalString(runnerImage)
-		}
+	if runtimeConfig, ok := d.Get("runtime_config").([]any); ok && len(runtimeConfig) > 0 {
+		cfg.RuntimeConfig = parseRuntimeConfig(runtimeConfig)
 	}
 
 	every, everyOk := d.GetOk("every")

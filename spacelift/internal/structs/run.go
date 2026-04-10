@@ -1,5 +1,12 @@
 package structs
 
+type RunType string
+
+const (
+	RunTypeProposed RunType = "PROPOSED"
+	RunTypeTracked  RunType = "TRACKED"
+)
+
 type Run struct {
 	ID string `graphql:"id"`
 }
