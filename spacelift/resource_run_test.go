@@ -49,6 +49,59 @@ func TestRunResource(t *testing.T) {
 	})
 }
 
+func TestRunResourceWithRuntimeConfig(t *testing.T) {
+
+	t.Run("on a new stack", func(t *testing.T) {
+		const resourceName = "spacelift_run.test"
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_worker_pool" "test" {
+					name        = "Let's create a dummy worker pool to avoid running the job %s"
+				}
+
+				resource "spacelift_stack" "test" {
+					name           = "Test stack %s"
+					repository     = "demo"
+					branch         = "master"
+					worker_pool_id = spacelift_worker_pool.test.id
+				}
+
+				resource "spacelift_run" "test" {
+					stack_id = spacelift_stack.test.id
+
+					keepers = { "bacon" = "tasty" }
+
+					runtime_config {
+						project_root = "root"
+						runner_image = "image"
+						after_apply  = ["cmd1", "cmd2"]
+
+						environment {
+							key   = "ENV_1"
+							value = "ENV_1_VAL"
+						}
+						environment {
+							key   = "ENV_2"
+							value = "ENV_2_VAL"
+						}
+					}
+				}
+			`, randomIDwp, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("stack_id", Contains(randomID)),
+				),
+			},
+		})
+	})
+}
+
 func TestRunResourceWait(t *testing.T) {
 
 	t.Run("on a new stack", func(t *testing.T) {

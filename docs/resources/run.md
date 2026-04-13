@@ -40,12 +40,43 @@ resource "spacelift_run" "this" {
 - `commit_sha` (String) The commit SHA for which to trigger a run.
 - `keepers` (Map of String) Arbitrary map of values that, when changed, will trigger recreation of the resource.
 - `proposed` (Boolean) Whether the run is a proposed run. Defaults to `false`.
+- `runtime_config` (Block List, Max: 1) Custom runtime configuration for this run. (see [below for nested schema](#nestedblock--runtime_config))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `wait` (Block List, Max: 1) Wait for the run to finish (see [below for nested schema](#nestedblock--wait))
 
 ### Read-Only
 
 - `id` (String) The ID of the triggered run.
+
+<a id="nestedblock--runtime_config"></a>
+### Nested Schema for `runtime_config`
+
+Optional:
+
+- `after_apply` (List of String) List of after-apply scripts.
+- `after_destroy` (List of String) List of after-destroy scripts.
+- `after_init` (List of String) List of after-init scripts.
+- `after_perform` (List of String) List of after-perform scripts.
+- `after_plan` (List of String) List of after-plan scripts.
+- `after_run` (List of String) List of after-run scripts.
+- `before_apply` (List of String) List of before-apply scripts.
+- `before_destroy` (List of String) List of before-destroy scripts.
+- `before_init` (List of String) List of before-init scripts.
+- `before_perform` (List of String) List of before-perform scripts.
+- `before_plan` (List of String) List of before-plan scripts.
+- `environment` (Block Set) Environment variables for the run. (see [below for nested schema](#nestedblock--runtime_config--environment))
+- `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
+- `runner_image` (String) Name of the Docker image used to process Runs.
+
+<a id="nestedblock--runtime_config--environment"></a>
+### Nested Schema for `runtime_config.environment`
+
+Required:
+
+- `key` (String) Environment variable key.
+- `value` (String) Environment variable value.
+
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
