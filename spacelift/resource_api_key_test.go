@@ -102,7 +102,7 @@ func TestAPIKeyResourceOIDC(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"oidc", "secret"}, // OIDC and secret config is not returned in read operations
+				ImportStateVerifyIgnore: []string{"secret"},
 			},
 			{
 				Config: config(
@@ -116,6 +116,68 @@ func TestAPIKeyResourceOIDC(t *testing.T) {
 					Attribute("name", Equals(fmt.Sprintf("Updated OIDC API Key %s", randomID))),
 					Attribute("oidc.0.client_id", Equals("client123")),
 					Attribute("oidc.0.subject_expression", Equals("repo:spacelift-io/terraform-provider-spacelift:ref:refs/heads/main")),
+				),
+			},
+		})
+	})
+
+	t.Run("creates an OIDC API key with claim_mappings and updates them", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		configWithMappings := func(name string, mappings string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_api_key" "test" {
+					name = "%s"
+					idp_groups = ["github-users"]
+
+					oidc {
+						issuer = "https://token.actions.githubusercontent.com"
+						client_id = "client123"
+						subject_expression = "repo:spacelift-io/*:ref:refs/heads/main"
+						%s
+					}
+				}
+			`, name, mappings)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configWithMappings(
+					fmt.Sprintf("OIDC Claim Mapping Key %s", randomID),
+					`claim_mappings = { teams = "groups" }`,
+				),
+				Check: Resource(
+					resourceName,
+					Attribute("id", IsNotEmpty()),
+					Attribute("name", Equals(fmt.Sprintf("OIDC Claim Mapping Key %s", randomID))),
+					Attribute("type", Equals("OIDC")),
+					Attribute("oidc.0.claim_mappings.teams", Equals("groups")),
+				),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"secret"},
+			},
+			{
+				Config: configWithMappings(
+					fmt.Sprintf("OIDC Claim Mapping Key %s", randomID),
+					`claim_mappings = { roles = "groups" }`,
+				),
+				Check: Resource(
+					resourceName,
+					Attribute("oidc.0.claim_mappings.roles", Equals("groups")),
+				),
+			},
+			{
+				Config: configWithMappings(
+					fmt.Sprintf("OIDC Claim Mapping Key %s", randomID),
+					"",
+				),
+				Check: Resource(
+					resourceName,
+					Attribute("oidc.0.claim_mappings.%", Equals("0")),
 				),
 			},
 		})

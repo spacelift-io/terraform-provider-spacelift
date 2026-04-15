@@ -73,6 +73,12 @@ func resourceAPIKey() *schema.Resource {
 							ForceNew:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
 						},
+						"claim_mappings": {
+							Type:        schema.TypeMap,
+							Description: "Mapping of IdP JWT claim names to Spacelift claim names. Currently only the `groups` Spacelift claim is supported, so the value should always be `groups` (e.g. `teams = \"groups\"` maps the IdP `teams` claim to Spacelift `groups`). When configured, the mapped claims are extracted from the OIDC token at authentication time, enabling dynamic team membership based on the authenticating user's actual IdP groups.",
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 					},
 				},
 			},
@@ -107,18 +113,34 @@ func apiKeyCreateInput(d *schema.ResourceData) structs.ApiKeyInput {
 	}
 	input.IDPGroups = idpGroups
 
-	// Add OIDC configuration if provided
 	if oidcList, ok := d.Get("oidc").([]any); ok && len(oidcList) > 0 {
 		if oidcMap, ok := oidcList[0].(map[string]any); ok {
-			input.OIDC = &structs.APIKeyInputOIDC{
+			oidcInput := &structs.APIKeyInputOIDC{
 				Issuer:            graphql.String(oidcMap["issuer"].(string)),
 				ClientID:          graphql.String(oidcMap["client_id"].(string)),
 				SubjectExpression: graphql.String(oidcMap["subject_expression"].(string)),
 			}
+
+			if cm, ok := oidcMap["claim_mappings"].(map[string]any); ok && len(cm) > 0 {
+				oidcInput.ClaimMappings = toClaimMappingInput(cm)
+			}
+
+			input.OIDC = oidcInput
 		}
 	}
 
 	return input
+}
+
+func toClaimMappingInput(cm map[string]any) *structs.ClaimMappingInput {
+	entries := make([]structs.ClaimMappingEntryInput, 0, len(cm))
+	for name, value := range cm {
+		entries = append(entries, structs.ClaimMappingEntryInput{
+			Name:  graphql.String(name),
+			Value: graphql.String(value.(string)),
+		})
+	}
+	return &structs.ClaimMappingInput{Entries: entries}
 }
 
 func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -176,6 +198,24 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 	d.Set("idp_groups", idpGroups)
 
+	if apiKey.OIDCSettings != nil {
+		oidc := map[string]any{
+			"issuer":             apiKey.OIDCSettings.Issuer,
+			"client_id":          apiKey.OIDCSettings.ClientID,
+			"subject_expression": apiKey.OIDCSettings.SubjectExpression,
+		}
+
+		claimMappings := map[string]string{}
+		for _, entry := range apiKey.OIDCSettings.ClaimMapping.Entries {
+			claimMappings[entry.Name] = entry.Value
+		}
+		if len(claimMappings) > 0 {
+			oidc["claim_mappings"] = claimMappings
+		}
+
+		d.Set("oidc", []any{oidc})
+	}
+
 	return nil
 }
 
@@ -195,6 +235,18 @@ func apiKeyUpdateInput(d *schema.ResourceData) structs.ApiKeyUpdateInput {
 		input.IDPGroups = idpGroups
 	}
 
+	if d.HasChange("oidc.0.claim_mappings") {
+		if oidcList, ok := d.Get("oidc").([]any); ok && len(oidcList) > 0 {
+			if oidcMap, ok := oidcList[0].(map[string]any); ok {
+				if cm, ok := oidcMap["claim_mappings"].(map[string]any); ok {
+					input.OIDCClaimMappings = toClaimMappingInput(cm)
+				} else {
+					input.OIDCClaimMappings = &structs.ClaimMappingInput{Entries: []structs.ClaimMappingEntryInput{}}
+				}
+			}
+		}
+	}
+
 	return input
 }
 
@@ -203,7 +255,7 @@ func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 	apiKeyID := d.Id()
 
 	// Update basic fields (name, idp_groups) if they changed
-	if d.HasChange("name") || d.HasChange("idp_groups") {
+	if d.HasChange("name") || d.HasChange("idp_groups") || d.HasChange("oidc.0.claim_mappings") {
 		var mutation struct {
 			APIKey structs.APIKey `graphql:"apiKeyUpdate(id: $id, input: $input)"`
 		}
