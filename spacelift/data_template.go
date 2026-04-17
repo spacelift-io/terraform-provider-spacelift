@@ -67,7 +67,7 @@ func dataTemplate() *schema.Resource {
 
 func dataTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
-		BlueprintVersionedGroup *structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroup(id: $id)"`
+		Template *structs.Template `graphql:"template(id: $id)"`
 	}
 
 	templateID := d.Get("template_id")
@@ -77,7 +77,7 @@ func dataTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.Errorf("could not query for template: %v", err)
 	}
 
-	template := query.BlueprintVersionedGroup
+	template := query.Template
 	if template == nil {
 		return diag.Errorf("could not find template %s", templateID)
 	}

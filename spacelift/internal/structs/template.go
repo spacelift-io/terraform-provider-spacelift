@@ -2,7 +2,7 @@ package structs
 
 import "github.com/shurcooL/graphql"
 
-type BlueprintVersionedGroup struct {
+type Template struct {
 	ID          string   `graphql:"id"`
 	ULID        string   `graphql:"ulid"`
 	Space       Space    `graphql:"space"`
@@ -13,14 +13,14 @@ type BlueprintVersionedGroup struct {
 	UpdatedAt   int      `graphql:"updatedAt"`
 }
 
-type BlueprintVersionedGroupCreateInput struct {
+type TemplateCreateInput struct {
 	Space       graphql.ID       `json:"space"`
 	Name        graphql.String   `json:"name"`
 	Description *graphql.String  `json:"description"`
 	Labels      []graphql.String `json:"labels"`
 }
 
-type BlueprintVersionedGroupUpdateInput struct {
+type TemplateUpdateInput struct {
 	Space       graphql.ID       `json:"space"`
 	Name        graphql.String   `json:"name"`
 	Description *graphql.String  `json:"description"`

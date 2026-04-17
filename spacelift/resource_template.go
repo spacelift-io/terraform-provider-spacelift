@@ -74,7 +74,7 @@ func resourceTemplate() *schema.Resource {
 
 func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		BlueprintVersionedGroup structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroupCreate(input: $input)"`
+		Template structs.Template `graphql:"templateCreate(input: $input)"`
 	}
 
 	variables := map[string]any{
@@ -85,14 +85,14 @@ func resourceTemplateCreate(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.Errorf("could not create template: %v", err)
 	}
 
-	d.SetId(mutation.BlueprintVersionedGroup.ID)
+	d.SetId(mutation.Template.ID)
 
 	return resourceTemplateRead(ctx, d, meta)
 }
 
 func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
-		BlueprintVersionedGroup *structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroup(id: $id)"`
+		Template *structs.Template `graphql:"template(id: $id)"`
 	}
 
 	variables := map[string]any{
@@ -103,25 +103,25 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.Errorf("could not query for template: %v", err)
 	}
 
-	if query.BlueprintVersionedGroup == nil {
+	if query.Template == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("name", query.BlueprintVersionedGroup.Name)
-	d.Set("space", query.BlueprintVersionedGroup.Space.ID)
-	d.Set("ulid", query.BlueprintVersionedGroup.ULID)
-	d.Set("created_at", query.BlueprintVersionedGroup.CreatedAt)
-	d.Set("updated_at", query.BlueprintVersionedGroup.UpdatedAt)
+	d.Set("name", query.Template.Name)
+	d.Set("space", query.Template.Space.ID)
+	d.Set("ulid", query.Template.ULID)
+	d.Set("created_at", query.Template.CreatedAt)
+	d.Set("updated_at", query.Template.UpdatedAt)
 
-	if query.BlueprintVersionedGroup.Description == nil {
+	if query.Template.Description == nil {
 		d.Set("description", "")
 	} else {
-		d.Set("description", *query.BlueprintVersionedGroup.Description)
+		d.Set("description", *query.Template.Description)
 	}
 
 	labels := schema.NewSet(schema.HashString, []any{})
-	for _, label := range query.BlueprintVersionedGroup.Labels {
+	for _, label := range query.Template.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)
@@ -131,7 +131,7 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta any)
 
 func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		BlueprintVersionedGroup structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroupUpdate(id: $id, input: $input)"`
+		Template structs.Template `graphql:"templateUpdate(id: $id, input: $input)"`
 	}
 
 	variables := map[string]any{
@@ -148,7 +148,7 @@ func resourceTemplateUpdate(ctx context.Context, d *schema.ResourceData, meta an
 
 func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		BlueprintVersionedGroup *structs.BlueprintVersionedGroup `graphql:"blueprintVersionedGroupDelete(id: $id)"`
+		Template *structs.Template `graphql:"templateDelete(id: $id)"`
 	}
 
 	variables := map[string]any{
@@ -164,8 +164,8 @@ func resourceTemplateDelete(ctx context.Context, d *schema.ResourceData, meta an
 	return nil
 }
 
-func templateCreateInput(d *schema.ResourceData) structs.BlueprintVersionedGroupCreateInput {
-	var input structs.BlueprintVersionedGroupCreateInput
+func templateCreateInput(d *schema.ResourceData) structs.TemplateCreateInput {
+	var input structs.TemplateCreateInput
 
 	input.Space = graphql.ID(d.Get("space").(string))
 	input.Name = graphql.String(d.Get("name").(string))
@@ -185,8 +185,8 @@ func templateCreateInput(d *schema.ResourceData) structs.BlueprintVersionedGroup
 	return input
 }
 
-func templateUpdateInput(d *schema.ResourceData) structs.BlueprintVersionedGroupUpdateInput {
-	var input structs.BlueprintVersionedGroupUpdateInput
+func templateUpdateInput(d *schema.ResourceData) structs.TemplateUpdateInput {
+	var input structs.TemplateUpdateInput
 
 	input.Space = graphql.ID(d.Get("space").(string))
 	input.Name = graphql.String(d.Get("name").(string))

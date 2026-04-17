@@ -114,15 +114,15 @@ func dataTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData, met
 	deploymentID := d.Get("deployment_id").(string)
 
 	var query struct {
-		TemplateDeployment *structs.TemplateDeployment `graphql:"blueprintDeployment(id: $id, blueprintID: $blueprintID)"`
+		TemplateDeployment *structs.TemplateDeployment `graphql:"templateDeployment(id: $id, templateID: $templateID)"`
 	}
 
 	variables := map[string]any{
-		"id":          toID(deploymentID),
-		"blueprintID": toID(templateID),
+		"id":         toID(deploymentID),
+		"templateID": toID(templateID),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "BlueprintDeployment", &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "TemplateDeployment", &query, variables); err != nil {
 		return diag.Errorf("could not query for template deployment: %v", err)
 	}
 

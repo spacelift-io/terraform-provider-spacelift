@@ -81,9 +81,9 @@ func dataTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta a
 	versionID := d.Get("version_id").(string)
 
 	var query struct {
-		BlueprintVersionedGroup *struct {
-			BlueprintVersion *structs.Blueprint `graphql:"blueprintVersion(id: $versionId)"`
-		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
+		Template *struct {
+			TemplateVersion *structs.TemplateVersion `graphql:"templateVersion(id: $versionId)"`
+		} `graphql:"template(id: $templateId)"`
 	}
 
 	variables := map[string]any{
@@ -95,40 +95,40 @@ func dataTemplateVersionRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.Errorf("could not query for template version: %v", err)
 	}
 
-	if query.BlueprintVersionedGroup == nil {
+	if query.Template == nil {
 		return diag.Errorf("could not find template %s", templateID)
 	}
 
-	if query.BlueprintVersionedGroup.BlueprintVersion == nil {
+	if query.Template.TemplateVersion == nil {
 		return diag.Errorf("could not find template version %s in template %s", versionID, templateID)
 	}
 
-	blueprint := query.BlueprintVersionedGroup.BlueprintVersion
+	tv := query.Template.TemplateVersion
 
-	d.SetId(blueprint.ID)
-	d.Set("state", blueprint.State)
-	d.Set("ulid", blueprint.ULID)
-	d.Set("created_at", blueprint.CreatedAt)
-	d.Set("updated_at", blueprint.UpdatedAt)
+	d.SetId(tv.ID)
+	d.Set("state", tv.State)
+	d.Set("ulid", tv.ULID)
+	d.Set("created_at", tv.CreatedAt)
+	d.Set("updated_at", tv.UpdatedAt)
 
-	if blueprint.Version != nil {
-		d.Set("version_number", *blueprint.Version)
+	if tv.Version != nil {
+		d.Set("version_number", *tv.Version)
 	}
 
-	if blueprint.RawTemplate == nil {
+	if tv.RawTemplate == nil {
 		d.Set("template", "")
 	} else {
-		d.Set("template", *blueprint.RawTemplate)
+		d.Set("template", *tv.RawTemplate)
 	}
 
-	if blueprint.Instructions == nil {
+	if tv.Instructions == nil {
 		d.Set("instructions", "")
 	} else {
-		d.Set("instructions", *blueprint.Instructions)
+		d.Set("instructions", *tv.Instructions)
 	}
 
-	if blueprint.PublishedAt != nil {
-		d.Set("published_at", *blueprint.PublishedAt)
+	if tv.PublishedAt != nil {
+		d.Set("published_at", *tv.PublishedAt)
 	}
 
 	return nil

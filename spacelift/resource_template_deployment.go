@@ -136,7 +136,7 @@ func resourceTemplateDeployment() *schema.Resource {
 
 func resourceTemplateDeploymentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		TemplateDeployment structs.TemplateDeployment `graphql:"blueprintDeploymentCreate(id: $id, input: $input)"`
+		TemplateDeployment structs.TemplateDeployment `graphql:"templateDeploymentCreate(id: $id, input: $input)"`
 	}
 
 	variables := map[string]any{
@@ -146,7 +146,7 @@ func resourceTemplateDeploymentCreate(ctx context.Context, d *schema.ResourceDat
 
 	client := meta.(*internal.Client)
 
-	if err := client.Mutate(ctx, "BlueprintDeploymentCreate", &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "TemplateDeploymentCreate", &mutation, variables); err != nil {
 		return diag.Errorf("could not create template deployment: %v", err)
 	}
 
@@ -171,15 +171,15 @@ func resourceTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var query struct {
-		TemplateDeployment *structs.TemplateDeployment `graphql:"blueprintDeployment(id: $id, blueprintID: $blueprintID)"`
+		TemplateDeployment *structs.TemplateDeployment `graphql:"templateDeployment(id: $id, templateID: $templateID)"`
 	}
 
 	variables := map[string]any{
-		"id":          toID(deploymentID),
-		"blueprintID": toID(templateID),
+		"id":         toID(deploymentID),
+		"templateID": toID(templateID),
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "BlueprintDeployment", &query, variables); err != nil {
+	if err := meta.(*internal.Client).Query(ctx, "TemplateDeployment", &query, variables); err != nil {
 		return diag.Errorf("could not query for template deployment: %v", err)
 	}
 
@@ -240,10 +240,10 @@ func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	var mutation struct {
-		TemplateDeployment structs.TemplateDeployment `graphql:"blueprintDeploymentUpdate(id: $id, blueprintID: $blueprintID, input: $input)"`
+		TemplateDeployment structs.TemplateDeployment `graphql:"templateDeploymentUpdate(id: $id, templateID: $templateID, input: $input)"`
 	}
 
-	inputs := structs.BlueprintDeploymentUpdateInput{}
+	inputs := structs.TemplateDeploymentUpdateInput{}
 
 	if d.HasChange("template_version_id") {
 		inputs.VersionID = new(graphql.ID(d.Get("template_version_id").(string)))
@@ -262,14 +262,14 @@ func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceDat
 	}
 
 	variables := map[string]any{
-		"id":          toID(deploymentID),
-		"blueprintID": toID(templateID),
-		"input":       inputs,
+		"id":         toID(deploymentID),
+		"templateID": toID(templateID),
+		"input":      inputs,
 	}
 
 	client := meta.(*internal.Client)
 
-	if err := client.Mutate(ctx, "BlueprintDeploymentUpdate", &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "TemplateDeploymentUpdate", &mutation, variables); err != nil {
 		return diag.Errorf("could not update template deployment: %v", err)
 	}
 
@@ -295,12 +295,12 @@ func resourceTemplateDeploymentUpdate(ctx context.Context, d *schema.ResourceDat
 
 func resourceTemplateDeploymentDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		TemplateDeployment *structs.TemplateDeployment `graphql:"blueprintDeploymentDelete(id: $id, blueprintID: $blueprintID)"`
+		TemplateDeployment *structs.TemplateDeployment `graphql:"templateDeploymentDelete(id: $id, templateID: $templateID)"`
 	}
 
 	variables := map[string]any{
-		"id":          toID(d.Get("deployment_id").(string)),
-		"blueprintID": toID(d.Get("template_id").(string)),
+		"id":         toID(d.Get("deployment_id").(string)),
+		"templateID": toID(d.Get("template_id").(string)),
 	}
 
 	client := meta.(*internal.Client)
@@ -329,11 +329,11 @@ func parseDeploymentID(id string) (string, string, error) {
 	return parts[1], parts[0], nil
 }
 
-func templateDeploymentCreateInput(d *schema.ResourceData) structs.BlueprintDeploymentCreateInput {
-	input := structs.BlueprintDeploymentCreateInput{
+func templateDeploymentCreateInput(d *schema.ResourceData) structs.TemplateDeploymentCreateInput {
+	input := structs.TemplateDeploymentCreateInput{
 		Space:  graphql.ID(d.Get("space").(string)),
 		Name:   graphql.String(d.Get("name").(string)),
-		Inputs: []structs.BlueprintDeploymentCreateInputPair{},
+		Inputs: []structs.TemplateDeploymentCreateInputPair{},
 	}
 
 	if description, ok := d.GetOk("description"); ok {
@@ -345,14 +345,14 @@ func templateDeploymentCreateInput(d *schema.ResourceData) structs.BlueprintDepl
 	return input
 }
 
-func templateDeploymentSchemaToInputs(d *schema.ResourceData) []structs.BlueprintDeploymentCreateInputPair {
-	inputs := make([]structs.BlueprintDeploymentCreateInputPair, 0)
+func templateDeploymentSchemaToInputs(d *schema.ResourceData) []structs.TemplateDeploymentCreateInputPair {
+	inputs := make([]structs.TemplateDeploymentCreateInputPair, 0)
 	if inputList, ok := d.GetOk("input"); ok {
 		stateInputs := inputList.([]any)
-		inputs = make([]structs.BlueprintDeploymentCreateInputPair, len(stateInputs))
+		inputs = make([]structs.TemplateDeploymentCreateInputPair, len(stateInputs))
 		for i, v := range stateInputs {
 			item := v.(map[string]any)
-			inputs[i] = structs.BlueprintDeploymentCreateInputPair{
+			inputs[i] = structs.TemplateDeploymentCreateInputPair{
 				ID:    graphql.String(item["id"].(string)),
 				Value: graphql.String(item["value"].(string)),
 			}
@@ -369,7 +369,7 @@ type waitInput struct {
 type deploymentStateQuery struct {
 	Deployment *struct {
 		State string `graphql:"state"`
-	} `graphql:"blueprintDeployment(id: $id, blueprintID: $blueprintID)"`
+	} `graphql:"templateDeployment(id: $id, templateID: $templateID)"`
 }
 
 func waitForDeploymentState(ctx context.Context, waitInput waitInput) diag.Diagnostics {
@@ -407,13 +407,13 @@ func waitForDeployment(ctx context.Context, client *internal.Client, d *schema.R
 	})
 }
 
-func queryDeploymentState(ctx context.Context, client *internal.Client, id, blueprintID graphql.ID) (string, error) {
+func queryDeploymentState(ctx context.Context, client *internal.Client, id, templateID graphql.ID) (string, error) {
 	variables := map[string]any{
-		"id":          id,
-		"blueprintID": blueprintID,
+		"id":         id,
+		"templateID": templateID,
 	}
 	var query deploymentStateQuery
-	if err := client.Query(ctx, "BlueprintDeployment", &query, variables); err != nil {
+	if err := client.Query(ctx, "TemplateDeployment", &query, variables); err != nil {
 		return "", errors.Join(err, errors.New("error querying for template deployment state"))
 	}
 	if query.Deployment == nil {
