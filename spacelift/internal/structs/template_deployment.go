@@ -2,7 +2,7 @@ package structs
 
 import "github.com/shurcooL/graphql"
 
-// TemplateDeploymentTemplate represents a blueprint deployment group.
+// TemplateDeploymentTemplate represents the template associated with a deployment.
 type TemplateDeploymentTemplate struct {
 	ID string `graphql:"id"`
 }
@@ -37,32 +37,29 @@ type TemplateDeployment struct {
 	State           string                            `graphql:"state"`
 	Inputs          []TemplateDeploymentInput         `graphql:"inputs"`
 	Space           TemplateDeploymentSpace           `graphql:"space"`
-	Template        TemplateDeploymentTemplate        `graphql:"blueprint"`
+	Template        TemplateDeploymentTemplate        `graphql:"template"`
 	Stacks          []TemplateDeploymentStack         `graphql:"stacks"`
-	TemplateVersion TemplateDeploymentTemplateVersion `graphql:"blueprintVersion"`
+	TemplateVersion TemplateDeploymentTemplateVersion `graphql:"templateVersion"`
 }
 
-// BlueprintDeploymentCreateInputPair represents a single input for deployment creation.
-// Note: Uses Blueprint naming to match the GraphQL API.
-type BlueprintDeploymentCreateInputPair struct {
+// TemplateDeploymentCreateInputPair represents a single input for deployment creation.
+type TemplateDeploymentCreateInputPair struct {
 	ID    graphql.String `json:"id"`
 	Value graphql.String `json:"value"`
 }
 
-// BlueprintDeploymentCreateInput represents the input for creating a deployment.
-// Note: Uses Blueprint naming to match the GraphQL API.
-type BlueprintDeploymentCreateInput struct {
-	Space       graphql.ID                           `json:"space"`
-	Name        graphql.String                       `json:"name"`
-	Description *graphql.String                      `json:"description,omitempty"`
-	Inputs      []BlueprintDeploymentCreateInputPair `json:"inputs,omitempty"`
+// TemplateDeploymentCreateInput represents the input for creating a deployment.
+type TemplateDeploymentCreateInput struct {
+	Space       graphql.ID                          `json:"space"`
+	Name        graphql.String                      `json:"name"`
+	Description *graphql.String                     `json:"description,omitempty"`
+	Inputs      []TemplateDeploymentCreateInputPair `json:"inputs,omitempty"`
 }
 
-// BlueprintDeploymentUpdateInput represents the input for updating a deployment.
-// Note: Uses Blueprint naming to match the GraphQL API.
-type BlueprintDeploymentUpdateInput struct {
-	VersionID   *graphql.ID                          `json:"versionId,omitempty"`
-	Name        *graphql.String                      `json:"name,omitempty"`
-	Description *graphql.String                      `json:"description,omitempty"`
-	Inputs      []BlueprintDeploymentCreateInputPair `json:"inputs,omitempty"`
+// TemplateDeploymentUpdateInput represents the input for updating a deployment.
+type TemplateDeploymentUpdateInput struct {
+	VersionID   *graphql.ID                         `json:"versionId,omitempty"`
+	Name        *graphql.String                     `json:"name,omitempty"`
+	Description *graphql.String                     `json:"description,omitempty"`
+	Inputs      []TemplateDeploymentCreateInputPair `json:"inputs,omitempty"`
 }

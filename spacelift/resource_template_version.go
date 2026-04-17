@@ -30,17 +30,17 @@ func resourceTemplateVersion() *schema.Resource {
 			rawTemplate, ok := diff.Get("template").(string)
 			if ok && rawTemplate != "" && diff.HasChange("template") && newState == "PUBLISHED" {
 				var mutation struct {
-					BlueprintVersionParseTemplate struct {
+					TemplateVersionParseTemplate struct {
 						Errors []string `graphql:"errors"`
-					} `graphql:"blueprintVersionParseTemplate(template: $template)"`
+					} `graphql:"templateVersionParseTemplate(template: $template)"`
 				}
-				if err := meta.(*internal.Client).Mutate(ctx, "ValidateBlueprintVersionTemplate", &mutation, map[string]any{
+				if err := meta.(*internal.Client).Mutate(ctx, "ValidateTemplateVersionTemplate", &mutation, map[string]any{
 					"template": graphql.String(rawTemplate),
 				}); err != nil {
 					return fmt.Errorf("unable to validate template: %v", err)
 				}
-				if len(mutation.BlueprintVersionParseTemplate.Errors) > 0 {
-					return fmt.Errorf("template is invalid:\n - %s", strings.Join(mutation.BlueprintVersionParseTemplate.Errors, "\n - "))
+				if len(mutation.TemplateVersionParseTemplate.Errors) > 0 {
+					return fmt.Errorf("template is invalid:\n - %s", strings.Join(mutation.TemplateVersionParseTemplate.Errors, "\n - "))
 				}
 			}
 
@@ -119,7 +119,7 @@ func resourceTemplateVersion() *schema.Resource {
 
 func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		Blueprint structs.Blueprint `graphql:"blueprintVersionCreate(input: $input)"`
+		TemplateVersion structs.TemplateVersion `graphql:"templateVersionCreate(input: $input)"`
 	}
 
 	variables := map[string]any{
@@ -130,7 +130,7 @@ func resourceTemplateVersionCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("could not create template version: %v", err)
 	}
 
-	d.SetId(mutation.Blueprint.ID)
+	d.SetId(mutation.TemplateVersion.ID)
 
 	return resourceTemplateVersionRead(ctx, d, meta)
 }
@@ -140,9 +140,9 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 	versionID := d.Id()
 
 	var query struct {
-		BlueprintVersionedGroup *struct {
-			BlueprintVersion *structs.Blueprint `graphql:"blueprintVersion(id: $versionId)"`
-		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
+		Template *struct {
+			TemplateVersion *structs.TemplateVersion `graphql:"templateVersion(id: $versionId)"`
+		} `graphql:"template(id: $templateId)"`
 	}
 
 	variables := map[string]any{
@@ -154,36 +154,36 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.Errorf("could not query for template version: %v", err)
 	}
 
-	if query.BlueprintVersionedGroup == nil || query.BlueprintVersionedGroup.BlueprintVersion == nil {
+	if query.Template == nil || query.Template.TemplateVersion == nil {
 		d.SetId("")
 		return nil
 	}
 
-	blueprint := query.BlueprintVersionedGroup.BlueprintVersion
+	tv := query.Template.TemplateVersion
 
-	d.Set("state", blueprint.State)
-	d.Set("ulid", blueprint.ULID)
-	d.Set("created_at", blueprint.CreatedAt)
-	d.Set("updated_at", blueprint.UpdatedAt)
+	d.Set("state", tv.State)
+	d.Set("ulid", tv.ULID)
+	d.Set("created_at", tv.CreatedAt)
+	d.Set("updated_at", tv.UpdatedAt)
 
-	if blueprint.Version != nil {
-		d.Set("version_number", *blueprint.Version)
+	if tv.Version != nil {
+		d.Set("version_number", *tv.Version)
 	}
 
-	if blueprint.RawTemplate == nil {
+	if tv.RawTemplate == nil {
 		d.Set("template", "")
 	} else {
-		d.Set("template", *blueprint.RawTemplate)
+		d.Set("template", *tv.RawTemplate)
 	}
 
-	if blueprint.Instructions == nil {
+	if tv.Instructions == nil {
 		d.Set("instructions", "")
 	} else {
-		d.Set("instructions", *blueprint.Instructions)
+		d.Set("instructions", *tv.Instructions)
 	}
 
-	if blueprint.PublishedAt != nil {
-		d.Set("published_at", *blueprint.PublishedAt)
+	if tv.PublishedAt != nil {
+		d.Set("published_at", *tv.PublishedAt)
 	}
 
 	return nil
@@ -191,7 +191,7 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 
 func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		Blueprint structs.Blueprint `graphql:"blueprintVersionUpdate(id: $id, input: $input)"`
+		TemplateVersion structs.TemplateVersion `graphql:"templateVersionUpdate(id: $id, input: $input)"`
 	}
 
 	variables := map[string]any{
@@ -208,7 +208,7 @@ func resourceTemplateVersionUpdate(ctx context.Context, d *schema.ResourceData, 
 
 func resourceTemplateVersionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		Blueprint *structs.Blueprint `graphql:"blueprintVersionDelete(id: $id)"`
+		TemplateVersion *structs.TemplateVersion `graphql:"templateVersionDelete(id: $id)"`
 	}
 
 	variables := map[string]any{
@@ -243,9 +243,9 @@ func resourceTemplateVersionImport(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	var query struct {
-		BlueprintVersionedGroup *struct {
-			BlueprintVersion *structs.Blueprint `graphql:"blueprintVersion(id: $versionId)"`
-		} `graphql:"blueprintVersionedGroup(id: $templateId)"`
+		Template *struct {
+			TemplateVersion *structs.TemplateVersion `graphql:"templateVersion(id: $versionId)"`
+		} `graphql:"template(id: $templateId)"`
 	}
 
 	variables := map[string]any{
@@ -257,24 +257,24 @@ func resourceTemplateVersionImport(ctx context.Context, d *schema.ResourceData, 
 		return nil, fmt.Errorf("could not query for template version: %v", err)
 	}
 
-	if query.BlueprintVersionedGroup == nil {
+	if query.Template == nil {
 		return nil, fmt.Errorf("template not found: %s", templateID)
 	}
 
-	if query.BlueprintVersionedGroup.BlueprintVersion == nil {
+	if query.Template.TemplateVersion == nil {
 		return nil, fmt.Errorf("template version not found: %s in template %s", versionULID, templateID)
 	}
 
 	d.Set("template_id", templateID)
-	d.SetId(query.BlueprintVersionedGroup.BlueprintVersion.ID)
+	d.SetId(query.Template.TemplateVersion.ID)
 
 	return []*schema.ResourceData{d}, nil
 }
 
-func templateVersionCreateInput(d *schema.ResourceData) structs.BlueprintVersionCreateInput {
-	var input structs.BlueprintVersionCreateInput
+func templateVersionCreateInput(d *schema.ResourceData) structs.TemplateVersionCreateInput {
+	var input structs.TemplateVersionCreateInput
 
-	input.BlueprintID = graphql.ID(d.Get("template_id").(string))
+	input.TemplateID = graphql.ID(d.Get("template_id").(string))
 	input.State = graphql.String(d.Get("state").(string))
 	input.VersionNumber = graphql.String(d.Get("version_number").(string))
 	input.Labels = []graphql.String{}
@@ -290,8 +290,8 @@ func templateVersionCreateInput(d *schema.ResourceData) structs.BlueprintVersion
 	return input
 }
 
-func templateVersionUpdateInput(d *schema.ResourceData) structs.BlueprintVersionUpdateInput {
-	var input structs.BlueprintVersionUpdateInput
+func templateVersionUpdateInput(d *schema.ResourceData) structs.TemplateVersionUpdateInput {
+	var input structs.TemplateVersionUpdateInput
 
 	input.State = graphql.String(d.Get("state").(string))
 	input.VersionNumber = graphql.String(d.Get("version_number").(string))
