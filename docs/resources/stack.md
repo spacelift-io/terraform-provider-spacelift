@@ -218,7 +218,7 @@ resource "spacelift_stack" "terragrunt-stack" {
 - `after_perform` (List of String) List of after-perform scripts
 - `after_plan` (List of String) List of after-plan scripts
 - `after_run` (List of String) List of after-run scripts
-- `allow_run_promotion` (Boolean) Indicates whether a proposed run can be promoted to a tracked a run. Defaults to `true`.
+- `allow_run_promotion` (Boolean) Indicates whether a proposed run can be promoted to a tracked run. Defaults to `true`.
 - `ansible` (Block List, Max: 1) Ansible-specific configuration. Presence means this Stack is an Ansible Stack. (see [below for nested schema](#nestedblock--ansible))
 - `autodeploy` (Boolean) Indicates whether changes to this stack can be automatically deployed. Defaults to `false`.
 - `autoretry` (Boolean) Indicates whether obsolete proposed changes should automatically be retried. Defaults to `false`.
