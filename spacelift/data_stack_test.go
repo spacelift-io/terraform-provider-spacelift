@@ -17,7 +17,6 @@ func TestStackData(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
-				administrative                  = true
 				after_apply                     = ["ls -la", "rm -rf /"]
 				after_destroy                   = ["echo 'after_destroy'"]
 				after_init                      = ["terraform fmt -check", "tflint"]
@@ -53,7 +52,6 @@ func TestStackData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_stack.test",
 				Attribute("id", StartsWith("test-stack-")),
-				Attribute("administrative", Equals("true")),
 				Attribute("after_apply.#", Equals("2")),
 				Attribute("after_apply.0", Equals("ls -la")),
 				Attribute("after_apply.1", Equals("rm -rf /")),
@@ -558,7 +556,6 @@ func TestStackDataSpace(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
-				administrative               = true
 				after_apply                  = ["ls -la", "rm -rf /"]
 				after_destroy                = ["echo 'after_destroy'"]
 				after_init                   = ["terraform fmt -check", "tflint"]
@@ -590,7 +587,6 @@ func TestStackDataSpace(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_stack.test",
 				Attribute("id", StartsWith("test-stack-")),
-				Attribute("administrative", Equals("true")),
 				Attribute("after_apply.#", Equals("2")),
 				Attribute("after_apply.0", Equals("ls -la")),
 				Attribute("after_apply.1", Equals("rm -rf /")),

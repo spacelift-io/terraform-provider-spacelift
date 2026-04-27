@@ -21,7 +21,6 @@ func TestVersionResource(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name           = "test-version-module-%s"
-					administrative = true
 					branch         = "module"
 					repository     = "terraform-bacon-tasty"
 					labels         = ["version-test"]

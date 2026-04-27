@@ -19,7 +19,6 @@ func TestModuleResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name                  = "github-module-%s"
-					administrative        = true
 					branch                = "master"
 					description           = "%s"
 					labels                = ["one", "two"]
@@ -40,7 +39,6 @@ func TestModuleResource(t *testing.T) {
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("terraform-default-github-module-%s", randomID))),
-					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -80,7 +78,6 @@ func TestModuleResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name           = "raw-git-%s"
-					administrative = false
 					branch         = "main"
 					repository     = "terraform-bacon-tasty"
 
@@ -115,7 +112,6 @@ func TestModuleResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name           = "public-test-%s"
-					administrative = false
 					branch         = "main"
 					repository     = "terraform-bacon-tasty"
 					public         = true
@@ -146,7 +142,6 @@ func TestModuleResource(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
                     name               = "project-root-%s"
-					administrative     = true
 					branch             = "master"
 					description        = "description"
 					labels             = ["one", "two"]
@@ -166,7 +161,6 @@ func TestModuleResource(t *testing.T) {
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("terraform-papaya-project-root-%s", randomID))),
-					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("description")),
 					SetEquals("labels", "one", "two"),
@@ -376,7 +370,6 @@ func TestModuleResourceSpace(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name                  = "github-module-%s"
-					administrative        = true
 					branch                = "master"
 					description           = "%s"
 					labels                = ["one", "two"]
@@ -396,7 +389,6 @@ func TestModuleResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("terraform-default-github-module-%s", randomID))),
-					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),
@@ -432,7 +424,6 @@ func TestModuleResourceSpace(t *testing.T) {
 			return fmt.Sprintf(`
 				resource "spacelift_module" "test" {
                     name               = "project-root-%s"
-					administrative     = true
 					branch             = "master"
 					description        = "description"
 					labels             = ["one", "two"]
@@ -452,7 +443,6 @@ func TestModuleResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("terraform-papaya-project-root-%s", randomID))),
-					Attribute("administrative", Equals("true")),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("description")),
 					SetEquals("labels", "one", "two"),

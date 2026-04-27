@@ -33,7 +33,6 @@ func TestModulesData(t *testing.T) {
 				resource "spacelift_module" "test" {
 					name = "test-module-%s"
 
-					administrative = true
 					branch         = "master"
 					labels         = ["bacon", "cabbage"]
 					project_root   = "root"
@@ -44,8 +43,6 @@ func TestModulesData(t *testing.T) {
 
 				data "spacelift_modules" "test" {
 					depends_on = [spacelift_module.test]
-
-					administrative {}
 
 					branch {
 					  any_of = ["main", "master"]

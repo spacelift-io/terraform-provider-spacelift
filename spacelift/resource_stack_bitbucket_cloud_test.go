@@ -23,7 +23,6 @@ func TestVCSIntegrationBitbucketCloud(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "root"
-				administrative     = false
 				bitbucket_cloud {
 					namespace = "%s"
 				}
@@ -54,7 +53,6 @@ func TestVCSIntegrationBitbucketCloud(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "%s"
-				administrative     = false
 				bitbucket_cloud {
 					namespace = "%s"
 					id = "%s"

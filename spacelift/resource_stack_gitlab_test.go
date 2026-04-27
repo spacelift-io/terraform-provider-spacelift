@@ -23,7 +23,6 @@ func TestVCSIntegrationGitlab(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "root"
-				administrative     = false
 				gitlab {
 					namespace = "%s"
 				}
@@ -54,7 +53,6 @@ func TestVCSIntegrationGitlab(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "%s"
-				administrative     = false
 				gitlab {
 					namespace = "%s"
 					id = "%s"

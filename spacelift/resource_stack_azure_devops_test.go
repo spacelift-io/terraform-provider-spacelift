@@ -24,7 +24,6 @@ func TestVCSIntegrationAzureDevOps(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "root"
-				administrative     = false
 				azure_devops {
 					project = "%s"
 				}
@@ -69,7 +68,6 @@ func TestVCSIntegrationAzureDevOps(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "%s"
-				administrative     = false
 				azure_devops {
 					project = "%s"
 					id = "%s"
