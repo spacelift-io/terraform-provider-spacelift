@@ -18,7 +18,6 @@ func TestModuleData(t *testing.T) {
 			Config: fmt.Sprintf(`
 			resource "spacelift_module" "test" {
                 name            = "test-module-%s"
-				administrative  = true
 				branch          = "master"
 				description     = "description"
 				labels          = ["one", "two"]
@@ -33,7 +32,6 @@ func TestModuleData(t *testing.T) {
 			Check: Resource(
 				"data.spacelift_module.test",
 				Attribute("id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
-				Attribute("administrative", Equals("true")),
 				Attribute("branch", Equals("master")),
 				Attribute("description", Equals("description")),
 				SetEquals("labels", "one", "two"),
@@ -56,7 +54,6 @@ func TestModuleData(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name            = "test-module-%s"
-					administrative  = true
 					branch          = "master"
 					repository      = "terraform-bacon-tasty"
 				}
@@ -80,7 +77,6 @@ func TestModuleData(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name            = "test-module-%s"
-					administrative  = true
 					branch          = "master"
 					repository      = "terraform-bacon-tasty"
 					workflow_tool   = "CUSTOM"
@@ -105,7 +101,6 @@ func TestModuleData(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "spacelift_module" "test" {
 					name            = "test-module-%s"
-					administrative  = false
 					branch          = "main"
 					repository      = "terraform-bacon-tasty"
 
@@ -139,7 +134,6 @@ func TestModuleDataSpace(t *testing.T) {
 		Config: fmt.Sprintf(`
 			resource "spacelift_module" "test" {
                 name            = "test-module-%s"
-				administrative  = true
 				branch          = "master"
 				description     = "description"
 				labels          = ["one", "two"]
@@ -155,7 +149,6 @@ func TestModuleDataSpace(t *testing.T) {
 		Check: Resource(
 			"data.spacelift_module.test",
 			Attribute("id", Equals(fmt.Sprintf("terraform-default-test-module-%s", randomID))),
-			Attribute("administrative", Equals("true")),
 			Attribute("branch", Equals("master")),
 			Attribute("description", Equals("description")),
 			SetEquals("labels", "one", "two"),

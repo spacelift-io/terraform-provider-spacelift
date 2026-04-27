@@ -15,7 +15,6 @@ description: |-
 ```terraform
 # Terraform stack using github.com as VCS
 resource "spacelift_stack" "k8s-cluster" {
-  administrative    = true
   autodeploy        = true
   branch            = "master"
   description       = "Provisions a Kubernetes cluster"
@@ -31,7 +30,6 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
     namespace = "SPACELIFT" # The Bitbucket project containing the repository
   }
 
-  administrative    = true
   autodeploy        = true
   branch            = "master"
   description       = "Provisions a Kubernetes cluster"
@@ -47,7 +45,6 @@ resource "spacelift_stack" "k8s-cluster-bitbucket-datacenter" {
     namespace = "SPACELIFT" # The Bitbucket project containing the repository
   }
 
-  administrative    = true
   autodeploy        = true
   branch            = "master"
   description       = "Provisions a Kubernetes cluster"
@@ -63,7 +60,6 @@ resource "spacelift_stack" "k8s-cluster-github-enterprise" {
     namespace = "spacelift" # The GitHub organization / user the repository belongs to
   }
 
-  administrative    = true
   autodeploy        = true
   branch            = "master"
   description       = "Provisions a Kubernetes cluster"
@@ -79,7 +75,6 @@ resource "spacelift_stack" "k8s-cluster-gitlab" {
     namespace = "spacelift" # The GitLab namespace containing the repository
   }
 
-  administrative    = true
   autodeploy        = true
   branch            = "master"
   description       = "Provisions a Kubernetes cluster"
@@ -91,7 +86,6 @@ resource "spacelift_stack" "k8s-cluster-gitlab" {
 
 # Terraform stack using github.com as VCS and enabling smart sanitization
 resource "spacelift_stack" "k8s-cluster" {
-  administrative               = true
   autodeploy                   = true
   branch                       = "master"
   description                  = "Provisions a Kubernetes cluster"
@@ -104,7 +98,6 @@ resource "spacelift_stack" "k8s-cluster" {
 
 # Terraform stack using github.com as VCS and enabling external state access
 resource "spacelift_stack" "k8s-cluster" {
-  administrative                  = true
   autodeploy                      = true
   branch                          = "master"
   description                     = "Provisions a Kubernetes cluster"

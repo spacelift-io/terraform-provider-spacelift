@@ -23,7 +23,6 @@ func TestVCSIntegrationBitbucketDatacenter(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "root"
-				administrative     = false
 				bitbucket_datacenter {
 					namespace = "%s"
 				}
@@ -54,7 +53,6 @@ func TestVCSIntegrationBitbucketDatacenter(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "%s"
-				administrative     = false
 				bitbucket_datacenter {
 					namespace = "%s"
 					id = "%s"

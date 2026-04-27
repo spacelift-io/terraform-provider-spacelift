@@ -54,7 +54,6 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					repository      = "` + testConfig.SourceCode.Gitlab.Repository.Name + `"
 					branch          = "` + testConfig.SourceCode.Gitlab.Repository.Branch + `"
 					space_id        = "` + testConfig.SourceCode.Gitlab.SpaceLevel.Space + `"
-					administrative  = false
 					worker_pool_id  = spacelift_worker_pool.test.id
 					gitlab {
 						namespace = "` + testConfig.SourceCode.Gitlab.Repository.Namespace + `"

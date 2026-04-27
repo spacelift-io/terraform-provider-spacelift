@@ -23,7 +23,6 @@ func TestVCSIntegrationGithubEnterprise(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "root"
-				administrative     = false
 				github_enterprise {
 					namespace = "%s"
 				}
@@ -54,7 +53,6 @@ func TestVCSIntegrationGithubEnterprise(t *testing.T) {
 				repository         = "%s"
 				branch             = "%s"
 				space_id           = "%s"
-				administrative     = false
 				github_enterprise {
 					namespace = "%s"
 					id = "%s"

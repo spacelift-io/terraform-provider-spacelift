@@ -55,7 +55,6 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 					repository      = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Name + `"
 					branch          = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Branch + `"
 					space_id        = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space + `"
-					administrative  = false
 					worker_pool_id  = spacelift_worker_pool.test.id
 					bitbucket_datacenter {
 						namespace = "` + testConfig.SourceCode.BitbucketDatacenter.Repository.Namespace + `"

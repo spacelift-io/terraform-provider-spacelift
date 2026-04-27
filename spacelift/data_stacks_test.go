@@ -22,17 +22,14 @@ func TestStacksData(t *testing.T) {
 				resource "spacelift_stack" "test" {
 					name = "My stack %s"
 
-					administrative = true
-					branch         = "master"
-					labels         = ["bacon", "cabbage"]
-					project_root   = "root"
-					repository     = "demo"
+					branch       = "master"
+					labels       = ["bacon", "cabbage"]
+					project_root = "root"
+					repository   = "demo"
 				}
 
 				data "spacelift_stacks" "test" {
 					depends_on = [spacelift_stack.test]
-
-					administrative {}
 
 					branch {
 					  any_of = ["main", "master"]
