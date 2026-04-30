@@ -361,7 +361,7 @@ func resourceStack() *schema.Resource {
 			},
 			"allow_run_promotion": {
 				Type:          schema.TypeBool,
-				Description:   "Indicates whether a proposed run can be promoted to a tracked a run. Defaults to `true`.",
+				Description:   "Indicates whether a proposed run can be promoted to a tracked run. Defaults to `true`.",
 				Optional:      true,
 				Default:       true,
 				ConflictsWith: []string{"github_action_deploy"},
