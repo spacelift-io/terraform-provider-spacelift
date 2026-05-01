@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"strconv"
@@ -10,7 +11,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/vcs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -120,6 +123,16 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					Attribute(azureDevopsUseGitCheckout, Equals("true")),
 				),
 			},
+			{
+				Config: configAzureDevOps("new descr", "null", "null", `"`+vcs.CheckTypeAggregated+`"`, useGitCheckout),
+				Check: Resource(
+					resourceName,
+					AttributeNotPresent(azureDevopsLabels),
+					AttributeNotPresent(azureDevopsAccessibleProjects),
+					Attribute(azureDevopsVCSChecks, Equals(vcs.CheckTypeAggregated)),
+					Attribute(azureDevopsUseGitCheckout, Equals("true")),
+				),
+			},
 		})
 	})
 
@@ -180,5 +193,82 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWoVer},
 			},
 		})
+	})
+}
+
+func TestHandleAzureDevopsIntegrationUpdateResult(t *testing.T) {
+	t.Run("keeps state intact on update error", func(t *testing.T) {
+		data := schema.TestResourceDataRaw(t, resourceAzureDevopsIntegration().Schema, map[string]interface{}{})
+		data.SetId("existing-id")
+
+		diags := handleAzureDevopsIntegrationUpdateResult(data, &structs.AzureDevOpsRepoIntegration{}, errors.New("boom"))
+
+		if len(diags) == 0 {
+			t.Fatal("expected diagnostics, got none")
+		}
+
+		if data.Id() != "existing-id" {
+			t.Fatalf("expected ID to remain %q, got %q", "existing-id", data.Id())
+		}
+	})
+
+	t.Run("applies mutation results on success", func(t *testing.T) {
+		data := schema.TestResourceDataRaw(t, resourceAzureDevopsIntegration().Schema, map[string]interface{}{})
+		data.SetId("existing-id")
+
+		integration := &structs.AzureDevOpsRepoIntegration{
+			ID:              "updated-id",
+			Name:            "updated-name",
+			Description:     "updated-description",
+			OrganizationURL: "https://dev.azure.com/example",
+			UserFacingHost:  "https://dev.azure.com/example",
+			WebhookPassword: "secret",
+			WebhookURL:      "https://webhooks.example",
+			VCSChecks:       vcs.CheckTypeAggregated,
+			UseGitCheckout:  true,
+			Labels:          []string{"label-1"},
+			AccessibleProjects: []string{"Project One"},
+		}
+		integration.Space.ID = "root"
+
+		diags := handleAzureDevopsIntegrationUpdateResult(data, integration, nil)
+
+		if len(diags) != 0 {
+			t.Fatalf("expected no diagnostics, got %v", diags)
+		}
+
+		if data.Id() != "updated-id" {
+			t.Fatalf("expected ID %q, got %q", "updated-id", data.Id())
+		}
+
+		if got := data.Get(azureDevopsName).(string); got != "updated-name" {
+			t.Fatalf("expected name %q, got %q", "updated-name", got)
+		}
+	})
+}
+
+func TestValidateAzureDevopsDefaultSpace(t *testing.T) {
+	t.Run("allows non-default integration in non-root space", func(t *testing.T) {
+		if err := validateAzureDevopsDefaultSpace(false, "team-space"); err != nil {
+			t.Fatalf("expected nil error, got %v", err)
+		}
+	})
+
+	t.Run("allows default integration in root space", func(t *testing.T) {
+		if err := validateAzureDevopsDefaultSpace(true, "root"); err != nil {
+			t.Fatalf("expected nil error, got %v", err)
+		}
+	})
+
+	t.Run("rejects default integration in non-root space", func(t *testing.T) {
+		err := validateAzureDevopsDefaultSpace(true, "non-root-space")
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+
+		expected := `the default integration must be in the space "root" not in "non-root-space"`
+		if err.Error() != expected {
+			t.Fatalf("expected %q, got %q", expected, err.Error())
+		}
 	})
 }

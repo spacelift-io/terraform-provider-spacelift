@@ -23,14 +23,7 @@ func resourceAzureDevopsIntegration() *schema.Resource {
 		DeleteContext: resourceAzureDevopsIntegrationDelete,
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-			if diff.HasChange(azureDevopsIsDefault) {
-				isDefault := diff.Get(azureDevopsIsDefault).(bool)
-				spaceID := diff.Get(azureDevopsSpaceID).(string)
-				if isDefault && spaceID != "root" {
-					return fmt.Errorf(`the default integration must be in the space "root" not in %q`, spaceID)
-				}
-			}
-			return nil
+			return validateAzureDevopsDefaultSpace(diff.Get(azureDevopsIsDefault).(bool), diff.Get(azureDevopsSpaceID).(string))
 		},
 
 		Importer: &schema.ResourceImporter{
@@ -234,15 +227,7 @@ func resourceAzureDevopsIntegrationUpdate(ctx context.Context, d *schema.Resourc
 		"accessibleProjects": setToOptionalStringList(d.Get(azureDevopsAccessibleProjects)),
 	}
 
-	var ret diag.Diagnostics
-
-	if err := meta.(*internal.Client).Mutate(ctx, "AzureDevOpsRepoIntegrationUpdate", &mutation, variables); err != nil {
-		ret = append(ret, diag.Errorf("could not update the Azure DevOps integration: %v", internal.FromSpaceliftError(err))...)
-	}
-
-	fillAzureDevopsIntegrationResults(d, &mutation.UpdateAzureDevOpsRepoIntegration)
-
-	return ret
+	return handleAzureDevopsIntegrationUpdateResult(d, &mutation.UpdateAzureDevOpsRepoIntegration, meta.(*internal.Client).Mutate(ctx, "AzureDevOpsRepoIntegrationUpdate", &mutation, variables))
 }
 
 func resourceAzureDevopsIntegrationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -295,4 +280,22 @@ func optionalStringFromValue(value string) *graphql.String {
 
 	graphqlValue := graphql.String(value)
 	return &graphqlValue
+}
+
+func validateAzureDevopsDefaultSpace(isDefault bool, spaceID string) error {
+	if isDefault && spaceID != "root" {
+		return fmt.Errorf(`the default integration must be in the space "root" not in %q`, spaceID)
+	}
+
+	return nil
+}
+
+func handleAzureDevopsIntegrationUpdateResult(d *schema.ResourceData, integration *structs.AzureDevOpsRepoIntegration, err error) diag.Diagnostics {
+	if err != nil {
+		return diag.Errorf("could not update the Azure DevOps integration: %v", internal.FromSpaceliftError(err))
+	}
+
+	fillAzureDevopsIntegrationResults(d, integration)
+
+	return nil
 }
