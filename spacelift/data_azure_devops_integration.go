@@ -7,20 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
-)
-
-const (
-	azureDevopsID              = "id"
-	azureDevopsName            = "name"
-	azureDevopsDescription     = "description"
-	azureDevopsIsDefault       = "is_default"
-	azureDevopsLabels          = "labels"
-	azureDevopsSpaceID         = "space_id"
-	azureDevopsOrganizationURL = "organization_url"
-	azureDevopsWebhookPassword = "webhook_password"
-	azureDevopsWebhookURL      = "webhook_url"
-	azureDevopsVCSChecks       = "vcs_checks"
-	azureDevopsUseGitCheckout  = "use_git_checkout"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
 func dataAzureDevopsIntegration() *schema.Resource {
@@ -68,6 +55,11 @@ func dataAzureDevopsIntegration() *schema.Resource {
 				Description: "Azure DevOps integration organization url",
 				Computed:    true,
 			},
+			azureDevopsUserFacingHost: {
+				Type:        schema.TypeString,
+				Description: "Azure DevOps integration user facing host",
+				Computed:    true,
+			},
 			azureDevopsWebhookPassword: {
 				Type:        schema.TypeString,
 				Description: "Azure DevOps integration webhook password",
@@ -88,27 +80,21 @@ func dataAzureDevopsIntegration() *schema.Resource {
 				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API.",
 				Computed:    true,
 			},
+			azureDevopsAccessibleProjects: {
+				Type:        schema.TypeList,
+				Description: "Azure DevOps integration accessible projects",
+				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
 
 func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var query struct {
-		AzureDevOpsIntegration *struct {
-			ID          string `graphql:"id"`
-			Name        string `graphql:"name"`
-			Description string `graphql:"description"`
-			IsDefault   bool   `graphql:"isDefault"`
-			Space       struct {
-				ID string `graphql:"id"`
-			} `graphql:"space"`
-			Labels          []string `graphql:"labels"`
-			OrganizationURL string   `graphql:"organizationURL"`
-			WebhookPassword string   `graphql:"webhookPassword"`
-			WebhookURL      string   `graphql:"webhookUrl"`
-			VCSChecks       string   `graphql:"vcsChecks"`
-			UseGitCheckout  bool     `graphql:"useGitCheckout"`
-		} `graphql:"azureDevOpsRepoIntegration(id: $id)"`
+		AzureDevOpsIntegration *structs.AzureDevOpsRepoIntegration `graphql:"azureDevOpsRepoIntegration(id: $id)"`
 	}
 
 	variables := map[string]any{"id": ""}
@@ -126,24 +112,7 @@ func dataAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("azure devops integration not found")
 	}
 
-	d.SetId(azureDevopsIntegration.ID)
-	d.Set(azureDevopsID, azureDevopsIntegration.ID)
-	d.Set(azureDevopsName, azureDevopsIntegration.Name)
-	d.Set(azureDevopsDescription, azureDevopsIntegration.Description)
-	d.Set(azureDevopsIsDefault, azureDevopsIntegration.IsDefault)
-	d.Set(azureDevopsSpaceID, azureDevopsIntegration.Space.ID)
-	d.Set(azureDevopsOrganizationURL, azureDevopsIntegration.OrganizationURL)
-	d.Set(azureDevopsWebhookPassword, azureDevopsIntegration.WebhookPassword)
-	d.Set(azureDevopsWebhookURL, azureDevopsIntegration.WebhookURL)
-
-	labels := schema.NewSet(schema.HashString, []any{})
-	for _, label := range azureDevopsIntegration.Labels {
-		labels.Add(label)
-	}
-
-	d.Set(azureDevopsLabels, labels)
-	d.Set(azureDevopsVCSChecks, azureDevopsIntegration.VCSChecks)
-	d.Set(azureDevopsUseGitCheckout, azureDevopsIntegration.UseGitCheckout)
+	fillAzureDevopsIntegrationResults(d, azureDevopsIntegration)
 
 	return nil
 }
