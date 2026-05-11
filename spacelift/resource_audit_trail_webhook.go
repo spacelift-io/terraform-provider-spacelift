@@ -81,6 +81,7 @@ func resourceAuditTrailWebhook() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "whether to retry the webhook in case of failure. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 		},

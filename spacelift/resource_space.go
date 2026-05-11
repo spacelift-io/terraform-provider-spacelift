@@ -35,6 +35,7 @@ func resourceSpace() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "immutable ID (slug) of parent space. Defaults to `root`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     "root",
 			},
 			"description": {
@@ -52,6 +53,7 @@ func resourceSpace() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "indication whether access to this space inherits read access to entities from the parent space. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			"labels": {

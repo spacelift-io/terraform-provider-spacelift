@@ -51,6 +51,7 @@ func resourceAWSIntegration() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Generate AWS credentials in the private worker. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			// Optional.
@@ -64,6 +65,7 @@ func resourceAWSIntegration() *schema.Resource {
 				Description: "Duration in seconds for which the assumed role credentials should be valid. Defaults to `900`.",
 				Default:     900,
 				Optional:    true,
+				Computed:    true,
 			},
 			"region": {
 				Type:        schema.TypeString,
@@ -86,12 +88,14 @@ func resourceAWSIntegration() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Enables `autoattach:` labels functionality for this integration.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			"tag_assume_role": {
 				Type:        schema.TypeBool,
 				Description: "When enabled, Spacelift will tag the assume role action with run and stack metadata. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 		},

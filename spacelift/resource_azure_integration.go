@@ -113,6 +113,7 @@ func resourceAzureIntegration() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Enables `autoattach:` labels functionality for this integration.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 		},

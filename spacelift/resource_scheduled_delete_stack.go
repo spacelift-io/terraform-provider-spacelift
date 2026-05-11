@@ -53,6 +53,7 @@ func resourceScheduledDeleteStack() *schema.Resource {
 				Description: "Indicates whether the resources of the stack should be deleted.",
 				Default:     true,
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

@@ -53,6 +53,7 @@ func resourceStackDestructor() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "If set to true, destruction will also discard all runs on the stack that are eligible for discarding (e.g. not in progress runs)",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 		},

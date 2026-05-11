@@ -53,6 +53,7 @@ func resourceStackDependencyReference() *schema.Resource {
 				Description: "Whether the dependents should be triggered even if the value of the reference did not change.",
 				Default:     false,
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

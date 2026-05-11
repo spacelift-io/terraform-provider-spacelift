@@ -54,6 +54,7 @@ func resourceRun() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Whether the run is a proposed run. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				ForceNew:    true,
 				Default:     false,
 			},
@@ -73,6 +74,7 @@ func resourceRun() *schema.Resource {
 							Type:        schema.TypeBool,
 							Description: "Whether waiting for a job is disabled or not. Default: `false`",
 							Optional:    true,
+							Computed:    true,
 							Default:     false,
 						},
 						"continue_on_state": {
@@ -87,6 +89,7 @@ func resourceRun() *schema.Resource {
 							Type:        schema.TypeBool,
 							Description: "Continue if run timed out, i.e. did not reach any defined end state in time. Default: `false`",
 							Optional:    true,
+							Computed:    true,
 							Default:     false,
 						},
 					},

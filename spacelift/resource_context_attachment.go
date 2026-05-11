@@ -49,6 +49,7 @@ func resourceContextAttachment() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "Priority of the context attachment. All the contexts attached to a stack are sorted by priority (lowest first), though values don't need to be unique. This ordering establishes precedence rules between contexts should there be a conflict and multiple contexts define the same value. Defaults to `0`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     0,
 				ForceNew:    true,
 			},

@@ -55,6 +55,7 @@ func resourceAzureIntegrationAttachment() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether this attachment is used for read operations. Defaults to `true`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     true,
 			},
 			"subscription_id": {
@@ -70,6 +71,7 @@ func resourceAzureIntegrationAttachment() *schema.Resource {
 				Description: "Indicates whether this attachment is used for write operations. Defaults to `true`.",
 				Default:     true,
 				Optional:    true,
+				Computed:    true,
 			},
 			"attachment_id": {
 				Type:        schema.TypeString,

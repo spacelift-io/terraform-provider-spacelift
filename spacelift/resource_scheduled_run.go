@@ -66,6 +66,7 @@ func resourceScheduledRun() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "Timezone in which the schedule is expressed. Defaults to `UTC`.",
 				Optional:      true,
+				Computed:      true,
 				Default:       "UTC",
 				ConflictsWith: []string{"at"},
 			},

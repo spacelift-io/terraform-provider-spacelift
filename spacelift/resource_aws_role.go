@@ -75,6 +75,7 @@ func resourceAWSRole() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Generate AWS credentials in the private worker. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			"external_id": {

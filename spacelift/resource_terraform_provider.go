@@ -47,6 +47,7 @@ func resourceTerraformProvider() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Whether the provider is public or not, defaults to false (private)",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 		},

@@ -90,6 +90,7 @@ func resourceWorkerPool() *schema.Resource {
 				Type:        schema.TypeInt,
 				Description: "Limit of how many concurrent drift detection runs are allowed per worker pool",
 				Optional:    true,
+				Computed:    true,
 				Default:     -1,
 			},
 		},

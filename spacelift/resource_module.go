@@ -35,6 +35,7 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether this module can manage others. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			"aws_assume_role_policy_statement": {
@@ -152,6 +153,7 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether local preview versions can be triggered on this Module. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			"github_enterprise": {
@@ -252,12 +254,14 @@ func resourceModule() *schema.Resource {
 				Type:        schema.TypeBool,
 				Description: "Protect this module from accidental deletion. If set, attempts to delete this module will fail. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 			},
 			"public": {
 				Type:        schema.TypeBool,
 				Description: "Make this module publicly accessible. Can only be set at creation time. Defaults to `false`.",
 				Optional:    true,
+				Computed:    true,
 				Default:     false,
 				ForceNew:    true,
 			},
