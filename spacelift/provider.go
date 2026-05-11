@@ -95,6 +95,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_scheduled_task":                         dataScheduledTask(),
 				"spacelift_scheduled_run":                          dataScheduledRun(),
 				"spacelift_scheduled_delete_stack":                 dataScheduledDeleteStack(),
+				"spacelift_slack_channel_integration":              dataSlackChannelIntegration(),
 				"spacelift_stack":                                  dataStack(),
 				"spacelift_stack_outputs":                          dataStackOutputs(),
 				"spacelift_stacks":                                 dataStacks(),
@@ -147,6 +148,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_scheduled_run":                    resourceScheduledRun(),
 				"spacelift_scheduled_task":                   resourceScheduledTask(),
 				"spacelift_security_email":                   resourceSecurityEmail(),
+				"spacelift_slack_channel_integration":        resourceSlackChannelIntegration(),
 				"spacelift_space":                            resourceSpace(),
 				"spacelift_stack_activator":                  resourceStackActivator(),
 				"spacelift_stack_aws_role":                   resourceStackAWSRole(), // deprecated
