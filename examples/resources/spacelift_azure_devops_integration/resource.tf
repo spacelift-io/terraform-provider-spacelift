@@ -20,5 +20,5 @@ resource "spacelift_azure_devops_integration" "example-write-only" {
   space_id                         = "root"
   organization_url                 = "https://dev.azure.com/my-organization"
   personal_access_token_wo         = "azure-devops-token"
-  personal_access_token_wo_version = "azure-devops-token"
+  personal_access_token_wo_version = 1
 }

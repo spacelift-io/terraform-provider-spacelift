@@ -84,7 +84,7 @@ func resourceAzureDevopsIntegration() *schema.Resource {
 				AtLeastOneOf:  []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWo},
 			},
 			azureDevopsPersonalAccessTokenWoVer: {
-				Type:          schema.TypeString,
+				Type:          schema.TypeInt,
 				Description:   "Used together with personal_access_token_wo to trigger an update to the personal access token. Increment this value when an update to personal_access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
 				Optional:      true,
 				ConflictsWith: []string{azureDevopsPersonalAccessToken},
@@ -210,11 +210,12 @@ func resourceAzureDevopsIntegrationUpdate(ctx context.Context, d *schema.Resourc
 	}
 
 	var mutation struct {
-		UpdateAzureDevOpsRepoIntegration structs.AzureDevOpsRepoIntegration `graphql:"azureDevOpsRepoIntegrationUpdate(organizationURL: $organizationURL, personalAccessToken: $personalAccessToken, customInput: $customInput, accessibleProjects: $accessibleProjects)"`
+		UpdateAzureDevOpsRepoIntegration structs.AzureDevOpsRepoIntegration `graphql:"azureDevOpsRepoIntegrationUpdate(organizationURL: $organizationURL, userFacingHost: $userFacingHost, personalAccessToken: $personalAccessToken, customInput: $customInput, accessibleProjects: $accessibleProjects)"`
 	}
 
 	variables := map[string]any{
 		"organizationURL":     toString(d.Get(azureDevopsOrganizationURL)),
+		"userFacingHost":      optionalAzureDevopsUserFacingHost(d),
 		"personalAccessToken": optionalStringFromValue(token),
 		"customInput": &vcs.CustomVCSUpdateInput{
 			ID:             toID(d.Id()),

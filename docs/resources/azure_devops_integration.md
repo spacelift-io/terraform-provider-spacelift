@@ -35,7 +35,7 @@ resource "spacelift_azure_devops_integration" "example-write-only" {
   space_id                         = "root"
   organization_url                 = "https://dev.azure.com/my-organization"
   personal_access_token_wo         = "azure-devops-token"
-  personal_access_token_wo_version = "azure-devops-token"
+  personal_access_token_wo_version = 1
 }
 ```
 
@@ -56,8 +56,8 @@ resource "spacelift_azure_devops_integration" "example-write-only" {
 - `is_default` (Boolean) Is the Azure DevOps integration the default for all spaces? If set to `true` the space must be set to `root` in `space_id` or left empty which uses the default
 - `labels` (Set of String) Labels to set on the integration
 - `personal_access_token` (String, Sensitive, Deprecated) The Azure DevOps personal access token
-- `personal_access_token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) `personal_access_token_wo` the Azure DevOps personal access token. The personal_access_token_wo is not stored in the state. Modify personal_access_token_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
-- `personal_access_token_wo_version` (String) Used together with personal_access_token_wo to trigger an update to the personal access token. Increment this value when an update to personal_access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.
+- `personal_access_token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The Azure DevOps personal access token. The personal_access_token_wo is not stored in the state. Modify personal_access_token_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
+- `personal_access_token_wo_version` (Number) Used together with personal_access_token_wo to trigger an update to the personal access token. Increment this value when an update to personal_access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.
 - `space_id` (String) ID (slug) of the space the integration is in; Default: `root`
 - `use_git_checkout` (Boolean) Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.
 - `user_facing_host` (String) User facing host URL. Defaults to the organization URL if not set. Set this when using VCS agents.
