@@ -29,18 +29,18 @@ func resourceTemplateVersion() *schema.Resource {
 			oldState, newState := diff.GetChange("state")
 			rawTemplate, ok := diff.Get("template").(string)
 			if ok && rawTemplate != "" && diff.HasChange("template") && newState == "PUBLISHED" {
-				var mutation struct {
+				var query struct {
 					TemplateVersionParseTemplate struct {
 						Errors []string `graphql:"errors"`
 					} `graphql:"templateVersionParseTemplate(template: $template)"`
 				}
-				if err := meta.(*internal.Client).Mutate(ctx, "ValidateTemplateVersionTemplate", &mutation, map[string]any{
+				if err := meta.(*internal.Client).Query(ctx, "ValidateTemplateVersionTemplate", &query, map[string]any{
 					"template": graphql.String(rawTemplate),
 				}); err != nil {
 					return fmt.Errorf("unable to validate template: %v", err)
 				}
-				if len(mutation.TemplateVersionParseTemplate.Errors) > 0 {
-					return fmt.Errorf("template is invalid:\n - %s", strings.Join(mutation.TemplateVersionParseTemplate.Errors, "\n - "))
+				if len(query.TemplateVersionParseTemplate.Errors) > 0 {
+					return fmt.Errorf("template is invalid:\n - %s", strings.Join(query.TemplateVersionParseTemplate.Errors, "\n - "))
 				}
 			}
 
