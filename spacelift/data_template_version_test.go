@@ -11,7 +11,7 @@ import (
 )
 
 func TestTemplateVersionData(t *testing.T) {
-	t.Run("reads a template version in DRAFT state", func(t *testing.T) {
+	t.Run("reads a template version by version_id in DRAFT state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{{
@@ -48,7 +48,7 @@ func TestTemplateVersionData(t *testing.T) {
 		}})
 	})
 
-	t.Run("reads a template version in PUBLISHED state", func(t *testing.T) {
+	t.Run("reads a template version by version_id in PUBLISHED state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		validTemplate := `stacks:\n- name: Blueprint v2 - test upgrade 3\n  key: test\n  vcs:\n    reference: \n      value: master\n      type: branch\n    repository: demo\n    provider: GITHUB\n  vendor:\n    terraform:\n      manage_state: true\n      version: \"1.3.0\"`
 
@@ -84,4 +84,44 @@ func TestTemplateVersionData(t *testing.T) {
 			),
 		}})
 	})
+
+	t.Run("reads a template version by version_number in DRAFT state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{{
+			Config: fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "2.0.0"
+					state          = "DRAFT"
+					instructions   = "draft instructions"
+					template       = "draft template body"
+				}
+
+				data "spacelift_template_version" "test" {
+					template_id    = spacelift_template.test.id
+					version_number = "2.0.0"
+
+					depends_on = [spacelift_template_version.test]
+				}
+			`, randomID),
+			Check: Resource(
+				"data.spacelift_template_version.test",
+				Attribute("id", IsNotEmpty()),
+				Attribute("version_number", Equals("2.0.0")),
+				Attribute("state", Equals("DRAFT")),
+				Attribute("instructions", Equals("draft instructions")),
+				Attribute("template", Equals("draft template body")),
+				Attribute("ulid", IsNotEmpty()),
+				Attribute("created_at", IsNotEmpty()),
+				Attribute("updated_at", IsNotEmpty()),
+			),
+		}})
+	})
+
 }

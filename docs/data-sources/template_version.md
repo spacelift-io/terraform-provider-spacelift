@@ -3,12 +3,12 @@
 page_title: "spacelift_template_version Data Source - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_template_version represents a version of a Spacelift template. Each template can have multiple versions, each with its own state (DRAFT or PUBLISHED) and template body.
+  spacelift_template_version represents a version of a Spacelift template. Each template can have multiple versions, each with its own state (DRAFT or PUBLISHED) and template body. A version can be looked up by its ID (slug) using version_id or by its version number using version_number. Exactly one of version_id or version_number must be provided.
 ---
 
 # spacelift_template_version (Data Source)
 
-`spacelift_template_version` represents a version of a Spacelift template. Each template can have multiple versions, each with its own state (DRAFT or PUBLISHED) and template body.
+`spacelift_template_version` represents a version of a Spacelift template. Each template can have multiple versions, each with its own state (DRAFT or PUBLISHED) and template body. A version can be looked up by its ID (slug) using `version_id` or by its version number using `version_number`. Exactly one of `version_id` or `version_number` must be provided.
 
 
 
@@ -18,7 +18,11 @@ description: |-
 ### Required
 
 - `template_id` (String) ID of the template this version belongs to
-- `version_id` (String) ID of the template version
+
+### Optional
+
+- `version_id` (String) ID (slug) of the template version. Conflicts with `version_number`.
+- `version_number` (String) Version number (e.g., "1.0.0"). Conflicts with `version_id`.
 
 ### Read-Only
 
@@ -30,4 +34,3 @@ description: |-
 - `template` (String) Body of the template.
 - `ulid` (String) Unique ULID of the template version
 - `updated_at` (Number) Unix timestamp when the template version was last updated
-- `version_number` (String) Version number (e.g., "1.0.0")
