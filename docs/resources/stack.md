@@ -398,6 +398,7 @@ Required:
 
 Optional:
 
+- `skip_replan_when_run_all` (Boolean) Whether to skip re-planning during apply by reusing the saved plan. Only applies when `use_run_all` is true. WARNING: any `mocked_outputs` referenced during planning will be applied as-is — do not enable together with `mocked_outputs` unless you understand the implications. Defaults to `false`.
 - `terraform_version` (String) The Terraform version. Must not be provided when tool is set to MANUALLY_PROVISIONED. Defaults to the latest available OpenTofu/Terraform version.
 - `terragrunt_version` (String) The Terragrunt version. Defaults to the latest Terragrunt version.
 - `tool` (String) The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.

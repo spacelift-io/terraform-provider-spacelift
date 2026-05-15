@@ -687,6 +687,12 @@ func resourceStack() *schema.Resource {
 							Default:     false,
 							ForceNew:    true,
 						},
+						"skip_replan_when_run_all": {
+							Type:        schema.TypeBool,
+							Description: "Whether to skip re-planning during apply by reusing the saved plan. Only applies when `use_run_all` is true. WARNING: any `mocked_outputs` referenced during planning will be applied as-is — do not enable together with `mocked_outputs` unless you understand the implications. Defaults to `false`.",
+							Optional:    true,
+							Default:     false,
+						},
 						"tool": {
 							Type:        schema.TypeString,
 							Description: "The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.",
@@ -1071,6 +1077,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 		if useStateManagement, ok := terragrunt[0].(map[string]any)["use_state_management"]; ok {
 			terragruntConfig.UseStateManagement = toOptionalBool(useStateManagement)
+		}
+
+		if skipReplanWhenRunAll, ok := terragrunt[0].(map[string]any)["skip_replan_when_run_all"]; ok {
+			terragruntConfig.SkipReplanWhenRunAll = toOptionalBool(skipReplanWhenRunAll)
 		}
 
 		if shouldWeReComputeTerraformVersionForTerragrunt(d) {

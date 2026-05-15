@@ -859,6 +859,53 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with Terragrunt skip_replan_when_run_all", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt skip replan %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version       = "0.45.0"
+						terraform_version        = "1.4.0"
+						use_run_all              = true
+						skip_replan_when_run_all = false
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.skip_replan_when_run_all", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt skip replan %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version       = "0.45.0"
+						terraform_version        = "1.4.0"
+						use_run_all              = true
+						skip_replan_when_run_all = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.skip_replan_when_run_all", Equals("true")),
+				),
+			},
+		})
+	})
+
 	t.Run("with GitHub and no vendor-specific configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
