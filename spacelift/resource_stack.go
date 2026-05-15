@@ -689,7 +689,7 @@ func resourceStack() *schema.Resource {
 						},
 						"skip_replan_when_run_all": {
 							Type:        schema.TypeBool,
-							Description: "Whether to skip re-planning during apply by reusing the saved plan. Only applies when `use_run_all` is true. WARNING: any `mocked_outputs` referenced during planning will be applied as-is — do not enable together with `mocked_outputs` unless you understand the implications. Defaults to `false`.",
+							Description: "When using Run All, skip the second planning phase during the apply stage. This is an experimental feature. Runs with Run All disabled reuse the plan by default. Warning: this means any `mocked_outputs` referenced during planning will be applied as-is — do not enable this together with `mocked_outputs` unless you fully understand the implications, your apply may execute against mocked values rather than real ones.",
 							Optional:    true,
 							Default:     false,
 						},
