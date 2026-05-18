@@ -288,6 +288,7 @@ Read-Only:
 
 Read-Only:
 
+- `skip_replan_when_run_all` (Boolean)
 - `terraform_version` (String)
 - `terragrunt_version` (String)
 - `tool` (String)

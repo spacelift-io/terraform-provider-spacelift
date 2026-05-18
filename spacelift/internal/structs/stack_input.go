@@ -83,6 +83,7 @@ type TerragruntInput struct {
 	UseRunAll            graphql.Boolean  `json:"useRunAll"`
 	UseSmartSanitization graphql.Boolean  `json:"useSmartSanitization"`
 	UseStateManagement   *graphql.Boolean `json:"useStateManagement"`
+	SkipReplanWhenRunAll *graphql.Boolean `json:"skipReplanWhenRunAll"`
 	Tool                 *graphql.String  `json:"tool"`
 }
 

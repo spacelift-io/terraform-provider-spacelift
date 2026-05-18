@@ -398,6 +398,7 @@ Required:
 
 Optional:
 
+- `skip_replan_when_run_all` (Boolean) When using Run All, skip the second planning phase during the apply stage. This is an experimental feature. Runs with Run All disabled reuse the plan by default. Warning: this means any `mocked_outputs` referenced during planning will be applied as-is — do not enable this together with `mocked_outputs` unless you fully understand the implications, your apply may execute against mocked values rather than real ones.
 - `terraform_version` (String) The Terraform version. Must not be provided when tool is set to MANUALLY_PROVISIONED. Defaults to the latest available OpenTofu/Terraform version.
 - `terragrunt_version` (String) The Terragrunt version. Defaults to the latest Terragrunt version.
 - `tool` (String) The IaC tool used by Terragrunt. Valid values are OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED. Defaults to TERRAFORM_FOSS if not specified.
