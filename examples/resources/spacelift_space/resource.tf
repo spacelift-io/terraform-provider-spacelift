@@ -27,15 +27,24 @@ resource "spacelift_space" "development-frontend" {
 # `adopt_existing = true` so that the second and subsequent applies pick up the
 # row created by the first one instead of erroring or creating duplicates.
 #
-# All callers should compute identical values for description / labels /
-# inherit_entities from shared inputs; the resource has standard "last apply
-# wins" semantics, and competing stacks would otherwise drift the space on
-# every run.
+# Two important semantics to keep in mind:
+#
+#   1. All callers should compute identical values for description / labels /
+#      inherit_entities from shared inputs. Updates do propagate to the backend
+#      (last apply wins), so competing stacks with different inputs will drift
+#      the space on every run.
+#
+#   2. `terraform destroy` on an adopting resource only removes it from the
+#      local Terraform state — the backend space stays. This is intentional:
+#      with many stacks adopting the same space, a single destroy would either
+#      fail with "space has dependants" or strand every other stack's state. To
+#      actually delete the space, take ownership from a single configuration
+#      with `adopt_existing = false`, then destroy.
 resource "spacelift_space" "team_a" {
-  name            = "team-a"
-  parent_space_id = "root"
-  description     = "Space for team A"
-  labels          = ["team:a", "owner:platform"]
+  name             = "team-a"
+  parent_space_id  = "root"
+  description      = "Space for team A"
+  labels           = ["team:a", "owner:platform"]
   inherit_entities = true
 
   adopt_existing = true

@@ -45,10 +45,19 @@ resource "spacelift_space" "development-frontend" {
 # `adopt_existing = true` so that the second and subsequent applies pick up the
 # row created by the first one instead of erroring or creating duplicates.
 #
-# All callers should compute identical values for description / labels /
-# inherit_entities from shared inputs; the resource has standard "last apply
-# wins" semantics, and competing stacks would otherwise drift the space on
-# every run.
+# Two important semantics to keep in mind:
+#
+#   1. All callers should compute identical values for description / labels /
+#      inherit_entities from shared inputs. Updates do propagate to the backend
+#      (last apply wins), so competing stacks with different inputs will drift
+#      the space on every run.
+#
+#   2. `terraform destroy` on an adopting resource only removes it from the
+#      local Terraform state — the backend space stays. This is intentional:
+#      with many stacks adopting the same space, a single destroy would either
+#      fail with "space has dependants" or strand every other stack's state. To
+#      actually delete the space, take ownership from a single configuration
+#      with `adopt_existing = false`, then destroy.
 resource "spacelift_space" "team_a" {
   name             = "team-a"
   parent_space_id  = "root"
@@ -69,7 +78,7 @@ resource "spacelift_space" "team_a" {
 
 ### Optional
 
-- `adopt_existing` (Boolean) if true, look up an existing space with the same `name` under the same `parent_space_id` and adopt it into Terraform state instead of creating a duplicate. When the space already exists, the caller must have admin access on it (or be a root admin); the `description`, `inherit_entities` and `labels` values are ignored on the adopt path — use `terraform apply` again or a separate `spacelift_space` resource to reconcile them. Multiple Terraform configurations adopting the same space will fight over its attributes on every apply (last writer wins); compute identical attribute values from shared inputs to avoid drift. Defaults to `false`.
+- `adopt_existing` (Boolean) if true, look up an existing space with the same `name` under the same `parent_space_id` and adopt it into Terraform state instead of creating a duplicate. When the space already exists, the caller must have admin access on it (or be a root admin); `description`, `inherit_entities` and `labels` are ignored on the adopt path. Subsequent `terraform apply` calls do reconcile those attributes via `spaceUpdate` — multiple Terraform configurations adopting the same space will fight over them on every apply (last writer wins), so compute identical attribute values from shared inputs to avoid drift. **`terraform destroy` on an adopting resource does not delete the backend space**; it only removes the resource from Terraform state. To actually delete the space, set `adopt_existing = false` in a single owning configuration first, then destroy. Defaults to `false`.
 - `description` (String) free-form space description for users
 - `inherit_entities` (Boolean) indication whether access to this space inherits read access to entities from the parent space. Defaults to `false`.
 - `labels` (Set of String) list of labels describing a space

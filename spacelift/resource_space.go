@@ -66,13 +66,16 @@ func resourceSpace() *schema.Resource {
 					"under the same `parent_space_id` and adopt it into Terraform " +
 					"state instead of creating a duplicate. When the space already " +
 					"exists, the caller must have admin access on it (or be a root " +
-					"admin); the `description`, `inherit_entities` and `labels` values " +
-					"are ignored on the adopt path — use `terraform apply` again or " +
-					"a separate `spacelift_space` resource to reconcile them. Multiple " +
-					"Terraform configurations adopting the same space will fight over " +
-					"its attributes on every apply (last writer wins); compute identical " +
-					"attribute values from shared inputs to avoid drift. Defaults to " +
-					"`false`.",
+					"admin); `description`, `inherit_entities` and `labels` are ignored " +
+					"on the adopt path. Subsequent `terraform apply` calls do reconcile " +
+					"those attributes via `spaceUpdate` — multiple Terraform configurations " +
+					"adopting the same space will fight over them on every apply " +
+					"(last writer wins), so compute identical attribute values from shared " +
+					"inputs to avoid drift. **`terraform destroy` on an adopting resource " +
+					"does not delete the backend space**; it only removes the resource from " +
+					"Terraform state. To actually delete the space, set `adopt_existing = " +
+					"false` in a single owning configuration first, then destroy. Defaults " +
+					"to `false`.",
 				Optional: true,
 				Default:  false,
 			},
@@ -193,6 +196,17 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 }
 
 func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	// adopt_existing resources never delete the backend row: many stacks may share
+	// the same space, and any one of them destroying it would either fail with
+	// "space has dependants" (other stacks still attached) or silently strand the
+	// other stacks' state pointing at a deleted ID. Disown-on-destroy is the
+	// safe default. To actually delete the space, set adopt_existing = false in
+	// a single owning stack and destroy from there, or remove it via the UI.
+	if d.Get("adopt_existing").(bool) {
+		d.SetId("")
+		return nil
+	}
+
 	var mutation struct {
 		DeleteSpace *structs.Space `graphql:"spaceDelete(space: $id)"`
 	}

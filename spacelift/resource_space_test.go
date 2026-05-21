@@ -106,6 +106,11 @@ func TestSpaceResource(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		spaceName := fmt.Sprintf("Adopted space %s", randomID)
 
+		// Step 1 creates the space via the standard `spaceCreate` path. Step 2 keeps
+		// the original block AND adds a second `adopter` block declaring the same
+		// name+parent with `adopt_existing = true`: that resource has no prior state,
+		// so its Create runs `spaceCreateOrGet`, finds the row from step 1 and adopts
+		// it. Both resources end up pointing at the same backend ID.
 		createConfig := fmt.Sprintf(`
 				resource "spacelift_space" "original" {
 					name = "%s"
@@ -115,19 +120,21 @@ func TestSpaceResource(t *testing.T) {
 				}
 			`, spaceName)
 
-		// Second step swaps the resource block for an adopt-existing one declaring the
-		// same name+parent. Terraform sees a different resource address (`adopter` vs.
-		// `original`) so the new resource starts with no state and must take over the
-		// row inserted by the first step via the create-time adopt path.
 		adoptConfig := fmt.Sprintf(`
+				resource "spacelift_space" "original" {
+					name = "%s"
+					parent_space_id = "root"
+					description = "created by the first stack"
+					inherit_entities = true
+				}
 				resource "spacelift_space" "adopter" {
 					name = "%s"
 					parent_space_id = "root"
-					description = "adopted by the second stack"
+					description = "created by the first stack"
 					inherit_entities = true
 					adopt_existing = true
 				}
-			`, spaceName)
+			`, spaceName, spaceName)
 
 		testSteps(t, []resource.TestStep{
 			{
@@ -139,10 +146,12 @@ func TestSpaceResource(t *testing.T) {
 			},
 			{
 				Config: adoptConfig,
-				Check: Resource(
-					"spacelift_space.adopter",
-					Attribute("id", Contains("adopted-space")),
-					Attribute("adopt_existing", Equals("true")),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"spacelift_space.adopter", "id",
+						"spacelift_space.original", "id",
+					),
+					resource.TestCheckResourceAttr("spacelift_space.adopter", "adopt_existing", "true"),
 				),
 			},
 		})
