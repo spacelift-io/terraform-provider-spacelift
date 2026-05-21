@@ -27,3 +27,5 @@ dist/
 
 test.env
 .envrc
+
+.worktrees/

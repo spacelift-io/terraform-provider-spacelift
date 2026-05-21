@@ -20,3 +20,11 @@ type SpaceInput struct {
 	ParentSpace     graphql.ID        `json:"parentSpace"`
 	Labels          *[]graphql.String `json:"labels"`
 }
+
+// SpaceCreateOrGetPayload mirrors the GraphQL payload returned by the spaceCreateOrGet
+// mutation. Adopted indicates whether an existing space was returned (true) or a new
+// one was created (false).
+type SpaceCreateOrGetPayload struct {
+	Space   Space `graphql:"space"`
+	Adopted bool  `graphql:"adopted"`
+}

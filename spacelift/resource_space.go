@@ -60,6 +60,22 @@ func resourceSpace() *schema.Resource {
 				Description: "list of labels describing a space",
 				Optional:    true,
 			},
+			"adopt_existing": {
+				Type: schema.TypeBool,
+				Description: "if true, look up an existing space with the same `name` " +
+					"under the same `parent_space_id` and adopt it into Terraform " +
+					"state instead of creating a duplicate. When the space already " +
+					"exists, the caller must have admin access on it (or be a root " +
+					"admin); the `description`, `inherit_entities` and `labels` values " +
+					"are ignored on the adopt path — use `terraform apply` again or " +
+					"a separate `spacelift_space` resource to reconcile them. Multiple " +
+					"Terraform configurations adopting the same space will fight over " +
+					"its attributes on every apply (last writer wins); compute identical " +
+					"attribute values from shared inputs to avoid drift. Defaults to " +
+					"`false`.",
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -93,6 +109,24 @@ func spaceCreateInput(d *schema.ResourceData) structs.SpaceInput {
 }
 
 func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	if d.Get("adopt_existing").(bool) {
+		var mutation struct {
+			Payload structs.SpaceCreateOrGetPayload `graphql:"spaceCreateOrGet(input: $input)"`
+		}
+
+		variables := map[string]any{
+			"input": spaceCreateInput(d),
+		}
+
+		if err := meta.(*internal.Client).Mutate(ctx, "CreateOrGetSpace", &mutation, variables); err != nil {
+			return diag.Errorf("could not create-or-get space %v: %v", toString(d.Get("name")), spaceManagementError(err))
+		}
+
+		d.SetId(mutation.Payload.Space.ID)
+
+		return resourceSpaceRead(ctx, d, meta)
+	}
+
 	var mutation struct {
 		CreateSpace structs.Space `graphql:"spaceCreate(input: $input)"`
 	}
