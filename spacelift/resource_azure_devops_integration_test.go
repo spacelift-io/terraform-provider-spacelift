@@ -163,7 +163,7 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					organization_url                = "` + organization + `"
 					user_facing_host                = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.UserFacingHost + `"
 					personal_access_token_wo        = "` + token + `"
-					personal_access_token_wo_version = "1"
+					personal_access_token_wo_version = 1
 					description                     = "` + descr + `"
 					labels                          = ` + labels + `
 					vcs_checks                      = ` + vcsChecks + `
@@ -217,16 +217,16 @@ func TestHandleAzureDevopsIntegrationUpdateResult(t *testing.T) {
 		data.SetId("existing-id")
 
 		integration := &structs.AzureDevOpsRepoIntegration{
-			ID:              "updated-id",
-			Name:            "updated-name",
-			Description:     "updated-description",
-			OrganizationURL: "https://dev.azure.com/example",
-			UserFacingHost:  "https://dev.azure.com/example",
-			WebhookPassword: "secret",
-			WebhookURL:      "https://webhooks.example",
-			VCSChecks:       vcs.CheckTypeAggregated,
-			UseGitCheckout:  true,
-			Labels:          []string{"label-1"},
+			ID:                 "updated-id",
+			Name:               "updated-name",
+			Description:        "updated-description",
+			OrganizationURL:    "https://dev.azure.com/example",
+			UserFacingHost:     "https://dev.azure.com/example",
+			WebhookPassword:    "secret",
+			WebhookURL:         "https://webhooks.example",
+			VCSChecks:          vcs.CheckTypeAggregated,
+			UseGitCheckout:     true,
+			Labels:             []string{"label-1"},
 			AccessibleProjects: []string{"Project One"},
 		}
 		integration.Space.ID = "root"
