@@ -106,28 +106,25 @@ func resourceRun() *schema.Resource {
 
 func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		ID string `graphql:"runTrigger(stack: $stack, commitSha: $sha, runType: $runType, runtimeConfig: $runtimeConfig)"`
+		CreateRun structs.Run `graphql:"runTrigger(stack: $stack, commitSha: $sha, runType: $runType, runtimeConfig: $runtimeConfig)"`
 	}
 
 	stackID := d.Get("stack_id").(string)
 
+	runType := structs.RunTypeTracked
+	if d.Get("proposed").(bool) {
+		runType = structs.RunTypeProposed
+	}
+
 	variables := map[string]any{
 		"stack":         toID(stackID),
 		"sha":           (*graphql.String)(nil),
-		"run_type":      (*graphql.String)(nil),
+		"runType":       runType,
 		"runtimeConfig": (*structs.RuntimeConfigInput)(nil),
 	}
 
 	if sha, ok := d.GetOk("commit_sha"); ok {
 		variables["sha"] = new(graphql.String(sha.(string)))
-	}
-
-	if proposed, ok := d.GetOk("proposed"); ok {
-		if proposed.(bool) {
-			variables["run_type"] = "PROPOSED"
-		} else {
-			variables["run_type"] = "TRACKED"
-		}
 	}
 
 	if runtimeConfig := parseRuntimeConfigInput(d, "runtime_config"); runtimeConfig != nil {
@@ -141,11 +138,11 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	if waitRaw, ok := d.GetOk("wait"); ok {
 		wait := structs.NewWaitConfiguration(waitRaw.([]any))
-		if diag := wait.Wait(ctx, d, client, stackID, mutation.ID); len(diag) > 0 {
+		if diag := wait.Wait(ctx, d, client, stackID, mutation.CreateRun.ID); len(diag) > 0 {
 			return diag
 		}
 	}
 
-	d.SetId(mutation.ID)
+	d.SetId(mutation.CreateRun.ID)
 	return nil
 }
