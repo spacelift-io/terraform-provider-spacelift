@@ -10,6 +10,10 @@ description: |-
 
 The Spacelift Terraform provider is used to programmatically interact with its GraphQL API, allowing Spacelift to declaratively manage itself 🤯
 
+## Requirements
+
+- Terraform **1.0+**
+
 ## Running inside Spacelift
 
 When executed from inside a Spacelift run, this provider is designed to require no setup at all. All Spacelift jobs receive a temporary authentication token in the `SPACELIFT_API_TOKEN` environment variable, which is all the provider needs to run. 
