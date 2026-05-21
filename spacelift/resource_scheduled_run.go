@@ -79,137 +79,7 @@ func resourceScheduledRun() *schema.Resource {
 				Description: "Customer provided runtime configuration for this scheduled run.",
 				Optional:    true,
 				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"project_root": {
-							Type:        schema.TypeString,
-							Description: "Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.",
-							Optional:    true,
-						},
-						"runner_image": {
-							Type:        schema.TypeString,
-							Description: "Name of the Docker image used to process Runs",
-							Optional:    true,
-						},
-						"terraform_version": {
-							Type:        schema.TypeString,
-							Description: "Terraform version to use",
-							Computed:    true,
-						},
-						"terraform_workflow_tool": {
-							Type:        schema.TypeString,
-							Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
-							Computed:    true,
-						},
-						"environment": {
-							Type:        schema.TypeSet,
-							Description: "Environment variables for the run",
-							Optional:    true,
-							Elem: &schema.Resource{
-								Schema: map[string]*schema.Schema{
-									"key": {
-										Type:        schema.TypeString,
-										Description: "Environment variable key",
-										Required:    true,
-									},
-									"value": {
-										Type:        schema.TypeString,
-										Description: "Environment variable value",
-										Required:    true,
-									},
-								},
-							},
-						},
-						"after_apply": {
-							Type:        schema.TypeList,
-							Description: "List of after-apply scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"after_destroy": {
-							Type:        schema.TypeList,
-							Description: "List of after-destroy scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"after_init": {
-							Type:        schema.TypeList,
-							Description: "List of after-init scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"after_perform": {
-							Type:        schema.TypeList,
-							Description: "List of after-perform scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"after_plan": {
-							Type:        schema.TypeList,
-							Description: "List of after-plan scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"after_run": {
-							Type:        schema.TypeList,
-							Description: "List of after-run scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"before_apply": {
-							Type:        schema.TypeList,
-							Description: "List of before-apply scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"before_destroy": {
-							Type:        schema.TypeList,
-							Description: "List of before-destroy scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"before_init": {
-							Type:        schema.TypeList,
-							Description: "List of before-init scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"before_perform": {
-							Type:        schema.TypeList,
-							Description: "List of before-perform scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-						"before_plan": {
-							Type:        schema.TypeList,
-							Description: "List of before-plan scripts",
-							Elem: &schema.Schema{
-								Type: schema.TypeString,
-							},
-							Optional: true,
-						},
-					},
-				},
+				Elem:        &schema.Resource{Schema: scheduledRunRuntimeConfigSchema()},
 			},
 		},
 	}
@@ -352,48 +222,33 @@ func resourceScheduledRunDelete(ctx context.Context, d *schema.ResourceData, met
 	return nil
 }
 
+// scheduledRunRuntimeConfigSchema returns the runtime_config schema for the
+// spacelift_scheduled_run resource: the shared input fields plus the
+// read-only terraform_version and terraform_workflow_tool fields populated
+// from the server.
+func scheduledRunRuntimeConfigSchema() map[string]*schema.Schema {
+	s := runtimeConfigInputSchema(false)
+	s["terraform_version"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Terraform version to use",
+		Computed:    true,
+	}
+	s["terraform_workflow_tool"] = &schema.Schema{
+		Type:        schema.TypeString,
+		Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.",
+		Computed:    true,
+	}
+	return s
+}
+
 func parseScheduledRunInput(d *schema.ResourceData) (*structs.ScheduledRunInput, error) {
-	cfg := &structs.ScheduledRunInput{}
+	cfg := &structs.ScheduledRunInput{
+		RuntimeConfig: parseRuntimeConfigInput(d, "runtime_config"),
+	}
 
 	name, ok := d.GetOk("name")
 	if ok && name != nil {
 		cfg.Name = toString(name)
-	}
-
-	runtimeConfig, ok := d.Get("runtime_config").([]any)
-	if ok && len(runtimeConfig) > 0 {
-		mapped := runtimeConfig[0].(map[string]any)
-
-		environment := []structs.EnvVarInput{}
-		for _, e := range mapped["environment"].(*schema.Set).List() {
-			envMap := e.(map[string]any)
-			environment = append(environment, structs.EnvVarInput{
-				Key:   toString(envMap["key"]),
-				Value: toString(envMap["value"]),
-			})
-		}
-
-		cfg.RuntimeConfig = &structs.RuntimeConfigInput{
-			AfterApply:    listToOptionalStringList(mapped["after_apply"]),
-			AfterDestroy:  listToOptionalStringList(mapped["after_destroy"]),
-			AfterInit:     listToOptionalStringList(mapped["after_init"]),
-			AfterPerform:  listToOptionalStringList(mapped["after_perform"]),
-			AfterPlan:     listToOptionalStringList(mapped["after_plan"]),
-			AfterRun:      listToOptionalStringList(mapped["after_run"]),
-			BeforeApply:   listToOptionalStringList(mapped["before_apply"]),
-			BeforeDestroy: listToOptionalStringList(mapped["before_destroy"]),
-			BeforeInit:    listToOptionalStringList(mapped["before_init"]),
-			BeforePerform: listToOptionalStringList(mapped["before_perform"]),
-			BeforePlan:    listToOptionalStringList(mapped["before_plan"]),
-			Environment:   &environment,
-		}
-
-		if projectRoot := mapped["project_root"]; len(projectRoot.(string)) > 0 {
-			cfg.RuntimeConfig.ProjectRoot = toOptionalString(projectRoot)
-		}
-		if runnerImage := mapped["runner_image"]; len(runnerImage.(string)) > 0 {
-			cfg.RuntimeConfig.RunnerImage = toOptionalString(runnerImage)
-		}
 	}
 
 	every, everyOk := d.GetOk("every")

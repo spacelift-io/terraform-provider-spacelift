@@ -92,21 +92,30 @@ func resourceRun() *schema.Resource {
 					},
 				},
 			},
+			"runtime_config": {
+				Type:        schema.TypeList,
+				Description: "Custom runtime configuration to apply to this run, overriding the stack's defaults.",
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Elem:        &schema.Resource{Schema: runtimeConfigInputSchema(true)},
+			},
 		},
 	}
 }
 
 func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		ID string `graphql:"runResourceCreate(stack: $stack, commitSha: $sha, proposed: $proposed)"`
+		ID string `graphql:"runTrigger(stack: $stack, commitSha: $sha, runType: $runType, runtimeConfig: $runtimeConfig)"`
 	}
 
 	stackID := d.Get("stack_id").(string)
 
 	variables := map[string]any{
-		"stack":    toID(stackID),
-		"sha":      (*graphql.String)(nil),
-		"proposed": (*graphql.Boolean)(nil),
+		"stack":         toID(stackID),
+		"sha":           (*graphql.String)(nil),
+		"run_type":      (*graphql.String)(nil),
+		"runtimeConfig": (*structs.RuntimeConfigInput)(nil),
 	}
 
 	if sha, ok := d.GetOk("commit_sha"); ok {
@@ -114,11 +123,19 @@ func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	if proposed, ok := d.GetOk("proposed"); ok {
-		variables["proposed"] = new(graphql.Boolean(proposed.(bool)))
+		if proposed.(bool) {
+			variables["run_type"] = "PROPOSED"
+		} else {
+			variables["run_type"] = "TRACKED"
+		}
+	}
+
+	if runtimeConfig := parseRuntimeConfigInput(d, "runtime_config"); runtimeConfig != nil {
+		variables["runtimeConfig"] = runtimeConfig
 	}
 
 	client := meta.(*internal.Client)
-	if err := client.Mutate(ctx, "ResourceRunCreate", &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "RunTrigger", &mutation, variables); err != nil {
 		return diag.Errorf("could not trigger run for stack %s: %v", stackID, internal.FromSpaceliftError(err))
 	}
 
