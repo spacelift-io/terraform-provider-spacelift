@@ -27,5 +27,5 @@ func (r *rateLimitingRoundTripper) RoundTrip(req *http.Request) (*http.Response,
 		return nil, errors.Wrap(err, "could not get request token from limiter")
 	}
 
-	return r.client.Do(req)
+	return r.client.Do(req) //nolint:gosec // G704: req is constructed internally, not from user input
 }

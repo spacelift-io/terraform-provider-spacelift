@@ -96,3 +96,22 @@ type TerraformInput struct {
 	Workspace                  *graphql.String  `json:"workspace"`
 	ExternalStateAccessEnabled *graphql.Boolean `json:"externalStateAccessEnabled"`
 }
+
+// StackVendor represents the vendor type for stack migration.
+type StackVendor string
+
+const (
+	StackVendorTerragrunt StackVendor = "Terragrunt"
+	StackVendorTerraform  StackVendor = "Terraform"
+)
+
+// TerragruntMigrationInput represents Terragrunt-specific migration configuration.
+type TerragruntMigrationInput struct {
+	TerragruntVersion *graphql.String `json:"terragruntVersion"`
+}
+
+// StackVendorMigrationInput represents the input for vendor migration.
+type StackVendorMigrationInput struct {
+	Labels     *[]graphql.String         `json:"labels"`
+	Terragrunt *TerragruntMigrationInput `json:"terragrunt"`
+}
