@@ -32,7 +32,7 @@ func dataRoleActions() *schema.Resource {
 func dataRoleActionsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	introspectionClient := internal.NewIntrospectionClient(meta.(*internal.Client))
 
-	enumValues, err := introspectionClient.GetEnumValues(ctx, "Action")
+	enumValues, err := introspectionClient.GetEnumValues(ctx, "Action", internal.WithIncludeDeprecated(true))
 	if err != nil {
 		return diag.Errorf("could not fetch role actions: %v", err)
 	}
