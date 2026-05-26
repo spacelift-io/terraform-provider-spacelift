@@ -92,43 +92,57 @@ func resourceRun() *schema.Resource {
 					},
 				},
 			},
+			"runtime_config": {
+				Type:        schema.TypeList,
+				Description: "Custom runtime configuration to apply to this run, overriding the stack's defaults.",
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Elem:        &schema.Resource{Schema: runtimeConfigInputSchema(true)},
+			},
 		},
 	}
 }
 
 func resourceRunCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
-		ID string `graphql:"runResourceCreate(stack: $stack, commitSha: $sha, proposed: $proposed)"`
+		CreateRun structs.Run `graphql:"runTrigger(stack: $stack, commitSha: $sha, runType: $runType, runtimeConfig: $runtimeConfig)"`
 	}
 
 	stackID := d.Get("stack_id").(string)
 
+	runType := structs.RunTypeTracked
+	if d.Get("proposed").(bool) {
+		runType = structs.RunTypeProposed
+	}
+
 	variables := map[string]any{
-		"stack":    toID(stackID),
-		"sha":      (*graphql.String)(nil),
-		"proposed": (*graphql.Boolean)(nil),
+		"stack":         toID(stackID),
+		"sha":           (*graphql.String)(nil),
+		"runType":       runType,
+		"runtimeConfig": (*structs.RuntimeConfigInput)(nil),
 	}
 
 	if sha, ok := d.GetOk("commit_sha"); ok {
 		variables["sha"] = new(graphql.String(sha.(string)))
 	}
 
-	if proposed, ok := d.GetOk("proposed"); ok {
-		variables["proposed"] = new(graphql.Boolean(proposed.(bool)))
+	if runtimeConfig := parseRuntimeConfigInput(d, "runtime_config"); runtimeConfig != nil {
+		variables["runtimeConfig"] = runtimeConfig
 	}
 
 	client := meta.(*internal.Client)
-	if err := client.Mutate(ctx, "ResourceRunCreate", &mutation, variables); err != nil {
+	if err := client.Mutate(ctx, "RunTrigger", &mutation, variables); err != nil {
 		return diag.Errorf("could not trigger run for stack %s: %v", stackID, internal.FromSpaceliftError(err))
 	}
 
 	if waitRaw, ok := d.GetOk("wait"); ok {
 		wait := structs.NewWaitConfiguration(waitRaw.([]any))
-		if diag := wait.Wait(ctx, d, client, stackID, mutation.ID); len(diag) > 0 {
+		if diag := wait.Wait(ctx, d, client, stackID, mutation.CreateRun.ID); len(diag) > 0 {
 			return diag
 		}
 	}
 
-	d.SetId(mutation.ID)
+	d.SetId(mutation.CreateRun.ID)
 	return nil
 }
