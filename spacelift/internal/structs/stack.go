@@ -96,13 +96,14 @@ type Stack struct {
 			ExternalStateAccessEnabled bool    `graphql:"externalStateAccessEnabled"`
 		} `graphql:"... on StackConfigVendorTerraform"`
 		Terragrunt struct {
-			TerraformVersion     *string `graphql:"terraformVersion"`
-			TerragruntVersion    *string `graphql:"terragruntVersion"`
-			UseRunAll            bool    `graphql:"useRunAll"`
-			UseSmartSanitization bool    `graphql:"useSmartSanitization"`
-			UseStateManagement   bool    `graphql:"useStateManagement"`
-			SkipReplanWhenRunAll bool    `graphql:"skipReplanWhenRunAll"`
-			Tool                 string  `graphql:"tool"`
+			TerraformVersion                  *string `graphql:"terraformVersion"`
+			TerragruntVersion                 *string `graphql:"terragruntVersion"`
+			UseRunAll                         bool    `graphql:"useRunAll"`
+			UseSmartSanitization              bool    `graphql:"useSmartSanitization"`
+			UseStateManagement                bool    `graphql:"useStateManagement"`
+			PrefixResourceNamesWithModuleName bool    `graphql:"prefixResourceNamesWithModuleName"`
+			SkipReplanWhenRunAll              bool    `graphql:"skipReplanWhenRunAll"`
+			Tool                              string  `graphql:"tool"`
 		} `graphql:"... on StackConfigVendorTerragrunt"`
 	} `graphql:"vendorConfig"`
 	WorkerPool *struct {
@@ -150,13 +151,14 @@ func (s *Stack) IaCSettings() (string, map[string]any) {
 		}
 	case StackConfigVendorTerragrunt:
 		return "terragrunt", map[string]any{
-			"terraform_version":        s.VendorConfig.Terragrunt.TerraformVersion,
-			"terragrunt_version":       s.VendorConfig.Terragrunt.TerragruntVersion,
-			"use_run_all":              s.VendorConfig.Terragrunt.UseRunAll,
-			"use_smart_sanitization":   s.VendorConfig.Terragrunt.UseSmartSanitization,
-			"use_state_management":     s.VendorConfig.Terragrunt.UseStateManagement,
-			"skip_replan_when_run_all": s.VendorConfig.Terragrunt.SkipReplanWhenRunAll,
-			"tool":                     s.VendorConfig.Terragrunt.Tool,
+			"terraform_version":                      s.VendorConfig.Terragrunt.TerraformVersion,
+			"terragrunt_version":                     s.VendorConfig.Terragrunt.TerragruntVersion,
+			"use_run_all":                            s.VendorConfig.Terragrunt.UseRunAll,
+			"use_smart_sanitization":                 s.VendorConfig.Terragrunt.UseSmartSanitization,
+			"use_state_management":                   s.VendorConfig.Terragrunt.UseStateManagement,
+			"skip_replan_when_run_all":               s.VendorConfig.Terragrunt.SkipReplanWhenRunAll,
+			"prefix_resource_names_with_module_name": s.VendorConfig.Terragrunt.PrefixResourceNamesWithModuleName,
+			"tool":                                   s.VendorConfig.Terragrunt.Tool,
 		}
 	}
 
@@ -310,13 +312,14 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		d.Set("pulumi", []any{m})
 	case StackConfigVendorTerragrunt:
 		m := map[string]any{
-			"terraform_version":        stack.VendorConfig.Terragrunt.TerraformVersion,
-			"terragrunt_version":       stack.VendorConfig.Terragrunt.TerragruntVersion,
-			"use_run_all":              stack.VendorConfig.Terragrunt.UseRunAll,
-			"use_smart_sanitization":   stack.VendorConfig.Terragrunt.UseSmartSanitization,
-			"use_state_management":     stack.VendorConfig.Terragrunt.UseStateManagement,
-			"skip_replan_when_run_all": stack.VendorConfig.Terragrunt.SkipReplanWhenRunAll,
-			"tool":                     stack.VendorConfig.Terragrunt.Tool,
+			"terraform_version":                      stack.VendorConfig.Terragrunt.TerraformVersion,
+			"terragrunt_version":                     stack.VendorConfig.Terragrunt.TerragruntVersion,
+			"use_run_all":                            stack.VendorConfig.Terragrunt.UseRunAll,
+			"use_smart_sanitization":                 stack.VendorConfig.Terragrunt.UseSmartSanitization,
+			"use_state_management":                   stack.VendorConfig.Terragrunt.UseStateManagement,
+			"skip_replan_when_run_all":               stack.VendorConfig.Terragrunt.SkipReplanWhenRunAll,
+			"prefix_resource_names_with_module_name": stack.VendorConfig.Terragrunt.PrefixResourceNamesWithModuleName,
+			"tool":                                   stack.VendorConfig.Terragrunt.Tool,
 		}
 
 		d.Set("terragrunt", []any{m})

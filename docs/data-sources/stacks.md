@@ -288,6 +288,7 @@ Read-Only:
 
 Read-Only:
 
+- `prefix_resource_names_with_module_name` (Boolean)
 - `skip_replan_when_run_all` (Boolean)
 - `terraform_version` (String)
 - `terragrunt_version` (String)
