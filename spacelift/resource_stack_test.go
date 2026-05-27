@@ -907,6 +907,53 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with Terragrunt skip_replan", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt skip replan %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version = "0.45.0"
+						terraform_version  = "1.4.0"
+						use_run_all        = false
+						skip_replan        = false
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.skip_replan", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt skip replan %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version = "0.45.0"
+						terraform_version  = "1.4.0"
+						use_run_all        = false
+						skip_replan        = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.skip_replan", Equals("true")),
+				),
+			},
+		})
+	})
+
 	t.Run("with Terragrunt prefix_resource_names_with_module_name", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

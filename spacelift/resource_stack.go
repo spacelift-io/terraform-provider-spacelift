@@ -692,6 +692,13 @@ func resourceStack() *schema.Resource {
 							Description: "When using Run All, skip the second planning phase during the apply stage. This is an experimental feature. Runs with Run All disabled reuse the plan by default. Warning: this means any `mocked_outputs` referenced during planning will be applied as-is — do not enable this together with `mocked_outputs` unless you fully understand the implications, your apply may execute against mocked values rather than real ones.",
 							Optional:    true,
 							Default:     false,
+							Deprecated:  "Use `skip_replan` instead. `skip_replan` applies to both run-all and non-run-all stacks.",
+						},
+						"skip_replan": {
+							Type:        schema.TypeBool,
+							Description: "If set to true, the apply phase will reuse the plan from the planning phase instead of re-planning. Applies to both run-all and non-run-all stacks. Warning: this means any `mocked_outputs` referenced during planning will be applied as-is — do not enable this together with `mocked_outputs` unless you fully understand the implications, your apply may execute against mocked values rather than real ones.",
+							Optional:    true,
+							Default:     false,
 						},
 						"tool": {
 							Type:        schema.TypeString,
@@ -1104,6 +1111,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 		if skipReplanWhenRunAll, ok := terragrunt[0].(map[string]any)["skip_replan_when_run_all"]; ok {
 			terragruntConfig.SkipReplanWhenRunAll = toOptionalBool(skipReplanWhenRunAll)
+		}
+
+		if skipReplan, ok := terragrunt[0].(map[string]any)["skip_replan"]; ok {
+			terragruntConfig.SkipReplan = toOptionalBool(skipReplan)
 		}
 
 		if prefixResourceNamesWithModuleName, ok := terragrunt[0].(map[string]any)["prefix_resource_names_with_module_name"]; ok {
