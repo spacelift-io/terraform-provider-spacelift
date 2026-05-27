@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -2021,6 +2022,90 @@ func TestStackResourceSpace(t *testing.T) {
 				Check: Resource(
 					"spacelift_stack.state_import",
 					Attribute("import_state", Equals("")),
+				),
+			},
+		})
+	})
+
+	t.Run("vendor migration roundtrip Terraform to Terragrunt and back", func(t *testing.T) {
+		name := "vendor-migration-roundtrip-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch         = "master"
+					name           = "%s"
+					project_root   = "root"
+					repository     = "demo"
+					manage_state   = false
+					%s
+				}
+			`, name, vendorConfig)
+		}
+
+		var stackID string
+
+		testSteps(t, []resource.TestStep{
+			{
+				// Step 1: Create as Terraform stack with "terragrunt" label
+				Config: config(`
+					labels            = ["terragrunt"]
+					terraform_version = "1.5.7"
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("terraform_version", Equals("1.5.7")),
+						SetContains("labels", "terragrunt"),
+						Attribute("terragrunt.#", Equals("0")),
+					),
+					func(s *terraform.State) error {
+						stackID = s.RootModule().Resources[resourceName].Primary.ID
+						return nil
+					},
+				),
+			},
+			{
+				// Step 2: Migrate to Terragrunt — must be update, not recreate
+				Config: config(`
+					terragrunt {
+						terragrunt_version = "0.67.16"
+						tool               = "TERRAFORM_FOSS"
+					}
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("terragrunt.#", Equals("1")),
+						Attribute("terragrunt.0.terragrunt_version", Equals("0.67.16")),
+						Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
+					),
+					func(s *terraform.State) error {
+						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
+							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
+						}
+						return nil
+					},
+				),
+			},
+			{
+				// Step 3: Migrate back to Terraform — must be update, not recreate
+				Config: config(`
+					labels            = ["terragrunt"]
+					terraform_version = "1.5.7"
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("terraform_version", Equals("1.5.7")),
+						SetContains("labels", "terragrunt"),
+						Attribute("terragrunt.#", Equals("0")),
+					),
+					func(s *terraform.State) error {
+						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
+							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
+						}
+						return nil
+					},
 				),
 			},
 		})

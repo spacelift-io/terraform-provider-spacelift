@@ -822,6 +822,25 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) di
 }
 
 func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var ret diag.Diagnostics
+
+	// Check if vendor migration is needed (terraform <-> terragrunt).
+	if targetVendor := vendorMigrationDirection(d); targetVendor != "" {
+		var migrateMutation struct {
+			MigrateVendor structs.Stack `graphql:"stackMigrateVendor(id: $id, targetVendor: $targetVendor, config: $config)"`
+		}
+
+		migrateVariables := map[string]any{
+			"id":           toID(d.Id()),
+			"targetVendor": targetVendor,
+			"config":       buildMigrationConfig(d, targetVendor),
+		}
+
+		if err := meta.(*internal.Client).Mutate(ctx, "StackMigrateVendor", &migrateMutation, migrateVariables); err != nil {
+			return diag.Errorf("could not migrate stack vendor: %v", internal.FromSpaceliftError(err))
+		}
+	}
+
 	var mutation struct {
 		UpdateStack structs.Stack `graphql:"stackUpdate(id: $id, input: $input)"`
 	}
@@ -830,8 +849,6 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 		"id":    toID(d.Id()),
 		"input": stackInput(d),
 	}
-
-	var ret diag.Diagnostics
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackUpdate", &mutation, variables); err != nil {
 		ret = diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err))
@@ -1168,6 +1185,51 @@ func shouldWeReComputeTerraformVersionForTerraformWorkflowTool(d *schema.Resourc
 	}
 
 	return false
+}
+
+// vendorMigrationDirection detects if the vendor type is changing between
+// terraform and terragrunt, and returns the target vendor. Returns empty
+// string if no migration is happening.
+func vendorMigrationDirection(d *schema.ResourceData) structs.StackVendor {
+	oldTerragrunt, _ := d.GetChange("terragrunt")
+	oldTgList, _ := oldTerragrunt.([]any)
+	wasTerragrunt := len(oldTgList) > 0
+
+	newVendorConfig := getVendorConfig(d)
+	isTerragrunt := newVendorConfig.TerragruntInput != nil
+
+	if !wasTerragrunt && isTerragrunt {
+		return structs.StackVendorTerragrunt
+	}
+
+	if wasTerragrunt && !isTerragrunt {
+		return structs.StackVendorTerraform
+	}
+
+	return ""
+}
+
+// buildMigrationConfig builds the StackVendorMigrationInput for the given
+// migration direction.
+func buildMigrationConfig(d *schema.ResourceData, targetVendor structs.StackVendor) *structs.StackVendorMigrationInput {
+	config := &structs.StackVendorMigrationInput{}
+
+	switch targetVendor {
+	case structs.StackVendorTerragrunt:
+		if terragrunt, ok := d.Get("terragrunt").([]any); ok && len(terragrunt) > 0 {
+			settings := terragrunt[0].(map[string]any)
+			if version, ok := settings["terragrunt_version"]; ok && version.(string) != "" {
+				config.Terragrunt = &structs.TerragruntMigrationInput{
+					TerragruntVersion: toOptionalString(version),
+				}
+			}
+		}
+	case structs.StackVendorTerraform:
+		labels := []graphql.String{graphql.String("terragrunt")}
+		config.Labels = &labels
+	}
+
+	return config
 }
 
 func getStrings(d *schema.ResourceData, fieldName string) []graphql.String {
