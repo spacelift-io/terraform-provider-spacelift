@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/shurcooL/graphql"
 )
 
 const enumKind string = "ENUM"
@@ -29,7 +30,7 @@ type Schema struct {
 		Name        string      `json:"name"`
 		Kind        string      `json:"kind"`
 		Description string      `json:"description"`
-		EnumValues  []EnumValue `json:"enumValues"`
+		EnumValues  []EnumValue `graphql:"enumValues(includeDeprecated: $includeDeprecated)" json:"enumValues"`
 	} `json:"types"`
 }
 
@@ -37,8 +38,8 @@ type IntrospectionQuery struct {
 	Schema Schema `graphql:"__schema"`
 }
 
-func (c *IntrospectionClient) GetEnumValues(ctx context.Context, enumName string) ([]string, error) {
-	resp, err := c.Introspect(ctx)
+func (c *IntrospectionClient) GetEnumValues(ctx context.Context, enumName string, introspectionOpts ...IntrospectionOption) ([]string, error) {
+	resp, err := c.Introspect(ctx, introspectionOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to introspect schema: %w", err)
 	}
@@ -60,11 +61,32 @@ func (c *IntrospectionClient) GetEnumValues(ctx context.Context, enumName string
 	return nil, fmt.Errorf("enum type %s not found in schema", enumName)
 }
 
-func (c *IntrospectionClient) Introspect(ctx context.Context) (*IntrospectionQuery, error) {
-	tflog.Debug(ctx, "Introspecting GraphQL endpoint")
+type introspectOpts struct {
+	includeDeprecated bool
+}
 
+type IntrospectionOption func(*introspectOpts)
+
+func WithIncludeDeprecated(include bool) IntrospectionOption {
+	return func(io *introspectOpts) {
+		io.includeDeprecated = include
+	}
+}
+
+func (c *IntrospectionClient) Introspect(ctx context.Context, opts ...IntrospectionOption) (*IntrospectionQuery, error) {
 	var query IntrospectionQuery
-	if err := c.client.Query(ctx, "Introspection", &query, nil); err != nil {
+	introOpts := &introspectOpts{}
+	for i := range opts {
+		opts[i](introOpts)
+	}
+
+	tflog.Debug(ctx, "Introspecting GraphQL endpoint", map[string]any{
+		"includeDeprecated": introOpts.includeDeprecated,
+	})
+	if err := c.client.Query(ctx, "Introspection", &query, map[string]any{
+		// https://github.com/graphql/graphql-spec/blob/September2025/spec/Section%204%20--%20Introspection.md
+		"includeDeprecated": graphql.Boolean(introOpts.includeDeprecated),
+	}); err != nil {
 		return nil, fmt.Errorf("failed to perform GraphQL introspection: %w", err)
 	}
 

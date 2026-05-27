@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -12,6 +13,8 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
+
+var deprecatedActions = []string{"STACK_MANAGE"}
 
 func resourceRole() *schema.Resource {
 	return &schema.Resource{
@@ -116,13 +119,20 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("slug", role.Slug)
 	d.Set("description", role.Description)
 
+	var diags diag.Diagnostics
 	actions := schema.NewSet(schema.HashString, []any{})
 	for _, action := range role.Actions {
 		actions.Add(string(action))
+		if slices.Contains(deprecatedActions, string(action)) {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  fmt.Sprintf("Action %q is deprecated", string(action)),
+			})
+		}
 	}
 	d.Set("actions", actions)
 
-	return nil
+	return diags
 }
 
 func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -194,7 +204,7 @@ func validateActions(ctx context.Context, client *internal.Client, actions []gra
 
 	introspectionClient := internal.NewIntrospectionClient(client)
 
-	enumValues, err := introspectionClient.GetEnumValues(ctx, "Action")
+	enumValues, err := introspectionClient.GetEnumValues(ctx, "Action", internal.WithIncludeDeprecated(true))
 	if err != nil {
 		return nil, diag.Errorf("could not fetch action enum values: %v", err)
 	}
