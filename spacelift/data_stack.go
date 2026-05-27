@@ -507,6 +507,11 @@ func dataStack() *schema.Resource {
 							Description: "When using Run All, skip the second planning phase during the apply stage. This is an experimental feature. Runs with Run All disabled reuse the plan by default. Warning: this means any `mocked_outputs` referenced during planning will be applied as-is — do not enable this together with `mocked_outputs` unless you fully understand the implications, your apply may execute against mocked values rather than real ones.",
 							Computed:    true,
 						},
+						"prefix_resource_names_with_module_name": {
+							Type:        schema.TypeBool,
+							Description: "Controls whether resource and output names are prefixed with the module path. Has no effect when use_run_all is enabled (always prefixes in that case).",
+							Computed:    true,
+						},
 						"tool": {
 							Type:        schema.TypeString,
 							Description: "The IaC tool used by Terragrunt. Will be either OPEN_TOFU, TERRAFORM_FOSS or MANUALLY_PROVISIONED.",

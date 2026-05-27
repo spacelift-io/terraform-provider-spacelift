@@ -906,6 +906,69 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with Terragrunt prefix_resource_names_with_module_name", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt prefix resource names %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version = "0.45.0"
+						terraform_version  = "1.4.0"
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.prefix_resource_names_with_module_name", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt prefix resource names %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version                     = "0.45.0"
+						terraform_version                      = "1.4.0"
+						prefix_resource_names_with_module_name = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.prefix_resource_names_with_module_name", Equals("true")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack terragrunt prefix resource names %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version                     = "0.45.0"
+						terraform_version                      = "1.4.0"
+						prefix_resource_names_with_module_name = false
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("terragrunt.0.prefix_resource_names_with_module_name", Equals("false")),
+				),
+			},
+		})
+	})
+
 	t.Run("with GitHub and no vendor-specific configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{

@@ -699,6 +699,12 @@ func resourceStack() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 						},
+						"prefix_resource_names_with_module_name": {
+							Type:        schema.TypeBool,
+							Description: "Controls whether resource and output names are prefixed with the module path. Has no effect when use_run_all is enabled (always prefixes in that case).",
+							Optional:    true,
+							Computed:    true,
+						},
 					},
 				},
 			},
@@ -1081,6 +1087,10 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 
 		if skipReplanWhenRunAll, ok := terragrunt[0].(map[string]any)["skip_replan_when_run_all"]; ok {
 			terragruntConfig.SkipReplanWhenRunAll = toOptionalBool(skipReplanWhenRunAll)
+		}
+
+		if prefixResourceNamesWithModuleName, ok := terragrunt[0].(map[string]any)["prefix_resource_names_with_module_name"]; ok {
+			terragruntConfig.PrefixResourceNamesWithModuleName = toOptionalBool(prefixResourceNamesWithModuleName)
 		}
 
 		if shouldWeReComputeTerraformVersionForTerragrunt(d) {

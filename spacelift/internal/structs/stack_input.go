@@ -78,13 +78,14 @@ type PulumiInput struct {
 }
 
 type TerragruntInput struct {
-	TerraformVersion     *graphql.String  `json:"terraformVersion"`
-	TerragruntVersion    *graphql.String  `json:"terragruntVersion"`
-	UseRunAll            graphql.Boolean  `json:"useRunAll"`
-	UseSmartSanitization graphql.Boolean  `json:"useSmartSanitization"`
-	UseStateManagement   *graphql.Boolean `json:"useStateManagement"`
-	SkipReplanWhenRunAll *graphql.Boolean `json:"skipReplanWhenRunAll"`
-	Tool                 *graphql.String  `json:"tool"`
+	TerraformVersion                  *graphql.String  `json:"terraformVersion"`
+	TerragruntVersion                 *graphql.String  `json:"terragruntVersion"`
+	UseRunAll                         graphql.Boolean  `json:"useRunAll"`
+	UseSmartSanitization              graphql.Boolean  `json:"useSmartSanitization"`
+	UseStateManagement                *graphql.Boolean `json:"useStateManagement"`
+	SkipReplanWhenRunAll              *graphql.Boolean `json:"skipReplanWhenRunAll"`
+	PrefixResourceNamesWithModuleName *graphql.Boolean `json:"prefixResourceNamesWithModuleName"`
+	Tool                              *graphql.String  `json:"tool"`
 }
 
 // TerraformInput represents Terraform-specific configuration.
