@@ -201,6 +201,13 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 		}}
 	}
 
+	if policy.Type == "ACCESS" || policy.Type == "STACK_ACCESS" {
+		return diag.Diagnostics{{
+			Severity: diag.Warning,
+			Summary:  "Access policies are deprecated and should no longer be used",
+		}}
+	}
+
 	return nil
 }
 
