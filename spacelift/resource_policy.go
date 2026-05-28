@@ -111,7 +111,7 @@ func resourcePolicy() *schema.Resource {
 			},
 			"engine_type": {
 				Type:        schema.TypeString,
-				Description: "Type of engine used to evaluate the policy. Possible values are `REGO_V0` and `REGO_V1`.",
+				Description: "Type of engine used to evaluate the policy. Possible values are `REGO_V0` and `REGO_V1`. Defaults to `REGO_V0`.",
 				Optional:    true,
 				Computed:    true,
 				ValidateFunc: validation.StringInSlice(
