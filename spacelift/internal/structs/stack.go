@@ -103,6 +103,7 @@ type Stack struct {
 			UseStateManagement                bool    `graphql:"useStateManagement"`
 			PrefixResourceNamesWithModuleName bool    `graphql:"prefixResourceNamesWithModuleName"`
 			SkipReplanWhenRunAll              bool    `graphql:"skipReplanWhenRunAll"`
+			SkipReplan                        bool    `graphql:"skipReplan"`
 			Tool                              string  `graphql:"tool"`
 		} `graphql:"... on StackConfigVendorTerragrunt"`
 	} `graphql:"vendorConfig"`
@@ -157,6 +158,7 @@ func (s *Stack) IaCSettings() (string, map[string]any) {
 			"use_smart_sanitization":                 s.VendorConfig.Terragrunt.UseSmartSanitization,
 			"use_state_management":                   s.VendorConfig.Terragrunt.UseStateManagement,
 			"skip_replan_when_run_all":               s.VendorConfig.Terragrunt.SkipReplanWhenRunAll,
+			"skip_replan":                            s.VendorConfig.Terragrunt.SkipReplan,
 			"prefix_resource_names_with_module_name": s.VendorConfig.Terragrunt.PrefixResourceNamesWithModuleName,
 			"tool":                                   s.VendorConfig.Terragrunt.Tool,
 		}
@@ -318,6 +320,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 			"use_smart_sanitization":                 stack.VendorConfig.Terragrunt.UseSmartSanitization,
 			"use_state_management":                   stack.VendorConfig.Terragrunt.UseStateManagement,
 			"skip_replan_when_run_all":               stack.VendorConfig.Terragrunt.SkipReplanWhenRunAll,
+			"skip_replan":                            stack.VendorConfig.Terragrunt.SkipReplan,
 			"prefix_resource_names_with_module_name": stack.VendorConfig.Terragrunt.PrefixResourceNamesWithModuleName,
 			"tool":                                   stack.VendorConfig.Terragrunt.Tool,
 		}
