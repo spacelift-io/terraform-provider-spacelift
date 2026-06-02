@@ -175,3 +175,26 @@ resource "spacelift_stack" "terragrunt-stack" {
   repository   = "terragrunt-stacks"
   project_root = "path/to/terragrunt_hcl"
 }
+
+# Administrative stack that manages Spacelift itself, with a role binding
+# granting a role access to the stack
+resource "spacelift_stack" "spacelift-admin" {
+  administrative    = true
+  autodeploy        = true
+  branch            = "main"
+  description       = "Manages Spacelift roles, spaces and access"
+  name              = "Spacelift Administration"
+  repository        = "spacelift-config"
+  terraform_version = "1.3.0"
+}
+
+resource "spacelift_role" "stack_admin" {
+  name    = "Stack admin"
+  actions = ["SPACE_ADMIN"]
+}
+
+resource "spacelift_role_attachment" "spacelift-admin-operator" {
+  stack_id = spacelift_stack.spacelift-admin.id
+  role_id  = spacelift_role.stack_admin.id
+  space_id = "root"
+}
