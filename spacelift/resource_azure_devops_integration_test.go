@@ -22,6 +22,37 @@ type terraformVersionOutput struct {
 	Version string `json:"terraform_version"`
 }
 
+func skipAzureDevOpsIntegrationResourceTestsIfUnconfigured(t *testing.T) {
+	t.Helper()
+
+	if testIsMachineSession() {
+		t.Skip("skipping Azure DevOps integration resource tests: create/update is not available in machine sessions")
+	}
+
+	cfg := testConfig.SourceCode.AzureDevOps.SpaceLevel
+	missing := make([]string, 0)
+
+	if cfg.PersonalAccessToken == "" {
+		missing = append(missing, "SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_PERSONALACCESSTOKEN")
+	}
+
+	if cfg.Space == "" {
+		missing = append(missing, "SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_SPACE")
+	}
+
+	if cfg.OrganizationURL == "" {
+		missing = append(missing, "SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_ORGANIZATIONURL")
+	}
+
+	if cfg.UserFacingHost == "" {
+		missing = append(missing, "SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_USERFACINGHOST")
+	}
+
+	if len(missing) > 0 {
+		t.Skipf("skipping Azure DevOps integration resource tests: missing required fixtures: %s", strings.Join(missing, ", "))
+	}
+}
+
 func terraformVersionAtLeast(major, minor int) (bool, string, error) {
 	cmd := exec.Command("terraform", "version", "-json")
 	output, err := cmd.Output()
@@ -62,6 +93,7 @@ func terraformVersionAtLeast(major, minor int) (bool, string, error) {
 
 func TestAzureDevOpsIntegrationResource(t *testing.T) {
 	const resourceName = "spacelift_azure_devops_integration.test"
+	skipAzureDevOpsIntegrationResourceTestsIfUnconfigured(t)
 
 	t.Run("creates and updates an Azure DevOps integration without an error", func(t *testing.T) {
 		random := func() string { return acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum) }

@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"log"
+	"os"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -158,4 +159,26 @@ func init() {
 	if err != nil {
 		log.Fatalln("couldn't process environment variables:", err)
 	}
+}
+
+func testUsesAPIKeyAuth() bool {
+	return os.Getenv("SPACELIFT_API_KEY_ENDPOINT") != "" &&
+		os.Getenv("SPACELIFT_API_KEY_ID") != "" &&
+		os.Getenv("SPACELIFT_API_KEY_SECRET") != ""
+}
+
+func testIsMachineSession() bool {
+	if os.Getenv("SPACELIFT_PROVIDER_TEST_MACHINE_SESSION") == "1" {
+		return true
+	}
+
+	if os.Getenv("SPACELIFT_PROVIDER_TEST_MACHINE_SESSION") == "0" {
+		return false
+	}
+
+	if testUsesAPIKeyAuth() {
+		return false
+	}
+
+	return os.Getenv("SPACELIFT_API_TOKEN") != ""
 }
