@@ -14,7 +14,9 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
-var deprecatedActions = []string{"STACK_MANAGE"}
+var deprecatedActions = []string{
+	// "STACK_MANAGE", // Undeprecated
+}
 
 func resourceRole() *schema.Resource {
 	return &schema.Resource{
@@ -141,7 +143,6 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	input := structs.RoleUpdateInput{}
-
 	if d.HasChange("name") {
 		input.Name = toOptionalString(d.Get("name"))
 	}
