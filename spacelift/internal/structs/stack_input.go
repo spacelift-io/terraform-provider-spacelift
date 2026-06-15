@@ -46,6 +46,7 @@ type VendorConfigInput struct {
 	AnsibleInput        *AnsibleInput        `json:"ansible"`
 	CloudFormationInput *CloudFormationInput `json:"cloudFormation"`
 	Kubernetes          *KubernetesInput     `json:"kubernetes"`
+	OpenTofuInput       *OpenTofuInput       `json:"opentofu"`
 	Pulumi              *PulumiInput         `json:"pulumi"`
 	Terraform           *TerraformInput      `json:"terraform"`
 	TerragruntInput     *TerragruntInput     `json:"terragrunt"`
@@ -87,6 +88,16 @@ type TerragruntInput struct {
 	SkipReplan                        *graphql.Boolean `json:"skipReplan"`
 	PrefixResourceNamesWithModuleName *graphql.Boolean `json:"prefixResourceNamesWithModuleName"`
 	Tool                              *graphql.String  `json:"tool"`
+}
+
+// OpenTofuInput represents native OpenTofu-specific configuration.
+type OpenTofuInput struct {
+	Concise                    *graphql.Boolean `json:"concise"`
+	ExternalStateAccessEnabled *graphql.Boolean `json:"externalStateAccessEnabled"`
+	UseSmartSanitization       *graphql.Boolean `json:"useSmartSanitization"`
+	Version                    *graphql.String  `json:"version"`
+	WorkflowTool               *graphql.String  `json:"workflowTool"`
+	Workspace                  *graphql.String  `json:"workspace"`
 }
 
 // TerraformInput represents Terraform-specific configuration.

@@ -65,6 +65,7 @@ data "spacelift_stack" "k8s-core" {
 - `labels` (Set of String)
 - `manage_state` (Boolean) Determines if Spacelift should manage state for this stack
 - `name` (String) Name of the stack - should be unique in one account
+- `opentofu` (List of Object) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. (see [below for nested schema](#nestedatt--opentofu))
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail.
 - `pulumi` (List of Object) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedatt--pulumi))
@@ -158,6 +159,19 @@ Read-Only:
 - `kubectl_version` (String)
 - `kubernetes_workflow_tool` (String)
 - `namespace` (String)
+
+
+<a id="nestedatt--opentofu"></a>
+### Nested Schema for `opentofu`
+
+Read-Only:
+
+- `concise` (Boolean)
+- `external_state_access` (Boolean)
+- `use_smart_sanitization` (Boolean)
+- `version` (String)
+- `workflow_tool` (String)
+- `workspace` (String)
 
 
 <a id="nestedatt--pulumi"></a>

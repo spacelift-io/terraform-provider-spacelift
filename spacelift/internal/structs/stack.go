@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
 )
@@ -19,6 +20,9 @@ const StackConfigVendorTerraform = "StackConfigVendorTerraform"
 
 // StackConfigVendorKubernetes is a graphql union typename.
 const StackConfigVendorKubernetes = "StackConfigVendorKubernetes"
+
+// StackConfigVendorOpenTofu is a graphql union typename.
+const StackConfigVendorOpenTofu = "StackConfigVendorOpenTofu"
 
 // StackConfigVendorTerragrunt is a graphql union typename.
 const StackConfigVendorTerragrunt = "StackConfigVendorTerragrunt"
@@ -84,6 +88,14 @@ type Stack struct {
 			KubectlVersion         *string `graphql:"kubectlVersion"`
 			KubernetesWorkflowTool *string `graphql:"kubernetesWorkflowTool"`
 		} `graphql:"... on StackConfigVendorKubernetes"`
+		OpenTofu struct {
+			Concise                    bool    `graphql:"concise"`
+			ExternalStateAccessEnabled bool    `graphql:"externalStateAccessEnabled"`
+			UseSmartSanitization       bool    `graphql:"useSmartSanitization"`
+			Version                    *string `graphql:"version"`
+			WorkflowTool               *string `graphql:"openTofuWorkflowTool:workflowTool"`
+			Workspace                  *string `graphql:"workspace"`
+		} `graphql:"... on StackConfigVendorOpenTofu"`
 		Pulumi struct {
 			LoginURL  string `graphql:"loginURL"`
 			StackName string `graphql:"stackName"`
@@ -144,6 +156,15 @@ func (s *Stack) IaCSettings() (string, map[string]any) {
 			"namespace":                s.VendorConfig.Kubernetes.Namespace,
 			"kubectl_version":          s.VendorConfig.Kubernetes.KubectlVersion,
 			"kubernetes_workflow_tool": s.VendorConfig.Kubernetes.KubernetesWorkflowTool,
+		}
+	case StackConfigVendorOpenTofu:
+		return "opentofu", map[string]any{
+			"concise":                s.VendorConfig.OpenTofu.Concise,
+			"external_state_access":  s.VendorConfig.OpenTofu.ExternalStateAccessEnabled,
+			"use_smart_sanitization": s.VendorConfig.OpenTofu.UseSmartSanitization,
+			"version":                s.VendorConfig.OpenTofu.Version,
+			"workflow_tool":          s.VendorConfig.OpenTofu.WorkflowTool,
+			"workspace":              s.VendorConfig.OpenTofu.Workspace,
 		}
 	case StackConfigVendorPulumi:
 		return "pulumi", map[string]any{
@@ -227,7 +248,8 @@ func (s *Stack) VCSSettings() (string, map[string]any) {
 	return "", nil
 }
 
-func PopulateStack(d *schema.ResourceData, stack *Stack) error {
+func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
+	var diags diag.Diagnostics
 	d.Set("administrative", stack.Administrative)
 	d.Set("after_apply", stack.AfterApply)
 	d.Set("after_destroy", stack.AfterDestroy)
@@ -260,7 +282,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 	d.Set("slug", stack.ID)
 
 	if err := stack.ExportVCSSettings(d); err != nil {
-		return err
+		return diag.FromErr(err)
 	}
 
 	labels := schema.NewSet(schema.HashString, []any{})
@@ -305,6 +327,48 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		}
 
 		d.Set("kubernetes", []any{m})
+	case StackConfigVendorOpenTofu:
+		// Check whether the user's .tf config uses the opentofu block.
+		// During Read, GetRawConfig() may be null, so we also check whether
+		// the opentofu block is already present in state (set by a prior Create/Update).
+		rawConfig := d.GetRawConfig()
+		userHasOpenTofuBlock := !rawConfig.IsNull() && !rawConfig.GetAttr("opentofu").IsNull()
+		if !userHasOpenTofuBlock {
+			if otState, ok := d.GetOk("opentofu"); ok {
+				if otList, ok := otState.([]any); ok && len(otList) > 0 {
+					userHasOpenTofuBlock = true
+				}
+			}
+		}
+
+		if userHasOpenTofuBlock {
+			m := map[string]any{
+				"concise":                stack.VendorConfig.OpenTofu.Concise,
+				"external_state_access":  stack.VendorConfig.OpenTofu.ExternalStateAccessEnabled,
+				"use_smart_sanitization": stack.VendorConfig.OpenTofu.UseSmartSanitization,
+				"version":                stack.VendorConfig.OpenTofu.Version,
+				"workflow_tool":          stack.VendorConfig.OpenTofu.WorkflowTool,
+				"workspace":              stack.VendorConfig.OpenTofu.Workspace,
+			}
+			d.Set("opentofu", []any{m})
+		} else {
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Warning,
+				Summary:  "Stack uses native OpenTofu vendor but config has no `opentofu` block",
+				Detail:   "This stack has been migrated to the native OpenTofu vendor. Consider replacing `terraform_workflow_tool = \"OPEN_TOFU\"` with an `opentofu` block for full access to OpenTofu-specific features.",
+			})
+			// Backward compatibility: map native OpenTofu vendor config to terraform_*
+			// fields so stacks migrated server-side from Terraform+OPEN_TOFU show no drift.
+			d.Set("terraform_smart_sanitization", stack.VendorConfig.OpenTofu.UseSmartSanitization)
+			if stack.VendorConfig.OpenTofu.Version != nil {
+				d.Set("terraform_version", *stack.VendorConfig.OpenTofu.Version)
+			} else {
+				d.Set("terraform_version", nil)
+			}
+			d.Set("terraform_workflow_tool", "OPEN_TOFU")
+			d.Set("terraform_workspace", stack.VendorConfig.OpenTofu.Workspace)
+			d.Set("terraform_external_state_access", stack.VendorConfig.OpenTofu.ExternalStateAccessEnabled)
+		}
 	case StackConfigVendorPulumi:
 		m := map[string]any{
 			"login_url":  stack.VendorConfig.Pulumi.LoginURL,
@@ -345,7 +409,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) error {
 		d.Set("worker_pool_id", nil)
 	}
 
-	return nil
+	return diags
 }
 
 func singleKeyMap(key, val string) map[string]any {
