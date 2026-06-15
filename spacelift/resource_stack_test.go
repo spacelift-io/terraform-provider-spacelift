@@ -1228,6 +1228,61 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("with GitHub and OpenTofu (default) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`opentofu {}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+
+					Attribute("opentofu.0.concise", Equals("true")),
+					Attribute("opentofu.0.use_smart_sanitization", Equals("true")),
+					Attribute("opentofu.0.external_state_access", Equals("false")),
+					Attribute("opentofu.0.workflow_tool", Equals("OPENTOFU")),
+
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("kubernetes.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("ansible.#", Equals("0")),
+					Attribute("terragrunt.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with GitHub and OpenTofu (explicit settings) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: getConfig(`opentofu {
+						version                = "1.8.0"
+						workspace              = "test-workspace"
+						concise                = false
+						use_smart_sanitization = false
+						external_state_access  = true
+						workflow_tool          = "CUSTOM"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+
+					Attribute("opentofu.0.version", Equals("1.8.0")),
+					Attribute("opentofu.0.workspace", Equals("test-workspace")),
+					Attribute("opentofu.0.concise", Equals("false")),
+					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
+					Attribute("opentofu.0.external_state_access", Equals("true")),
+					Attribute("opentofu.0.workflow_tool", Equals("CUSTOM")),
+
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("kubernetes.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("ansible.#", Equals("0")),
+					Attribute("terragrunt.#", Equals("0")),
+				),
+			},
+		})
+	})
+
 	t.Run("with GitHub and no vendor-specific configuration", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
@@ -2368,6 +2423,7 @@ func TestStackResourceSpace(t *testing.T) {
 			},
 		})
 	})
+
 }
 
 // getConfig returns a stack config with injected vendor config

@@ -111,7 +111,7 @@ func resourceStack() *schema.Resource {
 			},
 			"ansible": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"cloudformation", "kubernetes", "opentofu", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "Ansible-specific configuration. Presence means this Stack is an Ansible Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -346,7 +346,7 @@ func resourceStack() *schema.Resource {
 			},
 			"cloudformation": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"ansible", "kubernetes", "opentofu", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "CloudFormation-specific configuration. Presence means this Stack is a CloudFormation Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -506,7 +506,7 @@ func resourceStack() *schema.Resource {
 			},
 			"kubernetes": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"ansible", "cloudformation", "opentofu", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -531,6 +531,52 @@ func resourceStack() *schema.Resource {
 							Optional:         true,
 							Computed:         true,
 							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+					},
+				},
+			},
+			"opentofu": {
+				Type:          schema.TypeList,
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terraform_smart_sanitization", "terraform_external_state_access", "terragrunt"},
+				Description:   "OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack.",
+				Optional:      true,
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"concise": {
+							Type:        schema.TypeBool,
+							Description: "Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.",
+							Optional:    true,
+							Default:     true,
+						},
+						"external_state_access": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.",
+							Optional:    true,
+							Default:     false,
+						},
+						"use_smart_sanitization": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether runs on this will use OpenTofu's sensitive value system to sanitize the outputs of state and plans in Spacelift instead of sanitizing all fields. Defaults to `true`.",
+							Optional:    true,
+							Default:     true,
+						},
+						"version": {
+							Type:        schema.TypeString,
+							Description: "OpenTofu version to use.",
+							Optional:    true,
+							Computed:    true,
+						},
+						"workflow_tool": {
+							Type:        schema.TypeString,
+							Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPENTOFU` or `CUSTOM`. Defaults to `OPENTOFU`.",
+							Optional:    true,
+							Computed:    true,
+						},
+						"workspace": {
+							Type:        schema.TypeString,
+							Description: "OpenTofu workspace to select.",
+							Optional:    true,
 						},
 					},
 				},
@@ -578,7 +624,7 @@ func resourceStack() *schema.Resource {
 			},
 			"pulumi": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "opentofu", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terragrunt"},
 				Description:   "Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -691,7 +737,7 @@ func resourceStack() *schema.Resource {
 			},
 			"terragrunt": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_smart_sanitization", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "opentofu", "pulumi", "terraform_smart_sanitization", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
 				Description:   "Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack.",
 				Optional:      true,
 				MaxItems:      1,
@@ -863,11 +909,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) di
 		return nil
 	}
 
-	if err := structs.PopulateStack(d, stack); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return structs.PopulateStack(d, stack)
 }
 
 func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -1140,6 +1182,39 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 		}
 	}
 
+	if opentofu, ok := d.Get("opentofu").([]any); ok && len(opentofu) > 0 {
+		opentofuConfig := structs.OpenTofuInput{}
+		settings := opentofu[0].(map[string]any)
+
+		if v, ok := settings["concise"]; ok {
+			opentofuConfig.Concise = toOptionalBool(v)
+		}
+
+		if v, ok := settings["external_state_access"]; ok {
+			opentofuConfig.ExternalStateAccessEnabled = toOptionalBool(v)
+		}
+
+		if v, ok := settings["use_smart_sanitization"]; ok {
+			opentofuConfig.UseSmartSanitization = toOptionalBool(v)
+		}
+
+		if version, ok := settings["version"]; ok && version.(string) != "" {
+			opentofuConfig.Version = toOptionalString(version)
+		}
+
+		if workflowTool, ok := settings["workflow_tool"]; ok && workflowTool.(string) != "" {
+			opentofuConfig.WorkflowTool = toOptionalString(workflowTool)
+		}
+
+		if workspace, ok := settings["workspace"]; ok && workspace.(string) != "" {
+			opentofuConfig.Workspace = toOptionalString(workspace)
+		}
+
+		return &structs.VendorConfigInput{
+			OpenTofuInput: &opentofuConfig,
+		}
+	}
+
 	if terragrunt, ok := d.Get("terragrunt").([]any); ok && len(terragrunt) > 0 {
 		terragruntConfig := structs.TerragruntInput{
 			UseRunAll:            toBool(terragrunt[0].(map[string]any)["use_run_all"]),
@@ -1355,8 +1430,8 @@ func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta any) 
 		return nil, fmt.Errorf("stack with ID %q does not exist (or you may not have access to it)", stackID)
 	}
 
-	if err := structs.PopulateStack(d, stack); err != nil {
-		return nil, errors.Wrap(err, "could not import stack into state")
+	if diags := structs.PopulateStack(d, stack); diags.HasError() {
+		return nil, fmt.Errorf("could not import stack into state: %s", diags[0].Summary)
 	}
 
 	return []*schema.ResourceData{d}, nil
