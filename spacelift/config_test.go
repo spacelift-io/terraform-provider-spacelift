@@ -11,25 +11,27 @@ var testConfig struct {
 	SourceCode struct {
 		AzureDevOps struct {
 			Default struct {
-				Name            string
-				ID              string
-				UserFacingHost  string
-				OrganizationURL string
-				WebhookSecret   string
-				WebhookURL      string
-				VCSChecks       string
-				UseGitCheckout  bool
+				Name                string
+				ID                  string
+				PersonalAccessToken string
+				UserFacingHost      string
+				OrganizationURL     string
+				WebhookSecret       string
+				WebhookURL          string
+				VCSChecks           string
+				UseGitCheckout      bool
 			}
 			SpaceLevel struct {
-				Name            string
-				ID              string
-				Space           string
-				UserFacingHost  string
-				OrganizationURL string
-				WebhookSecret   string
-				WebhookURL      string
-				VCSChecks       string
-				UseGitCheckout  bool
+				Name                string
+				ID                  string
+				Space               string
+				PersonalAccessToken string
+				UserFacingHost      string
+				OrganizationURL     string
+				WebhookSecret       string
+				WebhookURL          string
+				VCSChecks           string
+				UseGitCheckout      bool
 			}
 			Repository struct {
 				Name      string

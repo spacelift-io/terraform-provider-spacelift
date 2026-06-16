@@ -1,0 +1,1 @@
+terraform import spacelift_azure_devops_integration.example spacelift_azure_devops_integration_id
