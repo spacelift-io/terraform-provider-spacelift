@@ -44,6 +44,25 @@ func resourceStack() *schema.Resource {
 			StateContext: resourceStackImport,
 		},
 
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
+			if oldUSM.(bool) != newUSM.(bool) {
+				manageState := diff.Get("manage_state").(bool)
+
+				// When switching between manage_state and terragrunt.use_state_management,
+				// the effective state management may not change (e.g. manage_state=true ->
+				// terragrunt.use_state_management=true). Only force replacement when the
+				// effective value actually changes.
+				oldEffective := oldUSM.(bool) || manageState
+				newEffective := newUSM.(bool) || manageState
+				if oldEffective != newEffective {
+					diff.ForceNew("terragrunt.0.use_state_management")
+				}
+			}
+
+			return nil
+		},
+
 		SchemaVersion: 1,
 
 		StateUpgraders: []schema.StateUpgrader{
@@ -685,7 +704,6 @@ func resourceStack() *schema.Resource {
 							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Takes precedence over `manage_state`. Defaults to `false`.",
 							Optional:    true,
 							Default:     false,
-							ForceNew:    true,
 						},
 						"skip_replan_when_run_all": {
 							Type:        schema.TypeBool,
