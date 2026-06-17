@@ -863,6 +863,8 @@ func TestStackResource(t *testing.T) {
 	t.Run("switching from non-terragrunt to terragrunt with use_state_management should not replace", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
+		var stackID string
+
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
@@ -872,11 +874,22 @@ func TestStackResource(t *testing.T) {
 					project_root = "root"
 					repository   = "demo"
 					manage_state = true
+					labels       = ["terragrunt"]
 				}
 			`, randomID),
-				Check: Resource(
-					resourceName,
-					Attribute("manage_state", Equals("true")),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("manage_state", Equals("true")),
+					),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources[resourceName]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", resourceName)
+						}
+						stackID = rs.Primary.ID
+						return nil
+					},
 				),
 			},
 			{
@@ -895,10 +908,22 @@ func TestStackResource(t *testing.T) {
 					}
 				}
 			`, randomID),
-				Check: Resource(
-					resourceName,
-					Attribute("terragrunt.0.use_state_management", Equals("true")),
-					Attribute("manage_state", Equals("true")),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("terragrunt.0.use_state_management", Equals("true")),
+						Attribute("manage_state", Equals("true")),
+					),
+					func(s *terraform.State) error {
+						rs, ok := s.RootModule().Resources[resourceName]
+						if !ok {
+							return fmt.Errorf("resource not found: %s", resourceName)
+						}
+						if rs.Primary.ID != stackID {
+							return fmt.Errorf("stack was replaced (ID changed from %s to %s), expected in-place update", stackID, rs.Primary.ID)
+						}
+						return nil
+					},
 				),
 			},
 		})
