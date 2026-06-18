@@ -45,19 +45,43 @@ func resourceStack() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
-			if oldUSM.(bool) != newUSM.(bool) {
-				manageState := diff.Get("manage_state").(bool)
+			// Skip on initial resource creation — there is no old state.
+			if diff.Id() == "" {
+				return nil
+			}
 
-				// When switching between manage_state and terragrunt.use_state_management,
-				// the effective state management may not change (e.g. manage_state=true ->
-				// terragrunt.use_state_management=true). Only force replacement when the
-				// effective value actually changes.
-				oldEffective := oldUSM.(bool) || manageState
-				newEffective := newUSM.(bool) || manageState
-				if oldEffective != newEffective {
-					diff.ForceNew("terragrunt.0.use_state_management")
+			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
+			oldTGCount, newTGCount := diff.GetChange("terragrunt.#")
+			isMigration := oldTGCount.(int) != newTGCount.(int)
+
+			if isMigration {
+				// During vendor migration (adding/removing the terragrunt block),
+				// the API does not support changing state management.
+				// Block the plan if the effective value would change.
+				oldMS, newMS := diff.GetChange("manage_state")
+				var wasStateManaged, willBeStateManaged bool
+				if oldTGCount.(int) == 0 {
+					wasStateManaged = oldMS.(bool)
+					willBeStateManaged = newUSM.(bool)
+				} else {
+					wasStateManaged = oldUSM.(bool)
+					willBeStateManaged = newMS.(bool)
 				}
+				if wasStateManaged != willBeStateManaged {
+					return fmt.Errorf(
+						"cannot change state management during vendor migration "+
+							"(effective value would change from %t to %t); "+
+							"destroy the stack first with `terraform destroy`, then recreate it with the new configuration",
+						wasStateManaged, willBeStateManaged,
+					)
+				}
+				return nil
+			}
+
+			// Within an existing terragrunt block, any change to
+			// use_state_management requires replacement.
+			if oldUSM.(bool) != newUSM.(bool) {
+				diff.ForceNew("terragrunt.0.use_state_management")
 			}
 
 			return nil
