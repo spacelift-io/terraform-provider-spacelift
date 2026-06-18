@@ -44,6 +44,49 @@ func resourceStack() *schema.Resource {
 			StateContext: resourceStackImport,
 		},
 
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+			// Skip on initial resource creation — there is no old state.
+			if diff.Id() == "" {
+				return nil
+			}
+
+			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
+			oldTGCount, newTGCount := diff.GetChange("terragrunt.#")
+			isMigration := oldTGCount.(int) != newTGCount.(int)
+
+			if isMigration {
+				// During vendor migration (adding/removing the terragrunt block),
+				// the API does not support changing state management.
+				// Block the plan if the effective value would change.
+				oldMS, newMS := diff.GetChange("manage_state")
+				var wasStateManaged, willBeStateManaged bool
+				if oldTGCount.(int) == 0 {
+					wasStateManaged = oldMS.(bool)
+					willBeStateManaged = newUSM.(bool)
+				} else {
+					wasStateManaged = oldUSM.(bool)
+					willBeStateManaged = newMS.(bool)
+				}
+				if wasStateManaged != willBeStateManaged {
+					return fmt.Errorf(
+						"cannot change state management during vendor migration "+
+							"(effective value would change from %t to %t); "+
+							"destroy the stack first with `terraform destroy`, then recreate it with the new configuration",
+						wasStateManaged, willBeStateManaged,
+					)
+				}
+				return nil
+			}
+
+			// Within an existing terragrunt block, any change to
+			// use_state_management requires replacement.
+			if oldUSM.(bool) != newUSM.(bool) {
+				diff.ForceNew("terragrunt.0.use_state_management")
+			}
+
+			return nil
+		},
+
 		SchemaVersion: 1,
 
 		StateUpgraders: []schema.StateUpgrader{
@@ -685,7 +728,6 @@ func resourceStack() *schema.Resource {
 							Description: "Determines if Spacelift should manage state for this Terragrunt stack. Takes precedence over `manage_state`. Defaults to `false`.",
 							Optional:    true,
 							Default:     false,
-							ForceNew:    true,
 						},
 						"skip_replan_when_run_all": {
 							Type:        schema.TypeBool,

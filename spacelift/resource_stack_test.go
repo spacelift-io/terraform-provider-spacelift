@@ -352,7 +352,7 @@ func TestStackResource(t *testing.T) {
 				terraform_version            = "1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1"
 			}
 		`, randomID),
-			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: improper constraint: 1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1`),
+			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: improper constraint: "?1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1"?`),
 		}})
 	})
 
@@ -857,6 +857,217 @@ func TestStackResource(t *testing.T) {
 					Attribute("manage_state", Equals("true")),
 				),
 			},
+		})
+	})
+
+	t.Run("vendor migration roundtrip preserves state management without replacement", func(t *testing.T) {
+		for _, stateManaged := range []bool{true, false} {
+			t.Run(fmt.Sprintf("state_managed=%t", stateManaged), func(t *testing.T) {
+				randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+				testSteps(t, []resource.TestStep{
+					{
+						Config: fmt.Sprintf(`
+						resource "spacelift_stack" "test" {
+							branch       = "master"
+							name         = "Provider test stack tg migr %s"
+							project_root = "root"
+							repository   = "demo"
+							manage_state = %t
+							labels       = ["terragrunt"]
+						}
+					`, randomID, stateManaged),
+						Check: Resource(
+							resourceName,
+							Attribute("manage_state", Equals(fmt.Sprintf("%t", stateManaged))),
+						),
+					},
+					{
+						Config: fmt.Sprintf(`
+						resource "spacelift_stack" "test" {
+							branch       = "master"
+							name         = "Provider test stack tg migr %s"
+							project_root = "root"
+							repository   = "demo"
+							manage_state = %t
+							terragrunt {
+								terragrunt_version   = "0.45.0"
+								terraform_version    = "1.4.0"
+								use_run_all          = false
+								use_state_management = %t
+							}
+						}
+					`, randomID, stateManaged, stateManaged),
+						Check: Resource(
+							resourceName,
+							Attribute("terragrunt.0.use_state_management", Equals(fmt.Sprintf("%t", stateManaged))),
+						),
+					},
+					{
+						Config: fmt.Sprintf(`
+						resource "spacelift_stack" "test" {
+							branch       = "master"
+							name         = "Provider test stack tg migr %s"
+							project_root = "root"
+							repository   = "demo"
+							manage_state = %t
+						}
+					`, randomID, stateManaged),
+						Check: Resource(
+							resourceName,
+							Attribute("manage_state", Equals(fmt.Sprintf("%t", stateManaged))),
+						),
+					},
+				})
+			})
+		}
+	})
+
+	t.Run("vendor migration rejects state management change", func(t *testing.T) {
+		t.Run("forward manage_state=true to use_state_management=false", func(t *testing.T) {
+			randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+			testSteps(t, []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = true
+						labels       = ["terragrunt"]
+					}
+				`, randomID),
+				},
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = true
+						terragrunt {
+							terragrunt_version   = "0.45.0"
+							terraform_version    = "1.4.0"
+							use_run_all          = false
+							use_state_management = false
+						}
+					}
+				`, randomID),
+					ExpectError: regexp.MustCompile(`cannot change state management during vendor migration`),
+				},
+			})
+		})
+
+		t.Run("forward manage_state=false to use_state_management=true", func(t *testing.T) {
+			randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+			testSteps(t, []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err2 %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = false
+						labels       = ["terragrunt"]
+					}
+				`, randomID),
+				},
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err2 %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = false
+						terragrunt {
+							terragrunt_version   = "0.45.0"
+							terraform_version    = "1.4.0"
+							use_run_all          = false
+							use_state_management = true
+						}
+					}
+				`, randomID),
+					ExpectError: regexp.MustCompile(`cannot change state management during vendor migration`),
+				},
+			})
+		})
+
+		t.Run("reverse use_state_management=true to manage_state=false", func(t *testing.T) {
+			randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+			testSteps(t, []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err3 %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = false
+						terragrunt {
+							terragrunt_version   = "0.45.0"
+							terraform_version    = "1.4.0"
+							use_run_all          = false
+							use_state_management = true
+						}
+					}
+				`, randomID),
+				},
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err3 %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = false
+					}
+				`, randomID),
+					ExpectError: regexp.MustCompile(`cannot change state management during vendor migration`),
+				},
+			})
+		})
+
+		t.Run("reverse use_state_management=false to manage_state=true", func(t *testing.T) {
+			randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+			testSteps(t, []resource.TestStep{
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err4 %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = false
+						terragrunt {
+							terragrunt_version   = "0.45.0"
+							terraform_version    = "1.4.0"
+							use_run_all          = false
+							use_state_management = false
+						}
+					}
+				`, randomID),
+				},
+				{
+					Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr err4 %s"
+						project_root = "root"
+						repository   = "demo"
+						manage_state = true
+					}
+				`, randomID),
+					ExpectError: regexp.MustCompile(`cannot change state management during vendor migration`),
+				},
+			})
 		})
 	})
 
