@@ -352,7 +352,7 @@ func TestStackResource(t *testing.T) {
 				terraform_version            = "1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1"
 			}
 		`, randomID),
-			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: improper constraint: 1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1`),
+			ExpectError: regexp.MustCompile(`could not create stack: stack has 1 error: terraform: invalid Terraform version constraints: improper constraint: "?1.0.1.1.1.1.1.1.1.1.1.1.1.1.1.1.1"?`),
 		}})
 	})
 
@@ -859,7 +859,6 @@ func TestStackResource(t *testing.T) {
 			},
 		})
 	})
-
 
 	t.Run("vendor migration roundtrip preserves state management without replacement", func(t *testing.T) {
 		for _, stateManaged := range []bool{true, false} {
