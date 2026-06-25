@@ -53,7 +53,7 @@ type TemplateDeploymentCreateInput struct {
 	Space       graphql.ID                          `json:"space"`
 	Name        graphql.String                      `json:"name"`
 	Description *graphql.String                     `json:"description,omitempty"`
-	Inputs      []TemplateDeploymentCreateInputPair `json:"inputs,omitempty"`
+	Inputs      []TemplateDeploymentCreateInputPair `json:"inputs"`
 }
 
 // TemplateDeploymentUpdateInput represents the input for updating a deployment.
@@ -61,5 +61,5 @@ type TemplateDeploymentUpdateInput struct {
 	VersionID   *graphql.ID                         `json:"versionId,omitempty"`
 	Name        *graphql.String                     `json:"name,omitempty"`
 	Description *graphql.String                     `json:"description,omitempty"`
-	Inputs      []TemplateDeploymentCreateInputPair `json:"inputs,omitempty"`
+	Inputs      []TemplateDeploymentCreateInputPair `json:"inputs"`
 }
