@@ -199,4 +199,60 @@ EOT
 			},
 		})
 	})
+
+	t.Run("Creates a template deployment without inputs", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		initialVersion := "1.0.0"
+
+		config := func(name, description, version, envName, secret string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_template" "test" {
+					name  = "test-template-%[1]s"
+					space = "root"
+				}
+
+				resource "spacelift_template_version" "version" {
+					template_id    = spacelift_template.test.id
+					version_number = "%[2]s"
+					state          = "PUBLISHED"
+					template       = <<-EOT
+stacks:
+- name: test-stack-noinput-%[1]s
+  key: test
+  autodeploy: true
+  vcs:
+    reference:
+      value: master
+      type: branch
+    repository: terraform-bacon-tasty
+    provider: GITHUB
+  vendor:
+    terraform:
+      manage_state: true
+      version: "1.5.0"
+EOT
+				}
+
+				resource "spacelift_template_deployment" "test" {
+					template_version_id = spacelift_template_version.%[3]s.id
+					space               = "root"
+					name                = "%[4]s"
+					description         = "%[5]s"
+				}
+
+				data "spacelift_stack" "test" {
+				  stack_id = spacelift_template_deployment.test.stacks[0].id
+				}
+			`, randomID, initialVersion, version, name, description, envName, secret)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("deployment-"+randomID, "test description", "version", "production", "foobar"),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(deploymentResource, "id", fmt.Sprintf("test-template-%[1]s/deployment-%[1]s", randomID)),
+				),
+			},
+		})
+	})
 }
