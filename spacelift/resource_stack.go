@@ -911,10 +911,21 @@ func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta any) 
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id)"`
 	}
 
-	variables := map[string]any{"id": toID(d.Id())}
+	id := d.Id()
+	variables := map[string]any{"id": toID(id)}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackDelete", &mutation, variables); err != nil {
 		return diag.Errorf("could not delete stack: %v", internal.FromSpaceliftError(err))
+	}
+
+	// stackDelete removes the stack asynchronously, so the stack (and its
+	// references to e.g. its space) can still exist when this returns. Wait
+	// until the backend has actually dropped it before reporting success,
+	// otherwise dependent resources like the parent space fail to delete.
+	if mutation.DeleteStack != nil && mutation.DeleteStack.Deleting {
+		if diagnostics := waitForDestroy(ctx, meta.(*internal.Client), id); diagnostics.HasError() {
+			return diagnostics
+		}
 	}
 
 	d.SetId("")
