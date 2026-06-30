@@ -2397,3 +2397,37 @@ func getConfig(vendorConfig string) string {
 				}
 			`, randomID, vendorConfig)
 }
+
+func TestStackResourceInSpaceDestroy(t *testing.T) {
+	const resourceName = "spacelift_stack.test"
+
+	t.Run("stack in a managed space destroys in order", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := fmt.Sprintf(`
+			resource "spacelift_space" "test" {
+				name             = "Stack space %s"
+				parent_space_id  = "root"
+				inherit_entities = true
+			}
+
+			resource "spacelift_stack" "test" {
+				branch     = "master"
+				repository = "demo"
+				name       = "Stack in space %s"
+				space_id   = spacelift_space.test.id
+			}
+		`, randomID, randomID)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config,
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("stack-in-space-")),
+					Attribute("space_id", StartsWith("stack-space-")),
+				),
+			},
+		})
+	})
+}
