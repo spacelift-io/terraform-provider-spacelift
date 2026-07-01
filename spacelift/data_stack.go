@@ -341,6 +341,45 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
+			"opentofu": {
+				Type:        schema.TypeList,
+				Description: "OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"concise": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether the -concise flag is enabled for OpenTofu plan/apply/refresh commands.",
+							Computed:    true,
+						},
+						"external_state_access": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether you can access the Stack state file from other stacks or outside of Spacelift.",
+							Computed:    true,
+						},
+						"use_smart_sanitization": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether runs on this will use OpenTofu's sensitive value system to sanitize the outputs of state and plans in Spacelift instead of sanitizing all fields.",
+							Computed:    true,
+						},
+						"version": {
+							Type:        schema.TypeString,
+							Description: "OpenTofu version to use.",
+							Computed:    true,
+						},
+						"workflow_tool": {
+							Type:        schema.TypeString,
+							Description: "Defines the tool that will be used to execute the workflow. This can be one of `OPENTOFU` or `CUSTOM`.",
+							Computed:    true,
+						},
+						"workspace": {
+							Type:        schema.TypeString,
+							Description: "OpenTofu workspace to select.",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
