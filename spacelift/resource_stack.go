@@ -543,11 +543,22 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"concise": {
-							Type:        schema.TypeBool,
-							Description: "Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.",
+						"logging": {
+							Type:        schema.TypeList,
+							Description: "Logging configuration for OpenTofu commands.",
 							Optional:    true,
-							Default:     true,
+							Computed:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"concise": {
+										Type:        schema.TypeBool,
+										Description: "Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.",
+										Optional:    true,
+										Default:     true,
+									},
+								},
+							},
 						},
 						"external_state_access": {
 							Type:        schema.TypeBool,
@@ -1186,8 +1197,11 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 		opentofuConfig := structs.OpenTofuInput{}
 		settings := opentofu[0].(map[string]any)
 
-		if v, ok := settings["concise"]; ok {
-			opentofuConfig.Concise = toOptionalBool(v)
+		if logging, ok := settings["logging"].([]any); ok && len(logging) > 0 {
+			loggingSettings := logging[0].(map[string]any)
+			if v, ok := loggingSettings["concise"]; ok {
+				opentofuConfig.Concise = toOptionalBool(v)
+			}
 		}
 
 		if v, ok := settings["external_state_access"]; ok {
