@@ -691,7 +691,7 @@ func resourceStack() *schema.Resource {
 			},
 			"terragrunt": {
 				Type:          schema.TypeList,
-				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
+				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_smart_sanitization", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
 				Description:   "Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack.",
 				Optional:      true,
 				MaxItems:      1,
