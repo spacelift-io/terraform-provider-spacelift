@@ -159,7 +159,9 @@ func (s *Stack) IaCSettings() (string, map[string]any) {
 		}
 	case StackConfigVendorOpenTofu:
 		return "opentofu", map[string]any{
-			"concise":                s.VendorConfig.OpenTofu.Concise,
+			"logging": []any{map[string]any{
+				"concise": s.VendorConfig.OpenTofu.Concise,
+			}},
 			"external_state_access":  s.VendorConfig.OpenTofu.ExternalStateAccessEnabled,
 			"use_smart_sanitization": s.VendorConfig.OpenTofu.UseSmartSanitization,
 			"version":                s.VendorConfig.OpenTofu.Version,
@@ -343,7 +345,9 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 
 		if userHasOpenTofuBlock {
 			m := map[string]any{
-				"concise":                stack.VendorConfig.OpenTofu.Concise,
+				"logging": []any{map[string]any{
+					"concise": stack.VendorConfig.OpenTofu.Concise,
+				}},
 				"external_state_access":  stack.VendorConfig.OpenTofu.ExternalStateAccessEnabled,
 				"use_smart_sanitization": stack.VendorConfig.OpenTofu.UseSmartSanitization,
 				"version":                stack.VendorConfig.OpenTofu.Version,

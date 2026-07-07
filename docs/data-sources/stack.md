@@ -166,12 +166,20 @@ Read-Only:
 
 Read-Only:
 
-- `concise` (Boolean)
 - `external_state_access` (Boolean)
+- `logging` (List of Object) (see [below for nested schema](#nestedobjatt--opentofu--logging))
 - `use_smart_sanitization` (Boolean)
 - `version` (String)
 - `workflow_tool` (String)
 - `workspace` (String)
+
+<a id="nestedobjatt--opentofu--logging"></a>
+### Nested Schema for `opentofu.logging`
+
+Read-Only:
+
+- `concise` (Boolean)
+
 
 
 <a id="nestedatt--pulumi"></a>

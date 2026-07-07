@@ -396,12 +396,20 @@ Optional:
 
 Optional:
 
-- `concise` (Boolean) Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.
 - `external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.
+- `logging` (Block List, Max: 1) Logging configuration for OpenTofu commands. (see [below for nested schema](#nestedblock--opentofu--logging))
 - `use_smart_sanitization` (Boolean) Indicates whether runs on this will use OpenTofu's sensitive value system to sanitize the outputs of state and plans in Spacelift instead of sanitizing all fields. Defaults to `true`.
 - `version` (String) OpenTofu version to use.
 - `workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPENTOFU` or `CUSTOM`. Defaults to `OPENTOFU`.
 - `workspace` (String) OpenTofu workspace to select.
+
+<a id="nestedblock--opentofu--logging"></a>
+### Nested Schema for `opentofu.logging`
+
+Optional:
+
+- `concise` (Boolean) Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.
+
 
 
 <a id="nestedblock--pulumi"></a>

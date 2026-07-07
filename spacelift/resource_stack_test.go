@@ -1236,7 +1236,7 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 
-					Attribute("opentofu.0.concise", Equals("true")),
+					Attribute("opentofu.0.logging.0.concise", Equals("true")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("true")),
 					Attribute("opentofu.0.external_state_access", Equals("false")),
 					Attribute("opentofu.0.workflow_tool", Equals("OPENTOFU")),
@@ -1257,7 +1257,9 @@ func TestStackResource(t *testing.T) {
 				Config: getConfig(`opentofu {
 						version                = "1.8.0"
 						workspace              = "test-workspace"
-						concise                = false
+						logging {
+							concise = false
+						}
 						use_smart_sanitization = false
 						external_state_access  = true
 						workflow_tool          = "CUSTOM"
@@ -1268,7 +1270,7 @@ func TestStackResource(t *testing.T) {
 
 					Attribute("opentofu.0.version", Equals("1.8.0")),
 					Attribute("opentofu.0.workspace", Equals("test-workspace")),
-					Attribute("opentofu.0.concise", Equals("false")),
+					Attribute("opentofu.0.logging.0.concise", Equals("false")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
 					Attribute("opentofu.0.external_state_access", Equals("true")),
 					Attribute("opentofu.0.workflow_tool", Equals("CUSTOM")),

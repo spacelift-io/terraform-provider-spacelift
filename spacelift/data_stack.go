@@ -347,10 +347,19 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"concise": {
-							Type:        schema.TypeBool,
-							Description: "Indicates whether the -concise flag is enabled for OpenTofu plan/apply/refresh commands.",
+						"logging": {
+							Type:        schema.TypeList,
+							Description: "Logging configuration for OpenTofu commands.",
 							Computed:    true,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"concise": {
+										Type:        schema.TypeBool,
+										Description: "Indicates whether the -concise flag is enabled for OpenTofu plan/apply/refresh commands.",
+										Computed:    true,
+									},
+								},
+							},
 						},
 						"external_state_access": {
 							Type:        schema.TypeBool,
