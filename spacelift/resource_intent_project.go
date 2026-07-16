@@ -59,8 +59,9 @@ func resourceIntentProject() *schema.Resource {
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
-				Description: "ID of the worker pool assigned to this intent project for task execution",
+				Description: "ID of the worker pool assigned to this intent project for task execution. When omitted, the default public worker pool is assigned by the backend.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"runner_image": {
 				Type:        schema.TypeString,
@@ -246,7 +247,7 @@ func resourceIntentProjectUpdate(ctx context.Context, d *schema.ResourceData, me
 		variables["description"] = toOptionalString(description)
 	}
 
-	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok {
+	if workerPoolID, ok := d.GetOk("worker_pool_id"); ok && d.HasChange("worker_pool_id") {
 		variables["workerPool"] = graphql.NewID(workerPoolID)
 	}
 
