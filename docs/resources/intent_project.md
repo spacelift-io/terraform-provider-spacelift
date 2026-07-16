@@ -18,20 +18,8 @@ resource "spacelift_intent_project" "sandbox" {
   space_id         = "root"
   description      = "Sandbox environment, cleaned up automatically after three days"
   labels           = ["intent", "sandbox"]
-  runner_image     = "public.ecr.aws/spacelift/runner-terraform:latest"
   ttl              = "72h"
   on_expiry_action = "DELETE"
-}
-```
-
-An Intent project can also be given an absolute expiry timestamp instead of a
-duration. `ttl` and `expires_at` are mutually exclusive:
-
-```terraform
-resource "spacelift_intent_project" "release" {
-  name       = "Release window"
-  space_id   = "root"
-  expires_at = 1893456000 # 2030-01-01T00:00:00Z
 }
 ```
 
@@ -52,7 +40,7 @@ resource "spacelift_intent_project" "release" {
 - `on_expiry_action` (String) What happens to the project after TTL expiry cleanup. Possible values are `ARCHIVE` (keep the project in a read-only, archived state) and `DELETE` (delete the project entirely). Defaults to `ARCHIVE`.
 - `runner_image` (String) Optional Docker image used to run intent tasks for this project. Leave empty to use the system default intent worker image.
 - `ttl` (String) Time-to-live for the intent project expressed as a duration (e.g. `72h`, `7d`, `30d`). When the TTL elapses, the project's resources are cleaned up according to `on_expiry_action`. Mutually exclusive with `expires_at`.
-- `worker_pool_id` (String) ID of the worker pool assigned to this intent project for task execution
+- `worker_pool_id` (String) ID of the worker pool assigned to this intent project for task execution. When omitted, the default public worker pool is assigned by the backend.
 
 ### Read-Only
 
