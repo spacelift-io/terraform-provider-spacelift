@@ -1262,13 +1262,46 @@ func TestStackResource(t *testing.T) {
 						}
 						use_smart_sanitization = false
 						external_state_access  = true
-						workflow_tool          = "CUSTOM"
 					}`),
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 
 					Attribute("opentofu.0.version", Equals("1.8.0")),
+					Attribute("opentofu.0.workspace", Equals("test-workspace")),
+					Attribute("opentofu.0.logging.0.concise", Equals("false")),
+					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
+					Attribute("opentofu.0.external_state_access", Equals("true")),
+					Attribute("opentofu.0.workflow_tool", Equals("OPENTOFU")),
+
+					Attribute("cloudformation.#", Equals("0")),
+					Attribute("kubernetes.#", Equals("0")),
+					Attribute("pulumi.#", Equals("0")),
+					Attribute("ansible.#", Equals("0")),
+					Attribute("terragrunt.#", Equals("0")),
+				),
+			},
+		})
+	})
+
+	t.Run("with GitHub and OpenTofu (custom workflow tool) configuration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				// The `version` attribute cannot be set together with a
+				// `CUSTOM` workflow tool, as the API rejects that combination.
+				Config: getConfig(`opentofu {
+						workspace              = "test-workspace"
+						logging {
+							concise = false
+						}
+						use_smart_sanitization = false
+						external_state_access  = true
+						workflow_tool          = "CUSTOM"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("provider-test-stack")),
+
 					Attribute("opentofu.0.workspace", Equals("test-workspace")),
 					Attribute("opentofu.0.logging.0.concise", Equals("false")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
