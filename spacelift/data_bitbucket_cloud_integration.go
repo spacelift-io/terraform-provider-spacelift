@@ -17,6 +17,7 @@ const (
 	bitbucketCloudLabels        = "labels"
 	bitbucketCloudSpaceID       = "space_id"
 	bitbucketCloudUsername      = "username"
+	bitbucketCloudEmail         = "email"
 	bitbucketCloudWebhookURL    = "webhook_url"
 	bitbucketCloudWebhookSecret = "webhook_secret"
 	bitbucketCloudVCSChecks     = "vcs_checks"
@@ -66,6 +67,12 @@ func dataBitbucketCloudIntegration() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "Bitbucket Cloud username",
 				Computed:    true,
+				Deprecated:  "username is only populated for integrations using app password authentication, which Bitbucket is deprecating. Use `email` for API token based integrations.",
+			},
+			bitbucketCloudEmail: {
+				Type:        schema.TypeString,
+				Description: "Bitbucket Cloud email",
+				Computed:    true,
 			},
 			bitbucketCloudWebhookSecret: {
 				Type:        schema.TypeString,
@@ -99,6 +106,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 			} `graphql:"space"`
 			Labels        []string `graphql:"labels"`
 			Username      string   `graphql:"username"`
+			Email         string   `graphql:"email"`
 			WebhookSecret string   `graphql:"webhookSecret"`
 			WebhookURL    string   `graphql:"webhookUrl"`
 			VCSChecks     string   `graphql:"vcsChecks"`
@@ -127,6 +135,7 @@ func dataBitbucketCloudIntegrationRead(ctx context.Context, d *schema.ResourceDa
 	d.Set(bitbucketCloudIsDefault, bitbucketCloudIntegration.IsDefault)
 	d.Set(bitbucketCloudSpaceID, bitbucketCloudIntegration.Space.ID)
 	d.Set(bitbucketCloudUsername, bitbucketCloudIntegration.Username)
+	d.Set(bitbucketCloudEmail, bitbucketCloudIntegration.Email)
 	d.Set(bitbucketCloudWebhookSecret, bitbucketCloudIntegration.WebhookSecret)
 	d.Set(bitbucketCloudWebhookURL, bitbucketCloudIntegration.WebhookURL)
 
