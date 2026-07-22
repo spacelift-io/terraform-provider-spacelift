@@ -43,18 +43,16 @@ var testConfig struct {
 			Default struct {
 				Name          string
 				ID            string
-				Username      string
+				Email         string
 				WebhookSecret string
-				WebhookURL    string
 				VCSChecks     string
 			}
 			SpaceLevel struct {
 				Name          string
 				ID            string
 				Space         string
-				Username      string
+				Email         string
 				WebhookSecret string
-				WebhookURL    string
 				VCSChecks     string
 			}
 			Repository struct {
