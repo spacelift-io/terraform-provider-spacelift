@@ -18,8 +18,9 @@ func resourceIntentProject() *schema.Resource {
 		Description: "" +
 			"`spacelift_intent_project` represents a Spacelift **Intent project** - " +
 			"a workspace for managing cloud resources through Spacelift Intent. An " +
-			"Intent project can be given a time-to-live (TTL) after which its " +
-			"resources are automatically cleaned up.",
+			"Intent project can be given a time-to-live (TTL); when it elapses, the " +
+			"project's managed resources are destroyed and the project itself is then " +
+			"archived or deleted according to `on_expiry_action`.",
 
 		CreateContext: resourceIntentProjectCreate,
 		ReadContext:   resourceIntentProjectRead,
