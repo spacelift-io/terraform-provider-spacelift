@@ -260,6 +260,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `kubernetes` (Block List, Max: 1) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedblock--kubernetes))
 - `labels` (Set of String)
 - `manage_state` (Boolean) Determines if Spacelift should manage state for this stack. Defaults to `true`.
+- `opentofu` (Block List, Max: 1) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. (see [below for nested schema](#nestedblock--opentofu))
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.
 - `pulumi` (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
@@ -388,6 +389,27 @@ Optional:
 - `kubectl_version` (String) Kubectl version.
 - `kubernetes_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `KUBERNETES` or `CUSTOM`. Defaults to `KUBERNETES`.
 - `namespace` (String) Namespace of the Kubernetes cluster to run commands on. Leave empty for multi-namespace Stacks.
+
+
+<a id="nestedblock--opentofu"></a>
+### Nested Schema for `opentofu`
+
+Optional:
+
+- `external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.
+- `logging` (Block List, Max: 1) Logging configuration for OpenTofu commands. (see [below for nested schema](#nestedblock--opentofu--logging))
+- `use_smart_sanitization` (Boolean) Indicates whether runs on this will use OpenTofu's sensitive value system to sanitize the outputs of state and plans in Spacelift instead of sanitizing all fields. Defaults to `true`.
+- `version` (String) OpenTofu version to use.
+- `workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPENTOFU` or `CUSTOM`. Defaults to `OPENTOFU`.
+- `workspace` (String) OpenTofu workspace to select.
+
+<a id="nestedblock--opentofu--logging"></a>
+### Nested Schema for `opentofu.logging`
+
+Optional:
+
+- `concise` (Boolean) Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.
+
 
 
 <a id="nestedblock--pulumi"></a>

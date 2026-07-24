@@ -161,6 +161,7 @@ Read-Only:
 - `labels` (Set of String)
 - `manage_state` (Boolean)
 - `name` (String)
+- `opentofu` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--opentofu))
 - `project_root` (String)
 - `protect_from_deletion` (Boolean)
 - `pulumi` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--pulumi))
@@ -255,6 +256,27 @@ Read-Only:
 - `kubectl_version` (String)
 - `kubernetes_workflow_tool` (String)
 - `namespace` (String)
+
+
+<a id="nestedobjatt--stacks--opentofu"></a>
+### Nested Schema for `stacks.opentofu`
+
+Read-Only:
+
+- `external_state_access` (Boolean)
+- `logging` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--opentofu--logging))
+- `use_smart_sanitization` (Boolean)
+- `version` (String)
+- `workflow_tool` (String)
+- `workspace` (String)
+
+<a id="nestedobjatt--stacks--opentofu--logging"></a>
+### Nested Schema for `stacks.opentofu.logging`
+
+Read-Only:
+
+- `concise` (Boolean)
+
 
 
 <a id="nestedobjatt--stacks--pulumi"></a>
