@@ -27,6 +27,101 @@ func resourceStackResourceV0() *schema.Resource {
 	}
 }
 
+func stackCustomizeDiff(_ context.Context, diff *schema.ResourceDiff, _ any) error {
+	if err := syncManageStateWithTerragrunt(diff); err != nil {
+		return err
+	}
+	if err := forceNewOnUseStateManagementChange(diff); err != nil {
+		return err
+	}
+	return rejectStateChangeOnVendorMigration(diff)
+}
+
+// syncManageStateWithTerragrunt ensures manage_state reflects
+// use_state_management when a terragrunt block is present, and
+// defaults to true when neither terragrunt nor manage_state are set.
+func syncManageStateWithTerragrunt(diff *schema.ResourceDiff) error {
+	_, newTGCount := diff.GetChange("terragrunt.#")
+	rawConfig := diff.GetRawConfig()
+
+	if newTGCount.(int) > 0 {
+		usm := diff.Get("terragrunt.0.use_state_management").(bool)
+
+		msAttr := rawConfig.GetAttr("manage_state")
+		if msAttr.IsNull() {
+			// if manage_state computes to different value than previously,
+			// ForceNew will be triggered and the stack will be recreated
+			// with the new value.
+			return diff.SetNew("manage_state", usm)
+		}
+
+		if msAttr.True() == usm {
+			return nil
+		}
+
+		return fmt.Errorf(
+			"manage_state (%t) conflicts with terragrunt.use_state_management (%t); "+
+				"when using a terragrunt block, remove manage_state from your configuration "+
+				"and use terragrunt.use_state_management instead",
+			msAttr.True(), usm,
+		)
+	}
+
+	// by default, manage_state should be true (just like it was before terragrunt migration was introduced - Default: true)
+	if rawConfig.GetAttr("manage_state").IsNull() {
+		return diff.SetNew("manage_state", true)
+	}
+
+	return nil
+}
+
+// forceNewOnUseStateManagementChange marks use_state_management as ForceNew
+// when its value changes within an existing terragrunt block (i.e. not during
+// a vendor migration where the block is being added or removed).
+func forceNewOnUseStateManagementChange(diff *schema.ResourceDiff) error {
+	if diff.Id() == "" {
+		return nil // it means we are creating a new stack, so no need to check for use_state_management changes
+	}
+
+	oldTGCount, newTGCount := diff.GetChange("terragrunt.#")
+	if oldTGCount.(int) == 0 || newTGCount.(int) == 0 {
+		return nil // it means we are adding or removing the terragrunt block, which is handled by rejectStateChangeOnVendorMigration
+	}
+
+	oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
+	if oldUSM.(bool) != newUSM.(bool) {
+		diff.ForceNew("terragrunt.0.use_state_management")
+	}
+
+	return nil
+}
+
+// rejectStateChangeOnVendorMigration blocks adding or removing the terragrunt
+// block when the effective state-management value would change, because the
+// API does not support that in a single operation.
+func rejectStateChangeOnVendorMigration(diff *schema.ResourceDiff) error {
+	if diff.Id() == "" {
+		return nil // it means we are creating a new stack, so no need to check for vendor migration
+	}
+
+	oldTGCount, newTGCount := diff.GetChange("terragrunt.#")
+	if oldTGCount.(int) == newTGCount.(int) {
+		return nil // it means we are not adding or removing the terragrunt block, so no need to check for vendor migration
+	}
+
+	oldMS, newMS := diff.GetChange("manage_state")
+	if oldMS.(bool) != newMS.(bool) {
+		return fmt.Errorf(
+			"cannot change state management during vendor migration "+
+				"(effective value would change from %t to %t); "+
+				"destroy the stack first with `terraform destroy`, then recreate it with the new configuration",
+			oldMS.(bool), newMS.(bool),
+		)
+	}
+
+	return nil
+}
+
 func resourceStack() *schema.Resource {
 	return &schema.Resource{
 		Description: "" +
@@ -44,48 +139,7 @@ func resourceStack() *schema.Resource {
 			StateContext: resourceStackImport,
 		},
 
-		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
-			// Skip on initial resource creation — there is no old state.
-			if diff.Id() == "" {
-				return nil
-			}
-
-			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
-			oldTGCount, newTGCount := diff.GetChange("terragrunt.#")
-			isMigration := oldTGCount.(int) != newTGCount.(int)
-
-			if isMigration {
-				// During vendor migration (adding/removing the terragrunt block),
-				// the API does not support changing state management.
-				// Block the plan if the effective value would change.
-				oldMS, newMS := diff.GetChange("manage_state")
-				var wasStateManaged, willBeStateManaged bool
-				if oldTGCount.(int) == 0 {
-					wasStateManaged = oldMS.(bool)
-					willBeStateManaged = newUSM.(bool)
-				} else {
-					wasStateManaged = oldUSM.(bool)
-					willBeStateManaged = newMS.(bool)
-				}
-				if wasStateManaged != willBeStateManaged {
-					return fmt.Errorf(
-						"cannot change state management during vendor migration "+
-							"(effective value would change from %t to %t); "+
-							"destroy the stack first with `terraform destroy`, then recreate it with the new configuration",
-						wasStateManaged, willBeStateManaged,
-					)
-				}
-				return nil
-			}
-
-			// Within an existing terragrunt block, any change to
-			// use_state_management requires replacement.
-			if oldUSM.(bool) != newUSM.(bool) {
-				diff.ForceNew("terragrunt.0.use_state_management")
-			}
-
-			return nil
-		},
+		CustomizeDiff: schema.CustomizeDiffFunc(stackCustomizeDiff),
 
 		SchemaVersion: 1,
 
@@ -542,9 +596,9 @@ func resourceStack() *schema.Resource {
 			},
 			"manage_state": {
 				Type:        schema.TypeBool,
-				Description: "Determines if Spacelift should manage state for this stack. Defaults to `true`.",
+				Description: "Determines if Spacelift should manage state for this stack. Defaults to `true`. When a `terragrunt` block is present, this is automatically set to match `use_state_management`.",
 				Optional:    true,
-				Default:     true,
+				Computed:    true,
 				ForceNew:    true,
 			},
 			"name": {
