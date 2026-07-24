@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -30,6 +31,19 @@ func resourceModule() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
+		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+			// Spacelift Repos have no branches, and the backend resolves the ref by
+			// hardcoding "main". Any other value is accepted but silently breaks the
+			// tracked-branch signals on runs.
+			if repos, ok := diff.Get("spacelift").([]any); ok && len(repos) > 0 {
+				if branch := diff.Get("branch").(string); branch != "main" {
+					return fmt.Errorf("branch must be \"main\" when using a Spacelift repo, got %q", branch)
+				}
+			}
+
+			return nil
+		},
+
 		Schema: map[string]*schema.Schema{
 			"administrative": {
 				Type:        schema.TypeBool,
@@ -46,7 +60,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Azure DevOps VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab", "spacelift"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -78,7 +92,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Cloud VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab", "spacelift"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -110,7 +124,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Datacenter VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab", "spacelift"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -158,7 +172,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "GitHub Enterprise (self-hosted) VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab", "spacelift"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -190,7 +204,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "GitLab VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise"},
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "spacelift"},
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -312,6 +326,23 @@ func resourceModule() *schema.Resource {
 				Description: "ID (slug) of the space the module is in",
 				Optional:    true,
 				Computed:    true,
+			},
+			"spacelift": {
+				Type:          schema.TypeList,
+				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the module always tracks the latest commit.",
+				Optional:      true,
+				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab", "raw_git"},
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "ID (slug) of the Spacelift repo",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+					},
+				},
 			},
 			"terraform_provider": {
 				Type:        schema.TypeString,
@@ -598,6 +629,15 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		repositoryURL = toOptionalString(rawGit[0].(map[string]any)["url"])
 		namespace = toOptionalString(rawGit[0].(map[string]any)["namespace"])
 		provider = graphql.NewString(graphql.String(structs.VCSProviderRawGit))
+
+		return
+	}
+
+	if spaceliftRepo, ok := d.Get("spacelift").([]any); ok && len(spaceliftRepo) > 0 {
+		vcsIntegrationID = graphql.NewID(spaceliftRepo[0].(map[string]any)["id"])
+		provider = graphql.NewString(graphql.String(structs.VCSProviderSpacelift))
+
+		return
 	}
 
 	return

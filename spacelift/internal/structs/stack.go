@@ -222,6 +222,11 @@ func (s *Stack) VCSSettings() (string, map[string]any) {
 		}
 	case VCSProviderShowcases:
 		return "showcase", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderSpacelift:
+		if s.VCSIntegration == nil {
+			return "spacelift", nil
+		}
+		return "spacelift", singleKeyMap("id", s.VCSIntegration.ID)
 	}
 
 	return "", nil

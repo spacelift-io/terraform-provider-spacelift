@@ -183,6 +183,14 @@ func dataModulesRead(ctx context.Context, d *schema.ResourceData, meta any) diag
 						"url":       node.RepositoryURL,
 					},
 				}
+			case structs.VCSProviderSpacelift:
+				if node.VCSIntegration != nil {
+					module["spacelift"] = []any{
+						map[string]any{
+							"id": node.VCSIntegration.ID,
+						},
+					}
+				}
 			}
 
 			modules = append(modules, module)

@@ -45,6 +45,15 @@ func resourceStack() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+			// Spacelift Repos have no branches, and the backend resolves the ref by
+			// hardcoding "main". Any other value is accepted but silently breaks the
+			// tracked-branch signals on runs.
+			if repos, ok := diff.Get("spacelift").([]any); ok && len(repos) > 0 {
+				if branch := diff.Get("branch").(string); branch != "main" {
+					return fmt.Errorf("branch must be \"main\" when using a Spacelift repo, got %q", branch)
+				}
+			}
+
 			// Skip on initial resource creation — there is no old state.
 			if diff.Id() == "" {
 				return nil
@@ -660,6 +669,23 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"spacelift": {
+				Type:          schema.TypeList,
+				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit.",
+				Optional:      true,
+				ConflictsWith: conflictingVCSProviders("spacelift"),
+				MaxItems:      1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"id": {
+							Type:             schema.TypeString,
+							Required:         true,
+							Description:      "ID (slug) of the Spacelift repo",
+							ValidateDiagFunc: validations.DisallowEmptyString,
+						},
+					},
+				},
+			},
 			"terraform_external_state_access": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.",
@@ -1049,6 +1075,11 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderShowcases))
 	}
 
+	if spaceliftRepo, ok := d.Get("spacelift").([]any); ok && len(spaceliftRepo) > 0 {
+		ret.VCSIntegrationID = graphql.NewID(spaceliftRepo[0].(map[string]any)["id"])
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderSpacelift))
+	}
+
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
 		var labels []graphql.String
 		for _, label := range labelSet.List() {
@@ -1370,6 +1401,7 @@ func conflictingVCSProviders(me string) (out []string) {
 		"github_enterprise",
 		"gitlab",
 		"raw_git",
+		"spacelift",
 	}
 
 	for _, v := range available {

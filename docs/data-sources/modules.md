@@ -122,6 +122,7 @@ Read-Only:
 - `shared_accounts` (Set of String)
 - `space_id` (String)
 - `space_shares` (Set of String)
+- `spacelift` (List of Object) (see [below for nested schema](#nestedobjatt--modules--spacelift))
 - `terraform_provider` (String)
 - `worker_pool_id` (String)
 - `workflow_tool` (String)
@@ -183,3 +184,11 @@ Read-Only:
 
 - `namespace` (String)
 - `url` (String)
+
+
+<a id="nestedobjatt--modules--spacelift"></a>
+### Nested Schema for `modules.spacelift`
+
+Read-Only:
+
+- `id` (String)

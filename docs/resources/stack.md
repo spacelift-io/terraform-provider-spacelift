@@ -268,6 +268,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `showcase` (Block List, Max: 1) (see [below for nested schema](#nestedblock--showcase))
 - `slug` (String) Allows setting the custom ID (slug) for the stack
 - `space_id` (String) ID (slug) of the space the stack is in. Defaults to `legacy` if it exists, otherwise `root`.
+- `spacelift` (Block List, Max: 1) Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit. (see [below for nested schema](#nestedblock--spacelift))
 - `terraform_external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.
 - `terraform_smart_sanitization` (Boolean) Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields. Note: Requires the terraform version to be v1.0.1 or above. Defaults to `false`.
 - `terraform_version` (String) Terraform version to use
@@ -414,6 +415,14 @@ Required:
 Required:
 
 - `namespace` (String)
+
+
+<a id="nestedblock--spacelift"></a>
+### Nested Schema for `spacelift`
+
+Required:
+
+- `id` (String) ID (slug) of the Spacelift repo
 
 
 <a id="nestedblock--terragrunt"></a>
