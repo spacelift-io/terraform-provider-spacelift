@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-mux v0.23.1
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/oklog/ulid/v2 v2.1.1
+	github.com/oklog/ulid/v2 v2.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/shurcooL/graphql v0.0.0-20240915155400-7ee5256398cf
 	golang.org/x/time v0.15.0
