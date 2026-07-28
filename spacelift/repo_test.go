@@ -8,8 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 )
 
-// The SDK signals an unknown plan-time value with this sentinel, and the constant
-// that names it lives in an internal package.
+// The SDK's unknown-value sentinel; the constant naming it is in an internal package.
 const unknownValue = "74D93920-ED26-11E3-AC10-0800200C9A66"
 
 func TestValidateSpaceliftRepoVCS(t *testing.T) {

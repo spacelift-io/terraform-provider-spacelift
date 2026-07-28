@@ -11,8 +11,7 @@ import (
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
-// repoWithFileConfig is a repo holding one commit. A repo with no revisions
-// cannot be attached to a stack, because there is no head commit to resolve.
+// repoWithFileConfig is a repo holding one commit; a stack cannot attach to one with no revisions.
 func repoWithFileConfig(name string) string {
 	return repoConfig(name) + `
 		resource "spacelift_repo_file" "test" {
@@ -112,8 +111,7 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 		randID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		repoName := fmt.Sprintf("stack-repo-unknown-%s", randID)
 
-		// The slug is derived from the name, so the literal matches once the repo exists,
-		// but only the reference is unknown at plan time.
+		// The literal repository matches the slug, while the reference to it stays unknown at plan time.
 		config := repoWithFileConfig(repoName) + fmt.Sprintf(`
 			resource "spacelift_stack" "test" {
 				name       = "spacelift-repo-unknown-%s"

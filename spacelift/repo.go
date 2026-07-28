@@ -54,9 +54,8 @@ func flattenRepo(repo *structs.Repo) map[string]any {
 	}
 }
 
-// validateSpaceliftRepoVCS rejects VCS settings that a Spacelift repo silently ignores.
-// Each comparison waits until its values are known, because Get reads a value the plan
-// has not resolved yet as empty and would reject it out of hand.
+// validateSpaceliftRepoVCS rejects VCS settings a Spacelift repo ignores.
+// Comparisons wait for known values, since Get reads an unresolved plan value as empty.
 func validateSpaceliftRepoVCS(diff *schema.ResourceDiff) error {
 	if blocks, ok := diff.Get("spacelift").([]any); !ok || len(blocks) == 0 {
 		return nil
