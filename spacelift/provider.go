@@ -140,6 +140,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_plugin_template":                  resourcePluginTemplate(),
 				"spacelift_policy_attachment":                resourcePolicyAttachment(),
 				"spacelift_policy":                           resourcePolicy(),
+				"spacelift_repo":                             resourceRepo(),
 				"spacelift_role_attachment":                  resourceRoleAttachment(),
 				"spacelift_role":                             resourceRole(),
 				"spacelift_run":                              resourceRun(),
