@@ -10,6 +10,8 @@ import (
 )
 
 func TestTemplateDeploymentResource(t *testing.T) {
+	t.Parallel()
+
 	const deploymentResource = "spacelift_template_deployment.test"
 	const stackDatasource = "data.spacelift_stack.test"
 

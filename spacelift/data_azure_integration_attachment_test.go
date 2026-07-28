@@ -11,6 +11,8 @@ import (
 )
 
 func TestAzureIntegrationAttachmentData(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "data.spacelift_azure_integration_attachment.test"
 
 	t.Run("with a stack", func(t *testing.T) {

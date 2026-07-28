@@ -13,6 +13,8 @@ import (
 )
 
 func TestTemplateVersionResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_template_version.test"
 
 	t.Run("Creates and updates a template version in DRAFT state", func(t *testing.T) {

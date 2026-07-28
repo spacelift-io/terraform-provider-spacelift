@@ -11,6 +11,8 @@ import (
 )
 
 func TestWorkerPoolResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_worker_pool.test"
 
 	t.Run("without a CSR", func(t *testing.T) {
@@ -248,6 +250,8 @@ func TestWorkerPoolResource(t *testing.T) {
 }
 
 func TestWorkerPoolResourceSpace(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_worker_pool.test"
 
 	t.Run("without a CSR", func(t *testing.T) {

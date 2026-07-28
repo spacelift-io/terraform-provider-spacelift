@@ -11,6 +11,8 @@ import (
 )
 
 func TestRepoResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_repo.test"
 
 	t.Run("creates, updates and imports a repo", func(t *testing.T) {

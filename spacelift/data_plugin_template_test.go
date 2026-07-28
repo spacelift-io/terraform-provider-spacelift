@@ -12,6 +12,8 @@ import (
 )
 
 func TestPluginTemplateData(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "data.spacelift_plugin_template.test"
 
 	t.Run("reads plugin template data without error", func(t *testing.T) {

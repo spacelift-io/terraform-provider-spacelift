@@ -12,6 +12,8 @@ import (
 )
 
 func TestAPIKeyResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_api_key.test"
 
 	t.Run("creates and updates a SECRET API key", func(t *testing.T) {
@@ -59,6 +61,8 @@ func TestAPIKeyResource(t *testing.T) {
 }
 
 func TestAPIKeyResourceOIDC(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_api_key.test"
 
 	t.Run("creates an OIDC API key and updates name", func(t *testing.T) {
@@ -224,6 +228,8 @@ func TestAPIKeyResourceOIDC(t *testing.T) {
 }
 
 func TestAPIKeyResourceErrors(t *testing.T) {
+	t.Parallel()
+
 	t.Run("fails with empty name", func(t *testing.T) {
 		config := `
 			resource "spacelift_api_key" "test" {

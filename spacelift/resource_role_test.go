@@ -13,6 +13,8 @@ import (
 )
 
 func TestRoleResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_role.test"
 
 	t.Run("creates and updates roles without an error", func(t *testing.T) {
@@ -133,6 +135,8 @@ func TestRoleResource(t *testing.T) {
 }
 
 func TestRoleResourceValidation(t *testing.T) {
+	t.Parallel()
+
 	t.Run("fails with invalid action", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

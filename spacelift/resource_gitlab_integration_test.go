@@ -14,6 +14,8 @@ import (
 const useGitCheckout = true
 
 func TestGitLabIntegrationResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_gitlab_integration.test"
 
 	t.Run("creates and updates a GitLab integration without an error", func(t *testing.T) {
@@ -235,6 +237,8 @@ func TestGitLabIntegrationResource(t *testing.T) {
 }
 
 func TestGitLabIntegrationClearLabels(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_gitlab_integration.test"
 
 	t.Run("creates and updates a GitLab integration without an error", func(t *testing.T) {

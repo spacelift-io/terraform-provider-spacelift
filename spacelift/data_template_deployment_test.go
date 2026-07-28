@@ -9,6 +9,8 @@ import (
 )
 
 func TestTemplateDeploymentData(t *testing.T) {
+	t.Parallel()
+
 	const datasourceName = "data.spacelift_template_deployment.test"
 
 	t.Run("creates and reads a template deployment", func(t *testing.T) {

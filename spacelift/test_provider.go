@@ -2,26 +2,22 @@
 package spacelift
 
 import (
-	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-var (
-	provider     *schema.Provider
-	providerLock sync.Mutex
-)
-
-func testProvider() *schema.Provider {
-	providerLock.Lock()
-	defer providerLock.Unlock()
-	if provider == nil {
-		provider = Provider("commit", "version")()
+// testAccProviderFactories returns the SDKv2 provider factory for use in the
+// ProviderFactories test field. Each test gets its own provider instance:
+// schema.Provider is mutated when Terraform configures it, so sharing one
+// across parallel tests races on its internal state.
+func testAccProviderFactories() map[string]func() (*schema.Provider, error) {
+	return map[string]func() (*schema.Provider, error){
+		"spacelift": func() (*schema.Provider, error) {
+			return Provider("commit", "version")(), nil
+		},
 	}
-
-	return provider
 }
 
 func testSteps(t *testing.T, steps []resource.TestStep) {
@@ -29,11 +25,9 @@ func testSteps(t *testing.T, steps []resource.TestStep) {
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers: map[string]*schema.Provider{
-			"spacelift": testProvider(),
-		},
-		Steps: steps,
+		IsUnitTest:        true,
+		ProviderFactories: testAccProviderFactories(),
+		Steps:             steps,
 	})
 }
 
@@ -41,10 +35,8 @@ func testStepsSequential(t *testing.T, steps []resource.TestStep) {
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{
-		IsUnitTest: true,
-		Providers: map[string]*schema.Provider{
-			"spacelift": testProvider(),
-		},
-		Steps: steps,
+		IsUnitTest:        true,
+		ProviderFactories: testAccProviderFactories(),
+		Steps:             steps,
 	})
 }

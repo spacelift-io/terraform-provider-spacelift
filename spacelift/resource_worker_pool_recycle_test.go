@@ -11,6 +11,8 @@ import (
 )
 
 func TestWorkerPoolRecycleResource(t *testing.T) {
+	t.Parallel()
+
 	t.Run("recycles a worker pool", func(t *testing.T) {
 		const resourceName = "spacelift_worker_pool_recycle.test"
 

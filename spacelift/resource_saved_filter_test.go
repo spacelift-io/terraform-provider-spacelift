@@ -11,6 +11,8 @@ import (
 )
 
 func TestSavedFilterResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_saved_filter.test"
 
 	t.Run("creates and updates a filter", func(t *testing.T) {

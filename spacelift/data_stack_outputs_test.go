@@ -11,6 +11,8 @@ import (
 )
 
 func TestStackOutputsData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("retrieves stack outputs metadata", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

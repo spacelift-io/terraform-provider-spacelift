@@ -11,6 +11,8 @@ import (
 )
 
 func TestStackDestructorResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack_destructor.test"
 
 	t.Run("test destructor", func(t *testing.T) {
@@ -64,6 +66,8 @@ func TestStackDestructorResource(t *testing.T) {
 }
 
 func TestDestroyStackDestructor(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack_destructor.test"
 
 	t.Run("test destroy with runs", func(t *testing.T) {
