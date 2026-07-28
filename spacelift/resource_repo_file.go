@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -69,10 +70,11 @@ func resourceRepoFile() *schema.Resource {
 				Required:    true,
 			},
 			repoFileMode: {
-				Type:        schema.TypeString,
-				Description: "Octal file permissions, for example `0755`. Defaults to `0644`.",
-				Optional:    true,
-				Default:     repoFileDefaultMode,
+				Type:             schema.TypeString,
+				Description:      "Octal file permissions, for example `0755`. Defaults to `0644`.",
+				Optional:         true,
+				Default:          repoFileDefaultMode,
+				DiffSuppressFunc: repoFileModeUnchanged,
 			},
 			repoFileEncrypt: {
 				Type: schema.TypeBool,
@@ -110,6 +112,15 @@ func resourceRepoFile() *schema.Resource {
 			},
 		},
 	}
+}
+
+// repoFileModeUnchanged compares permissions by value, because Spacelift stores the mode as a
+// number and always renders it back zero-padded, so "644" would otherwise diff against "0644".
+func repoFileModeUnchanged(_, old, new string, _ *schema.ResourceData) bool {
+	oldMode, oldErr := strconv.ParseUint(old, 8, 32)
+	newMode, newErr := strconv.ParseUint(new, 8, 32)
+
+	return oldErr == nil && newErr == nil && oldMode == newMode
 }
 
 func resourceRepoFileCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

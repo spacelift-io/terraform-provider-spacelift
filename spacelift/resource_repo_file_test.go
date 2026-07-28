@@ -21,6 +21,25 @@ func repoConfig(name string) string {
 	`, name)
 }
 
+func TestRepoFileModeUnchanged(t *testing.T) {
+	for _, tc := range []struct {
+		old, new string
+		want     bool
+	}{
+		{old: "0644", new: "644", want: true},
+		{old: "0644", new: "0644", want: true},
+		{old: "0644", new: "0755", want: false},
+		{old: "0644", new: "755", want: false},
+		{old: "0644", new: "not-a-mode", want: false},
+	} {
+		t.Run(tc.old+"/"+tc.new, func(t *testing.T) {
+			if got := repoFileModeUnchanged("", tc.old, tc.new, nil); got != tc.want {
+				t.Fatalf("expected %v comparing %q and %q, got %v", tc.want, tc.old, tc.new, got)
+			}
+		})
+	}
+}
+
 func TestRepoFileResource(t *testing.T) {
 	const resourceName = "spacelift_repo_file.test"
 
@@ -74,6 +93,13 @@ func TestRepoFileResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("content", Equals("# second")),
+					Attribute("file_mode", Equals("0644")),
+				),
+			},
+			{
+				Config: config("# second", "644"),
+				Check: Resource(
+					resourceName,
 					Attribute("file_mode", Equals("0644")),
 				),
 			},
