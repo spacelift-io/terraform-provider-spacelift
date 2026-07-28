@@ -167,8 +167,7 @@ func resourceRepoFileRead(ctx context.Context, d *schema.ResourceData, meta any)
 	if content := file.Content; content != nil {
 		d.Set(repoFileEncrypt, content.IsEncrypted)
 
-		// Spacelift withholds the contents of encrypted files, so the state
-		// keeps whatever Terraform last wrote.
+		// Spacelift withholds encrypted contents, so state keeps what Terraform last wrote.
 		if content.Content != nil {
 			decoded, err := base64.StdEncoding.DecodeString(*content.Content)
 			if err != nil {
@@ -182,8 +181,7 @@ func resourceRepoFileRead(ctx context.Context, d *schema.ResourceData, meta any)
 }
 
 func resourceRepoFileUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Commit metadata describes the next commit rather than causing one, and an encrypted
-	// file re-encrypts to a fresh nonce, so committing it alone would mint a revision.
+	// Each encryption uses a fresh nonce, so committing metadata alone would still mint a revision.
 	if !d.HasChanges(repoFileContent, repoFileMode, repoFileEncrypt) {
 		return resourceRepoFileRead(ctx, d, meta)
 	}
@@ -218,8 +216,7 @@ func commitRepoFile(ctx context.Context, d *schema.ResourceData, meta any, actio
 		Action: toOptionalString(action),
 	}
 
-	// A deletion carries no content, and sending the mode would make the
-	// backend treat it as a change to a file that is going away.
+	// Sending a mode with a deletion makes the backend treat the file as changed, not removed.
 	if action != "DELETE" {
 		encoded := graphql.String(base64.StdEncoding.EncodeToString([]byte(d.Get(repoFileContent).(string))))
 		encrypt := graphql.Boolean(d.Get(repoFileEncrypt).(bool))

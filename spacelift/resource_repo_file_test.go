@@ -57,8 +57,7 @@ func TestRepoFileResource(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Commit metadata belongs to the revision, not the file, so it
-				// cannot be read back.
+				// Commit metadata belongs to the revision, not the file, so it cannot be read back.
 				ImportStateVerifyIgnore: []string{"commit_message", "author_name", "author_email"},
 			},
 			{
@@ -138,8 +137,7 @@ func TestRepoFileResource(t *testing.T) {
 		randID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		repoName := fmt.Sprintf("repo-file-metadata-%s", randID)
 
-		// Encrypting is what makes this observable: a re-commit re-encrypts to a fresh
-		// nonce, so the backend cannot dedupe it against the parent revision.
+		// Only an encrypted file makes a stray commit visible; plaintext dedupes on the backend.
 		config := func(message string) string {
 			return repoConfig(repoName) + fmt.Sprintf(`
 				resource "spacelift_repo_file" "test" {
