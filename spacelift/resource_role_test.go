@@ -26,7 +26,7 @@ func TestRoleResource(t *testing.T) {
 				if i > 0 {
 					actionsList.WriteString(", ")
 				}
-				actionsList.WriteString(fmt.Sprintf(`"%s"`, action))
+				fmt.Fprintf(&actionsList, `"%s"`, action)
 			}
 
 			return fmt.Sprintf(`

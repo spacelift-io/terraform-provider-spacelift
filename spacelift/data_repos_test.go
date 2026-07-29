@@ -11,6 +11,8 @@ import (
 )
 
 func TestReposData(t *testing.T) {
+	t.Parallel()
+
 	const datasourceName = "data.spacelift_repos.test"
 
 	t.Run("finds a repo by label in its space", func(t *testing.T) {

@@ -12,6 +12,8 @@ import (
 )
 
 func TestRepoData(t *testing.T) {
+	t.Parallel()
+
 	const datasourceName = "data.spacelift_repo.test"
 
 	t.Run("reads an existing repo", func(t *testing.T) {

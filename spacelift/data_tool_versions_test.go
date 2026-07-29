@@ -66,10 +66,6 @@ func TestToolVersionsData(t *testing.T) {
 	})
 
 	t.Run("only allows specific tools", func(t *testing.T) {
-		re, err := regexp.Compile(`tool must be one of \[.*]`)
-		if err != nil {
-			t.Fatalf("could not compile regexp: %v", err)
-		}
 		testSteps(t, []resource.TestStep{
 			{
 				Config: `
@@ -77,7 +73,7 @@ func TestToolVersionsData(t *testing.T) {
 					tool = "this-tool-should-error"
 				}
 				`,
-				ExpectError: re,
+				ExpectError: regexp.MustCompile(`tool must be one of \[.*]`),
 			},
 		})
 	})

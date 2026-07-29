@@ -16,10 +16,10 @@ func TestAzureIntegrationsData(t *testing.T) {
 	t.Parallel()
 
 	t.Run("when looking up integrations", func(t *testing.T) {
-		subId1 := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
-		subId2 := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
+		subID1 := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
+		subID2 := acctest.RandStringFromCharSet(5, acctest.CharSetAlpha)
 		first := &structs.AzureIntegration{
-			DefaultSubscriptionID: &subId1,
+			DefaultSubscriptionID: &subID1,
 			Labels:                []string{"one", "two"},
 			Name:                  acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
 			TenantID:              acctest.RandStringFromCharSet(10, acctest.CharSetAlpha),
@@ -27,7 +27,7 @@ func TestAzureIntegrationsData(t *testing.T) {
 			AutoattachEnabled:     true,
 		}
 		second := &structs.AzureIntegration{
-			DefaultSubscriptionID: &subId2,
+			DefaultSubscriptionID: &subID2,
 			Labels:                []string{"three", "four"},
 			Name:                  acctest.RandStringFromCharSet(5, acctest.CharSetAlpha),
 			TenantID:              acctest.RandStringFromCharSet(10, acctest.CharSetAlpha),

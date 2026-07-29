@@ -97,8 +97,6 @@ func TestTaskResourceWait(t *testing.T) {
 	})
 
 	t.Run("timed out run", func(t *testing.T) {
-		const resourceName = "spacelift_task.test"
-
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
