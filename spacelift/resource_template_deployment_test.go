@@ -108,7 +108,7 @@ EOT
 			`, randomID, initialVersion, newVersion, version, name, description, envName, secret)
 		}
 
-		var firstTemplateVersionId string
+		var firstTemplateVersionID string
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("deployment-"+randomID, "test description", "first_version", "production", "foobar"),
@@ -121,7 +121,7 @@ EOT
 					resource.TestCheckResourceAttr(deploymentResource, "template_id", "test-template-"+randomID),
 					resource.TestCheckResourceAttr(deploymentResource, "deployment_id", "deployment-"+randomID),
 					resource.TestCheckResourceAttrWith(deploymentResource, "template_version_id", func(value string) error {
-						firstTemplateVersionId = value
+						firstTemplateVersionID = value
 						if !strings.HasPrefix(value, "test-template-"+randomID) {
 							return fmt.Errorf("expected template version ID to start with %s, got %s", "test-template-"+randomID, value)
 						}
@@ -159,7 +159,7 @@ EOT
 					resource.TestCheckResourceAttr(deploymentResource, "description", "updated description"),
 					resource.TestCheckResourceAttr(deploymentResource, "state", "FINISHED"),
 					resource.TestCheckResourceAttrWith(deploymentResource, "template_version_id", func(value string) error {
-						if value == firstTemplateVersionId {
+						if value == firstTemplateVersionID {
 							return fmt.Errorf("expected template version ID to change, got %s", value)
 						}
 						return nil

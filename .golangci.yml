@@ -1,7 +1,7 @@
 version: "2"
 
 run:
-  tests: false
+  tests: true
 
 output:
   formats:
@@ -22,6 +22,7 @@ linters:
     - ineffassign
     - nolintlint
     - staticcheck
+    - tparallel
     - unused
   settings:
     depguard:
@@ -71,6 +72,13 @@ linters:
       - common-false-positives
       - legacy
       - std-error-handling
+    rules:
+      # Test config structs name fields after the credentials they hold, and the
+      # values come from the environment rather than being embedded.
+      - path: _test\.go
+        linters:
+          - gosec
+        text: G117
     paths:
       - third_party$
       - builtin$

@@ -167,8 +167,6 @@ hooks:
 func TestPluginTemplateResourceMissingAttributes(t *testing.T) {
 	t.Parallel()
 
-	const resourceName = "spacelift_plugin_template.test"
-
 	t.Run("creates minimal plugin template", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

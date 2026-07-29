@@ -41,6 +41,8 @@ func TestRepoFileModeUnchanged(t *testing.T) {
 }
 
 func TestRepoFileResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_repo_file.test"
 
 	t.Run("creates, updates and imports a file", func(t *testing.T) {

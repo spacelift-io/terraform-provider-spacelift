@@ -132,8 +132,6 @@ func TestPluginResourceInSpace(t *testing.T) {
 func TestPluginResourceMissingParameters(t *testing.T) {
 	t.Parallel()
 
-	const resourceName = "spacelift_plugin.test"
-
 	t.Run("missing parameter causes errors", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -158,8 +156,6 @@ func TestPluginResourceMissingParameters(t *testing.T) {
 
 func TestPluginResourceInvalidParameters(t *testing.T) {
 	t.Parallel()
-
-	const resourceName = "spacelift_plugin.test"
 
 	t.Run("unknown parameter causes error", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
