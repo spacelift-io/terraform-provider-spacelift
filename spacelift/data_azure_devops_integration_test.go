@@ -12,6 +12,8 @@ import (
 )
 
 func TestAzureDevOpsIntegrationData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without the id specified", func(t *testing.T) {
 		cfg := testConfig.SourceCode.AzureDevOps.Default
 

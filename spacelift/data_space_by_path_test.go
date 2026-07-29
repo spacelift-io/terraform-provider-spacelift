@@ -14,6 +14,8 @@ import (
 )
 
 func TestSpaceByPathData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("creates and reads a space", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		spaceName := fmt.Sprintf("My first space %s", randomID)

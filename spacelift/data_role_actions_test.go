@@ -9,6 +9,8 @@ import (
 )
 
 func TestRoleActionsData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("retrieves role actions without an error", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: `

@@ -29,6 +29,10 @@ resource "spacelift_default_runner_image" "test" {
 }
 `
 
+// The default runner image is account-wide, and the images below don't exist
+// anywhere. Any stack that doesn't override runner_image inherits whatever this
+// test sets, so running it alongside others leaves their workers trying to pull a
+// bogus image. It has to stay sequential.
 func Test_resourceDefaultAccountRunnerImage(t *testing.T) {
 	const resourceName = "spacelift_default_runner_image.test"
 
@@ -38,7 +42,7 @@ func Test_resourceDefaultAccountRunnerImage(t *testing.T) {
 	privateImage2 := fmt.Sprintf("private-runner:%s-updated", randomID)
 	publicImage2 := fmt.Sprintf("public-runner:%s-updated", randomID)
 
-	testSteps(t, []resource.TestStep{
+	testStepsSequential(t, []resource.TestStep{
 		{
 			Config: fmt.Sprintf(defaultAccountRunnerImageBothFields, privateImage, publicImage),
 			Check: Resource(

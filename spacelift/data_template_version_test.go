@@ -11,6 +11,8 @@ import (
 )
 
 func TestTemplateVersionData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("reads a template version by version_id in DRAFT state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

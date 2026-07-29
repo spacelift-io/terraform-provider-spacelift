@@ -11,6 +11,8 @@ import (
 )
 
 func TestTemplateResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_template.test"
 
 	t.Run("Creates and updates a template", func(t *testing.T) {

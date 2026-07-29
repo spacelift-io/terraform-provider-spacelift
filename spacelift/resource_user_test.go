@@ -53,6 +53,8 @@ resource "spacelift_user" "test" {
 `
 
 func TestUserResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_user.test"
 
 	t.Run("creates a user without an error", func(t *testing.T) {

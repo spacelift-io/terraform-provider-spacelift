@@ -13,6 +13,8 @@ import (
 )
 
 func TestRoleAttachmentResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_role_attachment.test"
 
 	t.Run("exactly one of API key, IDP group mapping, stack, or user must be set", func(t *testing.T) {

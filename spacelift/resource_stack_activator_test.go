@@ -11,6 +11,8 @@ import (
 )
 
 func TestStackActivatorResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack_activator.test"
 
 	t.Run("test activator", func(t *testing.T) {

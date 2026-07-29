@@ -11,6 +11,8 @@ import (
 )
 
 func TestTemplateData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("creates and reads a template", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

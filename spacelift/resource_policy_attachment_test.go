@@ -11,6 +11,8 @@ import (
 )
 
 func TestPolicyAttachmentResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_policy_attachment.test"
 
 	t.Run("with a stack", func(t *testing.T) {

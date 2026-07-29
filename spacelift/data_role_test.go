@@ -12,6 +12,8 @@ import (
 )
 
 func TestRoleData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("reads a system role (filter by name)", func(t *testing.T) {
 		testSteps(t, []resource.TestStep{{
 			Config: `

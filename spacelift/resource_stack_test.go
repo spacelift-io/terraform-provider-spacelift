@@ -13,6 +13,8 @@ import (
 )
 
 func TestStackResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack.test"
 
 	t.Run("with GitHub and no state import", func(t *testing.T) {
@@ -1425,6 +1427,8 @@ func TestStackResource(t *testing.T) {
 }
 
 func TestStackResourceSpace(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack.test"
 
 	t.Run("with GitHub and no state import", func(t *testing.T) {
@@ -2399,6 +2403,8 @@ func getConfig(vendorConfig string) string {
 }
 
 func TestStackResourceInSpaceDestroy(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack.test"
 
 	t.Run("stack in a managed space destroys in order", func(t *testing.T) {

@@ -11,6 +11,8 @@ import (
 )
 
 func TestVCSAgentPoolsData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("retrieves VCS agent pools data without an error", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

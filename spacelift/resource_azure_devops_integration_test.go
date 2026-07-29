@@ -61,6 +61,8 @@ func terraformVersionAtLeast(major, minor int) (bool, string, error) {
 }
 
 func TestAzureDevOpsIntegrationResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_azure_devops_integration.test"
 
 	t.Run("creates and updates an Azure DevOps integration without an error", func(t *testing.T) {

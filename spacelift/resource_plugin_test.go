@@ -12,6 +12,8 @@ import (
 )
 
 func TestPluginResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin.test"
 
 	t.Run("creates and updates plugin without an error", func(t *testing.T) {
@@ -88,6 +90,8 @@ func TestPluginResource(t *testing.T) {
 }
 
 func TestPluginResourceInSpace(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin.test"
 
 	t.Run("creates plugin in a space", func(t *testing.T) {
@@ -126,6 +130,8 @@ func TestPluginResourceInSpace(t *testing.T) {
 }
 
 func TestPluginResourceMissingParameters(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin.test"
 
 	t.Run("missing parameter causes errors", func(t *testing.T) {
@@ -151,6 +157,8 @@ func TestPluginResourceMissingParameters(t *testing.T) {
 }
 
 func TestPluginResourceInvalidParameters(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin.test"
 
 	t.Run("unknown parameter causes error", func(t *testing.T) {

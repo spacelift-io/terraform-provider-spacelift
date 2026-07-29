@@ -12,6 +12,8 @@ import (
 )
 
 func TestPluginData(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "data.spacelift_plugin.test"
 
 	t.Run("reads plugin data without error", func(t *testing.T) {

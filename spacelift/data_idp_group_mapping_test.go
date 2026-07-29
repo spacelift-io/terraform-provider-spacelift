@@ -12,6 +12,8 @@ import (
 )
 
 func TestIdpGroupMappingData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("reads an existing IdP group mapping by name", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		name := "test-group-" + randomID

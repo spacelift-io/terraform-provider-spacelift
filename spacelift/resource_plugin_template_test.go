@@ -12,6 +12,8 @@ import (
 )
 
 func TestPluginTemplateResource(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin_template.test"
 
 	t.Run("creates plugin template without an error", func(t *testing.T) {
@@ -121,6 +123,8 @@ hooks:
 }
 
 func TestPluginTemplateResourceMinimal(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin_template.test"
 
 	t.Run("creates minimal plugin template", func(t *testing.T) {
@@ -161,6 +165,8 @@ hooks:
 }
 
 func TestPluginTemplateResourceMissingAttributes(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_plugin_template.test"
 
 	t.Run("creates minimal plugin template", func(t *testing.T) {

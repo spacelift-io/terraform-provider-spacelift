@@ -11,6 +11,8 @@ import (
 )
 
 func TestVCSIntegrationBitbucketCloud(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack.test"
 
 	t.Run("with_default_integration", func(t *testing.T) {

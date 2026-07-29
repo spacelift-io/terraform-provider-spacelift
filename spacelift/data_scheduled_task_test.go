@@ -12,6 +12,8 @@ import (
 )
 
 func TestScheduledTaskData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("task scheduling config", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 

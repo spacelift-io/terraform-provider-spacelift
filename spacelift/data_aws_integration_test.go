@@ -12,6 +12,8 @@ import (
 )
 
 func TestAWSIntegrationData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without generating AWS creds in the worker", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		testSteps(t, []resource.TestStep{{
@@ -135,6 +137,8 @@ func TestAWSIntegrationData(t *testing.T) {
 }
 
 func TestAWSIntegrationDataSpace(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without generating AWS creds in the worker", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		testSteps(t, []resource.TestStep{{
@@ -199,6 +203,8 @@ func TestAWSIntegrationDataSpace(t *testing.T) {
 }
 
 func TestAWSIntegrationDataRegion(t *testing.T) {
+	t.Parallel()
+
 	t.Run("without region specified", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		testSteps(t, []resource.TestStep{{
@@ -278,6 +284,8 @@ func TestAWSIntegrationDataRegion(t *testing.T) {
 }
 
 func TestAWSIntegrationDataTagAssumeRole(t *testing.T) {
+	t.Parallel()
+
 	t.Run("with tag_assume_role disabled", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		testSteps(t, []resource.TestStep{{

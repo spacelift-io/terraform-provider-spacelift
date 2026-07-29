@@ -11,6 +11,8 @@ import (
 )
 
 func TestModulesData(t *testing.T) {
+	t.Parallel()
+
 	t.Run("reads the modules collection", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
