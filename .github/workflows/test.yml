@@ -3,6 +3,40 @@ name: 🧪 Test
 on: [push]
 
 jobs:
+  # The no-drift tests in spacelift/migrationtest verify that a resource moved to the
+  # Plugin Framework produces state identical to the last SDKv2 release. They stand up
+  # state with a published provider release, so unlike the rest of the suite they cannot
+  # set IsUnitTest and genuinely need TF_ACC. The "Test the code" job below runs ./...
+  # without TF_ACC, which means these tests skip there — hence a job of their own.
+  migration-drift:
+    name: Verify migrated resources produce no state drift
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install Go
+        uses: actions/setup-go@v7
+        with: { go-version-file: go.mod }
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1"
+          terraform_wrapper: false
+
+      - name: Run the no-drift verification tests
+        run: go test -parallel 10 -timeout 30m -v ./spacelift/migrationtest/
+        if: github.actor != 'dependabot[bot]'
+        env:
+          # These tests download a published provider release from the Spacelift registry,
+          # so they are acceptance tests in the strict sense and TF_ACC must be set.
+          TF_ACC: "1"
+          SPACELIFT_API_KEY_ENDPOINT: ${{ vars.preprod_SPACELIFT_API_KEY_ENDPOINT }}
+          SPACELIFT_API_KEY_ID: ${{ secrets.PREPROD_SPACELIFT_API_KEY_ID }}
+          SPACELIFT_API_KEY_SECRET: ${{ secrets.PREPROD_SPACELIFT_API_KEY_SECRET }}
+
   deployment:
     name: Test the code
     runs-on: ubuntu-latest
