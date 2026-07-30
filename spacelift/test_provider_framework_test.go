@@ -49,13 +49,17 @@ func testAccProtoV6MuxProviderFactories() map[string]func() (tfprotov6.ProviderS
 	}
 }
 
-// testStepsFramework runs acceptance tests against the Plugin Framework provider.
-// Unlike testSteps, TF_ACC=1 is required (these are not unit tests).
+// testStepsFramework runs acceptance tests against the Plugin Framework provider. Use it
+// once every resource in a config has been migrated; it is stricter than testStepsMux
+// because the SDKv2 provider is not available as a fallback.
+//
+// IsUnitTest matches testSteps for the reason given on testStepsMux.
 func testStepsFramework(t *testing.T, steps []resource.TestStep) {
 	t.Parallel()
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories(),
 		Steps:                    steps,
 	})
@@ -66,6 +70,7 @@ func testStepsFrameworkSequential(t *testing.T, steps []resource.TestStep) {
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories(),
 		Steps:                    steps,
 	})
@@ -73,11 +78,16 @@ func testStepsFrameworkSequential(t *testing.T, steps []resource.TestStep) {
 
 // testStepsMux runs acceptance tests against the muxed provider. Use it when a config
 // mixes resources that have been migrated to the Framework with ones still on SDKv2.
+//
+// IsUnitTest mirrors testSteps: CI runs `go test ./...` with credentials but without
+// TF_ACC, so a helper replacing testSteps has to keep bypassing that check or the tests
+// it serves quietly stop running.
 func testStepsMux(t *testing.T, steps []resource.TestStep) {
 	t.Parallel()
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6MuxProviderFactories(),
 		Steps:                    steps,
 	})
@@ -88,6 +98,7 @@ func testStepsMuxSequential(t *testing.T, steps []resource.TestStep) {
 	t.Helper()
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testAccProtoV6MuxProviderFactories(),
 		Steps:                    steps,
 	})
