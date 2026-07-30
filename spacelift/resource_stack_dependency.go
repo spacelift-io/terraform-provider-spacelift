@@ -6,8 +6,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/oklog/ulid/v2"
 	"github.com/shurcooL/graphql"
 
@@ -15,157 +18,248 @@ import (
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
 
-func resourceStackDependency() *schema.Resource {
-	return &schema.Resource{
+// The Framework picks up Configure and ImportState by asserting on the resource at
+// runtime, so a signature that drifts out of line disables the capability instead of
+// breaking the build: Configure never runs and r.client stays nil, or the resource
+// quietly stops supporting import. These assertions turn that into a compile error
+// naming the signature it expected.
+var (
+	_ resource.Resource                = (*stackDependencyResource)(nil)
+	_ resource.ResourceWithConfigure   = (*stackDependencyResource)(nil)
+	_ resource.ResourceWithImportState = (*stackDependencyResource)(nil)
+)
+
+// NewStackDependencyResource returns the Plugin Framework implementation of
+// spacelift_stack_dependency.
+func NewStackDependencyResource() resource.Resource { return &stackDependencyResource{} }
+
+type stackDependencyResource struct {
+	client *internal.Client
+}
+
+type stackDependencyModel struct {
+	ID               types.String `tfsdk:"id"`
+	StackID          types.String `tfsdk:"stack_id"`
+	DependsOnStackID types.String `tfsdk:"depends_on_stack_id"`
+}
+
+func (r *stackDependencyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = "spacelift_stack_dependency"
+}
+
+func (r *stackDependencyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	// ProviderData is nil during schema-validation walks.
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*internal.Client)
+	if !ok {
+		resp.Diagnostics.AddError(
+			"unexpected provider data",
+			fmt.Sprintf("expected *internal.Client, got %T", req.ProviderData),
+		)
+		return
+	}
+
+	r.client = client
+}
+
+func (r *stackDependencyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
 		Description: "" +
 			"`spacelift_stack_dependency` represents a Spacelift **stack dependency** - " +
 			"a dependency between two stacks. When one stack depends on another, the tracked runs " +
 			"of the stack will not start until the dependent stack is successfully finished. Additionally, " +
 			"changes to the dependency will trigger the dependent.",
 
-		CreateContext: resourceStackDependencyCreate,
-		ReadContext:   resourceStackDependencyRead,
-		DeleteContext: resourceStackDependencyDelete,
-
-		Importer: &schema.ResourceImporter{
-			StateContext: resourceStackDependencyImport,
-		},
-
-		Schema: map[string]*schema.Schema{
-			"stack_id": {
-				Type:        schema.TypeString,
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"stack_id": schema.StringAttribute{
 				Description: "immutable ID (slug) of stack which has a dependency.",
 				Required:    true,
-				ForceNew:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
-			"depends_on_stack_id": {
-				Type:        schema.TypeString,
+			"depends_on_stack_id": schema.StringAttribute{
 				Description: "immutable ID (slug) of stack to depend on.",
 				Required:    true,
-				ForceNew:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 		},
 	}
-
 }
 
-func resourceStackDependencyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	var query struct {
+func (r *stackDependencyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan stackDependencyModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var mutation struct {
 		StackDependency structs.StackDependency `graphql:"stackDependencyCreate(input: $input)"`
 	}
 
-	variables := map[string]any{"input": stackDependencyCreateInput(d)}
-
-	if err := meta.(*internal.Client).Mutate(ctx, "StackDependencyCreate", &query, variables); err != nil {
-		return diag.Errorf("could not create stack dependency: %s", err)
+	variables := map[string]any{
+		"input": structs.StackDependencyInput{
+			StackID:          toID(plan.StackID.ValueString()),
+			DependsOnStackID: toID(plan.DependsOnStackID.ValueString()),
+		},
 	}
 
-	d.SetId(path.Join(query.StackDependency.Stack.ID, query.StackDependency.ID))
+	if err := r.client.Mutate(ctx, "StackDependencyCreate", &mutation, variables); err != nil {
+		resp.Diagnostics.AddError("could not create stack dependency", err.Error())
+		return
+	}
 
-	return resourceStackDependencyRead(ctx, d, meta)
+	dep := mutation.StackDependency
+	plan.ID = types.StringValue(path.Join(dep.Stack.ID, dep.ID))
+	plan.StackID = types.StringValue(dep.Stack.ID)
+	plan.DependsOnStackID = types.StringValue(dep.DependsOnStack.ID)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func resourceStackDependencyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	var query struct {
-		StackDependency *structs.StackDependency `graphql:"stackDependencyDelete(id: $id)"`
+func (r *stackDependencyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state stackDependencyModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	_, depID, err := parseStackDependencyID(d.Id())
+	dependency, err := r.fetchByStackID(
+		ctx,
+		toID(state.StackID.ValueString()),
+		toID(state.DependsOnStackID.ValueString()),
+	)
 	if err != nil {
-		return diag.FromErr(err)
+		resp.Diagnostics.AddError("could not query for stack dependency", err.Error())
+		return
+	}
+
+	if dependency == nil {
+		resp.State.RemoveResource(ctx)
+		return
+	}
+
+	state.ID = types.StringValue(path.Join(dependency.Stack.ID, dependency.ID))
+	state.StackID = types.StringValue(dependency.Stack.ID)
+	state.DependsOnStackID = types.StringValue(dependency.DependsOnStack.ID)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+// Update exists only to satisfy resource.Resource. Both attributes force replacement,
+// so there is no in-place update path and the SDKv2 implementation had no UpdateContext.
+func (r *stackDependencyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan stackDependencyModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *stackDependencyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state stackDependencyModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	_, depID, err := parseStackDependencyID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("could not parse stack dependency ID", err.Error())
+		return
+	}
+
+	var mutation struct {
+		StackDependency *structs.StackDependency `graphql:"stackDependencyDelete(id: $id)"`
 	}
 
 	variables := map[string]any{"id": graphql.ID(depID)}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "StackDependencyDelete", &query, variables); err != nil {
-		return diag.Errorf("could not delete stack dependency: %s", err)
+	if err := r.client.Mutate(ctx, "StackDependencyDelete", &mutation, variables); err != nil {
+		resp.Diagnostics.AddError("could not delete stack dependency", err.Error())
 	}
-
-	d.SetId("")
-
-	return nil
 }
 
-func resourceStackDependencyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	stackID := toID(d.Get("stack_id"))
-	dependsOnStackID := toID(d.Get("depends_on_stack_id"))
-
-	dependency, err := resourceStackDependencyFetchByStackID(ctx, meta, stackID, dependsOnStackID)
+// ImportState accepts both supported ID formats: the legacy "stackID/dependencyULID"
+// and the human-readable "stackID/dependsOnStackID". A successful ULID parse of the
+// second part selects the legacy lookup.
+func (r *stackDependencyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	stackID, secondPart, err := parseStackDependencyID(req.ID)
 	if err != nil {
-		return diag.Errorf("could not query for stack dependency: %s", err)
-	}
-
-	if dependency == nil {
-		d.SetId("")
-		return nil
-	}
-
-	d.Set("stack_id", dependency.Stack.ID)
-	d.Set("depends_on_stack_id", dependency.DependsOnStack.ID)
-	d.SetId(path.Join(dependency.Stack.ID, dependency.ID))
-
-	return nil
-}
-
-func resourceStackDependencyImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-	stackID, secondPart, err := parseStackDependencyID(d.Id())
-	if err != nil {
-		return nil, fmt.Errorf("invalid import ID format: %w", err)
+		resp.Diagnostics.AddError("invalid import ID format", err.Error())
+		return
 	}
 
 	var dependency *structs.StackDependency
 
-	// Try to parse as ULID to detect old format (stackID/dependencyULID)
-	_, err = ulid.Parse(secondPart)
-	if err == nil {
-		dependency, err = resourceStackDependencyFetchByID(ctx, meta, toID(stackID), toID(secondPart))
+	if _, ulidErr := ulid.Parse(secondPart); ulidErr == nil {
+		dependency, err = r.fetchByID(ctx, toID(stackID), toID(secondPart))
 	} else {
-		dependency, err = resourceStackDependencyFetchByStackID(ctx, meta, toID(stackID), toID(secondPart))
+		dependency, err = r.fetchByStackID(ctx, toID(stackID), toID(secondPart))
 	}
 
 	if err != nil {
-		return nil, err
+		resp.Diagnostics.AddError("could not query for stack dependency", err.Error())
+		return
 	}
 
 	if dependency == nil {
-		return nil, fmt.Errorf("stack dependency not found for import ID: %s", path.Join(stackID, secondPart))
+		resp.Diagnostics.AddError(
+			"stack dependency not found",
+			fmt.Sprintf("no stack dependency found for import ID: %s", path.Join(stackID, secondPart)),
+		)
+		return
 	}
 
-	d.Set("stack_id", dependency.Stack.ID)
-	d.Set("depends_on_stack_id", dependency.DependsOnStack.ID)
-	d.SetId(path.Join(dependency.Stack.ID, dependency.ID))
+	state := stackDependencyModel{
+		ID:               types.StringValue(path.Join(dependency.Stack.ID, dependency.ID)),
+		StackID:          types.StringValue(dependency.Stack.ID),
+		DependsOnStackID: types.StringValue(dependency.DependsOnStack.ID),
+	}
 
-	return []*schema.ResourceData{d}, nil
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// resourceStackDependencyFetchByID fetches a dependency using ULID (old format)
-func resourceStackDependencyFetchByID(ctx context.Context, meta any, stackID, dependencyID graphql.ID) (*structs.StackDependency, error) {
-	variables := map[string]any{
+// fetchByID looks a dependency up by its ULID (legacy import format).
+func (r *stackDependencyResource) fetchByID(ctx context.Context, stackID, dependencyID graphql.ID) (*structs.StackDependency, error) {
+	return r.fetch(ctx, map[string]any{
 		"id":               dependencyID,
 		"stackId":          stackID,
 		"dependsOnStackId": toID(""),
-	}
-	return resourceStackDependencyFetch(ctx, meta, variables)
+	})
 }
 
-// resourceStackDependencyFetchByStackID fetches a dependency using stack ID (new format)
-func resourceStackDependencyFetchByStackID(ctx context.Context, meta any, stackID, dependsOnStackID graphql.ID) (*structs.StackDependency, error) {
-	variables := map[string]any{
+// fetchByStackID looks a dependency up by the stack it depends on.
+func (r *stackDependencyResource) fetchByStackID(ctx context.Context, stackID, dependsOnStackID graphql.ID) (*structs.StackDependency, error) {
+	return r.fetch(ctx, map[string]any{
 		"id":               toID(""),
 		"stackId":          stackID,
 		"dependsOnStackId": dependsOnStackID,
-	}
-	return resourceStackDependencyFetch(ctx, meta, variables)
+	})
 }
 
-func resourceStackDependencyFetch(ctx context.Context, meta any, variables map[string]any) (*structs.StackDependency, error) {
+func (r *stackDependencyResource) fetch(ctx context.Context, variables map[string]any) (*structs.StackDependency, error) {
 	var query struct {
 		Stack *struct {
 			Dependency *structs.StackDependency `graphql:"dependency(id: $id, dependsOnStackId: $dependsOnStackId)"`
 		} `graphql:"stack(id: $stackId)"`
 	}
 
-	if err := meta.(*internal.Client).Query(ctx, "StackDependencyRead", &query, variables); err != nil {
+	if err := r.client.Query(ctx, "StackDependencyRead", &query, variables); err != nil {
 		return nil, err
 	}
 
@@ -183,11 +277,4 @@ func parseStackDependencyID(id string) (string, string, error) {
 	}
 
 	return idParts[0], idParts[1], nil
-}
-
-func stackDependencyCreateInput(d *schema.ResourceData) structs.StackDependencyInput {
-	return structs.StackDependencyInput{
-		StackID:          toID(d.Get("stack_id")),
-		DependsOnStackID: toID(d.Get("depends_on_stack_id")),
-	}
 }

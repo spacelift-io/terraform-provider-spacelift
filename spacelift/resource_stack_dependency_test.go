@@ -39,7 +39,7 @@ func TestStackDependencyResource(t *testing.T) {
 		`, randomID, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsMux(t, []resource.TestStep{
 			{
 				Config: config(),
 				Check: Resource(
@@ -81,7 +81,7 @@ func TestStackDependencyResource(t *testing.T) {
 		`, randomID, randomID)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsMux(t, []resource.TestStep{
 			{
 				Config: config(),
 			},
