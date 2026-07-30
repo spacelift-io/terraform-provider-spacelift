@@ -156,7 +156,6 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_stack_activator":                  resourceStackActivator(),
 				"spacelift_stack_aws_role":                   resourceStackAWSRole(), // deprecated
 				"spacelift_stack_dependency_reference":       resourceStackDependencyReference(),
-				"spacelift_stack_dependency":                 resourceStackDependency(),
 				"spacelift_stack_destructor":                 resourceStackDestructor(),
 				"spacelift_stack_gcp_service_account":        resourceStackGCPServiceAccount(), // deprecated
 				"spacelift_stack":                            resourceStack(),

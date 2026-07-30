@@ -49,7 +49,7 @@ func TestStackDependencyReferenceResource(t *testing.T) {
 				}`, outputName, inputName, triggerAlways)
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsMux(t, []resource.TestStep{
 			{ // creates reference
 				Config: configWithReference("output_abc", "input_123", false),
 				Check: Resource(
@@ -144,7 +144,7 @@ func TestStackDependencyReferenceResource(t *testing.T) {
 				}`
 		}
 
-		testSteps(t, []resource.TestStep{
+		testStepsMux(t, []resource.TestStep{
 			{
 				Config: configWithReference(),
 			},
