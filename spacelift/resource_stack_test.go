@@ -789,7 +789,7 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
-	t.Run("with Terragrunt use_state_management", func(t *testing.T) {
+	t.Run("with Terragrunt use_state_management=false syncs manage_state", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 		testSteps(t, []resource.TestStep{
@@ -797,14 +797,13 @@ func TestStackResource(t *testing.T) {
 				Config: fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					branch       = "master"
-					name         = "Provider test stack terragrunt state %s"
+					name         = "Provider test stack tg usm false %s"
 					project_root = "root"
 					repository   = "demo"
-					manage_state = false
 					terragrunt {
-						terragrunt_version = "0.45.0"
-						terraform_version  = "1.4.0"
-						use_run_all        = false
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
 						use_state_management = false
 					}
 				}
@@ -815,40 +814,24 @@ func TestStackResource(t *testing.T) {
 					Attribute("manage_state", Equals("false")),
 				),
 			},
+		})
+	})
+
+	t.Run("with Terragrunt use_state_management=true syncs manage_state", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					branch       = "master"
-					name         = "Provider test stack terragrunt state %s"
+					name         = "Provider test stack tg usm true %s"
 					project_root = "root"
 					repository   = "demo"
-					manage_state = false
 					terragrunt {
-						terragrunt_version = "0.45.0"
-						terraform_version  = "1.4.0"
-						use_run_all        = false
-						use_state_management = true
-					}
-				}
-			`, randomID),
-				Check: Resource(
-					resourceName,
-					Attribute("terragrunt.0.use_state_management", Equals("true")),
-					Attribute("manage_state", Equals("false")),
-				),
-			},
-			{
-				Config: fmt.Sprintf(`
-				resource "spacelift_stack" "test" {
-					branch       = "master"
-					name         = "Provider test stack terragrunt state %s"
-					project_root = "root"
-					repository   = "demo"
-					manage_state = true
-					terragrunt {
-						terragrunt_version = "0.45.0"
-						terraform_version  = "1.4.0"
-						use_run_all        = false
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
 						use_state_management = true
 					}
 				}
@@ -891,7 +874,6 @@ func TestStackResource(t *testing.T) {
 							name         = "Provider test stack tg migr %s"
 							project_root = "root"
 							repository   = "demo"
-							manage_state = %t
 							terragrunt {
 								terragrunt_version   = "0.45.0"
 								terraform_version    = "1.4.0"
@@ -899,10 +881,11 @@ func TestStackResource(t *testing.T) {
 								use_state_management = %t
 							}
 						}
-					`, randomID, stateManaged, stateManaged),
+					`, randomID, stateManaged),
 						Check: Resource(
 							resourceName,
 							Attribute("terragrunt.0.use_state_management", Equals(fmt.Sprintf("%t", stateManaged))),
+							Attribute("manage_state", Equals(fmt.Sprintf("%t", stateManaged))),
 						),
 					},
 					{
@@ -923,6 +906,150 @@ func TestStackResource(t *testing.T) {
 				})
 			})
 		}
+	})
+
+	t.Run("migration with manage_state omitted inherits from use_state_management", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack tg ms omit %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = false
+					labels       = ["terragrunt"]
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("manage_state", Equals("false")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack tg ms omit %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
+						use_state_management = false
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("manage_state", Equals("false")),
+					Attribute("terragrunt.0.use_state_management", Equals("false")),
+				),
+			},
+		})
+	})
+
+	t.Run("manage_state conflicts with use_state_management on create", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack tg conflict %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = true
+					terragrunt {
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
+						use_state_management = false
+					}
+				}
+			`, randomID),
+				ExpectError: regexp.MustCompile(`manage_state \(true\) conflicts with terragrunt.use_state_management \(false\)`),
+			},
+		})
+	})
+
+	t.Run("manage_state conflicts with use_state_management on update", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack tg conflict upd %s"
+					project_root = "root"
+					repository   = "demo"
+					terragrunt {
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
+						use_state_management = true
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("manage_state", Equals("true")),
+					Attribute("terragrunt.0.use_state_management", Equals("true")),
+				),
+			},
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack tg conflict upd %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = false
+					terragrunt {
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
+						use_state_management = true
+					}
+				}
+			`, randomID),
+				ExpectError: regexp.MustCompile(`manage_state \(false\) conflicts with terragrunt.use_state_management \(true\)`),
+			},
+		})
+	})
+
+	t.Run("manage_state consistent with use_state_management is allowed", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "Provider test stack tg consistent %s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = false
+					terragrunt {
+						terragrunt_version   = "0.45.0"
+						terraform_version    = "1.4.0"
+						use_run_all          = false
+						use_state_management = false
+					}
+				}
+			`, randomID),
+				Check: Resource(
+					resourceName,
+					Attribute("manage_state", Equals("false")),
+					Attribute("terragrunt.0.use_state_management", Equals("false")),
+				),
+			},
+		})
 	})
 
 	t.Run("vendor migration rejects state management change", func(t *testing.T) {
@@ -949,7 +1076,6 @@ func TestStackResource(t *testing.T) {
 						name         = "Provider test stack tg migr err %s"
 						project_root = "root"
 						repository   = "demo"
-						manage_state = true
 						terragrunt {
 							terragrunt_version   = "0.45.0"
 							terraform_version    = "1.4.0"
@@ -986,7 +1112,6 @@ func TestStackResource(t *testing.T) {
 						name         = "Provider test stack tg migr err2 %s"
 						project_root = "root"
 						repository   = "demo"
-						manage_state = false
 						terragrunt {
 							terragrunt_version   = "0.45.0"
 							terraform_version    = "1.4.0"
@@ -1011,7 +1136,6 @@ func TestStackResource(t *testing.T) {
 						name         = "Provider test stack tg migr err3 %s"
 						project_root = "root"
 						repository   = "demo"
-						manage_state = false
 						terragrunt {
 							terragrunt_version   = "0.45.0"
 							terraform_version    = "1.4.0"
@@ -1047,7 +1171,6 @@ func TestStackResource(t *testing.T) {
 						name         = "Provider test stack tg migr err4 %s"
 						project_root = "root"
 						repository   = "demo"
-						manage_state = false
 						terragrunt {
 							terragrunt_version   = "0.45.0"
 							terraform_version    = "1.4.0"
@@ -1475,7 +1598,6 @@ func TestStackResource(t *testing.T) {
 					name                           = "Provider test external access %s"
 					project_root                   = "root"
 					repository                     = "demo"
-					manage_state                   = false
 					terraform_external_state_access = true
 					terragrunt {
 						terragrunt_version      = "0.45.0"
@@ -1488,7 +1610,7 @@ func TestStackResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("terraform_external_state_access", Equals("true")),
-					Attribute("manage_state", Equals("false")),
+					Attribute("manage_state", Equals("true")),
 					Attribute("terragrunt.0.use_state_management", Equals("true")),
 				),
 			},
