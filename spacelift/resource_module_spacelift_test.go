@@ -12,6 +12,8 @@ import (
 )
 
 func TestModuleResourceSpacelift(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_module.test"
 
 	t.Run("attaches a Spacelift repo to a module", func(t *testing.T) {

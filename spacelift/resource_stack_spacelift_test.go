@@ -23,6 +23,8 @@ func repoWithFileConfig(name string) string {
 }
 
 func TestVCSIntegrationSpacelift(t *testing.T) {
+	t.Parallel()
+
 	const resourceName = "spacelift_stack.test"
 
 	t.Run("attaches a Spacelift repo to a stack", func(t *testing.T) {
