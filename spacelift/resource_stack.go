@@ -723,7 +723,7 @@ func resourceStack() *schema.Resource {
 			},
 			"spacelift": {
 				Type:          schema.TypeList,
-				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit.",
+				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit. To move the stack to another VCS provider, set that provider's block in the same change: removing this one detaches the repo, and a Spacelift repo cannot be a default integration to fall back on.",
 				Optional:      true,
 				ConflictsWith: conflictingVCSProviders("spacelift"),
 				MaxItems:      1,
