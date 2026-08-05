@@ -319,7 +319,7 @@ func resourceModule() *schema.Resource {
 			},
 			"spacelift": {
 				Type:          schema.TypeList,
-				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the module always tracks the latest commit.",
+				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the module always tracks the latest commit. The repo must be in the same space as the module, since the module publishes its source as a version.",
 				Optional:      true,
 				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab", "raw_git"},
 				MaxItems:      1,
