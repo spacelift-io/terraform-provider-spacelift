@@ -1,0 +1,1 @@
+terraform import spacelift_slack_channel_integration.slack_alerts $INTEGRATION_ID
