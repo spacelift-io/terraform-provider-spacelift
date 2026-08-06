@@ -27,9 +27,7 @@ func TestModuleResourceSpacelift(t *testing.T) {
 				branch             = "main"
 				space_id           = "root"
 				terraform_provider = "default"
-				spacelift {
-					id = spacelift_repo.test.id
-				}
+				spacelift_repo {}
 
 				depends_on = [spacelift_repo_file.test]
 			}
@@ -40,7 +38,7 @@ func TestModuleResourceSpacelift(t *testing.T) {
 				Config: config,
 				Check: Resource(
 					resourceName,
-					Attribute("spacelift.0.id", Equals(repoName)),
+					Attribute("spacelift_repo.#", Equals("1")),
 					Attribute("repository", Equals(repoName)),
 					Attribute("branch", Equals("main")),
 				),
@@ -63,9 +61,7 @@ func TestModuleResourceSpacelift(t *testing.T) {
 				branch             = "develop"
 				space_id           = "root"
 				terraform_provider = "default"
-				spacelift {
-					id = spacelift_repo.test.id
-				}
+				spacelift_repo {}
 			}
 		`, randID)
 
@@ -73,30 +69,6 @@ func TestModuleResourceSpacelift(t *testing.T) {
 			{
 				Config:      config,
 				ExpectError: regexp.MustCompile(`branch must be "main" when using a Spacelift repo`),
-			},
-		})
-	})
-
-	t.Run("rejects a repository that is not the repo ID", func(t *testing.T) {
-		randID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
-		config := fmt.Sprintf(`
-			resource "spacelift_module" "test" {
-				name               = "spacelift-repo-module-mismatch-%s"
-				repository         = "not-the-repo"
-				branch             = "main"
-				space_id           = "root"
-				terraform_provider = "default"
-				spacelift {
-					id = "some-repo"
-				}
-			}
-		`, randID)
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config:      config,
-				ExpectError: regexp.MustCompile(`repository must be the Spacelift repo ID \(slug\) "some-repo"`),
 			},
 		})
 	})

@@ -37,9 +37,7 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 				repository = spacelift_repo.test.id
 				branch     = "main"
 				space_id   = "root"
-				spacelift {
-					id = spacelift_repo.test.id
-				}
+				spacelift_repo {}
 
 				depends_on = [spacelift_repo_file.test]
 			}
@@ -50,7 +48,7 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 				Config: config,
 				Check: Resource(
 					resourceName,
-					Attribute("spacelift.0.id", Equals(repoName)),
+					Attribute("spacelift_repo.#", Equals("1")),
 					Attribute("repository", Equals(repoName)),
 					Attribute("branch", Equals("main")),
 				),
@@ -72,9 +70,7 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 				repository = spacelift_repo.test.id
 				branch     = "develop"
 				space_id   = "root"
-				spacelift {
-					id = spacelift_repo.test.id
-				}
+				spacelift_repo {}
 			}
 		`, randID)
 
@@ -86,57 +82,6 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 		})
 	})
 
-	t.Run("rejects a repository that is not the repo ID", func(t *testing.T) {
-		randID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-
-		config := fmt.Sprintf(`
-			resource "spacelift_stack" "test" {
-				name       = "spacelift-repo-mismatch-%s"
-				repository = "not-the-repo"
-				branch     = "main"
-				space_id   = "root"
-				spacelift {
-					id = "some-repo"
-				}
-			}
-		`, randID)
-
-		testSteps(t, []resource.TestStep{
-			{
-				Config:      config,
-				ExpectError: regexp.MustCompile(`repository must be the Spacelift repo ID \(slug\) "some-repo"`),
-			},
-		})
-	})
-
-	t.Run("accepts a literal repository while the repo id is still unknown", func(t *testing.T) {
-		randID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
-		repoName := fmt.Sprintf("stack-repo-unknown-%s", randID)
-
-		// The literal repository matches the slug, while the reference to it stays unknown at plan time.
-		config := repoWithFileConfig(repoName) + fmt.Sprintf(`
-			resource "spacelift_stack" "test" {
-				name       = "spacelift-repo-unknown-%s"
-				repository = "%s"
-				branch     = "main"
-				space_id   = "root"
-				spacelift {
-					id = spacelift_repo.test.id
-				}
-
-				depends_on = [spacelift_repo_file.test]
-			}
-		`, randID, repoName)
-
-		testSteps(t, []resource.TestStep{{
-			Config: config,
-			Check: Resource(
-				resourceName,
-				Attribute("repository", Equals(repoName)),
-			),
-		}})
-	})
-
 	t.Run("conflicts with another VCS provider block", func(t *testing.T) {
 		randID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
@@ -146,9 +91,7 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 				repository = "some-repo"
 				branch     = "main"
 				space_id   = "root"
-				spacelift {
-					id = "some-repo"
-				}
+				spacelift_repo {}
 				gitlab {
 					namespace = "some-namespace"
 				}

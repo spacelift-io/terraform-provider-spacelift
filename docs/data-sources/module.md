@@ -52,7 +52,7 @@ data "spacelift_module" "k8s-module" {
 - `shared_accounts` (Set of String) List of the accounts (subdomains) which should have access to the Module
 - `space_id` (String) ID (slug) of the space the module is in
 - `space_shares` (Set of String) List of the space IDs which should have access to the Module
-- `spacelift` (List of Object) Spacelift Repos settings (see [below for nested schema](#nestedatt--spacelift))
+- `spacelift_repo` (List of Object) Set when the source is a Spacelift repo, whose ID (slug) is `repository` (see [below for nested schema](#nestedatt--spacelift_repo))
 - `terraform_provider` (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
 - `worker_pool_id` (String) ID of the worker pool to use
 - `workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`.
@@ -116,9 +116,7 @@ Read-Only:
 - `url` (String)
 
 
-<a id="nestedatt--spacelift"></a>
-### Nested Schema for `spacelift`
+<a id="nestedatt--spacelift_repo"></a>
+### Nested Schema for `spacelift_repo`
 
 Read-Only:
-
-- `id` (String)

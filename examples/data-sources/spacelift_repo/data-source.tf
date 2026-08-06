@@ -10,7 +10,5 @@ resource "spacelift_stack" "this" {
   branch     = "main"
   space_id   = data.spacelift_repo.this.space_id
 
-  spacelift {
-    id = data.spacelift_repo.this.repo_id
-  }
+  spacelift_repo {}
 }

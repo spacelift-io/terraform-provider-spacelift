@@ -60,7 +60,7 @@ resource "spacelift_module" "example-module" {
 - `shared_accounts` (Set of String) List of the accounts (subdomains) which should have access to the Module
 - `space_id` (String) ID (slug) of the space the module is in
 - `space_shares` (Set of String) List of the space IDs which should have access to the Module
-- `spacelift` (Block List, Max: 1) Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the module always tracks the latest commit. The repo must be in the same space as the module, since the module publishes its source as a version. (see [below for nested schema](#nestedblock--spacelift))
+- `spacelift_repo` (Block List, Max: 1) Take the source from a Spacelift repo. The block takes no settings: `repository` is the repo's ID (slug), and `branch` must be `main` - Spacelift Repos have no branches, and the module always tracks the latest commit. The repo must be in the same space as the module, since the module publishes its source as a version. (see [below for nested schema](#nestedblock--spacelift_repo))
 - `terraform_provider` (String) The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.
 - `worker_pool_id` (String) ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.
 - `workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.
@@ -159,12 +159,8 @@ Required:
 - `url` (String) HTTPS URL of the Git repository
 
 
-<a id="nestedblock--spacelift"></a>
-### Nested Schema for `spacelift`
-
-Required:
-
-- `id` (String) ID (slug) of the Spacelift repo
+<a id="nestedblock--spacelift_repo"></a>
+### Nested Schema for `spacelift_repo`
 
 ## Import
 

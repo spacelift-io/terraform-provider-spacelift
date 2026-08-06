@@ -19,7 +19,7 @@ func TestValidateSpaceliftRepoVCS(t *testing.T) {
 			"branch":             "main",
 			"space_id":           "root",
 			"terraform_provider": "default",
-			"spacelift":          []any{map[string]any{"id": "my-repo"}},
+			"spacelift_repo":     []any{map[string]any{}},
 		}
 		mutate(raw)
 		return raw
@@ -31,21 +31,8 @@ func TestValidateSpaceliftRepoVCS(t *testing.T) {
 		wantErr string
 	}{
 		{
-			name:   "matching repository and repo id",
+			name:   "main branch",
 			mutate: func(map[string]any) {},
-		},
-		{
-			name:    "mismatched repository",
-			mutate:  func(raw map[string]any) { raw["repository"] = "not-the-repo" },
-			wantErr: `repository must be the Spacelift repo ID (slug) "my-repo"`,
-		},
-		{
-			name:   "unknown repo id",
-			mutate: func(raw map[string]any) { raw["spacelift"] = []any{map[string]any{"id": unknownValue}} },
-		},
-		{
-			name:   "unknown repository",
-			mutate: func(raw map[string]any) { raw["repository"] = unknownValue },
 		},
 		{
 			name:   "unknown branch",
@@ -58,7 +45,7 @@ func TestValidateSpaceliftRepoVCS(t *testing.T) {
 		},
 		{
 			name:   "branch is only constrained by the spacelift block",
-			mutate: func(raw map[string]any) { delete(raw, "spacelift"); raw["branch"] = "develop" },
+			mutate: func(raw map[string]any) { delete(raw, "spacelift_repo"); raw["branch"] = "develop" },
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {

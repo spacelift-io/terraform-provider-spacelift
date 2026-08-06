@@ -74,7 +74,7 @@ data "spacelift_stack" "k8s-core" {
 - `runner_image` (String) Name of the Docker image used to process Runs
 - `showcase` (List of Object) Showcase-related attributes (see [below for nested schema](#nestedatt--showcase))
 - `space_id` (String) ID (slug) of the space the stack is in
-- `spacelift` (List of Object) Spacelift Repos settings (see [below for nested schema](#nestedatt--spacelift))
+- `spacelift_repo` (List of Object) Set when the source is a Spacelift repo, whose ID (slug) is `repository` (see [below for nested schema](#nestedatt--spacelift_repo))
 - `terraform_external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift.
 - `terraform_smart_sanitization` (Boolean) Indicates whether runs on this will use terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.
 - `terraform_version` (String) Terraform version to use
@@ -209,12 +209,11 @@ Read-Only:
 - `namespace` (String)
 
 
-<a id="nestedatt--spacelift"></a>
-### Nested Schema for `spacelift`
+<a id="nestedatt--spacelift_repo"></a>
+### Nested Schema for `spacelift_repo`
 
 Read-Only:
 
-- `id` (String)
 
 
 <a id="nestedatt--terragrunt"></a>

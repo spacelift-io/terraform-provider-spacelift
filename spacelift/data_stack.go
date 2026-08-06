@@ -494,19 +494,11 @@ func dataStack() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
-			"spacelift": {
+			"spacelift_repo": {
 				Type:        schema.TypeList,
-				Description: "Spacelift Repos settings",
+				Description: "Set when the source is a Spacelift repo, whose ID (slug) is `repository`",
 				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:        schema.TypeString,
-							Description: "ID (slug) of the Spacelift repo",
-							Computed:    true,
-						},
-					},
-				},
+				Elem:        &schema.Resource{Schema: map[string]*schema.Schema{}},
 			},
 			"terraform_external_state_access": {
 				Type:        schema.TypeBool,

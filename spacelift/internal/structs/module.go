@@ -126,12 +126,8 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 		}
 		fieldName = "raw_git"
 	case VCSProviderSpacelift:
-		if m.VCSIntegration != nil {
-			vcsSettings = map[string]any{
-				"id": m.VCSIntegration.ID,
-			}
-		}
-		fieldName = "spacelift"
+		vcsSettings = map[string]any{}
+		fieldName = "spacelift_repo"
 	}
 
 	if fieldName != "" {

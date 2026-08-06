@@ -54,27 +54,17 @@ func flattenRepo(repo *structs.Repo) map[string]any {
 	}
 }
 
-// validateSpaceliftRepoVCS rejects VCS settings a Spacelift repo ignores.
-// Comparisons wait for known values, since Get reads an unresolved plan value as empty.
 func validateSpaceliftRepoVCS(diff *schema.ResourceDiff) error {
-	if blocks, ok := diff.Get("spacelift").([]any); !ok || len(blocks) == 0 {
+	if blocks, ok := diff.Get("spacelift_repo").([]any); !ok || len(blocks) == 0 {
 		return nil
 	}
 
+	// The backend hardcodes "main" when resolving the ref, so any other branch degrades run signals.
+	// Wait for a known value, since Get reads an unresolved plan value as empty.
 	if diff.NewValueKnown("branch") {
-		// The backend hardcodes "main" when resolving the ref, so any other branch degrades run signals.
 		if branch := diff.Get("branch").(string); branch != "main" {
 			return fmt.Errorf("branch must be \"main\" when using a Spacelift repo, got %q", branch)
 		}
-	}
-
-	if !diff.NewValueKnown("repository") || !diff.NewValueKnown("spacelift.0.id") {
-		return nil
-	}
-
-	repoSlug := diff.Get("spacelift.0.id").(string)
-	if repository := diff.Get("repository").(string); repository != repoSlug {
-		return fmt.Errorf("repository must be the Spacelift repo ID (slug) %q when using a Spacelift repo, got %q", repoSlug, repository)
 	}
 
 	return nil

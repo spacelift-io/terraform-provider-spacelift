@@ -39,9 +39,7 @@ resource "spacelift_stack" "this" {
   branch     = "main"
   space_id   = spacelift_repo.this.space_id
 
-  spacelift {
-    id = spacelift_repo.this.id
-  }
+  spacelift_repo {}
 
   depends_on = [spacelift_repo_file.main]
 }

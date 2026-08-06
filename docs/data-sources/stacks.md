@@ -170,7 +170,7 @@ Read-Only:
 - `runner_image` (String)
 - `showcase` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--showcase))
 - `space_id` (String)
-- `spacelift` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--spacelift))
+- `spacelift_repo` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--spacelift_repo))
 - `stack_id` (String)
 - `terraform_external_state_access` (Boolean)
 - `terraform_smart_sanitization` (Boolean)
@@ -306,12 +306,11 @@ Read-Only:
 - `namespace` (String)
 
 
-<a id="nestedobjatt--stacks--spacelift"></a>
-### Nested Schema for `stacks.spacelift`
+<a id="nestedobjatt--stacks--spacelift_repo"></a>
+### Nested Schema for `stacks.spacelift_repo`
 
 Read-Only:
 
-- `id` (String)
 
 
 <a id="nestedobjatt--stacks--terragrunt"></a>

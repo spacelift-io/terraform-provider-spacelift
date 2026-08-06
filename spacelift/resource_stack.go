@@ -721,22 +721,13 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
-			"spacelift": {
+			"spacelift_repo": {
 				Type:          schema.TypeList,
-				Description:   "Spacelift Repos settings. When set, `repository` must be the repo's ID (slug) and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit.",
+				Description:   "Take the source from a Spacelift repo. The block takes no settings: `repository` is the repo's ID (slug), and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit.",
 				Optional:      true,
-				ConflictsWith: conflictingVCSProviders("spacelift"),
+				ConflictsWith: conflictingVCSProviders("spacelift_repo"),
 				MaxItems:      1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"id": {
-							Type:             schema.TypeString,
-							Required:         true,
-							Description:      "ID (slug) of the Spacelift repo",
-							ValidateDiagFunc: validations.DisallowEmptyString,
-						},
-					},
-				},
+				Elem:          &schema.Resource{Schema: map[string]*schema.Schema{}},
 			},
 			"terraform_external_state_access": {
 				Type:        schema.TypeBool,
@@ -1123,8 +1114,9 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderShowcases))
 	}
 
-	if spaceliftRepo, ok := d.Get("spacelift").([]any); ok && len(spaceliftRepo) > 0 {
-		ret.VCSIntegrationID = graphql.NewID(spaceliftRepo[0].(map[string]any)["id"])
+	if spaceliftRepo, ok := d.Get("spacelift_repo").([]any); ok && len(spaceliftRepo) > 0 {
+		// A Spacelift repo is addressed by its slug, which is what repository holds.
+		ret.VCSIntegrationID = graphql.NewID(d.Get("repository"))
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderSpacelift))
 	}
 
@@ -1485,7 +1477,7 @@ func conflictingVCSProviders(me string) (out []string) {
 		"github_enterprise",
 		"gitlab",
 		"raw_git",
-		"spacelift",
+		"spacelift_repo",
 	}
 
 	for _, v := range available {
