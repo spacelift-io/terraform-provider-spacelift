@@ -1,0 +1,1 @@
+terraform import spacelift_intent_project.sandbox $INTENT_PROJECT_ID
