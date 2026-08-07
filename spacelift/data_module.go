@@ -243,6 +243,12 @@ func dataModule() *schema.Resource {
 				Description: "ID (slug) of the space the module is in",
 				Computed:    true,
 			},
+			"spacelift_repo": {
+				Type:        schema.TypeList,
+				Description: "Set when the source is a Spacelift repo, whose ID (slug) is `repository`",
+				Elem:        &schema.Resource{Schema: map[string]*schema.Schema{}},
+				Computed:    true,
+			},
 			"terraform_provider": {
 				Type:        schema.TypeString,
 				Description: "The module provider will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you gave the module a custom name, you can provide the provider name here.",

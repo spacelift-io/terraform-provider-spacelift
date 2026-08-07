@@ -45,6 +45,10 @@ func resourceStack() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
+			if err := validateSpaceliftRepoVCS(diff); err != nil {
+				return err
+			}
+
 			// Skip on initial resource creation — there is no old state.
 			if diff.Id() == "" {
 				return nil
@@ -717,6 +721,14 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"spacelift_repo": {
+				Type:          schema.TypeList,
+				Description:   "Take the source from a Spacelift repo. The block takes no settings: `repository` is the repo's ID (slug), and `branch` must be `main` - Spacelift Repos have no branches, and the stack always tracks the latest commit.",
+				Optional:      true,
+				ConflictsWith: conflictingVCSProviders("spacelift_repo"),
+				MaxItems:      1,
+				Elem:          &schema.Resource{Schema: map[string]*schema.Schema{}},
+			},
 			"terraform_external_state_access": {
 				Type:        schema.TypeBool,
 				Description: "Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.",
@@ -1102,6 +1114,12 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderShowcases))
 	}
 
+	if spaceliftRepo, ok := d.Get("spacelift_repo").([]any); ok && len(spaceliftRepo) > 0 {
+		// A Spacelift repo is addressed by its slug, which is what repository holds.
+		ret.VCSIntegrationID = graphql.NewID(d.Get("repository"))
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderSpacelift))
+	}
+
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
 		var labels []graphql.String
 		for _, label := range labelSet.List() {
@@ -1459,6 +1477,7 @@ func conflictingVCSProviders(me string) (out []string) {
 		"github_enterprise",
 		"gitlab",
 		"raw_git",
+		"spacelift_repo",
 	}
 
 	for _, v := range available {

@@ -2,6 +2,13 @@ data "spacelift_repo" "this" {
   repo_id = "my-repo"
 }
 
-output "repo_space" {
-  value = data.spacelift_repo.this.space_id
+# Repos have no branches, so the branch is always "main" and the stack tracks
+# the latest commit.
+resource "spacelift_stack" "this" {
+  name       = "my-stack"
+  repository = data.spacelift_repo.this.repo_id
+  branch     = "main"
+  space_id   = data.spacelift_repo.this.space_id
+
+  spacelift_repo {}
 }

@@ -245,6 +245,8 @@ func (s *Stack) VCSSettings() (string, map[string]any) {
 		}
 	case VCSProviderShowcases:
 		return "showcase", singleKeyMap("namespace", s.Namespace)
+	case VCSProviderSpacelift:
+		return "spacelift_repo", map[string]any{}
 	}
 
 	return "", nil

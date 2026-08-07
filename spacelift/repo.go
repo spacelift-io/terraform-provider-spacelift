@@ -1,6 +1,8 @@
 package spacelift
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -50,4 +52,20 @@ func flattenRepo(repo *structs.Repo) map[string]any {
 		repoUpdatedAt:   repo.UpdatedAt,
 		repoStacks:      stacks,
 	}
+}
+
+func validateSpaceliftRepoVCS(diff *schema.ResourceDiff) error {
+	if blocks, ok := diff.Get("spacelift_repo").([]any); !ok || len(blocks) == 0 {
+		return nil
+	}
+
+	// The backend hardcodes "main" when resolving the ref, so any other branch degrades run signals.
+	// Wait for a known value, since Get reads an unresolved plan value as empty.
+	if diff.NewValueKnown("branch") {
+		if branch := diff.Get("branch").(string); branch != "main" {
+			return fmt.Errorf("branch must be \"main\" when using a Spacelift repo, got %q", branch)
+		}
+	}
+
+	return nil
 }

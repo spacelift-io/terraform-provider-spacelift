@@ -29,4 +29,8 @@ const (
 
 	// VCSProviderShowcases represents the showcases provider.
 	VCSProviderShowcases VCSProvider = "SHOWCASE"
+
+	// VCSProviderSpacelift represents Spacelift Repos, the built-in VCS
+	// provider storing source code directly in Spacelift.
+	VCSProviderSpacelift VCSProvider = "SPACELIFT"
 )
