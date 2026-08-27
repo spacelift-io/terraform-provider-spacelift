@@ -27,28 +27,33 @@ const StackConfigVendorOpenTofu = "StackConfigVendorOpenTofu"
 // StackConfigVendorTerragrunt is a graphql union typename.
 const StackConfigVendorTerragrunt = "StackConfigVendorTerragrunt"
 
+// Hooks represents the scripts run around each phase of a Stack.
+type Hooks struct {
+	AfterApply    []string `graphql:"afterApply"`
+	AfterDestroy  []string `graphql:"afterDestroy"`
+	AfterInit     []string `graphql:"afterInit"`
+	AfterPerform  []string `graphql:"afterPerform"`
+	AfterPlan     []string `graphql:"afterPlan"`
+	AfterRun      []string `graphql:"afterRun"`
+	BeforeApply   []string `graphql:"beforeApply"`
+	BeforeDestroy []string `graphql:"beforeDestroy"`
+	BeforeInit    []string `graphql:"beforeInit"`
+	BeforePerform []string `graphql:"beforePerform"`
+	BeforePlan    []string `graphql:"beforePlan"`
+}
+
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
 	ID                           string        `graphql:"id"`
 	Administrative               bool          `graphql:"administrative"`
-	AfterApply                   []string      `graphql:"afterApply"`
-	AfterDestroy                 []string      `graphql:"afterDestroy"`
-	AfterInit                    []string      `graphql:"afterInit"`
-	AfterPerform                 []string      `graphql:"afterPerform"`
-	AfterPlan                    []string      `graphql:"afterPlan"`
-	AfterRun                     []string      `graphql:"afterRun"`
 	Autodeploy                   bool          `graphql:"autodeploy"`
 	Autoretry                    bool          `graphql:"autoretry"`
-	BeforeApply                  []string      `graphql:"beforeApply"`
-	BeforeDestroy                []string      `graphql:"beforeDestroy"`
-	BeforeInit                   []string      `graphql:"beforeInit"`
-	BeforePerform                []string      `graphql:"beforePerform"`
-	BeforePlan                   []string      `graphql:"beforePlan"`
 	Branch                       string        `graphql:"branch"`
 	Deleting                     bool          `graphql:"deleting"`
 	Description                  *string       `graphql:"description"`
 	IsDisabled                   bool          `graphql:"isDisabled"`
 	GitHubActionDeploy           bool          `graphql:"githubActionDeploy"`
+	Hooks                        Hooks         `graphql:"hooks"`
 	Integrations                 *Integrations `graphql:"integrations"`
 	Labels                       []string      `graphql:"labels"`
 	LocalPreviewEnabled          bool          `graphql:"localPreviewEnabled"`
@@ -255,20 +260,20 @@ func (s *Stack) VCSSettings() (string, map[string]any) {
 func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	var diags diag.Diagnostics
 	d.Set("administrative", stack.Administrative)
-	d.Set("after_apply", stack.AfterApply)
-	d.Set("after_destroy", stack.AfterDestroy)
-	d.Set("after_init", stack.AfterInit)
-	d.Set("after_perform", stack.AfterPerform)
-	d.Set("after_plan", stack.AfterPlan)
-	d.Set("after_run", stack.AfterRun)
+	d.Set("after_apply", stack.Hooks.AfterApply)
+	d.Set("after_destroy", stack.Hooks.AfterDestroy)
+	d.Set("after_init", stack.Hooks.AfterInit)
+	d.Set("after_perform", stack.Hooks.AfterPerform)
+	d.Set("after_plan", stack.Hooks.AfterPlan)
+	d.Set("after_run", stack.Hooks.AfterRun)
 	d.Set("autodeploy", stack.Autodeploy)
 	d.Set("autoretry", stack.Autoretry)
 	d.Set("aws_assume_role_policy_statement", stack.Integrations.AWS.AssumeRolePolicyStatement)
-	d.Set("before_apply", stack.BeforeApply)
-	d.Set("before_destroy", stack.BeforeDestroy)
-	d.Set("before_init", stack.BeforeInit)
-	d.Set("before_perform", stack.BeforePerform)
-	d.Set("before_plan", stack.BeforePlan)
+	d.Set("before_apply", stack.Hooks.BeforeApply)
+	d.Set("before_destroy", stack.Hooks.BeforeDestroy)
+	d.Set("before_init", stack.Hooks.BeforeInit)
+	d.Set("before_perform", stack.Hooks.BeforePerform)
+	d.Set("before_plan", stack.Hooks.BeforePlan)
 	d.Set("branch", stack.Branch)
 	d.Set("description", stack.Description)
 	d.Set("enable_local_preview", stack.LocalPreviewEnabled)

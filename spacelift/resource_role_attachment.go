@@ -242,7 +242,7 @@ func readAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta any
 
 	d.Set("api_key_id", roleBinding.APIKeyID)
 	d.Set("role_id", roleBinding.Role.ID)
-	d.Set("space_id", roleBinding.SpaceID)
+	d.Set("space_id", roleBinding.Space.ID)
 
 	return nil
 }
@@ -270,7 +270,7 @@ func readUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	d.Set("user_id", roleBinding.UserID)
 	d.Set("role_id", roleBinding.RoleID)
-	d.Set("space_id", roleBinding.SpaceID)
+	d.Set("space_id", roleBinding.Space.ID)
 
 	return nil
 }
@@ -298,7 +298,7 @@ func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData,
 
 	d.Set("idp_group_mapping_id", roleBinding.UserGroup.ID)
 	d.Set("role_id", roleBinding.RoleID)
-	d.Set("space_id", roleBinding.SpaceID)
+	d.Set("space_id", roleBinding.Space.ID)
 
 	return nil
 }
