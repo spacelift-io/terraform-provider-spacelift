@@ -9,7 +9,6 @@ type NamedWebhooksIntegration struct {
 	Endpoint       string   `graphql:"endpoint" json:"endpoint"`
 	Space          Space    `graphql:"space" json:"space"`
 	Name           string   `graphql:"name" json:"name"`
-	Secret         *string  `graphql:"secret" json:"secret"`
 	SecretHeaders  []string `graphql:"secretHeaders" json:"secretHeaders"`
 	Labels         []string `graphql:"labels" json:"labels"`
 	RetryOnFailure *bool    `graphql:"retryOnFailure" json:"retryOnFailure"`

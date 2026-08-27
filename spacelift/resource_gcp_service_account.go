@@ -162,7 +162,11 @@ func resourceGCPServiceAccountDelete(ctx context.Context, d *schema.ResourceData
 
 func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta any, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
-		Module *structs.Module `graphql:"module(id: $id)"`
+		Module *struct {
+			Integrations struct {
+				GCP structs.GCPIntegration `graphql:"gcp"`
+			} `graphql:"integrations"`
+		} `graphql:"module(id: $id)"`
 	}
 
 	variables := map[string]any{"id": toID(d.Id())}
@@ -195,7 +199,11 @@ func resourceModuleGCPServiceAccountReadWithHooks(ctx context.Context, d *schema
 
 func resourceStackGCPServiceAccountReadWithHooks(ctx context.Context, d *schema.ResourceData, meta any, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
-		Stack *structs.Stack `graphql:"stack(id: $id)"`
+		Stack *struct {
+			Integrations struct {
+				GCP structs.GCPIntegration `graphql:"gcp"`
+			} `graphql:"integrations"`
+		} `graphql:"stack(id: $id)"`
 	}
 
 	variables := map[string]any{"id": toID(d.Id())}
