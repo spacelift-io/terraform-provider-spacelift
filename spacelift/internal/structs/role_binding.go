@@ -5,14 +5,14 @@ import "github.com/shurcooL/graphql"
 type APIKeyRoleBinding struct {
 	ID       string `graphql:"id"`
 	Role     Role   `graphql:"role"`
-	SpaceID  string `graphql:"spaceID"`
+	Space    Space  `graphql:"space"`
 	APIKeyID string `graphql:"apiKeyID"`
 }
 
 type UserGroupRoleBinding struct {
 	ID        string    `graphql:"id"`
 	RoleID    string    `graphql:"roleID"`
-	SpaceID   string    `graphql:"spaceID"`
+	Space     Space     `graphql:"space"`
 	UserGroup UserGroup `graphql:"userGroup"`
 }
 
@@ -29,12 +29,12 @@ type UserGroupRoleBindingInput struct {
 }
 
 type UserRoleBinding struct {
-	ID      string `graphql:"id"`
-	RoleID  string `graphql:"roleID"`
-	Role    Role   `graphql:"role"`
-	SpaceID string `graphql:"spaceID"`
-	UserID  string `graphql:"userID"`
-	User    User   `graphql:"user"`
+	ID     string `graphql:"id"`
+	RoleID string `graphql:"roleID"`
+	Role   Role   `graphql:"role"`
+	Space  Space  `graphql:"space"`
+	UserID string `graphql:"userID"`
+	User   User   `graphql:"user"`
 }
 
 type UserRoleBindingInput struct {
