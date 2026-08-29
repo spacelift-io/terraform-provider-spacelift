@@ -7,7 +7,23 @@ import (
 )
 
 var testConfig struct {
-	IPs        []string
+	IPs []string
+	AI  struct {
+		// Creating an AI integration needs the space-admin role, so allow
+		// pointing the tests at a space other than root.
+		Space string `default:"root"`
+		// Spacelift does not validate the key against the provider at create
+		// time, so one placeholder covers every provider.
+		APIKey  string `default:"placeholder-api-key"`
+		Bedrock struct {
+			// Bedrock cannot be faked: Spacelift assumes the AWS integration's
+			// role and validates the inference profiles against AWS. Without
+			// these the Bedrock tests skip.
+			IntegrationID string
+			Region        string `default:"us-east-1"`
+			Profile       string
+		}
+	}
 	SourceCode struct {
 		AzureDevOps struct {
 			Default struct {
