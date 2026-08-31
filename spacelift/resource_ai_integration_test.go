@@ -3,11 +3,16 @@ package spacelift
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -26,7 +31,7 @@ func TestAIProviderBlockWiring(t *testing.T) {
 
 	resourceSchema := resourceAIIntegration().Schema
 
-	blocksByName := map[string]bool{}
+	blocksByName := map[string]bool{aiBlockSpacelift: true}
 	for provider, block := range aiProviderBlocks {
 		if provider == "" || block == "" {
 			t.Errorf("aiProviderBlocks has an empty entry: %q -> %q", provider, block)
@@ -37,8 +42,21 @@ func TestAIProviderBlockWiring(t *testing.T) {
 	if len(blocksByName) != len(aiProviderBlockNames) {
 		t.Errorf(
 			"aiProviderBlocks has %d distinct blocks but aiProviderBlockNames lists %d",
-			len(blocksByName), len(aiProviderBlockNames),
+			len(blocksByName)-1, len(aiProviderBlockNames),
 		)
+	}
+
+	if len(aiProviderNames) != len(aiProviderBlocks) {
+		t.Errorf(
+			"aiProviderNames lists %d providers but aiProviderBlocks maps %d",
+			len(aiProviderNames), len(aiProviderBlocks),
+		)
+	}
+
+	for _, provider := range aiProviderNames {
+		if _, ok := aiProviderBlocks[provider]; !ok {
+			t.Errorf("provider %q is listed in aiProviderNames but maps to no block", provider)
+		}
 	}
 
 	for _, name := range aiProviderBlockNames {
@@ -74,6 +92,163 @@ func TestAIProviderBlockWiring(t *testing.T) {
 				)
 				break
 			}
+		}
+	}
+}
+
+// Schema-level rules, checked without a live account because they are all
+// meant to fail before anything reaches the API.
+func TestAIIntegrationSchemaValidation(t *testing.T) {
+	t.Parallel()
+
+	for name, testCase := range map[string]struct {
+		config map[string]any
+		expect string
+	}{
+		"no provider block": {
+			config: map[string]any{"name": "test"},
+			expect: "one of `anthropic,bedrock,google,openai,spacelift` must be specified",
+		},
+		"two provider blocks": {
+			config: map[string]any{
+				"name":   "test",
+				"google": []any{map[string]any{"api_key": "one"}},
+				"openai": []any{map[string]any{"api_key": "two"}},
+			},
+			expect: "only one of `anthropic,bedrock,google,openai,spacelift` can be specified",
+		},
+		"empty api_key": {
+			config: map[string]any{
+				"name":   "test",
+				"google": []any{map[string]any{"api_key": ""}},
+			},
+			expect: "must not be an empty string",
+		},
+		"empty api_key_wo": {
+			config: map[string]any{
+				"name": "test",
+				"google": []any{map[string]any{
+					"api_key_wo":         "",
+					"api_key_wo_version": "1",
+				}},
+			},
+			expect: "must not be an empty string",
+		},
+		// An empty version satisfies RequiredWith but reads as unset when the
+		// key is extracted, so the key would never be sent.
+		"empty api_key_wo_version": {
+			config: map[string]any{
+				"name": "test",
+				"google": []any{map[string]any{
+					"api_key_wo":         "some-key",
+					"api_key_wo_version": "",
+				}},
+			},
+			expect: "must not be an empty string",
+		},
+		"empty models": {
+			config: map[string]any{
+				"name":   "test",
+				"models": []any{},
+				"google": []any{map[string]any{"api_key": "some-key"}},
+			},
+			expect: "requires 1 item minimum",
+		},
+		"models on bedrock": {
+			config: map[string]any{
+				"name":   "test",
+				"models": []any{"some-model"},
+				"bedrock": []any{map[string]any{
+					"integration_id": "some-integration",
+					"region":         "us-east-1",
+					"profiles":       []any{"some-profile"},
+				}},
+			},
+			expect: `"models": conflicts with bedrock`,
+		},
+		"spacelift block on its own": {
+			config: map[string]any{aiBlockSpacelift: []any{map[string]any{}}},
+		},
+		"spacelift block with a name": {
+			config: map[string]any{
+				"name":           "test",
+				aiBlockSpacelift: []any{map[string]any{}},
+			},
+			expect: `"spacelift": conflicts with name`,
+		},
+		"spacelift block with labels": {
+			config: map[string]any{
+				"labels":         []any{"one"},
+				aiBlockSpacelift: []any{map[string]any{}},
+			},
+			expect: `"spacelift": conflicts with labels`,
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			diags := resourceAIIntegration().Validate(terraform.NewResourceConfigRaw(testCase.config))
+
+			var errs []string
+			for _, d := range diags {
+				if d.Severity == diag.Error {
+					errs = append(errs, d.Summary+" "+d.Detail)
+				}
+			}
+
+			joined := strings.Join(errs, "\n")
+
+			if testCase.expect == "" {
+				if joined != "" {
+					t.Fatalf("expected no errors, got: %s", joined)
+				}
+
+				return
+			}
+
+			if !strings.Contains(joined, testCase.expect) {
+				t.Fatalf("expected an error containing %q, got: %s", testCase.expect, joined)
+			}
+		})
+	}
+}
+
+// The marker block carries no attributes, so nothing but its presence
+// distinguishes it, and that has to survive a write and a read back.
+func TestAIIntegrationSpaceliftBlockRoundTrip(t *testing.T) {
+	t.Parallel()
+
+	resourceSchema := resourceAIIntegration().Schema
+	d := schema.TestResourceDataRaw(t, resourceSchema, map[string]any{})
+
+	integration := &structs.AIIntegration{
+		ID:                  "01ABC",
+		Name:                "Spacelift Claude",
+		Provider:            aiProviderAnthropic,
+		Enabled:             true,
+		IsSpaceliftProvided: true,
+	}
+
+	d.SetId(integration.ID)
+
+	if err := setAIIntegrationProviderBlock(d, integration); err != nil {
+		t.Fatalf("could not set the provider block: %v", err)
+	}
+
+	_, block, err := aiIntegrationProvider(d)
+	if err != nil {
+		t.Fatalf("could not read the provider block back: %v", err)
+	}
+
+	if block != aiBlockSpacelift {
+		t.Errorf("expected the %q block, got %q", aiBlockSpacelift, block)
+	}
+
+	// The provider that actually backs it stays out of the blocks, so that the
+	// configuration never has to name it.
+	for _, other := range otherAIProviderBlocks(aiBlockSpacelift) {
+		if list, ok := d.Get(other).([]any); ok && len(list) > 0 {
+			t.Errorf("block %q should be empty, got %v", other, list)
 		}
 	}
 }
@@ -132,6 +307,12 @@ func TestAIIntegrationResource(t *testing.T) {
 					Attribute("models.#", Equals("2")),
 					Attribute("models.1", Equals("gemini-2.5-flash")),
 				),
+			},
+			{
+				// The API clears the pin for an empty list but then reports the
+				// defaults it resolved, so this could never reach a clean plan.
+				Config:      config("updated description", `[]`, true),
+				ExpectError: regexp.MustCompile("requires 1 item minimum"),
 			},
 			{
 				// enabled goes through aiIntegrationToggle rather than the update
@@ -253,6 +434,100 @@ func TestAIIntegrationResource(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+		})
+	})
+
+	t.Run("imports and toggles a Spacelift-provided integration", func(t *testing.T) {
+		// Nothing here can be created, so the test needs one that already exists.
+		if testConfig.AI.SpaceliftProvidedID == "" {
+			t.Skip("SPACELIFT_PROVIDER_TEST_AI_SPACELIFTPROVIDEDID is not set, skipping")
+		}
+
+		config := func(enabled bool) string {
+			return fmt.Sprintf(`
+				resource "spacelift_ai_integration" "test" {
+					enabled = %t
+
+					spacelift {}
+				}
+			`, enabled)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config:             config(false),
+				ResourceName:       resourceName,
+				ImportState:        true,
+				ImportStateId:      testConfig.AI.SpaceliftProvidedID,
+				ImportStatePersist: true,
+			},
+			{
+				Config: config(false),
+				Check: Resource(
+					resourceName,
+					Attribute("is_spacelift_provided", Equals("true")),
+					Attribute("enabled", Equals("false")),
+					Attribute("spacelift.#", Equals("1")),
+					// Read back rather than configured, so the marker block does
+					// not need a placeholder credential to stand in for them.
+					Attribute("name", IsNotEmpty()),
+					Attribute("ai_provider", IsNotEmpty()),
+					Attribute("anthropic.#", Equals("0")),
+					Attribute("bedrock.#", Equals("0")),
+					Attribute("google.#", Equals("0")),
+					Attribute("openai.#", Equals("0")),
+				),
+			},
+			{
+				Config: config(true),
+				Check: Resource(
+					resourceName,
+					Attribute("enabled", Equals("true")),
+				),
+			},
+		})
+	})
+
+	t.Run("rejects a provider block on a Spacelift-provided integration", func(t *testing.T) {
+		if testConfig.AI.SpaceliftProvidedID == "" {
+			t.Skip("SPACELIFT_PROVIDER_TEST_AI_SPACELIFTPROVIDEDID is not set, skipping")
+		}
+
+		config := `
+			resource "spacelift_ai_integration" "test" {
+				name = "not-mine"
+
+				anthropic {
+					api_key = "placeholder"
+				}
+			}
+		`
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config:             config,
+				ResourceName:       resourceName,
+				ImportState:        true,
+				ImportStateId:      testConfig.AI.SpaceliftProvidedID,
+				ImportStatePersist: true,
+			},
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile("can only be managed through the `spacelift` block"),
+			},
+		})
+	})
+
+	t.Run("rejects creating a Spacelift-provided integration", func(t *testing.T) {
+		testSteps(t, []resource.TestStep{
+			{
+				Config: `
+					resource "spacelift_ai_integration" "test" {
+						spacelift {}
+					}
+				`,
+				ExpectError: regexp.MustCompile("cannot be created, only imported"),
 			},
 		})
 	})
@@ -398,7 +673,7 @@ func TestAIIntegrationResource(t *testing.T) {
 						}
 					}
 				`, randomID, testConfig.AI.Space),
-				ExpectError: regexp.MustCompile("only one of `anthropic,bedrock,google,openai` can be specified"),
+				ExpectError: regexp.MustCompile("only one of `anthropic,bedrock,google,openai,spacelift` can be specified"),
 			},
 		})
 	})
@@ -414,7 +689,7 @@ func TestAIIntegrationResource(t *testing.T) {
 						space_id = "%s"
 					}
 				`, randomID, testConfig.AI.Space),
-				ExpectError: regexp.MustCompile("one of `anthropic,bedrock,google,openai` must be specified"),
+				ExpectError: regexp.MustCompile("one of `anthropic,bedrock,google,openai,spacelift` must be specified"),
 			},
 		})
 	})

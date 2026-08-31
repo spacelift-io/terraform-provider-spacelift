@@ -14,8 +14,11 @@ var testConfig struct {
 		Space string `default:"root"`
 		// Spacelift does not validate the key against the provider at create
 		// time, so one placeholder covers every provider.
-		APIKey  string `default:"placeholder-api-key"`
-		Bedrock struct {
+		APIKey string `default:"placeholder-api-key"`
+		// A Spacelift-provided integration can only be imported, so the test
+		// needs the ID of one that already exists. Without it that test skips.
+		SpaceliftProvidedID string
+		Bedrock             struct {
 			// Bedrock cannot be faked: Spacelift assumes the AWS integration's
 			// role and validates the inference profiles against AWS. Without
 			// these the Bedrock tests skip.

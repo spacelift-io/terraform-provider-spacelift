@@ -51,3 +51,23 @@ resource "spacelift_ai_integration" "bedrock" {
     ]
   }
 }
+
+# Spacelift also provides its own integrations, shared with every account. They
+# cannot be created or deleted, so the resource is imported and the `spacelift`
+# block marks it as one. Everything except `enabled` belongs to Spacelift, so
+# the block takes no arguments and the rest of the resource is left empty.
+data "spacelift_ai_integrations" "shared_anthropic" {
+  spacelift_provided = true
+  ai_provider        = "Anthropic"
+}
+
+import {
+  to = spacelift_ai_integration.shared_anthropic
+  id = one(data.spacelift_ai_integrations.shared_anthropic.integrations[*].integration_id)
+}
+
+resource "spacelift_ai_integration" "shared_anthropic" {
+  enabled = false
+
+  spacelift {}
+}

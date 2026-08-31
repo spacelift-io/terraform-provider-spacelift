@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -23,6 +24,17 @@ func dataAIIntegrations() *schema.Resource {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Description: "required labels to match",
+				Optional:    true,
+			},
+			"ai_provider": {
+				Type:             schema.TypeString,
+				Description:      "Only return the integrations backed by this AI provider, one of `Anthropic`, `Bedrock`, `Google` or `OpenAI`",
+				Optional:         true,
+				ValidateDiagFunc: validation.ToDiagFunc(validation.StringInSlice(aiProviderNames, false)),
+			},
+			"spacelift_provided": {
+				Type:        schema.TypeBool,
+				Description: "Only return the integrations that are, or are not, provided by Spacelift. Leave unset to return both.",
 				Optional:    true,
 			},
 			"integrations": {
@@ -114,11 +126,24 @@ func dataAIIntegrationsRead(ctx context.Context, d *schema.ResourceData, meta an
 		return integration.Labels
 	})
 
-	mapped := make([]map[string]any, len(filtered))
-	for index, integration := range filtered {
+	provider, byProvider := d.GetOk("ai_provider")
+	// d.Get cannot tell an unset boolean from false, so the raw config decides
+	// whether the filter was asked for at all.
+	spaceliftProvided := getOptionalBool(d, "spacelift_provided")
+
+	mapped := make([]map[string]any, 0, len(filtered))
+	for _, integration := range filtered {
+		if byProvider && integration.Provider != provider.(string) {
+			continue
+		}
+
+		if spaceliftProvided != nil && integration.IsSpaceliftProvided != bool(*spaceliftProvided) {
+			continue
+		}
+
 		flattened := flattenAIIntegration(integration)
 		flattened["integration_id"] = integration.ID
-		mapped[index] = flattened
+		mapped = append(mapped, flattened)
 	}
 
 	if err := d.Set("integrations", mapped); err != nil {

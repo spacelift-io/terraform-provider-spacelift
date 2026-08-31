@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,8 +33,21 @@ var aiProviderBlocks = map[string]string{
 	aiProviderOpenAI:    "openai",
 }
 
+// aiBlockSpacelift names no provider: it marks an integration Spacelift
+// provides and shares with every account, which is read-only apart from
+// `enabled`.
+const aiBlockSpacelift = "spacelift"
+
+const aiSpaceliftProvidedCreateError = "integrations provided by Spacelift cannot be created, only " +
+	"imported: look the ID up with the spacelift_ai_integrations data source and import it"
+
 // Sorted, so the generated ExactlyOneOf lists read consistently.
-var aiProviderBlockNames = []string{"anthropic", "bedrock", "google", "openai"}
+var aiProviderBlockNames = []string{"anthropic", "bedrock", "google", "openai", aiBlockSpacelift}
+
+var aiProviderNames = []string{aiProviderAnthropic, aiProviderBedrock, aiProviderGoogle, aiProviderOpenAI}
+
+// Attributes that belong to Spacelift on a Spacelift-provided integration.
+var aiSpaceliftManagedAttributes = []string{"name", "description", "labels", "models", "space_id"}
 
 func resourceAIIntegration() *schema.Resource {
 	return &schema.Resource{
@@ -42,7 +56,10 @@ func resourceAIIntegration() *schema.Resource {
 			"Spacelift features that call out to a model.\n\n" +
 			"The provider is chosen by setting exactly one provider block: `anthropic`, `bedrock`, " +
 			"`google` (the Gemini API) or `openai`. Changing which block is set replaces the " +
-			"integration, because the API does not allow an existing one to change provider.",
+			"integration, because the API does not allow an existing one to change provider.\n\n" +
+			"A fifth block, `spacelift`, marks an integration that Spacelift provides and shares " +
+			"with every account. Those can only be imported and toggled, so the block takes no " +
+			"arguments and everything except `enabled` has to be left out of the configuration.",
 
 		CreateContext: resourceAIIntegrationCreate,
 		ReadContext:   resourceAIIntegrationRead,
@@ -53,16 +70,32 @@ func resourceAIIntegration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		// aiIntegrationUpdate takes a provider argument but the API refuses to
-		// change it, so swapping the block has to replace the integration.
-		CustomizeDiff: forceNewOnAIProviderChange,
+		CustomizeDiff: customizeAIIntegrationDiff,
 
 		Schema: map[string]*schema.Schema{
 			"name": {
-				Type:             schema.TypeString,
-				Description:      "Friendly name of the integration",
-				Required:         true,
+				Type: schema.TypeString,
+				Description: "Friendly name of the integration. Required, except on a " +
+					"Spacelift-provided integration, whose name belongs to Spacelift and is read " +
+					"back from the API.",
+				// ConflictsWith cannot point at a Required attribute, so the
+				// requirement is enforced in customizeAIIntegrationDiff instead.
+				Optional:         true,
+				Computed:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
+			},
+			aiBlockSpacelift: {
+				Type: schema.TypeList,
+				Description: "Marks a read-only integration provided by Spacelift and shared with " +
+					"every account. The block takes no arguments because everything except " +
+					"`enabled` belongs to Spacelift. These integrations cannot be created or " +
+					"deleted, so the resource has to be imported, and removing it from the " +
+					"configuration only drops it from the state.",
+				Optional:      true,
+				MaxItems:      1,
+				ExactlyOneOf:  aiProviderBlockNames,
+				ConflictsWith: aiSpaceliftManagedAttributes,
+				Elem:          &schema.Resource{Schema: map[string]*schema.Schema{}},
 			},
 			"anthropic": aiProviderAPIKeyBlock("anthropic", "Anthropic", "Anthropic"),
 			"google":    aiProviderAPIKeyBlock("google", "Google", "Gemini"),
@@ -110,11 +143,18 @@ func resourceAIIntegration() *schema.Resource {
 			"models": {
 				Type: schema.TypeList,
 				Description: "Model identifiers available on this integration, for example `gemini-2.5-pro`. " +
-					"Leave unset to accept the provider's default model list, which is then recorded and " +
-					"kept as-is: removing the attribute later produces no diff, so pinning is one-way. " +
+					"Leave unset to accept the provider's default model list, which is then recorded in " +
+					"the state but never sent back, so removing the attribute later produces no diff. " +
+					"Pinning is one-way: the API reports the models an integration resolves to rather " +
+					"than the ones it was given, so it cannot report that nothing is pinned, and an " +
+					"empty list is rejected rather than left to diff on every plan. " +
 					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.",
 				Optional: true,
 				Computed: true,
+				// An empty list clears the pin, but the API then reports the
+				// defaults it resolved, which can never match the empty list in
+				// the configuration.
+				MinItems: 1,
 				// The API rejects models outright for Bedrock integrations.
 				ConflictsWith: []string{"bedrock"},
 				Elem: &schema.Schema{
@@ -194,6 +234,8 @@ func aiProviderAPIKeyBlock(name, label, api string) *schema.Schema {
 					// The API requires a key for every provider except Bedrock,
 					// so catch an empty block at plan time rather than on apply.
 					AtLeastOneOf: []string{path("api_key"), path("api_key_wo")},
+					// An empty string would otherwise satisfy AtLeastOneOf.
+					ValidateDiagFunc: validations.DisallowEmptyString,
 				},
 				"api_key_wo": {
 					Type: schema.TypeString,
@@ -201,12 +243,13 @@ func aiProviderAPIKeyBlock(name, label, api string) *schema.Schema {
 						"%s API key. The key is not stored in the state. Modify api_key_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
 						api,
 					),
-					Optional:      true,
-					Sensitive:     true,
-					WriteOnly:     true,
-					ConflictsWith: []string{path("api_key")},
-					RequiredWith:  []string{path("api_key_wo_version")},
-					AtLeastOneOf:  []string{path("api_key"), path("api_key_wo")},
+					Optional:         true,
+					Sensitive:        true,
+					WriteOnly:        true,
+					ConflictsWith:    []string{path("api_key")},
+					RequiredWith:     []string{path("api_key_wo_version")},
+					AtLeastOneOf:     []string{path("api_key"), path("api_key_wo")},
+					ValidateDiagFunc: validations.DisallowEmptyString,
 				},
 				"api_key_wo_version": {
 					Type:          schema.TypeString,
@@ -214,6 +257,10 @@ func aiProviderAPIKeyBlock(name, label, api string) *schema.Schema {
 					Optional:      true,
 					ConflictsWith: []string{path("api_key")},
 					RequiredWith:  []string{path("api_key_wo")},
+					// An empty version satisfies RequiredWith but reads as unset
+					// when the key is extracted, which would quietly send an
+					// empty key instead of the one that was configured.
+					ValidateDiagFunc: validations.DisallowEmptyString,
 				},
 				"base_url": {
 					Type: schema.TypeString,
@@ -243,15 +290,60 @@ func otherAIProviderBlocks(block string) []string {
 	return others
 }
 
-func forceNewOnAIProviderChange(_ context.Context, d *schema.ResourceDiff, _ any) error {
+func aiBlockSet(d *schema.ResourceDiff, name string) bool {
+	list, ok := d.Get(name).([]any)
+
+	return ok && len(list) > 0
+}
+
+// customizeAIIntegrationDiff keeps the block that is set and the integration it
+// points at in step. aiIntegrationUpdate takes a provider argument but the API
+// refuses to change it, so swapping one provider block for another replaces the
+// integration; swapping into or out of `spacelift` cannot be planned at all,
+// because those integrations can be neither created nor deleted.
+func customizeAIIntegrationDiff(_ context.Context, d *schema.ResourceDiff, _ any) error {
+	spaceliftBlock := aiBlockSet(d, aiBlockSpacelift)
+
+	// The raw config decides, because an unknown name reads back as empty.
+	if !spaceliftBlock {
+		if config := d.GetRawConfig(); !config.IsNull() && config.GetAttr("name").IsNull() {
+			return errors.New("`name` is required unless the `spacelift` block is set")
+		}
+	}
+
+	if d.Id() == "" {
+		if spaceliftBlock {
+			return errors.New(aiSpaceliftProvidedCreateError)
+		}
+
+		return nil
+	}
+
+	if spaceliftProvided := d.Get("is_spacelift_provided").(bool); spaceliftProvided != spaceliftBlock {
+		if spaceliftProvided {
+			return fmt.Errorf(
+				"AI integration %s is provided by Spacelift, so it can only be managed through the "+
+					"`spacelift` block", d.Id(),
+			)
+		}
+
+		return fmt.Errorf(
+			"AI integration %s is not provided by Spacelift, so the `spacelift` block does not "+
+				"apply to it: use the block matching its provider instead", d.Id(),
+		)
+	}
+
+	if spaceliftBlock {
+		return nil
+	}
+
 	current := d.Get("ai_provider").(string)
-	if d.Id() == "" || current == "" {
+	if current == "" {
 		return nil
 	}
 
 	for _, name := range aiProviderBlockNames {
-		list, ok := d.Get(name).([]any)
-		if !ok || len(list) == 0 {
+		if !aiBlockSet(d, name) {
 			continue
 		}
 
@@ -332,25 +424,59 @@ func aiIntegrationVariables(d *schema.ResourceData, provider, block string, crea
 		return variables, nil
 	}
 
-	apiKey, diags := internal.ExtractWriteOnlyFieldInBlock(block, "api_key", "api_key_wo", "api_key_wo_version", d)
-	if diags != nil {
-		return nil, diags
-	}
+	// The API treats any key it receives as a rotation, and with a custom
+	// base_url that re-verifies the gateway and re-probes the models, so a
+	// description-only apply must not resend one.
+	if creating || d.HasChange(block+".0.api_key_wo_version") {
+		apiKey, diags := internal.ExtractWriteOnlyFieldInBlock(block, "api_key", "api_key_wo", "api_key_wo_version", d)
+		if diags != nil {
+			return nil, diags
+		}
 
-	if creating || apiKey != "" {
 		variables["apiKey"] = toOptionalString(apiKey)
 	}
 
 	variables["baseURL"] = toOptionalString(d.Get(block + ".0.base_url"))
-	variables["models"] = listToOptionalStringList(d.Get("models"))
+	variables["models"] = aiIntegrationModels(d)
 
 	return variables, nil
+}
+
+// aiIntegrationModels reads the models from the configuration rather than the
+// state. The attribute is Optional and Computed, so the state holds whichever
+// defaults the API filled in, and sending those back would pin the integration
+// to a snapshot of them on the first unrelated update.
+func aiIntegrationModels(d *schema.ResourceData) *[]graphql.String {
+	config := d.GetRawConfig()
+	if config.IsNull() {
+		return nil
+	}
+
+	models := config.GetAttr("models")
+	if models.IsNull() {
+		return nil
+	}
+
+	if !models.IsWhollyKnown() {
+		return listToOptionalStringList(d.Get("models"))
+	}
+
+	list := make([]graphql.String, 0, models.LengthInt())
+	for _, model := range models.AsValueSlice() {
+		list = append(list, graphql.String(model.AsString()))
+	}
+
+	return &list
 }
 
 func resourceAIIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	provider, block, err := aiIntegrationProvider(d)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if block == aiBlockSpacelift {
+		return diag.Errorf("%s", aiSpaceliftProvidedCreateError)
 	}
 
 	variables, diags := aiIntegrationVariables(d, provider, block, true)
@@ -400,7 +526,6 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(integration.ID)
 	d.Set("name", integration.Name)
-	d.Set("description", integration.Description)
 	d.Set("ai_provider", integration.Provider)
 	d.Set("models", integration.Models)
 	d.Set("enabled", integration.Enabled)
@@ -412,11 +537,19 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("space_id", "")
 	}
 
-	labels := schema.NewSet(schema.HashString, []any{})
-	for _, label := range integration.Labels {
-		labels.Add(label)
+	// description and labels are the only attributes that are Optional without
+	// being Computed, so recording them for an integration whose configuration
+	// is not allowed to hold them would diff against that empty configuration
+	// forever. The data sources expose them instead.
+	if !integration.IsSpaceliftProvided {
+		d.Set("description", integration.Description)
+
+		labels := schema.NewSet(schema.HashString, []any{})
+		for _, label := range integration.Labels {
+			labels.Add(label)
+		}
+		d.Set("labels", labels)
 	}
-	d.Set("labels", labels)
 
 	if err := setAIIntegrationProviderBlock(d, integration); err != nil {
 		return diag.FromErr(err)
@@ -428,6 +561,14 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 // setAIIntegrationProviderBlock fills the block matching the integration's
 // provider and clears the others.
 func setAIIntegrationProviderBlock(d *schema.ResourceData, integration *structs.AIIntegration) error {
+	if integration.IsSpaceliftProvided {
+		for _, other := range otherAIProviderBlocks(aiBlockSpacelift) {
+			d.Set(other, nil)
+		}
+
+		return d.Set(aiBlockSpacelift, []any{map[string]any{}})
+	}
+
 	block, ok := aiProviderBlocks[integration.Provider]
 	if !ok {
 		return fmt.Errorf(
@@ -490,14 +631,14 @@ func resourceAIIntegrationUpdate(ctx context.Context, d *schema.ResourceData, me
 		)
 	}
 
-	provider, block, err := aiIntegrationProvider(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	var ret diag.Diagnostics
 
 	if !spaceliftProvided && d.HasChangesExcept("enabled") {
+		provider, block, err := aiIntegrationProvider(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		variables, diags := aiIntegrationVariables(d, provider, block, false)
 		if diags != nil {
 			return diags

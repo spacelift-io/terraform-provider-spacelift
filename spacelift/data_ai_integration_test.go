@@ -36,6 +36,25 @@ func TestAIIntegrationData(t *testing.T) {
 			labels     = ["data-source-test"]
 			depends_on = [spacelift_ai_integration.test]
 		}
+
+		data "spacelift_ai_integrations" "filtered" {
+			labels             = ["data-source-test"]
+			ai_provider        = "Google"
+			spacelift_provided = false
+			depends_on         = [spacelift_ai_integration.test]
+		}
+
+		data "spacelift_ai_integrations" "other_provider" {
+			labels      = ["data-source-test"]
+			ai_provider = "OpenAI"
+			depends_on  = [spacelift_ai_integration.test]
+		}
+
+		data "spacelift_ai_integrations" "spacelift_provided" {
+			labels             = ["data-source-test"]
+			spacelift_provided = true
+			depends_on         = [spacelift_ai_integration.test]
+		}
 	`, randomID, testConfig.AI.Space, testConfig.AI.APIKey)
 
 	testSteps(t, []resource.TestStep{
@@ -68,6 +87,21 @@ func TestAIIntegrationData(t *testing.T) {
 							Attribute("enabled", Equals("false")),
 						),
 					),
+				),
+				Resource(
+					"data.spacelift_ai_integrations.filtered",
+					Attribute("integrations.#", Equals("1")),
+					Attribute("integrations.0.name", Equals("test-ai-data-"+randomID)),
+				),
+				// spacelift_provided only filters when the configuration sets it,
+				// so false has to mean "not Spacelift-provided", not "unset".
+				Resource(
+					"data.spacelift_ai_integrations.other_provider",
+					Attribute("integrations.#", Equals("0")),
+				),
+				Resource(
+					"data.spacelift_ai_integrations.spacelift_provided",
+					Attribute("integrations.#", Equals("0")),
 				),
 			),
 		},
