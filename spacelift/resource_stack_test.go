@@ -20,7 +20,7 @@ func TestStackResource(t *testing.T) {
 	t.Run("with GitHub and no state import", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(description string, protectFromDeletion, enableWellKnownSecretMasking bool) string {
+		config := func(description string, protectFromDeletion, enableWellKnownSecretMasking, preventChangesWhenLocked bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_stack" "test" {
 					after_apply              = ["ls -la", "rm -rf /"]
@@ -45,18 +45,19 @@ func TestStackResource(t *testing.T) {
 					additional_project_globs = ["/bacon", "/bacon/eggs/*"]
 					git_sparse_checkout_paths = ["root", "root/eggs", "becon"]
 					protect_from_deletion    = %t
+					prevent_changes_when_locked = %t
 					repository               = "demo"
 					runner_image             = "custom_image:runner"
 					enable_well_known_secret_masking = %t
 				}
-			`, description, randomID, protectFromDeletion, enableWellKnownSecretMasking)
+			`, description, randomID, protectFromDeletion, preventChangesWhenLocked, enableWellKnownSecretMasking)
 		}
 
 		const resourceName = "spacelift_stack.test"
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("old description", true, false),
+				Config: config("old description", true, false, false),
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
@@ -97,6 +98,7 @@ func TestStackResource(t *testing.T) {
 					SetEquals("additional_project_globs", "/bacon", "/bacon/eggs/*"),
 					SetEquals("git_sparse_checkout_paths", "root", "root/eggs", "becon"),
 					Attribute("protect_from_deletion", Equals("true")),
+					Attribute("prevent_changes_when_locked", Equals("false")),
 					Attribute("enable_well_known_secret_masking", Equals("false")),
 					Attribute("enable_sensitive_outputs_upload", Equals("true")),
 					Attribute("lock.0.locked", Equals("false")),
@@ -114,11 +116,12 @@ func TestStackResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"import_state"},
 			},
 			{
-				Config: config("new description", false, true),
+				Config: config("new description", false, true, true),
 				Check: Resource(
 					resourceName,
 					Attribute("description", Equals("new description")),
 					Attribute("protect_from_deletion", Equals("false")),
+					Attribute("prevent_changes_when_locked", Equals("true")),
 					Attribute("enable_well_known_secret_masking", Equals("true")),
 				),
 			},
@@ -1598,6 +1601,7 @@ func TestStackResourceSpace(t *testing.T) {
 					Attribute("name", StartsWith("Provider test stack")),
 					Attribute("project_root", Equals("root")),
 					Attribute("protect_from_deletion", Equals("true")),
+					Attribute("prevent_changes_when_locked", Equals("false")),
 					Attribute("repository", Equals("demo")),
 					Attribute("runner_image", Equals("custom_image:runner")),
 					Attribute("space_id", Equals("root")),

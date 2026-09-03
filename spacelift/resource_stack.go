@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -52,6 +53,40 @@ func resourceStack() *schema.Resource {
 			// Skip on initial resource creation — there is no old state.
 			if diff.Id() == "" {
 				return nil
+			}
+
+			if prevent, ok := diff.GetOk("prevent_changes_when_locked"); ok && prevent.(bool) {
+				if locked, ok := diff.GetOk("lock.0.locked"); ok && locked.(bool) {
+					hasRealChanges := false
+					for _, key := range diff.GetChangedKeysPrefix("") {
+						if key != "prevent_changes_when_locked" && !strings.HasPrefix(key, "lock.") {
+							hasRealChanges = true
+							break
+						}
+					}
+					if hasRealChanges {
+						lockedBy, _ := diff.GetOk("lock.0.locked_by")
+						lockedAt, _ := diff.GetOk("lock.0.locked_at")
+						note, _ := diff.GetOk("lock.0.note")
+
+						lockedTime := "unknown"
+						if ts, ok := lockedAt.(int); ok && ts > 0 {
+							lockedTime = time.Unix(int64(ts), 0).UTC().Format(time.RFC3339)
+						}
+
+						msg := fmt.Sprintf(
+							"stack is locked\n\n"+
+								"This stack has `prevent_changes_when_locked` enabled, but it is currently locked\n"+
+								"  by: %s\n"+
+								"  at: %s",
+							lockedBy, lockedTime,
+						)
+						if noteStr, ok := note.(string); ok && noteStr != "" {
+							msg += fmt.Sprintf("\n  with the note:\n\n%s", noteStr)
+						}
+						return fmt.Errorf("%s", msg)
+					}
+				}
 			}
 
 			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
@@ -659,6 +694,12 @@ func resourceStack() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "Project globs is an optional list of paths to track changes of in addition to the project root.",
+			},
+			"prevent_changes_when_locked": {
+				Type:        schema.TypeBool,
+				Description: "If true, Terraform will fail during planning when the stack is locked and the plan includes changes to this resource.",
+				Optional:    true,
+				Default:     false,
 			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
