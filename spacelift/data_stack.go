@@ -389,6 +389,35 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
+			"lock": {
+				Type:        schema.TypeList,
+				Description: "Lock status of the stack.",
+				Computed:    true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"locked": {
+							Type:        schema.TypeBool,
+							Description: "Whether the stack is currently locked.",
+							Computed:    true,
+						},
+						"locked_at": {
+							Type:        schema.TypeInt,
+							Description: "Unix timestamp when the stack was locked.",
+							Computed:    true,
+						},
+						"locked_by": {
+							Type:        schema.TypeString,
+							Description: "Login of the user who locked the stack.",
+							Computed:    true,
+						},
+						"note": {
+							Type:        schema.TypeString,
+							Description: "Note associated with the lock.",
+							Computed:    true,
+						},
+					},
+				},
+			},
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -627,6 +656,24 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
 	d.Set("enable_sensitive_outputs_upload", stack.EnableSensitiveOutputUpload)
 	d.Set("enabled", !stack.IsDisabled)
+
+	lockBlock := map[string]any{
+		"locked":    stack.LockedAt != nil,
+		"locked_at": 0,
+		"locked_by": "",
+		"note":      "",
+	}
+	if stack.LockedAt != nil {
+		lockBlock["locked_at"] = *stack.LockedAt
+	}
+	if stack.LockedBy != nil {
+		lockBlock["locked_by"] = *stack.LockedBy
+	}
+	if stack.LockNote != nil {
+		lockBlock["note"] = *stack.LockNote
+	}
+	d.Set("lock", []any{lockBlock})
+
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)

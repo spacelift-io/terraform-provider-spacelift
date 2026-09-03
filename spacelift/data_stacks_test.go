@@ -71,6 +71,7 @@ func TestStacksData(t *testing.T) {
 				CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"stacks", "stack_id"}, resourceName, "id"),
 				CheckIfResourceNestedAttributeContainsResourceAttribute(datasourceName, []string{"stacks", "name"}, resourceName, "name"),
 				Resource(datasourceName, Nested("stacks", CheckInList(Attribute("enabled", Equals("true"))))),
+				Resource(datasourceName, Nested("stacks", CheckInList(Attribute("lock.0.locked", Equals("false"))))),
 			),
 		}})
 	})

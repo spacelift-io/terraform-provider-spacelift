@@ -282,6 +282,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 
 - `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
 - `id` (String) The ID of this resource.
+- `lock` (List of Object) Lock status of the stack. (see [below for nested schema](#nestedatt--lock))
 
 <a id="nestedblock--ansible"></a>
 ### Nested Schema for `ansible`
@@ -457,6 +458,17 @@ Optional:
 - `use_run_all` (Boolean) Whether to use `terragrunt run-all` instead of `terragrunt`.
 - `use_smart_sanitization` (Boolean) Indicates whether runs on this will use Terraform's sensitive value system to sanitize the outputs of Terraform state and plans in spacelift instead of sanitizing all fields.
 - `use_state_management` (Boolean) Determines if Spacelift should manage state for this Terragrunt stack. Takes precedence over `manage_state`. Defaults to `false`.
+
+
+<a id="nestedatt--lock"></a>
+### Nested Schema for `lock`
+
+Read-Only:
+
+- `locked` (Boolean)
+- `locked_at` (Number)
+- `locked_by` (String)
+- `note` (String)
 
 ## Import
 

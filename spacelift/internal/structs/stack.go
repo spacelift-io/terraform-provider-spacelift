@@ -52,6 +52,9 @@ type Stack struct {
 	Deleting                     bool          `graphql:"deleting"`
 	Description                  *string       `graphql:"description"`
 	IsDisabled                   bool          `graphql:"isDisabled"`
+	LockedAt                     *int          `graphql:"lockedAt"`
+	LockedBy                     *string       `graphql:"lockedBy"`
+	LockNote                     *string       `graphql:"lockNote"`
 	GitHubActionDeploy           bool          `graphql:"githubActionDeploy"`
 	Hooks                        Hooks         `graphql:"hooks"`
 	Integrations                 *Integrations `graphql:"integrations"`
@@ -289,6 +292,23 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("space_id", stack.Space)
 	d.Set("slug", stack.ID)
+
+	lockBlock := map[string]any{
+		"locked":    stack.LockedAt != nil,
+		"locked_at": 0,
+		"locked_by": "",
+		"note":      "",
+	}
+	if stack.LockedAt != nil {
+		lockBlock["locked_at"] = *stack.LockedAt
+	}
+	if stack.LockedBy != nil {
+		lockBlock["locked_by"] = *stack.LockedBy
+	}
+	if stack.LockNote != nil {
+		lockBlock["note"] = *stack.LockNote
+	}
+	d.Set("lock", []any{lockBlock})
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)

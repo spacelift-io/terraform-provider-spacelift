@@ -129,6 +129,23 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta any) diag.
 				"terraform_version":                node.TerraformVersion,
 			}
 
+			lockBlock := map[string]any{
+				"locked":    node.LockedAt != nil,
+				"locked_at": 0,
+				"locked_by": "",
+				"note":      "",
+			}
+			if node.LockedAt != nil {
+				lockBlock["locked_at"] = *node.LockedAt
+			}
+			if node.LockedBy != nil {
+				lockBlock["locked_by"] = *node.LockedBy
+			}
+			if node.LockNote != nil {
+				lockBlock["note"] = *node.LockNote
+			}
+			stack["lock"] = []any{lockBlock}
+
 			if workerPool := node.WorkerPool; workerPool != nil {
 				stack["worker_pool_id"] = workerPool.ID
 			} else {

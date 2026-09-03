@@ -97,6 +97,10 @@ func TestStackData(t *testing.T) {
 				Attribute("enable_well_known_secret_masking", Equals("true")),
 				Attribute("enable_sensitive_outputs_upload", Equals("false")),
 				Attribute("enabled", Equals("true")),
+				Attribute("lock.0.locked", Equals("false")),
+				Attribute("lock.0.locked_at", Equals("0")),
+				Attribute("lock.0.locked_by", Equals("")),
+				Attribute("lock.0.note", Equals("")),
 			),
 		}})
 	})
@@ -627,6 +631,10 @@ func TestStackDataSpace(t *testing.T) {
 				Attribute("runner_image", Equals("custom_image:runner")),
 				Attribute("terraform_workspace", Equals("bacon")),
 				Attribute("terraform_smart_sanitization", Equals("true")),
+				Attribute("lock.0.locked", Equals("false")),
+				Attribute("lock.0.locked_at", Equals("0")),
+				Attribute("lock.0.locked_by", Equals("")),
+				Attribute("lock.0.note", Equals("")),
 			),
 		}})
 	})

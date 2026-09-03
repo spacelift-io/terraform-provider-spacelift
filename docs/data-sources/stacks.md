@@ -159,6 +159,7 @@ Read-Only:
 - `gitlab` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--gitlab))
 - `kubernetes` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--kubernetes))
 - `labels` (Set of String)
+- `lock` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--lock))
 - `manage_state` (Boolean)
 - `name` (String)
 - `opentofu` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--opentofu))
@@ -257,6 +258,17 @@ Read-Only:
 - `kubectl_version` (String)
 - `kubernetes_workflow_tool` (String)
 - `namespace` (String)
+
+
+<a id="nestedobjatt--stacks--lock"></a>
+### Nested Schema for `stacks.lock`
+
+Read-Only:
+
+- `locked` (Boolean)
+- `locked_at` (Number)
+- `locked_by` (String)
+- `note` (String)
 
 
 <a id="nestedobjatt--stacks--opentofu"></a>
