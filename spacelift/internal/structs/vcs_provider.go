@@ -24,6 +24,9 @@ const (
 	// VCSProviderGitlab represents GitLab VCS provider.
 	VCSProviderGitlab VCSProvider = "GITLAB"
 
+	// VCSProviderOrigin represents the account-level Origin VCS provider.
+	VCSProviderOrigin VCSProvider = "ORIGIN"
+
 	// VCSProviderRawGit represents raw Git link VCS provider.
 	VCSProviderRawGit VCSProvider = "GIT"
 

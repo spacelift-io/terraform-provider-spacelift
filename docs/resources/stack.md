@@ -24,6 +24,15 @@ resource "spacelift_stack" "k8s-cluster" {
   terraform_version = "1.3.0"
 }
 
+# Terraform stack using the installed account-level Origin VCS integration.
+resource "spacelift_stack" "origin-stack" {
+  origin {}
+
+  branch     = "main"
+  name       = "Origin Stack"
+  repository = "infrastructure"
+}
+
 # Terraform stack using Bitbucket Cloud as VCS
 resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   bitbucket_cloud {
@@ -261,6 +270,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `labels` (Set of String)
 - `manage_state` (Boolean) Determines if Spacelift should manage state for this stack. Defaults to `true`.
 - `opentofu` (Block List, Max: 1) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. (see [below for nested schema](#nestedblock--opentofu))
+- `origin` (Block List, Max: 1) Use the installed account-level Origin integration. The repository and branch are configured by the corresponding top-level attributes. (see [below for nested schema](#nestedblock--origin))
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.
 - `pulumi` (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
@@ -411,6 +421,10 @@ Optional:
 
 - `concise` (Boolean) Enables the -concise flag for OpenTofu plan/apply/refresh commands. Requires OpenTofu 1.7+. Defaults to `true`.
 
+
+
+<a id="nestedblock--origin"></a>
+### Nested Schema for `origin`
 
 
 <a id="nestedblock--pulumi"></a>
