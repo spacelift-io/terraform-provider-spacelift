@@ -506,6 +506,20 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		return nil
 	}
 
+	if err := setAIIntegrationState(d, integration); err != nil {
+		return diag.FromErr(err)
+	}
+
+	return nil
+}
+
+// setAIIntegrationState records an integration, leaving out whatever the
+// configuration is not allowed to hold: description, labels and models are
+// Optional without being Computed, so recording those would diff against an
+// empty configuration on every plan. Spacelift owns all three on the
+// integrations it provides, and Bedrock's models are the profiles the API
+// reports back from `bedrock.profiles`. Both data sources expose them.
+func setAIIntegrationState(d *schema.ResourceData, integration *structs.AIIntegration) error {
 	d.SetId(integration.ID)
 	d.Set("name", integration.Name)
 	d.Set("ai_provider", integration.Provider)
@@ -518,11 +532,6 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("space_id", "")
 	}
 
-	// description, labels and models are Optional without being Computed, so
-	// recording them for an integration whose configuration is not allowed to
-	// hold them would diff against that empty configuration forever. Bedrock
-	// reports its profiles as its models, and Spacelift owns everything on the
-	// integrations it provides. The data sources expose both.
 	if !integration.IsSpaceliftProvided {
 		d.Set("description", integration.Description)
 
@@ -537,11 +546,7 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 
-	if err := setAIIntegrationProviderBlock(d, integration); err != nil {
-		return diag.FromErr(err)
-	}
-
-	return nil
+	return setAIIntegrationProviderBlock(d, integration)
 }
 
 // setAIIntegrationProviderBlock fills the block matching the integration's

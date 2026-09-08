@@ -268,6 +268,65 @@ func TestAIIntegrationSchemaValidation(t *testing.T) {
 	}
 }
 
+// models is Optional without being Computed, so anything recorded that the
+// configuration is not allowed to hold diffs against it on every plan.
+func TestAIIntegrationModelsStayOutOfStateWhenUnconfigurable(t *testing.T) {
+	t.Parallel()
+
+	profiles := []string{"arn:aws:bedrock:us-east-1:123456789012:inference-profile/some.profile"}
+
+	for name, testCase := range map[string]struct {
+		integration *structs.AIIntegration
+		expect      []string
+	}{
+		// The API reports the profiles here, but `models` conflicts with the
+		// `bedrock` block, so the configuration can never match them.
+		"bedrock reports its profiles": {
+			integration: &structs.AIIntegration{Provider: aiProviderBedrock, Models: profiles},
+		},
+		"Spacelift-provided": {
+			integration: &structs.AIIntegration{
+				Provider:            aiProviderAnthropic,
+				Models:              []string{"claude-sonnet-4-6"},
+				IsSpaceliftProvided: true,
+			},
+		},
+		"pinned on an integration of our own": {
+			integration: &structs.AIIntegration{
+				Provider: aiProviderGoogle,
+				Models:   []string{"gemini-2.5-pro"},
+			},
+			expect: []string{"gemini-2.5-pro"},
+		},
+	} {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			d := schema.TestResourceDataRaw(t, resourceAIIntegration().Schema, map[string]any{})
+			testCase.integration.ID = "01ABC"
+
+			if err := setAIIntegrationState(d, testCase.integration); err != nil {
+				t.Fatalf("could not record the integration: %v", err)
+			}
+
+			models, ok := d.Get("models").([]any)
+			if !ok {
+				t.Fatalf("models is not a list, got %T", d.Get("models"))
+			}
+
+			if len(models) != len(testCase.expect) {
+				t.Fatalf("expected models %v, got %v", testCase.expect, models)
+			}
+
+			for index, expected := range testCase.expect {
+				if models[index] != expected {
+					t.Errorf("expected model %d to be %q, got %q", index, expected, models[index])
+				}
+			}
+		})
+	}
+}
+
 // The marker block carries no attributes, so nothing but its presence
 // distinguishes it, and that has to survive a write and a read back.
 func TestAIIntegrationSpaceliftBlockRoundTrip(t *testing.T) {
