@@ -1,7 +1,9 @@
 package spacelift
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -11,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
@@ -20,6 +23,52 @@ import (
 // the terminal width, so a line break can land on any of its spaces.
 func diagnostic(message string) *regexp.Regexp {
 	return regexp.MustCompile(strings.ReplaceAll(regexp.QuoteMeta(message), " ", `\s+`))
+}
+
+// pinAIIntegrationModels pins models behind Terraform's back, the way someone
+// clicking around the account would. Every argument is sent on every call, so
+// the ones that are not being changed go as null, which the API leaves alone.
+func pinAIIntegrationModels(t *testing.T, id string, models ...graphql.String) {
+	client, err := buildClientFromAPIKeyParams(
+		os.Getenv("SPACELIFT_API_KEY_ENDPOINT"),
+		os.Getenv("SPACELIFT_API_KEY_ID"),
+		os.Getenv("SPACELIFT_API_KEY_SECRET"),
+	)
+	if err != nil {
+		t.Fatalf("could not build a client: %v", err)
+	}
+
+	var query struct {
+		AIIntegration *structs.AIIntegration `graphql:"aiIntegration(id: $id)"`
+	}
+
+	ctx := context.Background()
+
+	if err := client.Query(ctx, "AIIntegrationRead", &query, map[string]any{"id": toID(id)}); err != nil {
+		t.Fatalf("could not read AI integration %s: %v", id, err)
+	}
+
+	var mutation struct {
+		AIIntegration structs.AIIntegration `graphql:"aiIntegrationUpdate(id: $id, name: $name, description: $description, labels: $labels, provider: $provider, apiKey: $apiKey, providerIntegrationId: $providerIntegrationId, providerConfig: $providerConfig, baseURL: $baseURL, models: $models, space: $space)"`
+	}
+
+	variables := map[string]any{
+		"id":                    toID(id),
+		"name":                  toString(query.AIIntegration.Name),
+		"provider":              graphql.String(query.AIIntegration.Provider),
+		"space":                 toOptionalID(query.AIIntegration.Space.ID),
+		"models":                &models,
+		"description":           (*graphql.String)(nil),
+		"labels":                (*[]graphql.String)(nil),
+		"apiKey":                (*graphql.String)(nil),
+		"baseURL":               (*graphql.String)(nil),
+		"providerIntegrationId": (*graphql.ID)(nil),
+		"providerConfig":        (*structs.AIProviderConfigInput)(nil),
+	}
+
+	if err := client.Mutate(ctx, "AIIntegrationUpdate", &mutation, variables); err != nil {
+		t.Fatalf("could not pin models on AI integration %s: %v", id, err)
+	}
 }
 
 // A provider has to be registered in three places, and each mistake fails
@@ -349,9 +398,8 @@ func TestAIIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				// Dropping the attribute pins nothing, the same as an empty list.
-				// models is Computed, so this only reaches the API because
-				// planAIIntegrationUnpin plans the models away.
+				// Dropping the attribute pins nothing, the same as an empty
+				// list, and the plan shows the models going away.
 				Config: config("updated description", "", false),
 				Check: Resource(
 					resourceName,
@@ -404,13 +452,56 @@ func TestAIIntegrationResource(t *testing.T) {
 						Attribute(testCase.block+".#", Equals("1")),
 						Attribute(testCase.block+".0.base_url", IsEmpty()),
 						// Nothing was pinned, so the integration follows the
-						// default list and reports no models of its own.
-						Attribute("models.#", Equals("0")),
+						// default list and the state holds no models at all.
+						AttributeNotPresent("models.#"),
 					),
 				},
 			})
 		})
 	}
+
+	t.Run("reverts models pinned outside Terraform", func(t *testing.T) {
+		// Terraform owns the pin, so a configuration that does not mention
+		// models means there are none, and one set anywhere else is drift.
+		if os.Getenv("SPACELIFT_API_KEY_ID") == "" {
+			t.Skip("the out-of-band change needs SPACELIFT_API_KEY_ID and _SECRET, skipping")
+		}
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		config := fmt.Sprintf(`
+			resource "spacelift_ai_integration" "test" {
+				name     = "test-ai-integration-%s"
+				space_id = "%s"
+				enabled  = false
+
+				google {
+					api_key = "%s"
+				}
+			}
+		`, randomID, testConfig.AI.Space, testConfig.AI.APIKey)
+
+		var id string
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config,
+				Check: Resource(resourceName, func(attributes map[string]string) error {
+					id = attributes["id"]
+
+					return nil
+				}),
+			},
+			{
+				PreConfig: func() { pinAIIntegrationModels(t, id, "gemini-2.5-pro") },
+				Config:    config,
+				Check: Resource(
+					resourceName,
+					Attribute("models.#", Equals("0")),
+				),
+			},
+		})
+	})
 
 	t.Run("creates and updates a Bedrock integration", func(t *testing.T) {
 		// Unlike the API-key providers, Bedrock cannot run against a placeholder:
@@ -455,9 +546,10 @@ func TestAIIntegrationResource(t *testing.T) {
 					Attribute("bedrock.0.profiles.0", Equals(testConfig.AI.Bedrock.Profile)),
 					// Resolved by the API from the attached AWS integration.
 					Attribute("bedrock.0.integration_name", IsNotEmpty()),
-					// Bedrock takes its models from the profiles rather than
-					// accepting them directly.
-					Attribute("models.0", Equals(testConfig.AI.Bedrock.Profile)),
+					// The API reports the profiles as the models, but the
+					// configuration cannot hold them, so they stay out of the
+					// state and only the data sources report them.
+					AttributeNotPresent("models.#"),
 				),
 			},
 			{

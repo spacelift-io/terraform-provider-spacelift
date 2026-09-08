@@ -145,11 +145,10 @@ func resourceAIIntegration() *schema.Resource {
 				Description: "Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. " +
 					"Leave it out, or set it to an empty list, to pin nothing and let the integration " +
 					"follow the default model list for its provider, which is resolved server side and " +
-					"not recorded here. " +
-					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead " +
-					"and reports them here.",
+					"not recorded here. Terraform owns the pin either way, so one made outside it is " +
+					"reverted on the next apply, the same as `labels`. " +
+					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.",
 				Optional: true,
-				Computed: true,
 				// The API rejects models outright for Bedrock integrations.
 				ConflictsWith: []string{"bedrock"},
 				Elem: &schema.Schema{
@@ -332,10 +331,6 @@ func customizeAIIntegrationDiff(_ context.Context, d *schema.ResourceDiff, _ any
 		return nil
 	}
 
-	if err := planAIIntegrationUnpin(d); err != nil {
-		return err
-	}
-
 	current := d.Get("ai_provider").(string)
 	if current == "" {
 		return nil
@@ -352,31 +347,6 @@ func customizeAIIntegrationDiff(_ context.Context, d *schema.ResourceDiff, _ any
 	}
 
 	return nil
-}
-
-// planAIIntegrationUnpin plans the models away when the configuration stops
-// pinning them. `models` has to be Computed, because Bedrock reports the models
-// it took from its profiles and the configuration is not allowed to hold them,
-// and Computed would otherwise mean dropping the attribute plans as no change
-// while the update unpins anyway, a change the plan never showed.
-func planAIIntegrationUnpin(d *schema.ResourceDiff) error {
-	// Bedrock's models are not the configuration's to clear.
-	if aiBlockSet(d, aiProviderBlocks[aiProviderBedrock]) {
-		return nil
-	}
-
-	config := d.GetRawConfig()
-	if config.IsNull() || !config.GetAttr("models").IsNull() {
-		return nil
-	}
-
-	// Nothing to plan away when nothing is pinned, and planning an empty list
-	// over an empty list is a diff nobody asked for.
-	if models, ok := d.Get("models").([]any); !ok || len(models) == 0 {
-		return nil
-	}
-
-	return d.SetNew("models", []any{})
 }
 
 // aiBlockProviders is aiProviderBlocks inverted.
@@ -466,41 +436,19 @@ func aiIntegrationVariables(d *schema.ResourceData, provider, block string, crea
 	return variables, nil
 }
 
-// aiIntegrationModels reads the models from the configuration rather than the
-// state, because the state also carries the models the API filled in for
-// Bedrock, and because leaving the attribute out is only distinguishable from
-// an empty list there.
+// aiIntegrationModels returns the models to pin, which is whatever the
+// configuration says and nothing else.
 //
-// Both of those mean the same thing to us, no models pinned, but not to the
-// API, which reads a null list as "leave the pin alone" and only an empty list
-// as "drop it". So the list is never null: what a non-Bedrock integration is
-// pinned to is always exactly what the configuration says. Bedrock never gets
-// here, because its models belong to its profiles.
+// The list is never null, because the API reads a null one as "leave the pin
+// alone" so that a description-only update does not disturb it, and only an
+// empty list as "drop the pin". Leaving the attribute out has to reach the API
+// as an empty list for that reason, which is also what the plan shows. Bedrock
+// never gets here, because the API rejects the argument for it.
 func aiIntegrationModels(d *schema.ResourceData) *[]graphql.String {
-	list := []graphql.String{}
+	models := []graphql.String{}
+	models = append(models, listToStringList(d.Get("models"))...)
 
-	config := d.GetRawConfig()
-	if config.IsNull() {
-		return &list
-	}
-
-	models := config.GetAttr("models")
-	if models.IsNull() {
-		return &list
-	}
-
-	// Unknown at plan time, so the values the diff settled on have to do.
-	if !models.IsWhollyKnown() {
-		list = append(list, listToStringList(d.Get("models"))...)
-
-		return &list
-	}
-
-	for _, model := range models.AsValueSlice() {
-		list = append(list, graphql.String(model.AsString()))
-	}
-
-	return &list
+	return &models
 }
 
 func resourceAIIntegrationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -561,7 +509,6 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 	d.SetId(integration.ID)
 	d.Set("name", integration.Name)
 	d.Set("ai_provider", integration.Provider)
-	d.Set("models", integration.Models)
 	d.Set("enabled", integration.Enabled)
 	d.Set("is_spacelift_provided", integration.IsSpaceliftProvided)
 
@@ -571,10 +518,11 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("space_id", "")
 	}
 
-	// description and labels are the only attributes that are Optional without
-	// being Computed, so recording them for an integration whose configuration
-	// is not allowed to hold them would diff against that empty configuration
-	// forever. The data sources expose them instead.
+	// description, labels and models are Optional without being Computed, so
+	// recording them for an integration whose configuration is not allowed to
+	// hold them would diff against that empty configuration forever. Bedrock
+	// reports its profiles as its models, and Spacelift owns everything on the
+	// integrations it provides. The data sources expose both.
 	if !integration.IsSpaceliftProvided {
 		d.Set("description", integration.Description)
 
@@ -583,6 +531,10 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 			labels.Add(label)
 		}
 		d.Set("labels", labels)
+
+		if integration.Provider != aiProviderBedrock {
+			d.Set("models", integration.Models)
+		}
 	}
 
 	if err := setAIIntegrationProviderBlock(d, integration); err != nil {

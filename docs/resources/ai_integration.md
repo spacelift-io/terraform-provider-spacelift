@@ -109,7 +109,7 @@ resource "spacelift_ai_integration" "shared_anthropic" {
 - `enabled` (Boolean) Whether the integration can be used for LLM calls. Defaults to `true`.
 - `google` (Block List, Max: 1) Google-specific configuration. Presence means this integration uses the Gemini API. (see [below for nested schema](#nestedblock--google))
 - `labels` (Set of String) Labels to set on the integration
-- `models` (List of String) Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. Leave it out, or set it to an empty list, to pin nothing and let the integration follow the default model list for its provider, which is resolved server side and not recorded here. Not supported for Bedrock, which takes its models from `bedrock.profiles` instead and reports them here.
+- `models` (List of String) Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. Leave it out, or set it to an empty list, to pin nothing and let the integration follow the default model list for its provider, which is resolved server side and not recorded here. Terraform owns the pin either way, so one made outside it is reverted on the next apply, the same as `labels`. Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.
 - `name` (String) Friendly name of the integration. Required, except on a Spacelift-provided integration, whose name belongs to Spacelift and is read back from the API.
 - `openai` (Block List, Max: 1) OpenAI-specific configuration. Presence means this integration uses the OpenAI API. (see [below for nested schema](#nestedblock--openai))
 - `space_id` (String) ID of the space the integration belongs to
