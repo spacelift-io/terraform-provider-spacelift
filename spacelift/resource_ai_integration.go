@@ -143,10 +143,9 @@ func resourceAIIntegration() *schema.Resource {
 			"models": {
 				Type: schema.TypeList,
 				Description: "Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. " +
-					"Leave unset to follow the default model list for the provider, and set `models = []` " +
-					"to go back to those defaults once models have been pinned: removing the attribute " +
-					"from the configuration keeps whatever is pinned, as it does for any computed " +
-					"attribute. " +
+					"Leave it out, or set it to an empty list, to pin nothing and let the integration " +
+					"follow the default model list for its provider, which is resolved server side and " +
+					"not recorded here. " +
 					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead " +
 					"and reports them here.",
 				Optional: true,
@@ -333,6 +332,10 @@ func customizeAIIntegrationDiff(_ context.Context, d *schema.ResourceDiff, _ any
 		return nil
 	}
 
+	if err := planAIIntegrationUnpin(d); err != nil {
+		return err
+	}
+
 	current := d.Get("ai_provider").(string)
 	if current == "" {
 		return nil
@@ -349,6 +352,31 @@ func customizeAIIntegrationDiff(_ context.Context, d *schema.ResourceDiff, _ any
 	}
 
 	return nil
+}
+
+// planAIIntegrationUnpin plans the models away when the configuration stops
+// pinning them. `models` has to be Computed, because Bedrock reports the models
+// it took from its profiles and the configuration is not allowed to hold them,
+// and Computed would otherwise mean dropping the attribute plans as no change
+// while the update unpins anyway, a change the plan never showed.
+func planAIIntegrationUnpin(d *schema.ResourceDiff) error {
+	// Bedrock's models are not the configuration's to clear.
+	if aiBlockSet(d, aiProviderBlocks[aiProviderBedrock]) {
+		return nil
+	}
+
+	config := d.GetRawConfig()
+	if config.IsNull() || !config.GetAttr("models").IsNull() {
+		return nil
+	}
+
+	// Nothing to plan away when nothing is pinned, and planning an empty list
+	// over an empty list is a diff nobody asked for.
+	if models, ok := d.Get("models").([]any); !ok || len(models) == 0 {
+		return nil
+	}
+
+	return d.SetNew("models", []any{})
 }
 
 // aiBlockProviders is aiProviderBlocks inverted.
@@ -439,26 +467,35 @@ func aiIntegrationVariables(d *schema.ResourceData, provider, block string, crea
 }
 
 // aiIntegrationModels reads the models from the configuration rather than the
-// state, because the two mean different things: an empty list clears the pin,
-// which `d.Get` cannot tell apart from the attribute being absent.
+// state, because the state also carries the models the API filled in for
+// Bedrock, and because leaving the attribute out is only distinguishable from
+// an empty list there.
 //
-// An absent attribute falls back to the state, which is what Optional and
-// Computed promises: the plan shows no change to the models, so the update must
-// not clear the pin behind it. Nothing is pinned until the configuration says
-// so, so on anything but a pin that was configured and later dropped the state
-// is empty and this sends null anyway.
+// Both of those mean the same thing to us, no models pinned, but not to the
+// API, which reads a null list as "leave the pin alone" and only an empty list
+// as "drop it". So the list is never null: what a non-Bedrock integration is
+// pinned to is always exactly what the configuration says. Bedrock never gets
+// here, because its models belong to its profiles.
 func aiIntegrationModels(d *schema.ResourceData) *[]graphql.String {
+	list := []graphql.String{}
+
 	config := d.GetRawConfig()
 	if config.IsNull() {
-		return listToOptionalStringList(d.Get("models"))
+		return &list
 	}
 
 	models := config.GetAttr("models")
-	if models.IsNull() || !models.IsWhollyKnown() {
-		return listToOptionalStringList(d.Get("models"))
+	if models.IsNull() {
+		return &list
 	}
 
-	list := make([]graphql.String, 0, models.LengthInt())
+	// Unknown at plan time, so the values the diff settled on have to do.
+	if !models.IsWhollyKnown() {
+		list = append(list, listToStringList(d.Get("models"))...)
+
+		return &list
+	}
+
 	for _, model := range models.AsValueSlice() {
 		list = append(list, graphql.String(model.AsString()))
 	}

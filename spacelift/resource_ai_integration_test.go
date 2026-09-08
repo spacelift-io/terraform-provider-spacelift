@@ -16,6 +16,12 @@ import (
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
+// diagnostic matches a message the way Terraform prints it, which is wrapped to
+// the terminal width, so a line break can land on any of its spaces.
+func diagnostic(message string) *regexp.Regexp {
+	return regexp.MustCompile(strings.ReplaceAll(regexp.QuoteMeta(message), " ", `\s+`))
+}
+
 // A provider has to be registered in three places, and each mistake fails
 // quietly: missing from aiProviderBlockNames escapes ExactlyOneOf and allows
 // two providers at once, missing from aiProviderBlocks makes its integrations
@@ -261,26 +267,34 @@ func TestAIIntegrationResource(t *testing.T) {
 	t.Run("creates and updates a Google integration", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
+		// models is passed as a whole line rather than a value, so that leaving it
+		// out of the configuration entirely can be exercised too.
 		config := func(description string, models string, enabled bool) string {
 			return fmt.Sprintf(`
 				resource "spacelift_ai_integration" "test" {
 					name        = "test-ai-integration-%s"
 					description = "%s"
 					labels      = ["one", "two"]
-					models      = %s
 					space_id    = "%s"
 					enabled     = %t
+					%s
 
 					google {
 						api_key = "%s"
 					}
 				}
-			`, randomID, description, models, testConfig.AI.Space, enabled, testConfig.AI.APIKey)
+			`, randomID, description, testConfig.AI.Space, enabled, models, testConfig.AI.APIKey)
 		}
+
+		const (
+			onePinned  = `models = ["gemini-2.5-pro"]`
+			twoPinned  = `models = ["gemini-2.5-pro", "gemini-2.5-flash"]`
+			nonePinned = `models = []`
+		)
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config("initial description", `["gemini-2.5-pro"]`, true),
+				Config: config("initial description", onePinned, true),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
@@ -300,7 +314,7 @@ func TestAIIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				Config: config("updated description", `["gemini-2.5-pro", "gemini-2.5-flash"]`, true),
+				Config: config("updated description", twoPinned, true),
 				Check: Resource(
 					resourceName,
 					Attribute("description", Equals("updated description")),
@@ -309,22 +323,39 @@ func TestAIIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				// An empty list clears the pin, and the integration goes back to
-				// following the default list, which is reported as no models
-				// rather than as the ones it resolved.
-				Config: config("updated description", `[]`, true),
+				// An empty list pins nothing, and the integration goes back to
+				// following the default list, which the API keeps to itself
+				// rather than reporting as the models of this integration.
+				Config: config("updated description", nonePinned, true),
 				Check: Resource(
 					resourceName,
 					Attribute("models.#", Equals("0")),
 				),
 			},
 			{
+				Config: config("updated description", twoPinned, true),
+				Check: Resource(
+					resourceName,
+					Attribute("models.#", Equals("2")),
+				),
+			},
+			{
 				// enabled goes through aiIntegrationToggle rather than the update
 				// mutation, so exercise it on its own.
-				Config: config("updated description", `["gemini-2.5-pro", "gemini-2.5-flash"]`, false),
+				Config: config("updated description", twoPinned, false),
 				Check: Resource(
 					resourceName,
 					Attribute("enabled", Equals("false")),
+				),
+			},
+			{
+				// Dropping the attribute pins nothing, the same as an empty list.
+				// models is Computed, so this only reaches the API because
+				// planAIIntegrationUnpin plans the models away.
+				Config: config("updated description", "", false),
+				Check: Resource(
+					resourceName,
+					Attribute("models.#", Equals("0")),
 				),
 			},
 			{
@@ -520,7 +551,7 @@ func TestAIIntegrationResource(t *testing.T) {
 			},
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile("can only be managed through the `spacelift` block"),
+				ExpectError: diagnostic("can only be managed through the `spacelift` block"),
 			},
 		})
 	})
@@ -533,7 +564,7 @@ func TestAIIntegrationResource(t *testing.T) {
 						spacelift {}
 					}
 				`,
-				ExpectError: regexp.MustCompile("cannot be created, only imported"),
+				ExpectError: diagnostic("cannot be created, only imported"),
 			},
 		})
 	})
@@ -556,7 +587,7 @@ func TestAIIntegrationResource(t *testing.T) {
 						}
 					}
 				`, randomID, testConfig.AI.Space),
-				ExpectError: regexp.MustCompile(`"models": conflicts with bedrock`),
+				ExpectError: diagnostic(`"models": conflicts with bedrock`),
 			},
 		})
 	})
@@ -679,7 +710,7 @@ func TestAIIntegrationResource(t *testing.T) {
 						}
 					}
 				`, randomID, testConfig.AI.Space),
-				ExpectError: regexp.MustCompile("only one of `anthropic,bedrock,google,openai,spacelift` can be specified"),
+				ExpectError: diagnostic("only one of `anthropic,bedrock,google,openai,spacelift` can be specified"),
 			},
 		})
 	})
@@ -695,7 +726,7 @@ func TestAIIntegrationResource(t *testing.T) {
 						space_id = "%s"
 					}
 				`, randomID, testConfig.AI.Space),
-				ExpectError: regexp.MustCompile("one of `anthropic,bedrock,google,openai,spacelift` must be specified"),
+				ExpectError: diagnostic("one of `anthropic,bedrock,google,openai,spacelift` must be specified"),
 			},
 		})
 	})
