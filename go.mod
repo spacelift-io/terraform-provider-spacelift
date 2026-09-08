@@ -1,6 +1,6 @@
 module github.com/spacelift-io/terraform-provider-spacelift
 
-go 1.26
+go 1.26.0
 
 require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
@@ -16,7 +16,7 @@ require (
 	github.com/oklog/ulid/v2 v2.1.2
 	github.com/pkg/errors v0.9.1
 	github.com/shurcooL/graphql v0.0.0-20240915155400-7ee5256398cf
-	golang.org/x/time v0.15.0
+	golang.org/x/time v0.16.0
 )
 
 require (
