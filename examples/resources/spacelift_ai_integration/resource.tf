@@ -13,7 +13,9 @@ resource "spacelift_ai_integration" "gemini" {
 }
 
 # Exactly one provider block is set, and it is what decides the provider.
-# Leaving models unset accepts whatever default list the provider offers.
+# Leaving models unset pins nothing, so the integration follows the default
+# model list for its provider. Set `models = []` to go back to that after
+# pinning models.
 resource "spacelift_ai_integration" "claude" {
   name = "claude"
 

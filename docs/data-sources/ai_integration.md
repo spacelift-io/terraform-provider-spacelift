@@ -36,7 +36,7 @@ data "spacelift_ai_integration" "gemini" {
 - `id` (String) The ID of this resource.
 - `is_spacelift_provided` (Boolean) Whether this is a read-only, Spacelift-managed integration shared with every account
 - `labels` (Set of String) Labels set on the integration
-- `models` (List of String) Model identifiers available on this integration
+- `models` (List of String) Model identifiers this integration is pinned to, empty when it follows the default list for its provider. For Bedrock, its inference profiles.
 - `name` (String) Friendly name of the integration
 - `openai` (List of Object) OpenAI-specific configuration. Presence means this integration uses the OpenAI API. (see [below for nested schema](#nestedatt--openai))
 - `provider_integration_id` (String) ID of the underlying provider integration, for example the AWS integration backing a Bedrock integration

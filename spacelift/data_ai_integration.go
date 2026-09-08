@@ -75,10 +75,11 @@ func dataAIIntegration() *schema.Resource {
 				},
 			},
 			"models": {
-				Type:        schema.TypeList,
-				Description: "Model identifiers available on this integration",
-				Elem:        &schema.Schema{Type: schema.TypeString},
-				Computed:    true,
+				Type: schema.TypeList,
+				Description: "Model identifiers this integration is pinned to, empty when it follows the " +
+					"default list for its provider. For Bedrock, its inference profiles.",
+				Elem:     &schema.Schema{Type: schema.TypeString},
+				Computed: true,
 			},
 			"labels": {
 				Type:        schema.TypeSet,

@@ -146,13 +146,13 @@ func TestAIIntegrationSchemaValidation(t *testing.T) {
 			},
 			expect: "must not be an empty string",
 		},
+		// An empty list is how a pin is cleared, so it has to pass validation.
 		"empty models": {
 			config: map[string]any{
 				"name":   "test",
 				"models": []any{},
 				"google": []any{map[string]any{"api_key": "some-key"}},
 			},
-			expect: "requires 1 item minimum",
 		},
 		"models on bedrock": {
 			config: map[string]any{
@@ -309,10 +309,14 @@ func TestAIIntegrationResource(t *testing.T) {
 				),
 			},
 			{
-				// The API clears the pin for an empty list but then reports the
-				// defaults it resolved, so this could never reach a clean plan.
-				Config:      config("updated description", `[]`, true),
-				ExpectError: regexp.MustCompile("requires 1 item minimum"),
+				// An empty list clears the pin, and the integration goes back to
+				// following the default list, which is reported as no models
+				// rather than as the ones it resolved.
+				Config: config("updated description", `[]`, true),
+				Check: Resource(
+					resourceName,
+					Attribute("models.#", Equals("0")),
+				),
 			},
 			{
 				// enabled goes through aiIntegrationToggle rather than the update
@@ -343,7 +347,7 @@ func TestAIIntegrationResource(t *testing.T) {
 		{block: "google", provider: aiProviderGoogle},
 		{block: "openai", provider: aiProviderOpenAI},
 	} {
-		t.Run("creates a "+testCase.block+" integration and defaults its models", func(t *testing.T) {
+		t.Run("creates a "+testCase.block+" integration without pinning its models", func(t *testing.T) {
 			randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
 			// base_url is deliberately left out: Spacelift validates it on create
@@ -368,7 +372,9 @@ func TestAIIntegrationResource(t *testing.T) {
 						Attribute("enabled", Equals("false")),
 						Attribute(testCase.block+".#", Equals("1")),
 						Attribute(testCase.block+".0.base_url", IsEmpty()),
-						Attribute("models.#", NotEquals("0")),
+						// Nothing was pinned, so the integration follows the
+						// default list and reports no models of its own.
+						Attribute("models.#", Equals("0")),
 					),
 				},
 			})

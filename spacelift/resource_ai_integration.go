@@ -142,19 +142,15 @@ func resourceAIIntegration() *schema.Resource {
 			},
 			"models": {
 				Type: schema.TypeList,
-				Description: "Model identifiers available on this integration, for example `gemini-2.5-pro`. " +
-					"Leave unset to accept the provider's default model list, which is then recorded in " +
-					"the state but never sent back, so removing the attribute later produces no diff. " +
-					"Pinning is one-way: the API reports the models an integration resolves to rather " +
-					"than the ones it was given, so it cannot report that nothing is pinned, and an " +
-					"empty list is rejected rather than left to diff on every plan. " +
-					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.",
+				Description: "Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. " +
+					"Leave unset to follow the default model list for the provider, and set `models = []` " +
+					"to go back to those defaults once models have been pinned: removing the attribute " +
+					"from the configuration keeps whatever is pinned, as it does for any computed " +
+					"attribute. " +
+					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead " +
+					"and reports them here.",
 				Optional: true,
 				Computed: true,
-				// An empty list clears the pin, but the API then reports the
-				// defaults it resolved, which can never match the empty list in
-				// the configuration.
-				MinItems: 1,
 				// The API rejects models outright for Bedrock integrations.
 				ConflictsWith: []string{"bedrock"},
 				Elem: &schema.Schema{
@@ -443,21 +439,22 @@ func aiIntegrationVariables(d *schema.ResourceData, provider, block string, crea
 }
 
 // aiIntegrationModels reads the models from the configuration rather than the
-// state. The attribute is Optional and Computed, so the state holds whichever
-// defaults the API filled in, and sending those back would pin the integration
-// to a snapshot of them on the first unrelated update.
+// state, because the two mean different things: an empty list clears the pin,
+// which `d.Get` cannot tell apart from the attribute being absent.
+//
+// An absent attribute falls back to the state, which is what Optional and
+// Computed promises: the plan shows no change to the models, so the update must
+// not clear the pin behind it. Nothing is pinned until the configuration says
+// so, so on anything but a pin that was configured and later dropped the state
+// is empty and this sends null anyway.
 func aiIntegrationModels(d *schema.ResourceData) *[]graphql.String {
 	config := d.GetRawConfig()
 	if config.IsNull() {
-		return nil
+		return listToOptionalStringList(d.Get("models"))
 	}
 
 	models := config.GetAttr("models")
-	if models.IsNull() {
-		return nil
-	}
-
-	if !models.IsWhollyKnown() {
+	if models.IsNull() || !models.IsWhollyKnown() {
 		return listToOptionalStringList(d.Get("models"))
 	}
 

@@ -34,7 +34,9 @@ resource "spacelift_ai_integration" "gemini" {
 }
 
 # Exactly one provider block is set, and it is what decides the provider.
-# Leaving models unset accepts whatever default list the provider offers.
+# Leaving models unset pins nothing, so the integration follows the default
+# model list for its provider. Set `models = []` to go back to that after
+# pinning models.
 resource "spacelift_ai_integration" "claude" {
   name = "claude"
 
@@ -107,7 +109,7 @@ resource "spacelift_ai_integration" "shared_anthropic" {
 - `enabled` (Boolean) Whether the integration can be used for LLM calls. Defaults to `true`.
 - `google` (Block List, Max: 1) Google-specific configuration. Presence means this integration uses the Gemini API. (see [below for nested schema](#nestedblock--google))
 - `labels` (Set of String) Labels to set on the integration
-- `models` (List of String) Model identifiers available on this integration, for example `gemini-2.5-pro`. Leave unset to accept the provider's default model list, which is then recorded in the state but never sent back, so removing the attribute later produces no diff. Pinning is one-way: the API reports the models an integration resolves to rather than the ones it was given, so it cannot report that nothing is pinned, and an empty list is rejected rather than left to diff on every plan. Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.
+- `models` (List of String) Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. Leave unset to follow the default model list for the provider, and set `models = []` to go back to those defaults once models have been pinned: removing the attribute from the configuration keeps whatever is pinned, as it does for any computed attribute. Not supported for Bedrock, which takes its models from `bedrock.profiles` instead and reports them here.
 - `name` (String) Friendly name of the integration. Required, except on a Spacelift-provided integration, whose name belongs to Spacelift and is read back from the API.
 - `openai` (Block List, Max: 1) OpenAI-specific configuration. Presence means this integration uses the OpenAI API. (see [below for nested schema](#nestedblock--openai))
 - `space_id` (String) ID of the space the integration belongs to
