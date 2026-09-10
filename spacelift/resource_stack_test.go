@@ -113,7 +113,7 @@ func TestStackResource(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"import_state"},
+				ImportStateVerifyIgnore: []string{"import_state", "prevent_changes_when_locked"},
 			},
 			{
 				Config: config("new description", false, true, true),
@@ -213,7 +213,7 @@ func TestStackResource(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"slug"},
+				ImportStateVerifyIgnore: []string{"slug", "prevent_changes_when_locked"},
 			},
 			{
 				Config: config("new description"),
@@ -1615,7 +1615,7 @@ func TestStackResourceSpace(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"import_state"},
+				ImportStateVerifyIgnore: []string{"import_state", "prevent_changes_when_locked"},
 			},
 			{
 				Config: config("new description", false),
@@ -1713,7 +1713,7 @@ func TestStackResourceSpace(t *testing.T) {
 				ResourceName:            resourceName,
 				ImportState:             true,
 				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"slug"},
+				ImportStateVerifyIgnore: []string{"slug", "prevent_changes_when_locked"},
 			},
 			{
 				Config: config("new description"),
