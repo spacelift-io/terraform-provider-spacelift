@@ -65,26 +65,7 @@ func resourceStack() *schema.Resource {
 						}
 					}
 					if hasRealChanges {
-						lockedBy, _ := diff.GetOk("lock.0.locked_by")
-						lockedAt, _ := diff.GetOk("lock.0.locked_at")
-						note, _ := diff.GetOk("lock.0.note")
-
-						lockedTime := "unknown"
-						if ts, ok := lockedAt.(int); ok && ts > 0 {
-							lockedTime = time.Unix(int64(ts), 0).UTC().Format(time.RFC3339)
-						}
-
-						msg := fmt.Sprintf(
-							"stack is locked\n\n"+
-								"This stack has `prevent_changes_when_locked` enabled, but it is currently locked\n"+
-								"  by: %s\n"+
-								"  at: %s",
-							lockedBy, lockedTime,
-						)
-						if noteStr, ok := note.(string); ok && noteStr != "" {
-							msg += fmt.Sprintf("\n  with the note:\n\n%s", noteStr)
-						}
-						return fmt.Errorf("%s", msg)
+						return fmt.Errorf("stack is locked\n\n%s", stackLockMessage(diff))
 					}
 				}
 			}
@@ -999,15 +980,11 @@ func getStackByID(ctx context.Context, client *internal.Client, stackID string) 
 	return query.Stack, nil
 }
 
-func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
-	if !d.Get("prevent_changes_when_locked").(bool) {
-		return nil
-	}
-	locked, ok := d.GetOk("lock.0.locked")
-	if !ok || !locked.(bool) {
-		return nil
-	}
+type schemaGetter interface {
+	GetOk(string) (any, bool)
+}
 
+func stackLockMessage(d schemaGetter) string {
 	lockedBy, _ := d.GetOk("lock.0.locked_by")
 	lockedAt, _ := d.GetOk("lock.0.locked_at")
 	note, _ := d.GetOk("lock.0.note")
@@ -1017,20 +994,31 @@ func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
 		lockedTime = time.Unix(int64(ts), 0).UTC().Format(time.RFC3339)
 	}
 
-	detail := fmt.Sprintf(
+	msg := fmt.Sprintf(
 		"This stack has `prevent_changes_when_locked` enabled, but it is currently locked\n"+
 			"  by: %s\n"+
 			"  at: %s",
 		lockedBy, lockedTime,
 	)
 	if noteStr, ok := note.(string); ok && noteStr != "" {
-		detail += fmt.Sprintf("\n  with the note:\n\n%s", noteStr)
+		msg += fmt.Sprintf("\n  with the note:\n\n%s", noteStr)
+	}
+	return msg
+}
+
+func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
+	if !d.Get("prevent_changes_when_locked").(bool) {
+		return nil
+	}
+	locked, ok := d.GetOk("lock.0.locked")
+	if !ok || !locked.(bool) {
+		return nil
 	}
 
 	return diag.Diagnostics{{
 		Severity: diag.Error,
 		Summary:  "stack is locked",
-		Detail:   detail,
+		Detail:   stackLockMessage(d),
 	}}
 }
 
