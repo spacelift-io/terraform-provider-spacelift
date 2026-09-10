@@ -22,6 +22,15 @@ resource "spacelift_module" "k8s-module" {
   repository         = "terraform-super-module"
 }
 
+# Terraform module using the installed account-level Origin VCS integration.
+resource "spacelift_module" "origin-module" {
+  origin {}
+
+  branch     = "main"
+  name       = "origin-module"
+  repository = "terraform-origin-module"
+}
+
 # Unspecified module name and provider (repository naming scheme terraform-${provider}-${name})
 resource "spacelift_module" "example-module" {
   branch       = "master"
@@ -52,6 +61,7 @@ resource "spacelift_module" "example-module" {
 - `gitlab` (Block List, Max: 1) GitLab VCS settings (see [below for nested schema](#nestedblock--gitlab))
 - `labels` (Set of String)
 - `name` (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
+- `origin` (Block List, Max: 1) Use the installed account-level Origin integration. The repository and branch are configured by the corresponding top-level attributes. (see [below for nested schema](#nestedblock--origin))
 - `project_root` (String) Project root is the optional directory relative to the repository root containing the module source code.
 - `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail. Defaults to `false`.
 - `public` (Boolean) Make this module publicly accessible. Can only be set at creation time. Defaults to `false`.
@@ -148,6 +158,10 @@ Optional:
 Read-Only:
 
 - `is_default` (Boolean) Indicates whether this is the default GitLab integration
+
+
+<a id="nestedblock--origin"></a>
+### Nested Schema for `origin`
 
 
 <a id="nestedblock--raw_git"></a>

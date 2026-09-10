@@ -125,6 +125,9 @@ func (m *Module) ExportVCSSettings(d *schema.ResourceData) error {
 			"url":       m.RepositoryURL,
 		}
 		fieldName = "raw_git"
+	case VCSProviderOrigin:
+		vcsSettings = map[string]any{}
+		fieldName = "origin"
 	case VCSProviderSpacelift:
 		vcsSettings = map[string]any{}
 		fieldName = "spacelift_repo"

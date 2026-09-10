@@ -114,6 +114,7 @@ Read-Only:
 - `labels` (Set of String)
 - `module_id` (String)
 - `name` (String)
+- `origin` (List of Object) (see [below for nested schema](#nestedobjatt--modules--origin))
 - `project_root` (String)
 - `protect_from_deletion` (Boolean)
 - `raw_git` (List of Object) (see [below for nested schema](#nestedobjatt--modules--raw_git))
@@ -175,6 +176,13 @@ Read-Only:
 - `id` (String)
 - `is_default` (Boolean)
 - `namespace` (String)
+
+
+<a id="nestedobjatt--modules--origin"></a>
+### Nested Schema for `modules.origin`
+
+Read-Only:
+
 
 
 <a id="nestedobjatt--modules--raw_git"></a>

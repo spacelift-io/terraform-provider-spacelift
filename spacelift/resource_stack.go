@@ -690,6 +690,14 @@ func resourceStack() *schema.Resource {
 					},
 				},
 			},
+			"origin": {
+				Type:          schema.TypeList,
+				Description:   "Use the installed account-level Origin integration. The repository and branch are configured by the corresponding top-level attributes.",
+				Optional:      true,
+				ConflictsWith: conflictingVCSProviders("origin"),
+				MaxItems:      1,
+				Elem:          &schema.Resource{Schema: map[string]*schema.Schema{}},
+			},
 			"repository": {
 				Type:             schema.TypeString,
 				Description:      "Name of the repository, without the owner part",
@@ -1109,6 +1117,10 @@ func stackInput(d *schema.ResourceData) structs.StackInput {
 		ret.RepositoryURL = toOptionalString(rawGit[0].(map[string]any)["url"])
 	}
 
+	if origin, ok := d.Get("origin").([]any); ok && len(origin) > 0 {
+		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderOrigin))
+	}
+
 	if showcase, ok := d.Get("showcase").([]any); ok && len(showcase) > 0 {
 		ret.Namespace = toOptionalString(showcase[0].(map[string]any)["namespace"])
 		ret.Provider = graphql.NewString(graphql.String(structs.VCSProviderShowcases))
@@ -1478,6 +1490,7 @@ func conflictingVCSProviders(me string) (out []string) {
 		"gitlab",
 		"raw_git",
 		"spacelift_repo",
+		"origin",
 	}
 
 	for _, v := range available {

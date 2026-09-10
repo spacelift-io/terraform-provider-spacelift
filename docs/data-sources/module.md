@@ -44,6 +44,7 @@ data "spacelift_module" "k8s-module" {
 - `id` (String) The ID of this resource.
 - `labels` (Set of String)
 - `name` (String) The module name will by default be inferred from the repository name if it follows the terraform-provider-name naming convention. However, if the repository doesn't follow this convention, or you want to give it a custom name, you can provide it here.
+- `origin` (List of Object) Set when the source uses the installed account-level Origin integration. (see [below for nested schema](#nestedatt--origin))
 - `project_root` (String) Project root is the optional directory relative to the repository root containing the module source code.
 - `protect_from_deletion` (Boolean) Protect this module from accidental deletion. If set, attempts to delete this module will fail.
 - `raw_git` (List of Object) One-way VCS integration using a raw Git repository link (see [below for nested schema](#nestedatt--raw_git))
@@ -105,6 +106,13 @@ Read-Only:
 - `id` (String)
 - `is_default` (Boolean)
 - `namespace` (String)
+
+
+<a id="nestedatt--origin"></a>
+### Nested Schema for `origin`
+
+Read-Only:
+
 
 
 <a id="nestedatt--raw_git"></a>
