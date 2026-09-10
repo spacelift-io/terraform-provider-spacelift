@@ -697,7 +697,7 @@ func resourceStack() *schema.Resource {
 			},
 			"prevent_changes_when_locked": {
 				Type:        schema.TypeBool,
-				Description: "If true, Terraform will fail during planning when the stack is locked and the plan includes changes to this resource.",
+				Description: "If true, Terraform will fail during planning when the stack is locked and the plan includes (in-place) changes to this resource. Note: this does not affect 'destroy' or 'replace' operations. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
