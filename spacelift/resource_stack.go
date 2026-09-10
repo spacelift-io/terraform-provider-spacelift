@@ -1010,8 +1010,7 @@ func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
 	if !d.Get("prevent_changes_when_locked").(bool) {
 		return nil
 	}
-	locked, ok := d.GetOk("lock.0.locked")
-	if !ok || !locked.(bool) {
+	if !d.Get("lock.0.locked").(bool) {
 		return nil
 	}
 
