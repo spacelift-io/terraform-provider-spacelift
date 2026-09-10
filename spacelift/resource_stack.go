@@ -697,7 +697,7 @@ func resourceStack() *schema.Resource {
 			},
 			"prevent_changes_when_locked": {
 				Type:        schema.TypeBool,
-				Description: "If true, Terraform will fail during planning when the stack is locked and the plan includes (in-place) changes to this resource. Note: this does not affect 'destroy' or 'replace' operations. Defaults to `false`.",
+				Description: "If true, Terraform will fail when the stack is locked and the plan would modify or destroy this resource. Defaults to `false`.",
 				Optional:    true,
 				Default:     false,
 			},
@@ -999,6 +999,41 @@ func getStackByID(ctx context.Context, client *internal.Client, stackID string) 
 	return query.Stack, nil
 }
 
+func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
+	if !d.Get("prevent_changes_when_locked").(bool) {
+		return nil
+	}
+	locked, ok := d.GetOk("lock.0.locked")
+	if !ok || !locked.(bool) {
+		return nil
+	}
+
+	lockedBy, _ := d.GetOk("lock.0.locked_by")
+	lockedAt, _ := d.GetOk("lock.0.locked_at")
+	note, _ := d.GetOk("lock.0.note")
+
+	lockedTime := "unknown"
+	if ts, ok := lockedAt.(int); ok && ts > 0 {
+		lockedTime = time.Unix(int64(ts), 0).UTC().Format(time.RFC3339)
+	}
+
+	detail := fmt.Sprintf(
+		"This stack has `prevent_changes_when_locked` enabled, but it is currently locked\n"+
+			"  by: %s\n"+
+			"  at: %s",
+		lockedBy, lockedTime,
+	)
+	if noteStr, ok := note.(string); ok && noteStr != "" {
+		detail += fmt.Sprintf("\n  with the note:\n\n%s", noteStr)
+	}
+
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "stack is locked",
+		Detail:   detail,
+	}}
+}
+
 func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stack, err := getStackByID(ctx, meta.(*internal.Client), d.Id())
 	if err != nil {
@@ -1014,6 +1049,10 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) di
 }
 
 func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	if diags := checkStackLock(d); diags.HasError() {
+		return diags
+	}
+
 	var ret diag.Diagnostics
 
 	// Check if vendor migration is needed (terraform <-> terragrunt).
@@ -1050,6 +1089,10 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 }
 
 func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	if diags := checkStackLock(d); diags.HasError() {
+		return diags
+	}
+
 	var mutation struct {
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id)"`
 	}
