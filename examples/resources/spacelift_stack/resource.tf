@@ -9,6 +9,15 @@ resource "spacelift_stack" "k8s-cluster" {
   terraform_version = "1.3.0"
 }
 
+# Terraform stack using the installed account-level Origin VCS integration.
+resource "spacelift_stack" "origin-stack" {
+  origin {}
+
+  branch     = "main"
+  name       = "Origin Stack"
+  repository = "infrastructure"
+}
+
 # Terraform stack using Bitbucket Cloud as VCS
 resource "spacelift_stack" "k8s-cluster-bitbucket-cloud" {
   bitbucket_cloud {

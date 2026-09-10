@@ -251,6 +251,8 @@ func (s *Stack) VCSSettings() (string, map[string]any) {
 			"namespace": s.Namespace,
 			"url":       s.RepositoryURL,
 		}
+	case VCSProviderOrigin:
+		return "origin", map[string]any{}
 	case VCSProviderShowcases:
 		return "showcase", singleKeyMap("namespace", s.Namespace)
 	case VCSProviderSpacelift:

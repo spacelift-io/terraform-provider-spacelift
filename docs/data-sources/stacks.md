@@ -163,6 +163,7 @@ Read-Only:
 - `manage_state` (Boolean)
 - `name` (String)
 - `opentofu` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--opentofu))
+- `origin` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--origin))
 - `project_root` (String)
 - `protect_from_deletion` (Boolean)
 - `pulumi` (List of Object) (see [below for nested schema](#nestedobjatt--stacks--pulumi))
@@ -289,6 +290,13 @@ Read-Only:
 Read-Only:
 
 - `concise` (Boolean)
+
+
+
+<a id="nestedobjatt--stacks--origin"></a>
+### Nested Schema for `stacks.origin`
+
+Read-Only:
 
 
 

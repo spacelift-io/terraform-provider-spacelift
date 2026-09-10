@@ -488,6 +488,12 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
+			"origin": {
+				Type:        schema.TypeList,
+				Description: "Set when the source uses the installed account-level Origin integration.",
+				Computed:    true,
+				Elem:        &schema.Resource{Schema: map[string]*schema.Schema{}},
+			},
 			"repository": {
 				Type:        schema.TypeString,
 				Description: "Name of the repository, without the owner part",

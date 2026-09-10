@@ -1,6 +1,21 @@
 name: 🧪 Test
 
-on: [push]
+# Both jobs need the preprod secrets, which a push to a fork can never carry, so
+# a fork PR gets no push event in this repository and its required checks would
+# wait forever. Fork PRs run through pull_request_target instead, which uses this
+# file and the secrets from the base repository, gated on a maintainer applying
+# the safe-to-test label to the exact commit they reviewed. Only the labeled
+# event triggers: a later push does not rerun under the stale label, it needs the
+# label removed and added again after another review.
+on:
+  push:
+  pull_request_target:
+    types: [labeled]
+
+# pull_request_target tokens default to write access, which reviewed-but-foreign
+# code must not hold.
+permissions:
+  contents: read
 
 jobs:
   # The no-drift tests in spacelift/migrationtest verify that a resource moved to the
@@ -11,10 +26,16 @@ jobs:
   migration-drift:
     name: Verify migrated resources produce no state drift
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.label.name == 'safe-to-test'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Empty on push. On a labeled fork PR this is the reviewed commit:
+          # pull_request_target checks out the base branch by default, which
+          # would test the wrong code.
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Go
         uses: actions/setup-go@v7
@@ -40,10 +61,16 @@ jobs:
   deployment:
     name: Test the code
     runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.label.name == 'safe-to-test'
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Empty on push. On a labeled fork PR this is the reviewed commit:
+          # pull_request_target checks out the base branch by default, which
+          # would test the wrong code.
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Install Go
         uses: actions/setup-go@v7
@@ -65,9 +92,9 @@ jobs:
           SPACELIFT_PROVIDER_TEST_IPS: ${{ secrets.PREPROD_SPACELIFT_PROVIDER_TEST_IPS }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_NAME: "Azure DevOps Default"
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_ID: "azure-devops-default"
-          SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_PERSONALACCESSTOKEN: "azure-devops" 
+          SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_PERSONALACCESSTOKEN: "azure-devops"
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_USERFACINGHOST: "https://azure-devops-default"
-          SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_ORGANIZATIONURL:  ${{ secrets.COMMON_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_ORGANIZATIONURL }}
+          SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_ORGANIZATIONURL: ${{ secrets.COMMON_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_ORGANIZATIONURL }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_WEBHOOKSECRET: ${{ secrets.PREPROD_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_WEBHOOKSECRET }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_WEBHOOKURL: ${{ secrets.PREPROD_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_WEBHOOKURL }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_DEFAULT_VCSCHECKS: "INDIVIDUAL"
@@ -77,7 +104,7 @@ jobs:
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_SPACE: "tests-01HPE6ENR1AZZ638QSRQRVW4DH"
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_PERSONALACCESSTOKEN: "azure-devops-space-level-pat"
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_USERFACINGHOST: "https://azure-devops-space-level"
-          SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_ORGANIZATIONURL:  ${{ secrets.COMMON_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_ORGANIZATIONURL }}
+          SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_ORGANIZATIONURL: ${{ secrets.COMMON_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_ORGANIZATIONURL }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_WEBHOOKSECRET: ${{ secrets.PREPROD_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_WEBHOOKSECRET }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_WEBHOOKURL: ${{ secrets.PREPROD_SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_WEBHOOKURL }}
           SPACELIFT_PROVIDER_TEST_SOURCECODE_AZUREDEVOPS_SPACELEVEL_VCSCHECKS: "INDIVIDUAL"

@@ -50,7 +50,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Azure DevOps VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab", "spacelift_repo"},
+				ConflictsWith: conflictingVCSProviders("azure_devops"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -82,7 +82,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Cloud VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_datacenter", "github_enterprise", "gitlab", "spacelift_repo"},
+				ConflictsWith: conflictingVCSProviders("bitbucket_cloud"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -114,7 +114,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Bitbucket Datacenter VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "github_enterprise", "gitlab", "spacelift_repo"},
+				ConflictsWith: conflictingVCSProviders("bitbucket_datacenter"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -162,7 +162,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "GitHub Enterprise (self-hosted) VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "gitlab", "spacelift_repo"},
+				ConflictsWith: conflictingVCSProviders("github_enterprise"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -194,7 +194,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "GitLab VCS settings",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "spacelift_repo"},
+				ConflictsWith: conflictingVCSProviders("gitlab"),
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -288,6 +288,14 @@ func resourceModule() *schema.Resource {
 					},
 				},
 			},
+			"origin": {
+				Type:          schema.TypeList,
+				Description:   "Use the installed account-level Origin integration. The repository and branch are configured by the corresponding top-level attributes.",
+				Optional:      true,
+				ConflictsWith: conflictingVCSProviders("origin"),
+				MaxItems:      1,
+				Elem:          &schema.Resource{Schema: map[string]*schema.Schema{}},
+			},
 			"repository": {
 				Type:             schema.TypeString,
 				Description:      "Name of the repository, without the owner part",
@@ -321,7 +329,7 @@ func resourceModule() *schema.Resource {
 				Type:          schema.TypeList,
 				Description:   "Take the source from a Spacelift repo. The block takes no settings: `repository` is the repo's ID (slug), and `branch` must be `main` - Spacelift Repos have no branches, and the module always tracks the latest commit. The repo must be in the same space as the module, since the module publishes its source as a version.",
 				Optional:      true,
-				ConflictsWith: []string{"azure_devops", "bitbucket_cloud", "bitbucket_datacenter", "github_enterprise", "gitlab", "raw_git"},
+				ConflictsWith: conflictingVCSProviders("spacelift_repo"),
 				MaxItems:      1,
 				Elem:          &schema.Resource{Schema: map[string]*schema.Schema{}},
 			},
@@ -610,6 +618,12 @@ func getSourceData(d *schema.ResourceData) (provider *graphql.String, namespace 
 		repositoryURL = toOptionalString(rawGit[0].(map[string]any)["url"])
 		namespace = toOptionalString(rawGit[0].(map[string]any)["namespace"])
 		provider = graphql.NewString(graphql.String(structs.VCSProviderRawGit))
+
+		return
+	}
+
+	if origin, ok := d.Get("origin").([]any); ok && len(origin) > 0 {
+		provider = graphql.NewString(graphql.String(structs.VCSProviderOrigin))
 
 		return
 	}
