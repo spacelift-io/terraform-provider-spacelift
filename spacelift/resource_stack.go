@@ -617,35 +617,7 @@ func resourceStack() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
-			"lock": {
-				Type:        schema.TypeList,
-				Description: "Lock status of the stack.",
-				Computed:    true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"locked": {
-							Type:        schema.TypeBool,
-							Description: "Whether the stack is currently locked.",
-							Computed:    true,
-						},
-						"locked_at": {
-							Type:        schema.TypeInt,
-							Description: "Unix timestamp when the stack was locked.",
-							Computed:    true,
-						},
-						"locked_by": {
-							Type:        schema.TypeString,
-							Description: "Login of the user who locked the stack.",
-							Computed:    true,
-						},
-						"note": {
-							Type:        schema.TypeString,
-							Description: "Note associated with the lock.",
-							Computed:    true,
-						},
-					},
-				},
-			},
+			"lock": structs.LockSchema(),
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack. Defaults to `true`.",
