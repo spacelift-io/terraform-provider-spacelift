@@ -4,12 +4,15 @@ page_title: "spacelift_role Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
   spacelift_role represents a Spacelift role - a collection of permissions that can be assigned to IdP groups or API keys to control access to Spacelift resources and operations.
+  The available actions that can be performed are defined in Spacelift's GraphQL API Action enum (e.g. http://graphdoc.io/preview/enum/Action?endpoint=https://demo.app.spacelift.io/graphql).
   Note: you must have admin access to the root Space in order to create or mutate roles.
 ---
 
 # spacelift_role (Resource)
 
 `spacelift_role` represents a Spacelift **role** - a collection of permissions that can be assigned to IdP groups or API keys to control access to Spacelift resources and operations.
+
+The available actions that can be performed are defined in Spacelift's GraphQL API `Action` enum (e.g. http://graphdoc.io/preview/enum/Action?endpoint=https://demo.app.spacelift.io/graphql).
 
 **Note:** you must have admin access to the `root` Space in order to create or mutate roles.
 
