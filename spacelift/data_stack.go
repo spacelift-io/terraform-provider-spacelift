@@ -663,22 +663,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	d.Set("enable_sensitive_outputs_upload", stack.EnableSensitiveOutputUpload)
 	d.Set("enabled", !stack.IsDisabled)
 
-	lockBlock := map[string]any{
-		"locked":    stack.LockedAt != nil,
-		"locked_at": 0,
-		"locked_by": "",
-		"note":      "",
-	}
-	if stack.LockedAt != nil {
-		lockBlock["locked_at"] = *stack.LockedAt
-	}
-	if stack.LockedBy != nil {
-		lockBlock["locked_by"] = *stack.LockedBy
-	}
-	if stack.LockNote != nil {
-		lockBlock["note"] = *stack.LockNote
-	}
-	d.Set("lock", []any{lockBlock})
+	d.Set("lock", stack.LockBlock())
 
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)

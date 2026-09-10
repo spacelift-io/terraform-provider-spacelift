@@ -132,6 +132,26 @@ type Stack struct {
 	} `graphql:"workerPool"`
 }
 
+// LockBlock returns the lock status as a value suitable for d.Set("lock", ...).
+func (s *Stack) LockBlock() []any {
+	block := map[string]any{
+		"locked":    s.LockedAt != nil,
+		"locked_at": 0,
+		"locked_by": "",
+		"note":      "",
+	}
+	if s.LockedAt != nil {
+		block["locked_at"] = *s.LockedAt
+	}
+	if s.LockedBy != nil {
+		block["locked_by"] = *s.LockedBy
+	}
+	if s.LockNote != nil {
+		block["note"] = *s.LockNote
+	}
+	return []any{block}
+}
+
 // ExportVCSSettings exports VCS settings into Terraform schema.
 func (s *Stack) ExportVCSSettings(d *schema.ResourceData) error {
 	if fieldName, vcsSettings := s.VCSSettings(); fieldName != "" {
@@ -295,22 +315,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("space_id", stack.Space)
 	d.Set("slug", stack.ID)
 
-	lockBlock := map[string]any{
-		"locked":    stack.LockedAt != nil,
-		"locked_at": 0,
-		"locked_by": "",
-		"note":      "",
-	}
-	if stack.LockedAt != nil {
-		lockBlock["locked_at"] = *stack.LockedAt
-	}
-	if stack.LockedBy != nil {
-		lockBlock["locked_by"] = *stack.LockedBy
-	}
-	if stack.LockNote != nil {
-		lockBlock["note"] = *stack.LockNote
-	}
-	d.Set("lock", []any{lockBlock})
+	d.Set("lock", stack.LockBlock())
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)
