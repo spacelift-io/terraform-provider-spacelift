@@ -979,7 +979,18 @@ func stackLockMessage(d schemaGetter) string {
 }
 
 func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
-	if !d.Get("prevent_changes_when_locked").(bool) {
+	prevent := d.Get("prevent_changes_when_locked").(bool)
+	if !prevent {
+		// During destroy, config is empty and d.Get returns the default (false).
+		// Fall back to the prior state value.
+		if state := d.GetRawState(); !state.IsNull() {
+			val := state.GetAttr("prevent_changes_when_locked")
+			if !val.IsNull() && val.True() {
+				prevent = true
+			}
+		}
+	}
+	if !prevent {
 		return nil
 	}
 	if !d.Get("lock.0.locked").(bool) {
