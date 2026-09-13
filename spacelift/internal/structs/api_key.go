@@ -8,6 +8,7 @@ type APIKey struct {
 	ID            string              `graphql:"id"`
 	Admin         bool                `graphql:"admin"`
 	Name          string              `graphql:"name"`
+	Description   *string             `graphql:"description"`
 	Secret        string              `graphql:"secret"`
 	Type          APIKeyType          `graphql:"type"`
 	IDPGroups     []string            `graphql:"teams"`
@@ -34,10 +35,11 @@ type ClaimMappingEntry struct {
 }
 
 type ApiKeyInput struct { //nolint:staticcheck // The backend type is spelled that way, so we can't change this.
-	Admin     graphql.Boolean  `json:"admin"`
-	Name      graphql.String   `json:"name"`
-	IDPGroups []graphql.String `json:"teams"`
-	OIDC      *APIKeyInputOIDC `json:"oidc,omitempty"`
+	Admin       graphql.Boolean  `json:"admin"`
+	Name        graphql.String   `json:"name"`
+	Description *graphql.String  `json:"description,omitempty"`
+	IDPGroups   []graphql.String `json:"teams"`
+	OIDC        *APIKeyInputOIDC `json:"oidc,omitempty"`
 }
 
 type APIKeyInputOIDC struct {
