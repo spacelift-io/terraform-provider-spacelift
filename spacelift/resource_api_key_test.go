@@ -49,10 +49,11 @@ func TestAPIKeyResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"secret"}, // Secret is not returned in read operations
 			},
 			{
-				Config: config(fmt.Sprintf("Updated API Key %s", randomID), "admins"),
+				Config: config(fmt.Sprintf("Updated API Key %s", randomID), "Updated description", "admins"),
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(fmt.Sprintf("Updated API Key %s", randomID))),
+					Attribute("description", Equals("Updated description")),
 					Attribute("type", Equals("SECRET")),
 					SetEquals("idp_groups", "admins"),
 				),
