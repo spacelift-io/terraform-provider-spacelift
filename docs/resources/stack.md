@@ -286,7 +286,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.
 - `terraform_workspace` (String) Terraform workspace to select
 - `terragrunt` (Block List, Max: 1) Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack. (see [below for nested schema](#nestedblock--terragrunt))
-- `worker_pool_id` (String) ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.
+- `worker_pool_id` (String) ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift. When left unset, the worker pool currently assigned to the stack is retained.
 
 ### Read-Only
 

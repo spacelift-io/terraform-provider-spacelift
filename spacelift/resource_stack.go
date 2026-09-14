@@ -836,8 +836,9 @@ func resourceStack() *schema.Resource {
 			},
 			"worker_pool_id": {
 				Type:        schema.TypeString,
-				Description: "ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.",
+				Description: "ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift. When left unset, the worker pool currently assigned to the stack is retained.",
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}
