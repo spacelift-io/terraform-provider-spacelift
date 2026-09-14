@@ -271,7 +271,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `manage_state` (Boolean) Determines if Spacelift should manage state for this stack. Defaults to `true`.
 - `opentofu` (Block List, Max: 1) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. (see [below for nested schema](#nestedblock--opentofu))
 - `origin` (Block List, Max: 1) Use the installed account-level Origin integration. The repository and branch are configured by the corresponding top-level attributes. (see [below for nested schema](#nestedblock--origin))
-- `prevent_changes_when_locked` (Boolean) If true, Terraform will fail when the stack is locked and the plan would modify or destroy this resource. Defaults to `false`.
+- `prevent_changes_when_locked` (Boolean) If true, Terraform will fail when the stack is locked and the plan would modify or destroy this resource. Defaults to `false`. Note: destroy errors are (currently) raised during the apply, not planning.
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.
 - `protect_from_deletion` (Boolean) Protect this stack from accidental deletion. If set, attempts to delete this stack will fail. Defaults to `false`.
 - `pulumi` (Block List, Max: 1) Pulumi-specific configuration. Presence means this Stack is a Pulumi Stack. (see [below for nested schema](#nestedblock--pulumi))
