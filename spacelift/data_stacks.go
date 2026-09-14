@@ -129,6 +129,8 @@ func dataStacksRead(ctx context.Context, d *schema.ResourceData, meta any) diag.
 				"terraform_version":                node.TerraformVersion,
 			}
 
+			stack["lock"] = node.LockBlock()
+
 			if workerPool := node.WorkerPool; workerPool != nil {
 				stack["worker_pool_id"] = workerPool.ID
 			} else {

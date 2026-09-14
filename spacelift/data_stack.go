@@ -389,6 +389,7 @@ func dataStack() *schema.Resource {
 					},
 				},
 			},
+			"lock": structs.LockSchema(),
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack",
@@ -633,6 +634,7 @@ func dataStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 	d.Set("enable_well_known_secret_masking", stack.EnableWellKnownSecretMasking)
 	d.Set("enable_sensitive_outputs_upload", stack.EnableSensitiveOutputUpload)
 	d.Set("enabled", !stack.IsDisabled)
+	d.Set("lock", stack.LockBlock())
 	d.Set("manage_state", stack.ManagesStateFile)
 	d.Set("name", stack.Name)
 	d.Set("project_root", stack.ProjectRoot)

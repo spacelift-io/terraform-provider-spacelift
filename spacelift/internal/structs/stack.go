@@ -52,6 +52,9 @@ type Stack struct {
 	Deleting                     bool          `graphql:"deleting"`
 	Description                  *string       `graphql:"description"`
 	IsDisabled                   bool          `graphql:"isDisabled"`
+	LockedAt                     *int          `graphql:"lockedAt"`
+	LockedBy                     *string       `graphql:"lockedBy"`
+	LockNote                     *string       `graphql:"lockNote"`
 	GitHubActionDeploy           bool          `graphql:"githubActionDeploy"`
 	Hooks                        Hooks         `graphql:"hooks"`
 	Integrations                 *Integrations `graphql:"integrations"`
@@ -127,6 +130,59 @@ type Stack struct {
 	WorkerPool *struct {
 		ID string `graphql:"id"`
 	} `graphql:"workerPool"`
+}
+
+// LockBlock returns the lock status as a value suitable for d.Set("lock", ...).
+func (s *Stack) LockBlock() []any {
+	block := map[string]any{
+		"locked":    s.LockedAt != nil,
+		"locked_at": 0,
+		"locked_by": "",
+		"note":      "",
+	}
+	if s.LockedAt != nil {
+		block["locked_at"] = *s.LockedAt
+	}
+	if s.LockedBy != nil {
+		block["locked_by"] = *s.LockedBy
+	}
+	if s.LockNote != nil {
+		block["note"] = *s.LockNote
+	}
+	return []any{block}
+}
+
+// LockSchema returns the schema definition for the lock block attribute.
+func LockSchema() *schema.Schema {
+	return &schema.Schema{
+		Type:        schema.TypeList,
+		Description: "Lock status of the stack.",
+		Computed:    true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"locked": {
+					Type:        schema.TypeBool,
+					Description: "Whether the stack is currently locked.",
+					Computed:    true,
+				},
+				"locked_at": {
+					Type:        schema.TypeInt,
+					Description: "Unix timestamp when the stack was locked.",
+					Computed:    true,
+				},
+				"locked_by": {
+					Type:        schema.TypeString,
+					Description: "Login of the user who locked the stack.",
+					Computed:    true,
+				},
+				"note": {
+					Type:        schema.TypeString,
+					Description: "Note associated with the lock.",
+					Computed:    true,
+				},
+			},
+		},
+	}
 }
 
 // ExportVCSSettings exports VCS settings into Terraform schema.
@@ -291,6 +347,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("space_id", stack.Space)
 	d.Set("slug", stack.ID)
+	d.Set("lock", stack.LockBlock())
 
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -52,6 +53,21 @@ func resourceStack() *schema.Resource {
 			// Skip on initial resource creation — there is no old state.
 			if diff.Id() == "" {
 				return nil
+			}
+
+			if prevent, ok := diff.GetOk("prevent_changes_when_locked"); ok && prevent.(bool) {
+				if locked, ok := diff.GetOk("lock.0.locked"); ok && locked.(bool) {
+					hasRealChanges := false
+					for _, key := range diff.GetChangedKeysPrefix("") {
+						if key != "prevent_changes_when_locked" && !strings.HasPrefix(key, "lock.") {
+							hasRealChanges = true
+							break
+						}
+					}
+					if hasRealChanges {
+						return fmt.Errorf("stack is locked\n\n%s", stackLockMessage(diff))
+					}
+				}
 			}
 
 			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
@@ -601,6 +617,7 @@ func resourceStack() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Optional: true,
 			},
+			"lock": structs.LockSchema(),
 			"manage_state": {
 				Type:        schema.TypeBool,
 				Description: "Determines if Spacelift should manage state for this stack. Defaults to `true`.",
@@ -630,6 +647,12 @@ func resourceStack() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Optional:    true,
 				Description: "Project globs is an optional list of paths to track changes of in addition to the project root.",
+			},
+			"prevent_changes_when_locked": {
+				Type:        schema.TypeBool,
+				Description: "If true, Terraform will fail when the stack is locked and the plan would modify or destroy this resource. Defaults to `false`. Note: destroy errors are (currently) raised during the apply, not planning.",
+				Optional:    true,
+				Default:     false,
 			},
 			"protect_from_deletion": {
 				Type:        schema.TypeBool,
@@ -929,6 +952,58 @@ func getStackByID(ctx context.Context, client *internal.Client, stackID string) 
 	return query.Stack, nil
 }
 
+type schemaGetter interface {
+	GetOk(string) (any, bool)
+}
+
+func stackLockMessage(d schemaGetter) string {
+	lockedBy, _ := d.GetOk("lock.0.locked_by")
+	lockedAt, _ := d.GetOk("lock.0.locked_at")
+	note, _ := d.GetOk("lock.0.note")
+
+	lockedTime := "unknown"
+	if ts, ok := lockedAt.(int); ok && ts > 0 {
+		lockedTime = time.Unix(int64(ts), 0).UTC().Format(time.RFC3339)
+	}
+
+	msg := fmt.Sprintf(
+		"This stack has `prevent_changes_when_locked` enabled, but it is currently locked\n"+
+			"  by: %s\n"+
+			"  at: %s",
+		lockedBy, lockedTime,
+	)
+	if noteStr, ok := note.(string); ok && noteStr != "" {
+		msg += fmt.Sprintf("\n  with the note:\n\n%s", noteStr)
+	}
+	return msg
+}
+
+func checkStackLock(d *schema.ResourceData) diag.Diagnostics {
+	prevent := d.Get("prevent_changes_when_locked").(bool)
+	if !prevent {
+		// During destroy, config is empty and d.Get returns the default (false).
+		// Fall back to the prior state value.
+		if state := d.GetRawState(); !state.IsNull() {
+			val := state.GetAttr("prevent_changes_when_locked")
+			if !val.IsNull() && val.True() {
+				prevent = true
+			}
+		}
+	}
+	if !prevent {
+		return nil
+	}
+	if !d.Get("lock.0.locked").(bool) {
+		return nil
+	}
+
+	return diag.Diagnostics{{
+		Severity: diag.Error,
+		Summary:  "stack is locked",
+		Detail:   stackLockMessage(d),
+	}}
+}
+
 func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	stack, err := getStackByID(ctx, meta.(*internal.Client), d.Id())
 	if err != nil {
@@ -980,6 +1055,12 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 }
 
 func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	// TODO: SDK v2 CustomizeDiff doesn't run on destroy; the error will only fire during apply.
+	// When migrating to terraform-plugin-framework, moving to ModifyPlan will fire it during planning.
+	if diags := checkStackLock(d); diags.HasError() {
+		return diags
+	}
+
 	var mutation struct {
 		DeleteStack *structs.Stack `graphql:"stackDelete(id: $id)"`
 	}
