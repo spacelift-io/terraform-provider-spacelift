@@ -1059,6 +1059,8 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 }
 
 func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	// TODO: SDK v2 CustomizeDiff doesn't run on destroy; the error will only fire during apply.
+	// When migrating to terraform-plugin-framework, moving to ModifyPlan will fire it during planning.
 	if diags := checkStackLock(d); diags.HasError() {
 		return diags
 	}
