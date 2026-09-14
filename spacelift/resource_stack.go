@@ -1019,10 +1019,6 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) di
 }
 
 func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	if diags := checkStackLock(d); diags.HasError() {
-		return diags
-	}
-
 	var ret diag.Diagnostics
 
 	// Check if vendor migration is needed (terraform <-> terragrunt).
