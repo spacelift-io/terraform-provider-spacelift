@@ -19,22 +19,24 @@ func TestAPIKeyResource(t *testing.T) {
 	t.Run("creates and updates a SECRET API key", func(t *testing.T) {
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
-		config := func(name, idpGroup string) string {
+		config := func(name, description, idpGroup string) string {
 			return fmt.Sprintf(`
 				resource "spacelift_api_key" "test" {
-					name = "%s"
-					idp_groups = ["%s"]
+					name        = "%s"
+					description = "%s"
+					idp_groups  = ["%s"]
 				}
-			`, name, idpGroup)
+			`, name, description, idpGroup)
 		}
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: config(fmt.Sprintf("Test API Key %s", randomID), "developers"),
+				Config: config(fmt.Sprintf("Test API Key %s", randomID), "Initial description", "developers"),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
 					Attribute("name", Equals(fmt.Sprintf("Test API Key %s", randomID))),
+					Attribute("description", Equals("Initial description")),
 					Attribute("type", Equals("SECRET")),
 					Attribute("secret", IsNotEmpty()),
 					SetEquals("idp_groups", "developers"),
@@ -47,10 +49,11 @@ func TestAPIKeyResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{"secret"}, // Secret is not returned in read operations
 			},
 			{
-				Config: config(fmt.Sprintf("Updated API Key %s", randomID), "admins"),
+				Config: config(fmt.Sprintf("Updated API Key %s", randomID), "Updated description", "admins"),
 				Check: Resource(
 					resourceName,
 					Attribute("name", Equals(fmt.Sprintf("Updated API Key %s", randomID))),
+					Attribute("description", Equals("Updated description")),
 					Attribute("type", Equals("SECRET")),
 					SetEquals("idp_groups", "admins"),
 				),
