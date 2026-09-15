@@ -3,14 +3,15 @@ name: 🧪 Test
 # Both jobs need the preprod secrets, which a push to a fork can never carry, so
 # a fork PR gets no push event in this repository and its required checks would
 # wait forever. Fork PRs run through pull_request_target instead, which uses this
-# file and the secrets from the base repository, gated on a maintainer applying
-# the safe-to-test label to the exact commit they reviewed. Only the labeled
-# event triggers: a later push does not rerun under the stale label, it needs the
-# label removed and added again after another review.
+# file and the secrets from the base repository, gated per run through the
+# preprod-tests environment: the run waits until one of its required reviewers
+# approves it in the Actions UI, and every new push queues a fresh run that
+# waits for its own approval. Same-repo pushes go through preprod-tests-auto,
+# which has no protection rules, so they keep running unattended.
 on:
   push:
   pull_request_target:
-    types: [labeled]
+    types: [opened, synchronize, reopened]
 
 # pull_request_target tokens default to write access, which reviewed-but-foreign
 # code must not hold.
@@ -26,16 +27,23 @@ jobs:
   migration-drift:
     name: Verify migrated resources produce no state drift
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.label.name == 'safe-to-test'
+    # Same-repo branches already run through the push event, so the gated path
+    # only applies to pull requests whose head lives in a fork.
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name != github.repository
+    environment: ${{ github.event_name == 'pull_request_target' && 'preprod-tests' || 'preprod-tests-auto' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          # Empty on push. On a labeled fork PR this is the reviewed commit:
+          # Empty on push. On a fork PR this is the commit under review:
           # pull_request_target checks out the base branch by default, which
           # would test the wrong code.
           ref: ${{ github.event.pull_request.head.sha }}
+          # Deliberate: fork code only runs after a required reviewer of the
+          # preprod-tests environment approves this exact run, which is the
+          # human gate this opt-in asks for.
+          allow-unsafe-pr-checkout: true
 
       - name: Install Go
         uses: actions/setup-go@v7
@@ -61,16 +69,23 @@ jobs:
   deployment:
     name: Test the code
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.label.name == 'safe-to-test'
+    # Same-repo branches already run through the push event, so the gated path
+    # only applies to pull requests whose head lives in a fork.
+    if: github.event_name != 'pull_request_target' || github.event.pull_request.head.repo.full_name != github.repository
+    environment: ${{ github.event_name == 'pull_request_target' && 'preprod-tests' || 'preprod-tests-auto' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          # Empty on push. On a labeled fork PR this is the reviewed commit:
+          # Empty on push. On a fork PR this is the commit under review:
           # pull_request_target checks out the base branch by default, which
           # would test the wrong code.
           ref: ${{ github.event.pull_request.head.sha }}
+          # Deliberate: fork code only runs after a required reviewer of the
+          # preprod-tests environment approves this exact run, which is the
+          # human gate this opt-in asks for.
+          allow-unsafe-pr-checkout: true
 
       - name: Install Go
         uses: actions/setup-go@v7
