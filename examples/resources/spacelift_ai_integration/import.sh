@@ -1,0 +1,1 @@
+terraform import spacelift_ai_integration.gemini $AI_INTEGRATION_ID

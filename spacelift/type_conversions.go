@@ -22,6 +22,18 @@ func toID(input any) graphql.ID {
 	return graphql.ID(input)
 }
 
+// toOptionalID returns nil for an empty string, so that the argument is sent as
+// a null ID rather than an empty one.
+func toOptionalID(input any) *graphql.ID {
+	s, ok := input.(string)
+	if !ok || s == "" {
+		return nil
+	}
+
+	v := graphql.ID(s)
+	return &v
+}
+
 func toOptionalString(input any) *graphql.String {
 	v := toString(input)
 	return &v
