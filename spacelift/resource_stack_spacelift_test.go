@@ -54,9 +54,10 @@ func TestVCSIntegrationSpacelift(t *testing.T) {
 				),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"prevent_changes_when_locked"},
 			},
 		})
 	})

@@ -63,6 +63,7 @@ data "spacelift_stack" "k8s-core" {
 - `id` (String) The ID of this resource.
 - `kubernetes` (List of Object) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedatt--kubernetes))
 - `labels` (Set of String)
+- `lock` (List of Object) Lock status of the stack. (see [below for nested schema](#nestedatt--lock))
 - `manage_state` (Boolean) Determines if Spacelift should manage state for this stack
 - `name` (String) Name of the stack - should be unique in one account
 - `opentofu` (List of Object) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. (see [below for nested schema](#nestedatt--opentofu))
@@ -161,6 +162,17 @@ Read-Only:
 - `kubectl_version` (String)
 - `kubernetes_workflow_tool` (String)
 - `namespace` (String)
+
+
+<a id="nestedatt--lock"></a>
+### Nested Schema for `lock`
+
+Read-Only:
+
+- `locked` (Boolean)
+- `locked_at` (Number)
+- `locked_by` (String)
+- `note` (String)
 
 
 <a id="nestedatt--opentofu"></a>
