@@ -173,9 +173,7 @@ func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta any)
 	d.SetId(apiKeyID)
 	d.Set("secret", mutation.APIKey.Secret)
 	d.Set("name", mutation.APIKey.Name)
-	if mutation.APIKey.Description != nil {
-		d.Set("description", *mutation.APIKey.Description)
-	}
+	d.Set("description", mutation.APIKey.Description)
 	d.Set("type", string(mutation.APIKey.Type))
 
 	return resourceAPIKeyRead(ctx, d, meta)
@@ -203,9 +201,7 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	d.SetId(apiKey.ID)
 	d.Set("name", apiKey.Name)
-	if apiKey.Description != nil {
-		d.Set("description", *apiKey.Description)
-	}
+	d.Set("description", apiKey.Description)
 	d.Set("type", string(apiKey.Type))
 
 	idpGroups := schema.NewSet(schema.HashString, []any{})

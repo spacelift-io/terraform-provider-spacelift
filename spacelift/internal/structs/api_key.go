@@ -8,7 +8,7 @@ type APIKey struct {
 	ID            string              `graphql:"id"`
 	Admin         bool                `graphql:"admin"`
 	Name          string              `graphql:"name"`
-	Description   *string             `graphql:"description"`
+	Description   string              `graphql:"description"`
 	Secret        string              `graphql:"secret"`
 	Type          APIKeyType          `graphql:"type"`
 	IDPGroups     []string            `graphql:"teams"`
