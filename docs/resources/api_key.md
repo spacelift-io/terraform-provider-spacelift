@@ -62,6 +62,7 @@ resource "spacelift_api_key" "backstage" {
 
 ### Optional
 
+- `description` (String) Description of the API key
 - `idp_groups` (Set of String) List of idp groups associated with the API key
 - `oidc` (Block List, Max: 1) OIDC configuration for the API key. When provided, creates an OIDC API key instead of a SECRET API key. (see [below for nested schema](#nestedblock--oidc))
 

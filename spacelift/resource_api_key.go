@@ -37,6 +37,11 @@ func resourceAPIKey() *schema.Resource {
 				Required:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "Description of the API key",
+				Optional:    true,
+			},
 			"idp_groups": {
 				Type:        schema.TypeSet,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -103,6 +108,11 @@ func apiKeyCreateInput(d *schema.ResourceData) structs.ApiKeyInput {
 		Admin: graphql.Boolean(false), // Always false - we don't use this field
 	}
 
+	if desc, ok := d.GetOk("description"); ok {
+		description := graphql.String(desc.(string))
+		input.Description = &description
+	}
+
 	// Always set IDPGroups to ensure we send an empty array instead of null
 	// Initialize as an empty slice (not nil) to ensure JSON serialization sends []
 	idpGroups := make([]graphql.String, 0)
@@ -163,6 +173,7 @@ func resourceAPIKeyCreate(ctx context.Context, d *schema.ResourceData, meta any)
 	d.SetId(apiKeyID)
 	d.Set("secret", mutation.APIKey.Secret)
 	d.Set("name", mutation.APIKey.Name)
+	d.Set("description", mutation.APIKey.Description)
 	d.Set("type", string(mutation.APIKey.Type))
 
 	return resourceAPIKeyRead(ctx, d, meta)
@@ -190,6 +201,7 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	d.SetId(apiKey.ID)
 	d.Set("name", apiKey.Name)
+	d.Set("description", apiKey.Description)
 	d.Set("type", string(apiKey.Type))
 
 	idpGroups := schema.NewSet(schema.HashString, []any{})
@@ -227,6 +239,11 @@ func apiKeyUpdateInput(d *schema.ResourceData) structs.ApiKeyUpdateInput {
 		input.Name = &name
 	}
 
+	if d.HasChange("description") {
+		description := graphql.String(d.Get("description").(string))
+		input.Description = &description
+	}
+
 	if idpGroupsSet, ok := d.Get("idp_groups").(*schema.Set); ok {
 		var idpGroups []graphql.String
 		for _, group := range idpGroupsSet.List() {
@@ -254,8 +271,8 @@ func resourceAPIKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 	client := meta.(*internal.Client)
 	apiKeyID := d.Id()
 
-	// Update basic fields (name, idp_groups) if they changed
-	if d.HasChange("name") || d.HasChange("idp_groups") || d.HasChange("oidc.0.claim_mappings") {
+	// Update basic fields (name, description, idp_groups) if they changed
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("idp_groups") || d.HasChange("oidc.0.claim_mappings") {
 		var mutation struct {
 			APIKey structs.APIKey `graphql:"apiKeyUpdate(id: $id, input: $input)"`
 		}
