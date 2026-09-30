@@ -8,6 +8,14 @@ type GCPIntegration struct {
 	TokenScopes         []string `graphql:"tokenScopes"`
 }
 
+// DriftDetectionIntegration represents the drift detection configuration for a Stack or Module.
+type DriftDetectionIntegration struct {
+	IgnoreState bool     `graphql:"ignoreState"`
+	Reconcile   bool     `graphql:"reconcile"`
+	Schedule    []string `graphql:"schedule"`
+	Timezone    string   `graphql:"timezone"`
+}
+
 // Integrations represents external integrations for a Stack and a Module.
 type Integrations struct {
 	AWS struct {
@@ -18,12 +26,7 @@ type Integrations struct {
 		DurationSeconds             *int    `graphql:"durationSeconds"`
 		Region                      *string `graphql:"region"`
 	} `graphql:"aws"`
-	DriftDetection struct {
-		IgnoreState bool     `graphql:"ignoreState"`
-		Reconcile   bool     `graphql:"reconcile"`
-		Schedule    []string `graphql:"schedule"`
-		Timezone    string   `graphql:"timezone"`
-	} `graphql:"driftDetection"`
+	DriftDetection DriftDetectionIntegration `graphql:"driftDetection"`
 	Webhooks []struct {
 		ID             string `graphql:"id"`
 		Enabled        bool   `graphql:"enabled"`

@@ -162,7 +162,12 @@ func resourceDriftDetectionDelete(ctx context.Context, d *schema.ResourceData, m
 
 func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.ResourceData, meta any, onNil func(message string) diag.Diagnostics) diag.Diagnostics {
 	var query struct {
-		Stack *structs.Stack `graphql:"stack(id: $id)"`
+		Stack *struct {
+			ID           string `graphql:"id"`
+			Integrations *struct {
+				DriftDetection structs.DriftDetectionIntegration `graphql:"driftDetection"`
+			} `graphql:"integrations"`
+		} `graphql:"stack(id: $id)"`
 	}
 
 	variables := map[string]any{"id": toID(d.Id())}
@@ -171,7 +176,7 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
-	if query.Stack == nil {
+	if query.Stack == nil || query.Stack.Integrations == nil {
 		return onNil("stack not found")
 	}
 
