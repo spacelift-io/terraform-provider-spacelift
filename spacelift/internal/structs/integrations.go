@@ -27,7 +27,7 @@ type Integrations struct {
 		Region                      *string `graphql:"region"`
 	} `graphql:"aws"`
 	DriftDetection DriftDetectionIntegration `graphql:"driftDetection"`
-	Webhooks []struct {
+	Webhooks       []struct {
 		ID             string `graphql:"id"`
 		Enabled        bool   `graphql:"enabled"`
 		Endpoint       string `graphql:"endpoint"`
