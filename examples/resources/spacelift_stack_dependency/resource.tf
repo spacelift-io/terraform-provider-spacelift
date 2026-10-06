@@ -14,4 +14,8 @@ resource "spacelift_stack" "app" {
 resource "spacelift_stack_dependency" "test" {
   stack_id            = spacelift_stack.app.id
   depends_on_stack_id = spacelift_stack.infra.id
+
+  # Trigger the app stack after every successful infra run, even when none of
+  # the referenced outputs changed.
+  trigger_always = true
 }
