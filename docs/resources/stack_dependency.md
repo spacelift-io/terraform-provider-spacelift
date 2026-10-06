@@ -29,6 +29,10 @@ resource "spacelift_stack" "app" {
 resource "spacelift_stack_dependency" "test" {
   stack_id            = spacelift_stack.app.id
   depends_on_stack_id = spacelift_stack.infra.id
+
+  # Trigger the app stack after every successful infra run, even when none of
+  # the referenced outputs changed.
+  trigger_always = true
 }
 ```
 
@@ -39,6 +43,10 @@ resource "spacelift_stack_dependency" "test" {
 
 - `depends_on_stack_id` (String) immutable ID (slug) of stack to depend on.
 - `stack_id` (String) immutable ID (slug) of stack which has a dependency.
+
+### Optional
+
+- `trigger_always` (Boolean) Whether the dependent stack should be triggered on every successful run of the stack it depends on, even if none of the dependency outputs have changed. Defaults to `false`.
 
 ### Read-Only
 

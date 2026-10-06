@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -41,6 +42,15 @@ type stackDependencyModel struct {
 	ID               types.String `tfsdk:"id"`
 	StackID          types.String `tfsdk:"stack_id"`
 	DependsOnStackID types.String `tfsdk:"depends_on_stack_id"`
+	TriggerAlways    types.Bool   `tfsdk:"trigger_always"`
+}
+
+// setFromDependency copies the API representation of a dependency into the model.
+func (m *stackDependencyModel) setFromDependency(dep *structs.StackDependency) {
+	m.ID = types.StringValue(path.Join(dep.Stack.ID, dep.ID))
+	m.StackID = types.StringValue(dep.Stack.ID)
+	m.DependsOnStackID = types.StringValue(dep.DependsOnStack.ID)
+	m.TriggerAlways = types.BoolValue(dep.TriggerAlways)
 }
 
 func (r *stackDependencyResource) Metadata(_ context.Context, _ resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -94,6 +104,14 @@ func (r *stackDependencyResource) Schema(_ context.Context, _ resource.SchemaReq
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"trigger_always": schema.BoolAttribute{
+				Description: "" +
+					"Whether the dependent stack should be triggered on every successful run of the stack it depends on, " +
+					"even if none of the dependency outputs have changed. Defaults to `false`.",
+				Optional: true,
+				Computed: true,
+				Default:  booldefault.StaticBool(false),
+			},
 		},
 	}
 }
@@ -113,6 +131,7 @@ func (r *stackDependencyResource) Create(ctx context.Context, req resource.Creat
 		"input": structs.StackDependencyInput{
 			StackID:          toID(plan.StackID.ValueString()),
 			DependsOnStackID: toID(plan.DependsOnStackID.ValueString()),
+			TriggerAlways:    graphql.Boolean(plan.TriggerAlways.ValueBool()),
 		},
 	}
 
@@ -121,10 +140,7 @@ func (r *stackDependencyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	dep := mutation.StackDependency
-	plan.ID = types.StringValue(path.Join(dep.Stack.ID, dep.ID))
-	plan.StackID = types.StringValue(dep.Stack.ID)
-	plan.DependsOnStackID = types.StringValue(dep.DependsOnStack.ID)
+	plan.setFromDependency(&mutation.StackDependency)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -151,21 +167,44 @@ func (r *stackDependencyResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	state.ID = types.StringValue(path.Join(dependency.Stack.ID, dependency.ID))
-	state.StackID = types.StringValue(dependency.Stack.ID)
-	state.DependsOnStackID = types.StringValue(dependency.DependsOnStack.ID)
+	state.setFromDependency(dependency)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// Update exists only to satisfy resource.Resource. Both attributes force replacement,
-// so there is no in-place update path and the SDKv2 implementation had no UpdateContext.
+// Update handles in-place changes. Both stack IDs force replacement, so the only
+// attribute that can reach this path is trigger_always.
 func (r *stackDependencyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan stackDependencyModel
+	var plan, state stackDependencyModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	_, depID, err := parseStackDependencyID(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("could not parse stack dependency ID", err.Error())
+		return
+	}
+
+	var mutation struct {
+		StackDependency structs.StackDependency `graphql:"stackDependencyUpdate(input: $input)"`
+	}
+
+	variables := map[string]any{
+		"input": structs.StackDependencyUpdateInput{
+			ID:            toID(depID),
+			TriggerAlways: graphql.Boolean(plan.TriggerAlways.ValueBool()),
+		},
+	}
+
+	if err := r.client.Mutate(ctx, "StackDependencyUpdate", &mutation, variables); err != nil {
+		resp.Diagnostics.AddError("could not update stack dependency", err.Error())
+		return
+	}
+
+	plan.setFromDependency(&mutation.StackDependency)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -225,11 +264,8 @@ func (r *stackDependencyResource) ImportState(ctx context.Context, req resource.
 		return
 	}
 
-	state := stackDependencyModel{
-		ID:               types.StringValue(path.Join(dependency.Stack.ID, dependency.ID)),
-		StackID:          types.StringValue(dependency.Stack.ID),
-		DependsOnStackID: types.StringValue(dependency.DependsOnStack.ID),
-	}
+	var state stackDependencyModel
+	state.setFromDependency(dependency)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
