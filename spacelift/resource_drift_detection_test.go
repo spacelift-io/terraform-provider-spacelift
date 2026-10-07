@@ -1,13 +1,18 @@
 package spacelift
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -74,4 +79,55 @@ func TestDriftDetectionResource(t *testing.T) {
 			},
 		})
 	})
+}
+
+func TestReadDistinguishesMissingStackFromMissingIntegration(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name string
+		body string
+		want string
+	}{
+		{
+			name: "stack not found",
+			body: `{"data":{"stack":null}}`,
+			want: "stack not found",
+		},
+		{
+			name: "integration not found",
+			body: `{"data":{"stack":{"id":"stack-id","integrations":null}}}`,
+			want: "drift detection integration not found",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = w.Write([]byte(tc.body))
+			}))
+			t.Cleanup(server.Close)
+
+			d := resourceDriftDetection().Data(nil)
+			d.SetId("stack-id")
+
+			diags := resourceStackDriftDetectionReadWithHooks(
+				context.Background(),
+				d,
+				internal.NewClient(server.URL, "token", nil, nil),
+				func(message string) diag.Diagnostics {
+					return diag.Diagnostics{{Severity: diag.Error, Summary: message}}
+				},
+			)
+			if !diags.HasError() {
+				t.Fatal("expected an error")
+			}
+			if diags[0].Summary != tc.want {
+				t.Fatalf("got %q, want %q", diags[0].Summary, tc.want)
+			}
+		})
+	}
 }
