@@ -1032,7 +1032,7 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 
 		if err := meta.(*internal.Client).Mutate(ctx, "StackMigrateVendor", &migrateMutation, migrateVariables); err != nil {
-			return readAfterFailedUpdate(ctx, d, meta, diag.Errorf("could not migrate stack vendor: %v", internal.FromSpaceliftError(err)))
+			return readAfterFailedMutation(ctx, d, meta, diag.Errorf("could not migrate stack vendor: %v", internal.FromSpaceliftError(err)))
 		}
 	}
 
@@ -1046,19 +1046,23 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackUpdate", &mutation, variables); err != nil {
-		return readAfterFailedUpdate(ctx, d, meta, diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err)))
+		return readAfterFailedMutation(ctx, d, meta, diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err)))
 	}
 
 	return resourceStackRead(ctx, d, meta)
 }
 
-// readAfterFailedUpdate reads the stack after a failed mutation, so that the
-// state matches the backend. If the read also fails, it keeps the old state.
-// Otherwise SDKv2 saves planned values that never reached the backend, such
-// as the planned terragrunt block, and the next apply does not send them.
-func readAfterFailedUpdate(ctx context.Context, d *schema.ResourceData, meta any, diags diag.Diagnostics) diag.Diagnostics {
+// readAfterFailedMutation reads the stack after a failed mutation, so that the
+// state matches the backend. Without this read, SDKv2 saves planned values
+// that never reached the backend, such as the planned terragrunt block, and
+// the next apply does not send them. If the read fails or finds no stack,
+// readAfterFailedMutation keeps the old state.
+func readAfterFailedMutation(ctx context.Context, d *schema.ResourceData, meta any, diags diag.Diagnostics) diag.Diagnostics {
+	id := d.Id()
+
 	readDiags := resourceStackRead(ctx, d, meta)
-	if readDiags.HasError() {
+	if readDiags.HasError() || d.Id() == "" {
+		d.SetId(id)
 		d.Partial(true)
 	}
 

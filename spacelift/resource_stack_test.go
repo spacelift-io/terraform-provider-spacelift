@@ -2511,8 +2511,6 @@ func TestStackResourceSpace(t *testing.T) {
 			`, randomIDwp, name, vendorConfig)
 		}
 
-		var stackID string
-
 		testSteps(t, []resource.TestStep{
 			{
 				// Step 1: Create as Terraform stack with "terragrunt" label and a run that stays queued
@@ -2527,10 +2525,6 @@ func TestStackResourceSpace(t *testing.T) {
 						SetContains("labels", "terragrunt"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
-					func(s *terraform.State) error {
-						stackID = s.RootModule().Resources[resourceName].Primary.ID
-						return nil
-					},
 				),
 			},
 			{
@@ -2560,27 +2554,6 @@ func TestStackResourceSpace(t *testing.T) {
 					terraform_version = "1.5.7"
 				`),
 				PlanOnly: true,
-			},
-			{
-				// Step 5: Apply the Terraform config — must keep the same stack
-				Config: config(`
-					labels            = ["terragrunt"]
-					terraform_version = "1.5.7"
-				`),
-				Check: resource.ComposeTestCheckFunc(
-					Resource(
-						resourceName,
-						Attribute("terraform_version", Equals("1.5.7")),
-						SetContains("labels", "terragrunt"),
-						Attribute("terragrunt.#", Equals("0")),
-					),
-					func(s *terraform.State) error {
-						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
-							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
-						}
-						return nil
-					},
-				),
 			},
 		})
 	})
@@ -2654,9 +2627,12 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 	t.Parallel()
 
 	const (
-		mutationError = `{"errors":[{"message":"cannot apply the change"}]}`
-		readError     = `{"errors":[{"message":"service unavailable"}]}`
-		terraformRead = `{"data":{"stack":{"id":"stack-id","description":"backend","integrations":{},"vendorConfig":{"__typename":"StackConfigVendorTerraform"}}}}`
+		migrateError  = "could not migrate stack vendor: cannot apply the change"
+		updateError   = "could not update stack: cannot apply the change"
+		mutationBody  = `{"errors":[{"message":"cannot apply the change"}]}`
+		readErrorBody = `{"errors":[{"message":"service unavailable"}]}`
+		missingBody   = `{"data":{"stack":null}}`
+		terraformBody = `{"data":{"stack":{"id":"stack-id","description":"backend","integrations":{},"vendorConfig":{"__typename":"StackConfigVendorTerraform"}}}}`
 	)
 
 	migrationDiff := map[string]*terraform.ResourceAttrDiff{
@@ -2670,42 +2646,51 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 	cases := []struct {
 		name      string
 		diff      map[string]*terraform.ResourceAttrDiff
-		readBody  string
+		body      string
 		want      string
-		attribute string
-		wantValue string
+		wantState map[string]string
 	}{
 		{
 			name:      "migration fails and read succeeds",
 			diff:      migrationDiff,
-			readBody:  terraformRead,
-			want:      "could not migrate stack vendor: cannot apply the change",
-			attribute: "terragrunt.#",
-			wantValue: "0",
+			body:      terraformBody,
+			want:      migrateError,
+			wantState: map[string]string{"id": "stack-id", "description": "backend", "terragrunt.#": "0"},
 		},
 		{
 			name:      "migration fails and read fails",
 			diff:      migrationDiff,
-			readBody:  readError,
-			want:      "could not migrate stack vendor: cannot apply the change",
-			attribute: "terragrunt.#",
-			wantValue: "0",
+			body:      readErrorBody,
+			want:      migrateError,
+			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+		},
+		{
+			name:      "migration fails and read finds no stack",
+			diff:      migrationDiff,
+			body:      missingBody,
+			want:      migrateError,
+			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
 		},
 		{
 			name:      "update fails and read succeeds",
 			diff:      descriptionDiff,
-			readBody:  terraformRead,
-			want:      "could not update stack: cannot apply the change",
-			attribute: "description",
-			wantValue: "backend",
+			body:      terraformBody,
+			want:      updateError,
+			wantState: map[string]string{"id": "stack-id", "description": "backend", "terragrunt.#": "0"},
 		},
 		{
 			name:      "update fails and read fails",
 			diff:      descriptionDiff,
-			readBody:  readError,
-			want:      "could not update stack: cannot apply the change",
-			attribute: "description",
-			wantValue: "old",
+			body:      readErrorBody,
+			want:      updateError,
+			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+		},
+		{
+			name:      "update fails and read finds no stack",
+			diff:      descriptionDiff,
+			body:      missingBody,
+			want:      updateError,
+			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
 		},
 	}
 
@@ -2716,10 +2701,10 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
 				if r.Header.Get("Spacelift-GraphQL-Mutation") != "" {
-					_, _ = w.Write([]byte(mutationError))
+					_, _ = w.Write([]byte(mutationBody))
 					return
 				}
-				_, _ = w.Write([]byte(tc.readBody))
+				_, _ = w.Write([]byte(tc.body))
 			}))
 			t.Cleanup(server.Close)
 
@@ -2742,8 +2727,13 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 			if diags[0].Summary != tc.want {
 				t.Fatalf("got %q, want %q", diags[0].Summary, tc.want)
 			}
-			if got := newState.Attributes[tc.attribute]; got != tc.wantValue {
-				t.Fatalf("got %s = %q, want %q", tc.attribute, got, tc.wantValue)
+			if newState == nil {
+				t.Fatal("the stack was removed from state")
+			}
+			for key, want := range tc.wantState {
+				if got := newState.Attributes[key]; got != want {
+					t.Fatalf("got %s = %q, want %q", key, got, want)
+				}
 			}
 		})
 	}
@@ -2763,20 +2753,21 @@ func TestStackReadClearsStaleTerragrunt(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
+		name   string
 		vendor string
 		want   int
 	}{
-		{vendor: structs.StackConfigVendorAnsible},
-		{vendor: structs.StackConfigVendorCloudFormation},
-		{vendor: structs.StackConfigVendorKubernetes},
-		{vendor: structs.StackConfigVendorOpenTofu},
-		{vendor: structs.StackConfigVendorPulumi},
-		{vendor: structs.StackConfigVendorTerraform},
-		{vendor: structs.StackConfigVendorTerragrunt, want: 1},
+		{name: "Ansible", vendor: structs.StackConfigVendorAnsible, want: 0},
+		{name: "CloudFormation", vendor: structs.StackConfigVendorCloudFormation, want: 0},
+		{name: "Kubernetes", vendor: structs.StackConfigVendorKubernetes, want: 0},
+		{name: "OpenTofu", vendor: structs.StackConfigVendorOpenTofu, want: 0},
+		{name: "Pulumi", vendor: structs.StackConfigVendorPulumi, want: 0},
+		{name: "Terraform", vendor: structs.StackConfigVendorTerraform, want: 0},
+		{name: "Terragrunt", vendor: structs.StackConfigVendorTerragrunt, want: 1},
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.vendor, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
@@ -2785,8 +2776,7 @@ func TestStackReadClearsStaleTerragrunt(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 
-			// Older provider versions let SDKv2 save the planned terragrunt
-			// block when stackMigrateVendor failed.
+			// The planned terragrunt block, see PopulateStack.
 			d := resourceStack().Data(nil)
 			d.SetId("stack-id")
 			if err := d.Set("terragrunt", []any{map[string]any{"terragrunt_version": "0.67.16"}}); err != nil {

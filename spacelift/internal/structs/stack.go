@@ -372,9 +372,9 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
 	if stack.VendorConfig.Typename != StackConfigVendorTerragrunt {
-		// Older provider versions let SDKv2 save the planned terragrunt block
-		// when stackMigrateVendor failed. Clear the block so that a refresh
-		// repairs those stacks.
+		// Clear the planned terragrunt block. The read after a failed
+		// stackMigrateVendor call needs this, and it also repairs state that
+		// older provider versions saved with the planned terragrunt block.
 		d.Set("terragrunt", nil)
 	}
 
