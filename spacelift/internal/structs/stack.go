@@ -371,6 +371,12 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	}
 	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
+	// If stackMigrateVendor fails, the Terragrunt block in the state is
+	// persisted, and any subsequent run will then fail. Although the bug has
+	// been fixed, this serves as a backup to ensure that any existing broken
+	//stacks are repaired.
+	d.Set("terragrunt", nil)
+
 	switch stack.VendorConfig.Typename {
 	case StackConfigVendorAnsible:
 		m := map[string]any{

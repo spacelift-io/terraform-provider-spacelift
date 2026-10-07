@@ -1034,6 +1034,10 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 
 		if err := meta.(*internal.Client).Mutate(ctx, "StackMigrateVendor", &migrateMutation, migrateVariables); err != nil {
+			// Keep the old state for every attribute. The migration has failed
+			// so we assume nothing has changed. Without this, SDKv2 saves the
+			// planned vendor block, and the next apply skips the migration.
+			d.Partial(true)
 			return diag.Errorf("could not migrate stack vendor: %v", internal.FromSpaceliftError(err))
 		}
 	}

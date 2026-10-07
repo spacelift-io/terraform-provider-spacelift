@@ -1,14 +1,20 @@
 package spacelift
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -2478,6 +2484,79 @@ func TestStackResourceSpace(t *testing.T) {
 		})
 	})
 
+	t.Run("failed vendor migration Terraform to Terragrunt keeps the old vendor", func(t *testing.T) {
+		name := "vendor-migration-failed-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_worker_pool" "test" {
+					name        = "Let's create a dummy worker pool to avoid running the job %s"
+				}
+
+				resource "spacelift_stack" "test" {
+					branch         = "master"
+					name           = "%s"
+					project_root   = "root"
+					repository     = "demo"
+					manage_state   = false
+					worker_pool_id = spacelift_worker_pool.test.id
+					%s
+				}
+
+				resource "spacelift_run" "test" {
+					stack_id = spacelift_stack.test.id
+
+					keepers = { "bacon" = "tasty" }
+				}
+			`, randomIDwp, name, vendorConfig)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				// Step 1: Create as Terraform stack with "terragrunt" label and a run that stays queued
+				Config: config(`
+					labels            = ["terragrunt"]
+					terraform_version = "1.5.7"
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("terraform_version", Equals("1.5.7")),
+						SetContains("labels", "terragrunt"),
+						Attribute("terragrunt.#", Equals("0")),
+					),
+				),
+			},
+			{
+				// Step 2: Migrate to Terragrunt — the backend refuses it because of the active run
+				Config: config(`
+					terragrunt {
+						terragrunt_version = "0.67.16"
+						tool               = "TERRAFORM_FOSS"
+					}
+				`),
+				ExpectError: regexp.MustCompile("could not migrate stack vendor"),
+			},
+			{
+				// Step 3: Retry the migration — must call stackMigrateVendor again, not stackUpdate
+				Config: config(`
+					terragrunt {
+						terragrunt_version = "0.67.16"
+						tool               = "TERRAFORM_FOSS"
+					}
+				`),
+				ExpectError: regexp.MustCompile("could not migrate stack vendor"),
+			},
+			{
+				// Step 4: Go back to the Terraform config — must give an empty plan
+				Config: config(`
+					labels            = ["terragrunt"]
+					terraform_version = "1.5.7"
+				`),
+				PlanOnly: true,
+			},
+		})
+	})
 }
 
 // getConfig returns a stack config with injected vendor config
@@ -2542,4 +2621,80 @@ func TestStackResourceInSpaceDestroy(t *testing.T) {
 			},
 		})
 	})
+}
+
+func TestStackUpdateKeepsStateWhenVendorMigrationFails(t *testing.T) {
+	t.Parallel()
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"errors":[{"message":"cannot migrate stack with 1 active run(s)"}]}`))
+	}))
+	t.Cleanup(server.Close)
+
+	state := &terraform.InstanceState{
+		ID:         "stack-id",
+		Attributes: map[string]string{"id": "stack-id", "terragrunt.#": "0"},
+	}
+	diff := &terraform.InstanceDiff{
+		Attributes: map[string]*terraform.ResourceAttrDiff{
+			"terragrunt.#":                    {Old: "0", New: "1"},
+			"terragrunt.0.terragrunt_version": {Old: "", New: "0.67.16"},
+		},
+	}
+
+	newState, diags := resourceStack().Apply(context.Background(), state, diff, internal.NewClient(server.URL, "token", nil, nil))
+	if !diags.HasError() {
+		t.Fatal("expected an error")
+	}
+	if got := diags[0].Summary; !strings.Contains(got, "could not migrate stack vendor") {
+		t.Fatalf("got %q, want the migrate error", got)
+	}
+	if got := newState.Attributes["terragrunt.#"]; got != "0" {
+		t.Fatalf("got terragrunt.# = %q, want %q", got, "0")
+	}
+}
+
+func TestPopulateStackClearsStaleTerragrunt(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		vendor string
+		want   int
+	}{
+		{vendor: structs.StackConfigVendorAnsible},
+		{vendor: structs.StackConfigVendorCloudFormation},
+		{vendor: structs.StackConfigVendorKubernetes},
+		{vendor: structs.StackConfigVendorOpenTofu},
+		{vendor: structs.StackConfigVendorPulumi},
+		{vendor: structs.StackConfigVendorTerraform},
+		{vendor: structs.StackConfigVendorTerragrunt, want: 1},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.vendor, func(t *testing.T) {
+			t.Parallel()
+
+			// A failed vendor migration used to leave the planned terragrunt
+			// block in state, while the backend kept the old vendor.
+			d := resourceStack().Data(nil)
+			if err := d.Set("terragrunt", []any{map[string]any{
+				"terragrunt_version": "0.67.16",
+				"tool":               "TERRAFORM_FOSS",
+			}}); err != nil {
+				t.Fatalf("could not set the stale terragrunt block: %v", err)
+			}
+
+			stack := &structs.Stack{Integrations: &structs.Integrations{}}
+			stack.VendorConfig.Typename = tc.vendor
+
+			if diags := structs.PopulateStack(d, stack); diags.HasError() {
+				t.Fatalf("could not populate the stack: %v", diags)
+			}
+
+			if got := d.Get("terragrunt").([]any); len(got) != tc.want {
+				t.Fatalf("got terragrunt = %v, want %d block(s)", got, tc.want)
+			}
+		})
+	}
 }
