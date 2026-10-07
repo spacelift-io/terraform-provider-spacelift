@@ -23,7 +23,9 @@ func TestTaskResource(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-				%s
+				resource "spacelift_worker_pool" "test" {
+					name        = "Let's create a dummy worker pool to avoid running the job %s"
+				}
 
 				resource "spacelift_stack" "test" {
 					name           = "Test stack %s"
@@ -37,7 +39,7 @@ func TestTaskResource(t *testing.T) {
 					command = "ls -lah"
 					keepers = { "bacon" = "tasty" }
 				}
-			`, dummyWorkerPoolConfig(randomIDwp, ""), randomID),
+			`, randomIDwp, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
@@ -60,7 +62,9 @@ func TestTaskResourceWait(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					%s
+					resource "spacelift_worker_pool" "test" {
+						name        = "Let's create a dummy worker pool to avoid running the job %s"
+					}
 
 					resource "spacelift_stack" "test" {
 						name           = "Test stack %s"
@@ -82,7 +86,7 @@ func TestTaskResourceWait(t *testing.T) {
 							disabled            = false
 							continue_on_timeout = true
 						}
-					}`, dummyWorkerPoolConfig(randomIDwp, ""), randomID),
+					}`, randomIDwp, randomID),
 				Check: Resource(
 					resourceName,
 					Attribute("id", IsNotEmpty()),
@@ -99,7 +103,9 @@ func TestTaskResourceWait(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
-					%s
+					resource "spacelift_worker_pool" "test" {
+						name        = "Let's create a dummy worker pool to avoid running the job %s"
+					}
 
 					resource "spacelift_stack" "test" {
 						name           = "Test stack %s"
@@ -121,7 +127,7 @@ func TestTaskResourceWait(t *testing.T) {
 							disabled            = false
 							continue_on_timeout = false
 						}
-					}`, dummyWorkerPoolConfig(randomIDwp, ""), randomID),
+					}`, randomIDwp, randomID),
 				ExpectError: regexp.MustCompile("run [0-9A-Z]* on stack test-stack-[a-z0-9]* has timed out"),
 			},
 		})

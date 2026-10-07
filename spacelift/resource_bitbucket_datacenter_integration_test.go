@@ -47,7 +47,10 @@ func TestBitbucketDatacenterIntegrationResource(t *testing.T) {
 
 		configStack := func() string {
 			return `
-				` + dummyWorkerPoolConfig(name, testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space) + `
+				resource "spacelift_worker_pool" "test" {
+					name      = "Let's create a dummy worker pool to avoid running the job ` + name + `"
+					space_id  = "` + testConfig.SourceCode.BitbucketDatacenter.SpaceLevel.Space + `"
+				}
 
 				resource "spacelift_stack" "test" {
 					name            = "stack-for-` + name + `"

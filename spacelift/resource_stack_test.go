@@ -2489,7 +2489,9 @@ func TestStackResourceSpace(t *testing.T) {
 		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		config := func(vendorConfig string) string {
 			return fmt.Sprintf(`
-				%s
+				resource "spacelift_worker_pool" "test" {
+					name        = "Let's create a dummy worker pool to avoid running the job %s"
+				}
 
 				resource "spacelift_stack" "test" {
 					branch         = "master"
@@ -2506,7 +2508,7 @@ func TestStackResourceSpace(t *testing.T) {
 
 					keepers = { "bacon" = "tasty" }
 				}
-			`, dummyWorkerPoolConfig(randomIDwp, ""), name, vendorConfig)
+			`, randomIDwp, name, vendorConfig)
 		}
 
 		var stackID string
