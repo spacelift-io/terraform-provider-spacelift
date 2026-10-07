@@ -176,8 +176,11 @@ func resourceStackDriftDetectionReadWithHooks(ctx context.Context, d *schema.Res
 		return diag.Errorf("could not query for stack: %v", err)
 	}
 
-	if query.Stack == nil || query.Stack.Integrations == nil {
+	if query.Stack == nil {
 		return onNil("stack not found")
+	}
+	if query.Stack.Integrations == nil {
+		return onNil("drift detection integration not found")
 	}
 
 	integration := query.Stack.Integrations.DriftDetection
