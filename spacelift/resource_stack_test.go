@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
-	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
@@ -2489,9 +2489,7 @@ func TestStackResourceSpace(t *testing.T) {
 		randomIDwp := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 		config := func(vendorConfig string) string {
 			return fmt.Sprintf(`
-				resource "spacelift_worker_pool" "test" {
-					name        = "Let's create a dummy worker pool to avoid running the job %s"
-				}
+				%s
 
 				resource "spacelift_stack" "test" {
 					branch         = "master"
@@ -2508,8 +2506,10 @@ func TestStackResourceSpace(t *testing.T) {
 
 					keepers = { "bacon" = "tasty" }
 				}
-			`, randomIDwp, name, vendorConfig)
+			`, dummyWorkerPoolConfig(randomIDwp, ""), name, vendorConfig)
 		}
+
+		var stackID string
 
 		testSteps(t, []resource.TestStep{
 			{
@@ -2525,6 +2525,10 @@ func TestStackResourceSpace(t *testing.T) {
 						SetContains("labels", "terragrunt"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
+					func(s *terraform.State) error {
+						stackID = s.RootModule().Resources[resourceName].Primary.ID
+						return nil
+					},
 				),
 			},
 			{
@@ -2535,7 +2539,7 @@ func TestStackResourceSpace(t *testing.T) {
 						tool               = "TERRAFORM_FOSS"
 					}
 				`),
-				ExpectError: regexp.MustCompile("could not migrate stack vendor"),
+				ExpectError: regexp.MustCompile(`could not migrate stack vendor: cannot migrate stack with \d+ active run`),
 			},
 			{
 				// Step 3: Retry the migration — must call stackMigrateVendor again, not stackUpdate
@@ -2545,7 +2549,7 @@ func TestStackResourceSpace(t *testing.T) {
 						tool               = "TERRAFORM_FOSS"
 					}
 				`),
-				ExpectError: regexp.MustCompile("could not migrate stack vendor"),
+				ExpectError: regexp.MustCompile(`could not migrate stack vendor: cannot migrate stack with \d+ active run`),
 			},
 			{
 				// Step 4: Go back to the Terraform config — must give an empty plan
@@ -2554,6 +2558,27 @@ func TestStackResourceSpace(t *testing.T) {
 					terraform_version = "1.5.7"
 				`),
 				PlanOnly: true,
+			},
+			{
+				// Step 5: Apply the Terraform config — must keep the same stack
+				Config: config(`
+					labels            = ["terragrunt"]
+					terraform_version = "1.5.7"
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("terraform_version", Equals("1.5.7")),
+						SetContains("labels", "terragrunt"),
+						Attribute("terragrunt.#", Equals("0")),
+					),
+					func(s *terraform.State) error {
+						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
+							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
+						}
+						return nil
+					},
+				),
 			},
 		})
 	})
@@ -2623,39 +2648,116 @@ func TestStackResourceInSpaceDestroy(t *testing.T) {
 	})
 }
 
-func TestStackUpdateKeepsStateWhenVendorMigrationFails(t *testing.T) {
+func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 	t.Parallel()
 
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"errors":[{"message":"cannot migrate stack with 1 active run(s)"}]}`))
-	}))
-	t.Cleanup(server.Close)
+	const (
+		mutationError = `{"errors":[{"message":"cannot apply the change"}]}`
+		readError     = `{"errors":[{"message":"service unavailable"}]}`
+		terraformRead = `{"data":{"stack":{"id":"stack-id","description":"backend","integrations":{},"vendorConfig":{"__typename":"StackConfigVendorTerraform"}}}}`
+	)
 
-	state := &terraform.InstanceState{
-		ID:         "stack-id",
-		Attributes: map[string]string{"id": "stack-id", "terragrunt.#": "0"},
+	migrationDiff := map[string]*terraform.ResourceAttrDiff{
+		"terragrunt.#":                    {Old: "0", New: "1"},
+		"terragrunt.0.terragrunt_version": {Old: "", New: "0.67.16"},
 	}
-	diff := &terraform.InstanceDiff{
-		Attributes: map[string]*terraform.ResourceAttrDiff{
-			"terragrunt.#":                    {Old: "0", New: "1"},
-			"terragrunt.0.terragrunt_version": {Old: "", New: "0.67.16"},
+	descriptionDiff := map[string]*terraform.ResourceAttrDiff{
+		"description": {Old: "old", New: "new"},
+	}
+
+	cases := []struct {
+		name      string
+		diff      map[string]*terraform.ResourceAttrDiff
+		readBody  string
+		want      string
+		attribute string
+		wantValue string
+	}{
+		{
+			name:      "migration fails and read succeeds",
+			diff:      migrationDiff,
+			readBody:  terraformRead,
+			want:      "could not migrate stack vendor: cannot apply the change",
+			attribute: "terragrunt.#",
+			wantValue: "0",
+		},
+		{
+			name:      "migration fails and read fails",
+			diff:      migrationDiff,
+			readBody:  readError,
+			want:      "could not migrate stack vendor: cannot apply the change",
+			attribute: "terragrunt.#",
+			wantValue: "0",
+		},
+		{
+			name:      "update fails and read succeeds",
+			diff:      descriptionDiff,
+			readBody:  terraformRead,
+			want:      "could not update stack: cannot apply the change",
+			attribute: "description",
+			wantValue: "backend",
+		},
+		{
+			name:      "update fails and read fails",
+			diff:      descriptionDiff,
+			readBody:  readError,
+			want:      "could not update stack: cannot apply the change",
+			attribute: "description",
+			wantValue: "old",
 		},
 	}
 
-	newState, diags := resourceStack().Apply(context.Background(), state, diff, internal.NewClient(server.URL, "token", nil, nil))
-	if !diags.HasError() {
-		t.Fatal("expected an error")
-	}
-	if got := diags[0].Summary; !strings.Contains(got, "could not migrate stack vendor") {
-		t.Fatalf("got %q, want the migrate error", got)
-	}
-	if got := newState.Attributes["terragrunt.#"]; got != "0" {
-		t.Fatalf("got terragrunt.# = %q, want %q", got, "0")
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				if r.Header.Get("Spacelift-GraphQL-Mutation") != "" {
+					_, _ = w.Write([]byte(mutationError))
+					return
+				}
+				_, _ = w.Write([]byte(tc.readBody))
+			}))
+			t.Cleanup(server.Close)
+
+			state := &terraform.InstanceState{
+				ID:         "stack-id",
+				Attributes: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+			}
+
+			// Apply, not resourceStackUpdate: only Apply builds the new state,
+			// which is where d.Partial takes effect.
+			newState, diags := resourceStack().Apply(
+				context.Background(),
+				state,
+				&terraform.InstanceDiff{Attributes: tc.diff, RawConfig: emptyStackConfig()},
+				internal.NewClient(server.URL, "token", nil, nil),
+			)
+			if !diags.HasError() {
+				t.Fatal("expected an error")
+			}
+			if diags[0].Summary != tc.want {
+				t.Fatalf("got %q, want %q", diags[0].Summary, tc.want)
+			}
+			if got := newState.Attributes[tc.attribute]; got != tc.wantValue {
+				t.Fatalf("got %s = %q, want %q", tc.attribute, got, tc.wantValue)
+			}
+		})
 	}
 }
 
-func TestPopulateStackClearsStaleTerragrunt(t *testing.T) {
+// emptyStackConfig returns a stack config with every attribute set to null.
+func emptyStackConfig() cty.Value {
+	attributes := map[string]cty.Value{}
+	for name, attributeType := range resourceStack().CoreConfigSchema().ImpliedType().AttributeTypes() {
+		attributes[name] = cty.NullVal(attributeType)
+	}
+
+	return cty.ObjectVal(attributes)
+}
+
+func TestStackReadClearsStaleTerragrunt(t *testing.T) {
 	t.Parallel()
 
 	cases := []struct {
@@ -2675,25 +2777,25 @@ func TestPopulateStackClearsStaleTerragrunt(t *testing.T) {
 		t.Run(tc.vendor, func(t *testing.T) {
 			t.Parallel()
 
-			// A failed vendor migration used to leave the planned terragrunt
-			// block in state, while the backend kept the old vendor.
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = fmt.Fprintf(w, `{"data":{"stack":{"id":"stack-id","integrations":{},"vendorConfig":{"__typename":%q}}}}`, tc.vendor)
+			}))
+			t.Cleanup(server.Close)
+
+			// Older provider versions let SDKv2 save the planned terragrunt
+			// block when stackMigrateVendor failed.
 			d := resourceStack().Data(nil)
-			if err := d.Set("terragrunt", []any{map[string]any{
-				"terragrunt_version": "0.67.16",
-				"tool":               "TERRAFORM_FOSS",
-			}}); err != nil {
-				t.Fatalf("could not set the stale terragrunt block: %v", err)
+			d.SetId("stack-id")
+			if err := d.Set("terragrunt", []any{map[string]any{"terragrunt_version": "0.67.16"}}); err != nil {
+				t.Fatalf("could not set the planned terragrunt block: %v", err)
 			}
 
-			stack := &structs.Stack{Integrations: &structs.Integrations{}}
-			stack.VendorConfig.Typename = tc.vendor
-
-			if diags := structs.PopulateStack(d, stack); diags.HasError() {
-				t.Fatalf("could not populate the stack: %v", diags)
+			if diags := resourceStackRead(context.Background(), d, internal.NewClient(server.URL, "token", nil, nil)); diags.HasError() {
+				t.Fatalf("could not read the stack: %v", diags)
 			}
-
-			if got := d.Get("terragrunt").([]any); len(got) != tc.want {
-				t.Fatalf("got terragrunt = %v, want %d block(s)", got, tc.want)
+			if got := len(d.Get("terragrunt").([]any)); got != tc.want {
+				t.Fatalf("got %d terragrunt block(s), want %d", got, tc.want)
 			}
 		})
 	}

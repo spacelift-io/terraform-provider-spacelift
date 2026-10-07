@@ -46,10 +46,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 
 		configStack := func() string {
 			return `
-				resource "spacelift_worker_pool" "test" {
-					name      = "Let's create a dummy worker pool to avoid running the job ` + name + `"
-					space_id  = "` + testConfig.SourceCode.Gitlab.SpaceLevel.Space + `"
-				}
+				` + dummyWorkerPoolConfig(name, testConfig.SourceCode.Gitlab.SpaceLevel.Space) + `
 
 				resource "spacelift_stack" "test" {
 					name            = "stack-for-` + name + `"

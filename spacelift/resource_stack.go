@@ -1019,8 +1019,6 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) di
 }
 
 func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	var ret diag.Diagnostics
-
 	// Check if vendor migration is needed (terraform <-> terragrunt).
 	if targetVendor := vendorMigrationDirection(d); targetVendor != "" {
 		var migrateMutation struct {
@@ -1034,11 +1032,7 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 
 		if err := meta.(*internal.Client).Mutate(ctx, "StackMigrateVendor", &migrateMutation, migrateVariables); err != nil {
-			// Keep the old state for every attribute. The migration has failed
-			// so we assume nothing has changed. Without this, SDKv2 saves the
-			// planned vendor block, and the next apply skips the migration.
-			d.Partial(true)
-			return diag.Errorf("could not migrate stack vendor: %v", internal.FromSpaceliftError(err))
+			return readAfterFailedUpdate(ctx, d, meta, diag.Errorf("could not migrate stack vendor: %v", internal.FromSpaceliftError(err)))
 		}
 	}
 
@@ -1052,10 +1046,23 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if err := meta.(*internal.Client).Mutate(ctx, "StackUpdate", &mutation, variables); err != nil {
-		ret = diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err))
+		return readAfterFailedUpdate(ctx, d, meta, diag.Errorf("could not update stack: %v", internal.FromSpaceliftError(err)))
 	}
 
-	return append(ret, resourceStackRead(ctx, d, meta)...)
+	return resourceStackRead(ctx, d, meta)
+}
+
+// readAfterFailedUpdate reads the stack after a failed mutation, so that the
+// state matches the backend. If the read also fails, it keeps the old state.
+// Otherwise SDKv2 saves planned values that never reached the backend, such
+// as the planned terragrunt block, and the next apply does not send them.
+func readAfterFailedUpdate(ctx context.Context, d *schema.ResourceData, meta any, diags diag.Diagnostics) diag.Diagnostics {
+	readDiags := resourceStackRead(ctx, d, meta)
+	if readDiags.HasError() {
+		d.Partial(true)
+	}
+
+	return append(diags, readDiags...)
 }
 
 func resourceStackDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
