@@ -2641,6 +2641,10 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 	descriptionDiff := map[string]*terraform.ResourceAttrDiff{
 		"description": {Old: "old", New: "new"},
 	}
+	vendorChangeDiff := map[string]*terraform.ResourceAttrDiff{
+		"ansible.#":          {Old: "0", New: "1"},
+		"ansible.0.playbook": {Old: "", New: "main.yml"},
+	}
 
 	cases := []struct {
 		name      string
@@ -2654,42 +2658,63 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 			diff:      migrationDiff,
 			body:      terraformBody,
 			want:      migrateError,
-			wantState: map[string]string{"id": "stack-id", "description": "backend", "terragrunt.#": "0"},
+			wantState: map[string]string{"id": "stack-id", "description": "backend", "ansible.#": "0", "terragrunt.#": "0"},
 		},
 		{
 			name:      "migration fails and read fails",
 			diff:      migrationDiff,
 			body:      readErrorBody,
 			want:      migrateError,
-			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+			wantState: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
 		},
 		{
 			name:      "migration fails and read finds no stack",
 			diff:      migrationDiff,
 			body:      missingBody,
 			want:      migrateError,
-			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+			wantState: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
 		},
 		{
 			name:      "update fails and read succeeds",
 			diff:      descriptionDiff,
 			body:      terraformBody,
 			want:      updateError,
-			wantState: map[string]string{"id": "stack-id", "description": "backend", "terragrunt.#": "0"},
+			wantState: map[string]string{"id": "stack-id", "description": "backend", "ansible.#": "0", "terragrunt.#": "0"},
 		},
 		{
 			name:      "update fails and read fails",
 			diff:      descriptionDiff,
 			body:      readErrorBody,
 			want:      updateError,
-			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+			wantState: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
 		},
 		{
 			name:      "update fails and read finds no stack",
 			diff:      descriptionDiff,
 			body:      missingBody,
 			want:      updateError,
-			wantState: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+			wantState: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
+		},
+		{
+			name:      "vendor change fails and read succeeds",
+			diff:      vendorChangeDiff,
+			body:      terraformBody,
+			want:      updateError,
+			wantState: map[string]string{"id": "stack-id", "description": "backend", "ansible.#": "0", "terragrunt.#": "0"},
+		},
+		{
+			name:      "vendor change fails and read fails",
+			diff:      vendorChangeDiff,
+			body:      readErrorBody,
+			want:      updateError,
+			wantState: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
+		},
+		{
+			name:      "vendor change fails and read finds no stack",
+			diff:      vendorChangeDiff,
+			body:      missingBody,
+			want:      updateError,
+			wantState: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
 		},
 	}
 
@@ -2709,7 +2734,7 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 
 			state := &terraform.InstanceState{
 				ID:         "stack-id",
-				Attributes: map[string]string{"id": "stack-id", "description": "old", "terragrunt.#": "0"},
+				Attributes: map[string]string{"id": "stack-id", "description": "old", "ansible.#": "0", "terragrunt.#": "0"},
 			}
 
 			// Apply, not resourceStackUpdate: only Apply builds the new state,
@@ -2748,21 +2773,31 @@ func emptyStackConfig() cty.Value {
 	return cty.ObjectVal(attributes)
 }
 
-func TestStackReadClearsStaleTerragrunt(t *testing.T) {
+func TestStackReadClearsStaleVendorBlocks(t *testing.T) {
 	t.Parallel()
+
+	// The planned vendor blocks, see PopulateStack.
+	plannedBlocks := map[string]map[string]any{
+		"ansible":        {"playbook": "main.yml"},
+		"cloudformation": {"region": "eu-west-1"},
+		"kubernetes":     {"namespace": "default"},
+		"opentofu":       {"version": "1.9.0"},
+		"pulumi":         {"stack_name": "dev"},
+		"terragrunt":     {"terragrunt_version": "0.67.16"},
+	}
 
 	cases := []struct {
 		name   string
 		vendor string
-		want   int
+		block  string
 	}{
-		{name: "Ansible", vendor: structs.StackConfigVendorAnsible, want: 0},
-		{name: "CloudFormation", vendor: structs.StackConfigVendorCloudFormation, want: 0},
-		{name: "Kubernetes", vendor: structs.StackConfigVendorKubernetes, want: 0},
-		{name: "OpenTofu", vendor: structs.StackConfigVendorOpenTofu, want: 0},
-		{name: "Pulumi", vendor: structs.StackConfigVendorPulumi, want: 0},
-		{name: "Terraform", vendor: structs.StackConfigVendorTerraform, want: 0},
-		{name: "Terragrunt", vendor: structs.StackConfigVendorTerragrunt, want: 1},
+		{name: "Ansible", vendor: structs.StackConfigVendorAnsible, block: "ansible"},
+		{name: "CloudFormation", vendor: structs.StackConfigVendorCloudFormation, block: "cloudformation"},
+		{name: "Kubernetes", vendor: structs.StackConfigVendorKubernetes, block: "kubernetes"},
+		{name: "OpenTofu", vendor: structs.StackConfigVendorOpenTofu, block: "opentofu"},
+		{name: "Pulumi", vendor: structs.StackConfigVendorPulumi, block: "pulumi"},
+		{name: "Terraform", vendor: structs.StackConfigVendorTerraform},
+		{name: "Terragrunt", vendor: structs.StackConfigVendorTerragrunt, block: "terragrunt"},
 	}
 
 	for _, tc := range cases {
@@ -2775,18 +2810,25 @@ func TestStackReadClearsStaleTerragrunt(t *testing.T) {
 			}))
 			t.Cleanup(server.Close)
 
-			// The planned terragrunt block, see PopulateStack.
 			d := resourceStack().Data(nil)
 			d.SetId("stack-id")
-			if err := d.Set("terragrunt", []any{map[string]any{"terragrunt_version": "0.67.16"}}); err != nil {
-				t.Fatalf("could not set the planned terragrunt block: %v", err)
+			for block, planned := range plannedBlocks {
+				if err := d.Set(block, []any{planned}); err != nil {
+					t.Fatalf("could not set the planned %s block: %v", block, err)
+				}
 			}
 
 			if diags := resourceStackRead(t.Context(), d, internal.NewClient(server.URL, "token", nil, nil)); diags.HasError() {
 				t.Fatalf("could not read the stack: %v", diags)
 			}
-			if got := len(d.Get("terragrunt").([]any)); got != tc.want {
-				t.Fatalf("got %d terragrunt block(s), want %d", got, tc.want)
+			for block := range plannedBlocks {
+				want := 0
+				if block == tc.block {
+					want = 1
+				}
+				if got := len(d.Get(block).([]any)); got != want {
+					t.Fatalf("got %d %s block(s), want %d", got, block, want)
+				}
 			}
 		})
 	}

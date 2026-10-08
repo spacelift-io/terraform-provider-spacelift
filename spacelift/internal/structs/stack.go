@@ -27,6 +27,17 @@ const StackConfigVendorOpenTofu = "StackConfigVendorOpenTofu"
 // StackConfigVendorTerragrunt is a graphql union typename.
 const StackConfigVendorTerragrunt = "StackConfigVendorTerragrunt"
 
+// stackVendorBlocks maps each vendor typename to its vendor block. The
+// Terraform vendor has no block.
+var stackVendorBlocks = map[string]string{
+	StackConfigVendorAnsible:        "ansible",
+	StackConfigVendorCloudFormation: "cloudformation",
+	StackConfigVendorKubernetes:     "kubernetes",
+	StackConfigVendorOpenTofu:       "opentofu",
+	StackConfigVendorPulumi:         "pulumi",
+	StackConfigVendorTerragrunt:     "terragrunt",
+}
+
 // Hooks represents the scripts run around each phase of a Stack.
 type Hooks struct {
 	AfterApply    []string `graphql:"afterApply"`
@@ -371,11 +382,13 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	}
 	d.Set("git_sparse_checkout_paths", gitSparseCheckoutPaths)
 
-	if stack.VendorConfig.Typename != StackConfigVendorTerragrunt {
-		// Clear the planned terragrunt block. The read after a failed
-		// stackMigrateVendor call needs this, and it also repairs state that
-		// older provider versions saved with the planned terragrunt block.
-		d.Set("terragrunt", nil)
+	// Clear every vendor block except the block of the vendor that the
+	// backend returns. After a failed stack mutation, SDKv2 can save the
+	// planned vendor block, and the next plan then shows no diff.
+	for typename, block := range stackVendorBlocks {
+		if typename != stack.VendorConfig.Typename {
+			d.Set(block, nil)
+		}
 	}
 
 	switch stack.VendorConfig.Typename {
