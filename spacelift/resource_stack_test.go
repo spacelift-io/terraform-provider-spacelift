@@ -1,7 +1,6 @@
 package spacelift
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -2716,7 +2715,7 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 			// Apply, not resourceStackUpdate: only Apply builds the new state,
 			// which is where d.Partial takes effect.
 			newState, diags := resourceStack().Apply(
-				context.Background(),
+				t.Context(),
 				state,
 				&terraform.InstanceDiff{Attributes: tc.diff, RawConfig: emptyStackConfig()},
 				internal.NewClient(server.URL, "token", nil, nil),
@@ -2783,7 +2782,7 @@ func TestStackReadClearsStaleTerragrunt(t *testing.T) {
 				t.Fatalf("could not set the planned terragrunt block: %v", err)
 			}
 
-			if diags := resourceStackRead(context.Background(), d, internal.NewClient(server.URL, "token", nil, nil)); diags.HasError() {
+			if diags := resourceStackRead(t.Context(), d, internal.NewClient(server.URL, "token", nil, nil)); diags.HasError() {
 				t.Fatalf("could not read the stack: %v", diags)
 			}
 			if got := len(d.Get("terragrunt").([]any)); got != tc.want {
