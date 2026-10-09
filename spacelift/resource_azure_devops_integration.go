@@ -84,7 +84,7 @@ func resourceAzureDevopsIntegration() *schema.Resource {
 				AtLeastOneOf:  []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWo},
 			},
 			azureDevopsPersonalAccessTokenWoVer: {
-				Type:          schema.TypeInt,
+				Type:          schema.TypeString,
 				Description:   "Used together with personal_access_token_wo to trigger an update to the personal access token. Increment this value when an update to personal_access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
 				Optional:      true,
 				ConflictsWith: []string{azureDevopsPersonalAccessToken},
