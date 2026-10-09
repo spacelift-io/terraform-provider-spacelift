@@ -234,8 +234,7 @@ func readAPIKeyRoleBinding(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	if query.APIKeyRoleBinding == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "role attachment")
 	}
 
 	roleBinding := query.APIKeyRoleBinding
@@ -262,8 +261,7 @@ func readUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	if query.UserRoleBinding == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "role attachment")
 	}
 
 	roleBinding := query.UserRoleBinding
@@ -290,8 +288,7 @@ func readIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if query.UserGroupRoleBinding == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "role attachment")
 	}
 
 	roleBinding := query.UserGroupRoleBinding
@@ -318,8 +315,7 @@ func readStackRoleBinding(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if query.StackRoleBinding == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "role attachment")
 	}
 
 	roleBinding := query.StackRoleBinding

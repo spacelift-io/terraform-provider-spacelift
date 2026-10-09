@@ -223,8 +223,7 @@ func resourceEnvironmentVariableRead(ctx context.Context, d *schema.ResourceData
 	}
 
 	if element == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "environment variable")
 	}
 
 	d.Set("checksum", element.Checksum)

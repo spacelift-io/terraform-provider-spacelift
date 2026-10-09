@@ -59,8 +59,7 @@ func resourceSecurityEmailRead(ctx context.Context, data *schema.ResourceData, i
 	}
 
 	if query.SecurityEmail == nil {
-		data.SetId("")
-		return nil
+		return removeFromState(data, "security email")
 	}
 
 	data.Set("email", query.SecurityEmail)

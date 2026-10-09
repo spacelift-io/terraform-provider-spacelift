@@ -130,8 +130,7 @@ func resourceAuditTrailWebhookRead(ctx context.Context, data *schema.ResourceDat
 	}
 
 	if query.AuditTrailWebhook == nil {
-		data.SetId("")
-		return nil
+		return removeFromState(data, "audit trail webhook")
 	}
 
 	data.Set("enabled", query.AuditTrailWebhook.Enabled)

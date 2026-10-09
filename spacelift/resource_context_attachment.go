@@ -110,7 +110,7 @@ func resourceContextAttachmentRead(ctx context.Context, d *schema.ResourceData, 
 	if attachment, err := resourceContextAttachmentFetch(ctx, contextID, projectID, meta); err != nil {
 		return diag.FromErr(err)
 	} else if attachment == nil {
-		d.SetId("")
+		return removeFromState(d, "context attachment")
 	} else {
 		d.Set("priority", attachment.Priority)
 	}

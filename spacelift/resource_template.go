@@ -104,8 +104,7 @@ func resourceTemplateRead(ctx context.Context, d *schema.ResourceData, meta any)
 	}
 
 	if query.Template == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "template")
 	}
 
 	d.Set("name", query.Template.Name)

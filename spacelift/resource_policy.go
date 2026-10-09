@@ -177,8 +177,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	policy := query.Policy
 	if policy == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "policy")
 	}
 
 	d.Set("name", policy.Name)

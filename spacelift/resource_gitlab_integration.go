@@ -190,7 +190,7 @@ func resourceGitLabIntegrationRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if query.GitLabIntegration == nil {
-		d.SetId("")
+		return removeFromState(d, "GitLab integration")
 	} else {
 		fillGitLabIntegrationResults(d, query.GitLabIntegration)
 	}

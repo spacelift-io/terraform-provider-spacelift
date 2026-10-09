@@ -502,8 +502,7 @@ func resourceAIIntegrationRead(ctx context.Context, d *schema.ResourceData, meta
 
 	integration := query.AIIntegration
 	if integration == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "AI integration")
 	}
 
 	if err := setAIIntegrationState(d, integration); err != nil {

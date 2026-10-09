@@ -114,8 +114,7 @@ func resourceBlueprintRead(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	if query.Blueprint == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "blueprint")
 	}
 
 	d.Set("name", query.Blueprint.Name)

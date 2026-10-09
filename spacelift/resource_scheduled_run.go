@@ -143,8 +143,7 @@ func resourceScheduledRunRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if query.Stack == nil || query.Stack.ScheduledRun == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "scheduled run")
 	}
 
 	if err := structs.PopulateRunSchedule(d, query.Stack.ScheduledRun); err != nil {

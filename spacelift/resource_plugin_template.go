@@ -172,8 +172,7 @@ func resourcePluginTemplateRead(ctx context.Context, d *schema.ResourceData, met
 
 	template := query.PluginTemplate
 	if template == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "plugin template")
 	}
 	d.SetId(template.ID)
 

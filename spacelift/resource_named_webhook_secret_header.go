@@ -128,8 +128,7 @@ func resourceNamedWebhookSecretHeaderRead(ctx context.Context, d *schema.Resourc
 	}
 
 	if query.Webhook == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "named webhook secret header")
 	}
 
 	wh := query.Webhook
@@ -145,7 +144,7 @@ func resourceNamedWebhookSecretHeaderRead(ctx context.Context, d *schema.Resourc
 
 	// If we didn't fail adding the key this should never happen.
 	if !found {
-		d.SetId("")
+		return removeFromState(d, "named webhook secret header")
 	}
 
 	return nil

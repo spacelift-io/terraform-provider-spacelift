@@ -86,8 +86,7 @@ func resourceVCSAgentPoolRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	vcsAgentPool := query.VCSAgentPool
 	if vcsAgentPool == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "VCS agent pool")
 	}
 
 	d.Set("name", vcsAgentPool.Name)

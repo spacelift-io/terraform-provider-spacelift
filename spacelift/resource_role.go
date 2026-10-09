@@ -112,8 +112,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	role := query.Role
 	if role == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "role")
 	}
 
 	d.Set("id", role.ID)

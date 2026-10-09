@@ -220,8 +220,7 @@ func resourceMountedFileRead(ctx context.Context, d *schema.ResourceData, meta a
 	}
 
 	if element == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "mounted file")
 	}
 
 	d.Set("checksum", element.Checksum)

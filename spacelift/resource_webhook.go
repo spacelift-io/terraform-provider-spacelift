@@ -193,8 +193,7 @@ func resourceModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta
 
 	module := query.Module
 	if module == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "webhook")
 	}
 
 	webhookID := d.Id()
@@ -207,8 +206,7 @@ func resourceModuleWebhookRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 	}
 	if webhookIndex == -1 {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "webhook")
 	}
 
 	d.SetId(webhookID)
@@ -235,8 +233,7 @@ func resourceStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	stack := query.Stack
 	if stack == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "webhook")
 	}
 
 	webhookID := d.Id()
@@ -249,8 +246,7 @@ func resourceStackWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 	if webhookIndex == -1 {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "webhook")
 	}
 
 	d.SetId(webhookID)

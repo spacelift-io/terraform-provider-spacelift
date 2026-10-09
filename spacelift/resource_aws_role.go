@@ -155,8 +155,7 @@ func resourceModuleAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	if query.Module == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "AWS role")
 	}
 
 	resourceAWSRoleSetIntegration(d, &query.Module.Integrations)
@@ -176,8 +175,7 @@ func resourceStackAWSRoleRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if query.Stack == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "AWS role")
 	}
 
 	resourceAWSRoleSetIntegration(d, query.Stack.Integrations)

@@ -87,8 +87,7 @@ func resourceDefaultRunnerImageRead(ctx context.Context, data *schema.ResourceDa
 	publicEmpty := query.DefaultPublicWorkerPoolRunnerImage == nil || *query.DefaultPublicWorkerPoolRunnerImage == ""
 
 	if privateEmpty && publicEmpty {
-		data.SetId("") // Mark resource as deleted to handle external deletion and prevent state drift
-		return nil
+		return removeFromState(data, "default runner image")
 	}
 
 	if !publicEmpty {

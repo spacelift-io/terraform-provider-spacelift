@@ -131,8 +131,7 @@ func resourceAzureIntegrationAttachmentRead(ctx context.Context, d *schema.Resou
 	}
 
 	if query.AzureIntegration == nil || query.AzureIntegration.Attachment == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "Azure integration attachment")
 	}
 
 	query.AzureIntegration.Attachment.PopulateResourceData(d)
