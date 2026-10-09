@@ -138,8 +138,7 @@ func resourceAWSIntegrationAttachmentRead(ctx context.Context, d *schema.Resourc
 	}
 
 	if query.AWSIntegration == nil || query.AWSIntegration.Attachment == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "AWS integration attachment")
 	}
 
 	query.AWSIntegration.Attachment.PopulateResourceData(d)

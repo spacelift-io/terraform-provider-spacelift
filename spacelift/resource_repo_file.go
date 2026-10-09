@@ -157,8 +157,7 @@ func resourceRepoFileRead(ctx context.Context, d *schema.ResourceData, meta any)
 
 	edges := query.RepoFileHistory.Edges
 	if len(edges) == 0 || edges[0].Node.IsDeleted {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "repo file")
 	}
 
 	file := edges[0].Node

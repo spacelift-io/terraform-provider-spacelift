@@ -105,7 +105,7 @@ func resourcePolicyAttachmentRead(ctx context.Context, d *schema.ResourceData, m
 	if attachment, err := resourcePolicyAttachmentFetch(ctx, policyID, projectID, meta); err != nil {
 		return diag.FromErr(err)
 	} else if attachment == nil {
-		d.SetId("")
+		return removeFromState(d, "policy attachment")
 	}
 
 	return nil

@@ -182,7 +182,7 @@ func resourceBitbucketDatacenterIntegrationRead(ctx context.Context, d *schema.R
 	}
 
 	if query.BitbucketDatacenterIntegration == nil {
-		d.SetId("")
+		return removeFromState(d, "Bitbucket Datacenter integration")
 	} else {
 		fillBitbucketDatacenterIntegrationResults(d, query.BitbucketDatacenterIntegration)
 	}

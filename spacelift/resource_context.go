@@ -211,8 +211,7 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	context := query.Context
 	if context == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "context")
 	}
 
 	d.Set("name", context.Name)

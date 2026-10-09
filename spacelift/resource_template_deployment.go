@@ -184,8 +184,7 @@ func resourceTemplateDeploymentRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if query.TemplateDeployment == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "template deployment")
 	}
 
 	deployment := query.TemplateDeployment

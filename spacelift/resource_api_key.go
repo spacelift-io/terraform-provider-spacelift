@@ -187,16 +187,14 @@ func resourceAPIKeyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	variables := map[string]any{"id": graphql.ID(d.Id())}
 	if err := meta.(*internal.Client).Query(ctx, "APIKeyRead", &query, variables); err != nil {
 		if err.Error() == "could not find api key" {
-			d.SetId("")
-			return nil
+			return removeFromState(d, "API key")
 		}
 		return diag.Errorf("could not query for API key: %v", err)
 	}
 
 	apiKey := query.APIKey
 	if apiKey == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "API key")
 	}
 
 	d.SetId(apiKey.ID)

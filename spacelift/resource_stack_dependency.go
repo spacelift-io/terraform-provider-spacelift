@@ -163,6 +163,10 @@ func (r *stackDependencyResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	if dependency == nil {
+		resp.Diagnostics.AddWarning(
+			fmt.Sprintf("stack dependency %s not found or not accessible, removing from state", state.ID.ValueString()),
+			"",
+		)
 		resp.State.RemoveResource(ctx)
 		return
 	}

@@ -195,7 +195,7 @@ func resourceAzureDevopsIntegrationRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	if query.AzureDevOpsIntegration == nil {
-		d.SetId("")
+		return removeFromState(d, "Azure DevOps integration")
 	} else {
 		fillAzureDevopsIntegrationResults(d, query.AzureDevOpsIntegration)
 	}

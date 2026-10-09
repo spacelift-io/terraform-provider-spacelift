@@ -125,8 +125,7 @@ func resourceTerraformProviderRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	if query.TerraformProvider == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "Terraform provider")
 	}
 
 	d.Set("description", query.TerraformProvider.Description)

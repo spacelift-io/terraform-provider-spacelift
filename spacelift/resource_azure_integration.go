@@ -169,7 +169,7 @@ func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, m
 	}
 
 	if integration := query.AzureIntegration; integration == nil {
-		d.SetId("")
+		return removeFromState(d, "Azure integration")
 	} else {
 		integration.PopulateResourceData(d)
 	}

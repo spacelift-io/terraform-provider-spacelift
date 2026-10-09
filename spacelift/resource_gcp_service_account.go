@@ -127,14 +127,12 @@ func resourceGCPServiceAccountCreate(ctx context.Context, d *schema.ResourceData
 func resourceGCPServiceAccountRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	if _, ok := d.GetOk("module_id"); ok {
 		return resourceModuleGCPServiceAccountReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
-			d.SetId("")
-			return nil
+			return removeFromState(d, "GCP service account")
 		})
 	}
 
 	return resourceStackGCPServiceAccountReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "GCP service account")
 	})
 }
 

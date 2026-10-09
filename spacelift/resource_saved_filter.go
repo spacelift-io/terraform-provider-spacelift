@@ -112,8 +112,7 @@ func resourceSavedFilterRead(ctx context.Context, d *schema.ResourceData, meta a
 
 	filter := query.Filter
 	if filter == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "saved filter")
 	}
 
 	d.Set("name", filter.Name)

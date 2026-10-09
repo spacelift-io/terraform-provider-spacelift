@@ -155,8 +155,7 @@ func resourceTemplateVersionRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if query.Template == nil || query.Template.TemplateVersion == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "template version")
 	}
 
 	tv := query.Template.TemplateVersion

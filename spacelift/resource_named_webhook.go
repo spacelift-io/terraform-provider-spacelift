@@ -147,8 +147,7 @@ func resourceNamedWebhookRead(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	if query.Webhook == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "named webhook")
 	}
 
 	wh := query.Webhook

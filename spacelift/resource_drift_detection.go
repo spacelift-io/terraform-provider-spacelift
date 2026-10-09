@@ -137,8 +137,7 @@ func resourceDriftDetectionUpdate(ctx context.Context, d *schema.ResourceData, m
 
 func resourceDriftDetectionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return resourceStackDriftDetectionReadWithHooks(ctx, d, meta, func(_ string) diag.Diagnostics {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "drift detection")
 	})
 }
 

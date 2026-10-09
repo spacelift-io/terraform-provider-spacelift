@@ -116,8 +116,7 @@ func resourceRepoRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	if query.Repo == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "repo")
 	}
 
 	return diag.FromErr(populateRepo(d, query.Repo))

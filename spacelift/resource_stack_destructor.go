@@ -80,7 +80,7 @@ func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, me
 	}
 
 	if query.Stack == nil {
-		d.SetId("")
+		return removeFromState(d, "stack destructor")
 	}
 
 	return nil

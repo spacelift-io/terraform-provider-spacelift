@@ -1011,8 +1011,7 @@ func resourceStackRead(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	if stack == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "stack")
 	}
 
 	return structs.PopulateStack(d, stack)

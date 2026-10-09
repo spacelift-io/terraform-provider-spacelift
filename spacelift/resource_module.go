@@ -402,8 +402,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	module := query.Module
 	if module == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "module")
 	}
 
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)

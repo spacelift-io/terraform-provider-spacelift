@@ -195,8 +195,7 @@ func resourcePluginRead(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	plugin := query.Plugin
 	if plugin == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "plugin")
 	}
 	d.SetId(plugin.ID)
 

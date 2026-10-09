@@ -125,8 +125,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, i any) diag.D
 
 	// if the mapping is not found on the remote side, delete it from the TF state
 	if query.User == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "user")
 	}
 
 	// if found, update the TF state

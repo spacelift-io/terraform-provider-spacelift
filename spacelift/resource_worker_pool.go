@@ -198,8 +198,7 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta an
 
 	workerPool := query.WorkerPool
 	if workerPool == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "worker pool")
 	}
 
 	d.Set("config", workerPool.Config)

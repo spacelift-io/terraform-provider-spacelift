@@ -111,8 +111,7 @@ func resourceIdpGroupMappingRead(ctx context.Context, d *schema.ResourceData, me
 	// if the mapping is not found on the Spacelift side, delete it from the TF state
 	userGroup := query.UserGroup
 	if userGroup == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "IdP group mapping")
 	}
 
 	// if found, update the TF state

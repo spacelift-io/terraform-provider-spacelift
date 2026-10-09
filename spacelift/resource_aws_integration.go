@@ -152,7 +152,7 @@ func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	if integration := query.AWSIntegration; integration == nil {
-		d.SetId("")
+		return removeFromState(d, "AWS integration")
 	} else {
 		integration.PopulateResourceData(d)
 	}

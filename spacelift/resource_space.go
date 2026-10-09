@@ -122,8 +122,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	space := query.Space
 	if space == nil {
-		d.SetId("")
-		return nil
+		return removeFromState(d, "space")
 	}
 
 	d.SetId(space.ID)
