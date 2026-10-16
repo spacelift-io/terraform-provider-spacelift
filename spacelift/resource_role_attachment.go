@@ -15,6 +15,7 @@ import (
 
 const (
 	apiKeyRoleAttachmentPrefix          = "API"
+	flowsProjectRoleAttachmentPrefix    = "FLOWS"
 	idpGroupMappingRoleAttachmentPrefix = "IDP"
 	stackRoleAttachmentPrefix           = "STACK"
 	userRoleAttachmentPrefix            = "USER"
@@ -25,10 +26,11 @@ func resourceRoleAttachment() *schema.Resource {
 		Description: "" +
 			"`spacelift_role_attachment` represents a Spacelift role attachment " +
 			"between an API key and a role within a specific space, " +
+			"a Flows project and a role within a specific space, " +
 			"an IdP Group Mapping and a role within a specific space, " +
 			"a stack and a role within a specific space, " +
 			"or a user and a role within a specific space. " +
-			"Exactly one of `api_key_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.",
+			"Exactly one of `api_key_id`, `flows_project_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.",
 
 		CreateContext: resourceRoleAttachmentCreate,
 		ReadContext:   resourceRoleAttachmentRead,
@@ -44,32 +46,39 @@ func resourceRoleAttachment() *schema.Resource {
 				Description:  "ID of the API key (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
+				ExactlyOneOf: []string{"api_key_id", "flows_project_id", "idp_group_mapping_id", "stack_id", "user_id"},
+			},
+			"flows_project_id": {
+				Type:         schema.TypeString,
+				Description:  "ID of the Flows project (UUID format) to attach to the role. For example: `0f8fad5b-d9cb-469f-a165-70867728950e`.",
+				Optional:     true,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"api_key_id", "flows_project_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"idp_group_mapping_id": {
 				Type:         schema.TypeString,
 				Description:  "ID of the IdP Group Mapping (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
+				ExactlyOneOf: []string{"api_key_id", "flows_project_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"stack_id": {
 				Type:         schema.TypeString,
 				Description:  "Slug of the Stack to attach to the role. For example: `my-stack`.",
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
+				ExactlyOneOf: []string{"api_key_id", "flows_project_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"user_id": {
 				Type:         schema.TypeString,
 				Description:  "ID of the user (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
 				Optional:     true,
 				ForceNew:     true,
-				ExactlyOneOf: []string{"api_key_id", "idp_group_mapping_id", "stack_id", "user_id"},
+				ExactlyOneOf: []string{"api_key_id", "flows_project_id", "idp_group_mapping_id", "stack_id", "user_id"},
 			},
 			"role_id": {
 				Type:             schema.TypeString,
-				Description:      "ID of the role (ULID format) to attach to the API key, IdP Group, stack, or user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
+				Description:      "ID of the role (ULID format) to attach to the API key, Flows project, IdP Group, stack, or user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.",
 				Required:         true,
 				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
@@ -87,11 +96,16 @@ func resourceRoleAttachment() *schema.Resource {
 
 func resourceRoleAttachmentCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	apiKeyID := d.Get("api_key_id").(string)
+	flowsProjectID := d.Get("flows_project_id").(string)
 	stackID := d.Get("stack_id").(string)
 	userID := d.Get("user_id").(string)
 
 	if apiKeyID != "" {
 		return createAPIKeyRoleBinding(ctx, d, meta)
+	}
+
+	if flowsProjectID != "" {
+		return createFlowsProjectRoleBinding(ctx, d, meta)
 	}
 
 	if stackID != "" {
@@ -157,6 +171,36 @@ func createUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any
 	return resourceRoleAttachmentRead(ctx, d, meta)
 }
 
+func createFlowsProjectRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var mutation struct {
+		CreateRoleBindings []structs.FlowsProjectRoleBinding `graphql:"flowsProjectRoleBindingBatchCreate(input: $input)"`
+	}
+
+	variables := map[string]any{
+		"input": structs.FlowsProjectRoleBindingBatchInput{
+			Bindings: []structs.FlowsProjectRoleBindingInput{
+				{
+					FlowsProjectID: toID(d.Get("flows_project_id").(string)),
+					RoleID:         toID(d.Get("role_id").(string)),
+					SpaceID:        toID(d.Get("space_id").(string)),
+				},
+			},
+		},
+	}
+
+	if err := meta.(*internal.Client).Mutate(ctx, "FlowsProjectRoleBindingBatchCreate", &mutation, variables); err != nil {
+		return diag.Errorf("could not create Flows project role binding: %v", internal.FromSpaceliftError(err))
+	}
+
+	if len(mutation.CreateRoleBindings) == 0 {
+		return diag.Errorf("no Flows project role binding was created")
+	}
+
+	d.SetId(fmt.Sprintf("%s/%s", flowsProjectRoleAttachmentPrefix, mutation.CreateRoleBindings[0].ID))
+
+	return resourceRoleAttachmentRead(ctx, d, meta)
+}
+
 func createIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	var mutation struct {
 		CreateRoleBinding structs.UserGroupRoleBinding `graphql:"userGroupRoleBindingCreate(input: $input)"`
@@ -206,6 +250,10 @@ func resourceRoleAttachmentRead(ctx context.Context, d *schema.ResourceData, met
 
 	if strings.HasPrefix(id, apiKeyRoleAttachmentPrefix) {
 		return readAPIKeyRoleBinding(ctx, d, meta)
+	}
+
+	if strings.HasPrefix(id, flowsProjectRoleAttachmentPrefix) {
+		return readFlowsProjectRoleBinding(ctx, d, meta)
 	}
 
 	if strings.HasPrefix(id, stackRoleAttachmentPrefix) {
@@ -269,6 +317,39 @@ func readUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) 
 	d.Set("user_id", roleBinding.UserID)
 	d.Set("role_id", roleBinding.RoleID)
 	d.Set("space_id", roleBinding.Space.ID)
+
+	return nil
+}
+
+func readFlowsProjectRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var query struct {
+		FlowsProjectRoleBinding *structs.FlowsProjectRoleBinding `graphql:"flowsProjectRoleBinding(id: $id)"`
+	}
+
+	id := strings.TrimPrefix(d.Id(), flowsProjectRoleAttachmentPrefix+"/")
+	variables := map[string]any{
+		"id": toID(id),
+	}
+
+	if err := meta.(*internal.Client).Query(ctx, "FlowsProjectRoleBindingRead", &query, variables); err != nil {
+		return diag.Errorf("could not query for Flows project role binding: %v", internal.FromSpaceliftError(err))
+	}
+
+	if query.FlowsProjectRoleBinding == nil {
+		return removeFromState(d, "role attachment")
+	}
+
+	roleBinding := query.FlowsProjectRoleBinding
+
+	if err := d.Set("flows_project_id", roleBinding.FlowsProjectID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("role_id", roleBinding.Role.ID); err != nil {
+		return diag.FromErr(err)
+	}
+	if err := d.Set("space_id", roleBinding.Space.ID); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return nil
 }
@@ -340,6 +421,10 @@ func resourceRoleAttachmentDelete(ctx context.Context, d *schema.ResourceData, m
 		return deleteAPIKeyRoleBinding(ctx, d, meta)
 	}
 
+	if strings.HasPrefix(id, flowsProjectRoleAttachmentPrefix) {
+		return deleteFlowsProjectRoleBinding(ctx, d, meta)
+	}
+
 	if strings.HasPrefix(id, stackRoleAttachmentPrefix) {
 		return deleteStackRoleBinding(ctx, d, meta)
 	}
@@ -377,6 +462,20 @@ func deleteUserRoleBinding(ctx context.Context, d *schema.ResourceData, meta any
 
 	err := meta.(*internal.Client).Mutate(ctx, "UserRoleBindingDelete", &mutation, variables)
 	return handleRoleBindingDeleteError(err, d, "could not delete user role binding")
+}
+
+func deleteFlowsProjectRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	var mutation struct {
+		DeleteRoleBinding *structs.FlowsProjectRoleBinding `graphql:"flowsProjectRoleBindingDelete(id: $id)"`
+	}
+
+	id := strings.TrimPrefix(d.Id(), flowsProjectRoleAttachmentPrefix+"/")
+	variables := map[string]any{
+		"id": toID(id),
+	}
+
+	err := meta.(*internal.Client).Mutate(ctx, "FlowsProjectRoleBindingDelete", &mutation, variables)
+	return handleRoleBindingDeleteError(err, d, "could not delete Flows project role binding")
 }
 
 func deleteIDPGroupMappingRoleBinding(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

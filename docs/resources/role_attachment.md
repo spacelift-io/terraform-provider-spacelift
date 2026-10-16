@@ -3,12 +3,12 @@
 page_title: "spacelift_role_attachment Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_role_attachment represents a Spacelift role attachment between an API key and a role within a specific space, an IdP Group Mapping and a role within a specific space, a stack and a role within a specific space, or a user and a role within a specific space. Exactly one of api_key_id, idp_group_mapping_id, stack_id, or user_id must be set.
+  spacelift_role_attachment represents a Spacelift role attachment between an API key and a role within a specific space, a Flows project and a role within a specific space, an IdP Group Mapping and a role within a specific space, a stack and a role within a specific space, or a user and a role within a specific space. Exactly one of api_key_id, flows_project_id, idp_group_mapping_id, stack_id, or user_id must be set.
 ---
 
 # spacelift_role_attachment (Resource)
 
-`spacelift_role_attachment` represents a Spacelift role attachment between an API key and a role within a specific space, an IdP Group Mapping and a role within a specific space, a stack and a role within a specific space, or a user and a role within a specific space. Exactly one of `api_key_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.
+`spacelift_role_attachment` represents a Spacelift role attachment between an API key and a role within a specific space, a Flows project and a role within a specific space, an IdP Group Mapping and a role within a specific space, a stack and a role within a specific space, or a user and a role within a specific space. Exactly one of `api_key_id`, `flows_project_id`, `idp_group_mapping_id`, `stack_id`, or `user_id` must be set.
 
 ## Example Usage
 
@@ -27,6 +27,13 @@ resource "spacelift_role_attachment" "api_key_attachment" {
   api_key_id = "01K09KERE33P95V40YRWWRVAZT"
   role_id    = spacelift_role.devops.id
   space_id   = spacelift_space.devops.id
+}
+
+# Attach a Flows project to a role in a specific space
+resource "spacelift_role_attachment" "flows_project_attachment" {
+  flows_project_id = "0f8fad5b-d9cb-469f-a165-70867728950e"
+  role_id          = spacelift_role.devops.id
+  space_id         = spacelift_space.devops.id
 }
 
 # Attach an IDP group mapping to a role in a specific space
@@ -70,12 +77,13 @@ resource "spacelift_role_attachment" "user_attachment" {
 
 ### Required
 
-- `role_id` (String) ID of the role (ULID format) to attach to the API key, IdP Group, stack, or user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
+- `role_id` (String) ID of the role (ULID format) to attach to the API key, Flows project, IdP Group, stack, or user. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
 - `space_id` (String) ID of the space where the role attachment should be created
 
 ### Optional
 
 - `api_key_id` (String) ID of the API key (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
+- `flows_project_id` (String) ID of the Flows project (UUID format) to attach to the role. For example: `0f8fad5b-d9cb-469f-a165-70867728950e`.
 - `idp_group_mapping_id` (String) ID of the IdP Group Mapping (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
 - `stack_id` (String) Slug of the Stack to attach to the role. For example: `my-stack`.
 - `user_id` (String) ID of the user (ULID format) to attach to the role. For example: `01F8Z5K4Y3D1G2H3J4K5L6M7N8`.
@@ -92,6 +100,8 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 
 ```shell
 terraform import spacelift_role_attachment.api_key_attachment API/$ROLE_ATTACHMENT_ID
+
+terraform import spacelift_role_attachment.flows_project_attachment FLOWS/$ROLE_ATTACHMENT_ID
 
 terraform import spacelift_role_attachment.idp_group_attachment IDP/$ROLE_ATTACHMENT_ID
 
