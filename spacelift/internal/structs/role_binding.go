@@ -67,3 +67,20 @@ type StackRoleBindingInput struct {
 type StackRoleBindingBatchInput struct {
 	Bindings []StackRoleBindingInput `json:"bindings"`
 }
+
+type FlowsProjectRoleBinding struct {
+	ID             string `graphql:"id"`
+	FlowsProjectID string `graphql:"flowsProjectID"`
+	Role           Role   `graphql:"role"`
+	Space          Space  `graphql:"space"`
+}
+
+type FlowsProjectRoleBindingInput struct {
+	FlowsProjectID graphql.ID `json:"flowsProjectID"`
+	RoleID         graphql.ID `json:"roleID"`
+	SpaceID        graphql.ID `json:"spaceID"`
+}
+
+type FlowsProjectRoleBindingBatchInput struct {
+	Bindings []FlowsProjectRoleBindingInput `json:"bindings"`
+}
