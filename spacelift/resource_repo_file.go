@@ -124,13 +124,13 @@ func repoFileModeUnchanged(_, old, new string, _ *schema.ResourceData) bool {
 }
 
 func resourceRepoFileCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	revision, err := commitRepoFile(ctx, d, meta, "CREATE")
+	commit, err := commitRepoFile(ctx, d, meta, "CREATE")
 	if err != nil {
 		return diag.Errorf("could not create the repo file: %v", internal.FromSpaceliftError(err))
 	}
 
 	d.SetId(repoFileID(d.Get(repoID).(string), d.Get(repoFilePath).(string)))
-	d.Set(repoFileRevisionSHA, revision.SHA)
+	d.Set(repoFileRevisionSHA, commit.SHA)
 
 	return resourceRepoFileRead(ctx, d, meta)
 }
@@ -162,7 +162,7 @@ func resourceRepoFileRead(ctx context.Context, d *schema.ResourceData, meta any)
 
 	file := edges[0].Node
 
-	d.Set(repoFileRevisionSHA, file.Revision.SHA)
+	d.Set(repoFileRevisionSHA, file.Commit.SHA)
 
 	mode := repoFileDefaultMode
 	if file.FileMode != nil {
@@ -196,12 +196,12 @@ func resourceRepoFileUpdate(ctx context.Context, d *schema.ResourceData, meta an
 		return resourceRepoFileRead(ctx, d, meta)
 	}
 
-	revision, err := commitRepoFile(ctx, d, meta, "UPDATE")
+	commit, err := commitRepoFile(ctx, d, meta, "UPDATE")
 	if err != nil {
 		return diag.Errorf("could not update the repo file: %v", internal.FromSpaceliftError(err))
 	}
 
-	d.Set(repoFileRevisionSHA, revision.SHA)
+	d.Set(repoFileRevisionSHA, commit.SHA)
 
 	return resourceRepoFileRead(ctx, d, meta)
 }
@@ -216,12 +216,12 @@ func resourceRepoFileDelete(ctx context.Context, d *schema.ResourceData, meta an
 	return nil
 }
 
-func commitRepoFile(ctx context.Context, d *schema.ResourceData, meta any, action string) (*structs.Revision, error) {
+func commitRepoFile(ctx context.Context, d *schema.ResourceData, meta any, action string) (*structs.RepoCommit, error) {
 	var mutation struct {
-		CreateRevision structs.Revision `graphql:"revisionCreate(input: $input)"`
+		CreateCommit structs.RepoCommit `graphql:"repoCommitCreate(input: $input)"`
 	}
 
-	file := structs.RevisionFileInput{
+	file := structs.RepoCommitFileInput{
 		Path:   toString(d.Get(repoFilePath)),
 		Action: toOptionalString(action),
 	}
@@ -236,11 +236,11 @@ func commitRepoFile(ctx context.Context, d *schema.ResourceData, meta any, actio
 		file.FileMode = toOptionalString(d.Get(repoFileMode))
 	}
 
-	input := structs.RevisionCreateInput{
+	input := structs.RepoCommitCreateInput{
 		RepoID:     toID(d.Get(repoID)),
 		Message:    toString(d.Get(repoFileCommitMessage)),
 		AuthorName: toString(d.Get(repoFileAuthorName)),
-		Files:      []structs.RevisionFileInput{file},
+		Files:      []structs.RepoCommitFileInput{file},
 	}
 
 	if email, ok := d.GetOk(repoFileAuthorEmail); ok {
@@ -249,11 +249,11 @@ func commitRepoFile(ctx context.Context, d *schema.ResourceData, meta any, actio
 
 	variables := map[string]any{"input": input}
 
-	if err := meta.(*internal.Client).Mutate(ctx, "RevisionCreate", &mutation, variables); err != nil {
+	if err := meta.(*internal.Client).Mutate(ctx, "RepoCommitCreate", &mutation, variables); err != nil {
 		return nil, err
 	}
 
-	return &mutation.CreateRevision, nil
+	return &mutation.CreateCommit, nil
 }
 
 func resourceRepoFileImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
