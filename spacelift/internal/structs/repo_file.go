@@ -8,9 +8,9 @@ type RepoFile struct {
 	IsDeleted bool    `graphql:"isDeleted"`
 	SizeBytes *int    `graphql:"sizeBytes"`
 	FileMode  *string `graphql:"fileMode"`
-	Revision  struct {
+	Commit    struct {
 		SHA string `graphql:"sha"`
-	} `graphql:"revision"`
+	} `graphql:"commit"`
 	Content *struct {
 		SHA256Hash  string  `graphql:"sha256Hash"`
 		Content     *string `graphql:"content"`
@@ -19,26 +19,26 @@ type RepoFile struct {
 	} `graphql:"content"`
 }
 
-// Revision represents a commit in a Repo.
-type Revision struct {
+// RepoCommit represents a commit in a Repo.
+type RepoCommit struct {
 	ID         string `graphql:"id"`
 	SHA        string `graphql:"sha"`
 	AuthorName string `graphql:"authorName"`
 }
 
-// RevisionCreateInput represents input relevant to committing files to a Repo.
-type RevisionCreateInput struct {
-	RepoID      graphql.ID          `json:"repoID"`
-	Message     graphql.String      `json:"message"`
-	Description *graphql.String     `json:"description"`
-	AuthorName  graphql.String      `json:"authorName"`
-	AuthorEmail *graphql.String     `json:"authorEmail"`
-	Files       []RevisionFileInput `json:"files"`
+// RepoCommitCreateInput represents input relevant to committing files to a Repo.
+type RepoCommitCreateInput struct {
+	RepoID      graphql.ID            `json:"repoID"`
+	Message     graphql.String        `json:"message"`
+	Description *graphql.String       `json:"description"`
+	AuthorName  graphql.String        `json:"authorName"`
+	AuthorEmail *graphql.String       `json:"authorEmail"`
+	Files       []RepoCommitFileInput `json:"files"`
 }
 
-// RevisionFileInput represents a single file within a commit. Content is
+// RepoCommitFileInput represents a single file within a commit. Content is
 // base64-encoded, and files left out of a commit carry forward unchanged.
-type RevisionFileInput struct {
+type RepoCommitFileInput struct {
 	Path     graphql.String   `json:"path"`
 	Content  *graphql.String  `json:"content"`
 	Encrypt  *graphql.Boolean `json:"encrypt"`

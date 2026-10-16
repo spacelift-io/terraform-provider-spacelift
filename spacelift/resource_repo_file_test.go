@@ -63,22 +63,25 @@ func TestRepoFileResource(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config: config("# first", repoFileDefaultMode),
-				Check: Resource(
-					resourceName,
-					Attribute("id", Equals(repoName+"/modules/vpc/main.tf")),
-					Attribute("path", Equals("modules/vpc/main.tf")),
-					Attribute("content", Equals("# first")),
-					Attribute("file_mode", Equals("0644")),
-					Attribute("encrypt", Equals("false")),
-					Attribute("revision_sha", IsNotEmpty()),
-					Attribute("size_bytes", Equals("7")),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("id", Equals(repoName+"/modules/vpc/main.tf")),
+						Attribute("path", Equals("modules/vpc/main.tf")),
+						Attribute("content", Equals("# first")),
+						Attribute("file_mode", Equals("0644")),
+						Attribute("encrypt", Equals("false")),
+						Attribute("commit_sha", IsNotEmpty()),
+						Attribute("size_bytes", Equals("7")),
+					),
+					resource.TestCheckResourceAttrPair(resourceName, "revision_sha", resourceName, "commit_sha"),
 				),
 			},
 			{
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Commit metadata belongs to the revision, not the file, so it cannot be read back.
+				// Commit metadata is recorded on the commit, not the file, so it cannot be read back.
 				ImportStateVerifyIgnore: []string{"commit_message", "author_name", "author_email"},
 			},
 			{
@@ -156,7 +159,7 @@ func TestRepoFileResource(t *testing.T) {
 				resourceName,
 				Attribute("commit_message", Equals("Add the entrypoint")),
 				Attribute("author_name", Equals("Francis Bacon")),
-				Attribute("revision_sha", IsNotEmpty()),
+				Attribute("commit_sha", IsNotEmpty()),
 			),
 		}})
 	})
@@ -178,7 +181,7 @@ func TestRepoFileResource(t *testing.T) {
 			`, message)
 		}
 
-		var revisionSHA string
+		var commitSHA string
 
 		testSteps(t, []resource.TestStep{
 			{
@@ -194,9 +197,9 @@ func TestRepoFileResource(t *testing.T) {
 						if !ok {
 							return fmt.Errorf("resource %s not found", resourceName)
 						}
-						revisionSHA = res.Primary.Attributes[repoFileRevisionSHA]
-						if revisionSHA == "" {
-							return fmt.Errorf("expected a revision SHA after create")
+						commitSHA = res.Primary.Attributes[repoFileCommitSHA]
+						if commitSHA == "" {
+							return fmt.Errorf("expected a commit SHA after create")
 						}
 						return nil
 					},
@@ -207,9 +210,9 @@ func TestRepoFileResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("commit_message", Equals("Second message")),
-					Attribute("revision_sha", func(got string) error {
-						if got != revisionSHA {
-							return fmt.Errorf("expected no new revision, got %q after %q", got, revisionSHA)
+					Attribute("commit_sha", func(got string) error {
+						if got != commitSHA {
+							return fmt.Errorf("expected no new commit, got %q after %q", got, commitSHA)
 						}
 						return nil
 					}),
