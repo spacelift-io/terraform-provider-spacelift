@@ -24,6 +24,7 @@ const (
 	repoFileCommitMessage = "commit_message"
 	repoFileAuthorName    = "author_name"
 	repoFileAuthorEmail   = "author_email"
+	repoFileCommitSHA     = "commit_sha"
 	repoFileRevisionSHA   = "revision_sha"
 	repoFileSizeBytes     = "size_bytes"
 
@@ -37,7 +38,7 @@ func resourceRepoFile() *schema.Resource {
 		Description: "" +
 			"`spacelift_repo_file` represents a single file in a " +
 			"[Spacelift repo](repo.md). Changing the contents, mode or encryption of " +
-			"the file commits a new revision, which triggers a tracked run on every " +
+			"the file creates a new commit, which triggers a tracked run on every " +
 			"stack the repo is attached to. Changing only the commit metadata does not.",
 
 		CreateContext: resourceRepoFileCreate,
@@ -100,10 +101,16 @@ func resourceRepoFile() *schema.Resource {
 				Description: "Author email recorded on the commit",
 				Optional:    true,
 			},
+			repoFileCommitSHA: {
+				Type:        schema.TypeString,
+				Description: "SHA of the commit that last changed the file",
+				Computed:    true,
+			},
 			repoFileRevisionSHA: {
 				Type:        schema.TypeString,
-				Description: "SHA of the revision that last changed the file",
+				Description: "SHA of the commit that last changed the file",
 				Computed:    true,
+				Deprecated:  "Use `commit_sha` instead.",
 			},
 			repoFileSizeBytes: {
 				Type:        schema.TypeInt,
@@ -130,7 +137,7 @@ func resourceRepoFileCreate(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	d.SetId(repoFileID(d.Get(repoID).(string), d.Get(repoFilePath).(string)))
-	d.Set(repoFileRevisionSHA, commit.SHA)
+	setRepoFileCommitSHA(d, commit.SHA)
 
 	return resourceRepoFileRead(ctx, d, meta)
 }
@@ -162,7 +169,7 @@ func resourceRepoFileRead(ctx context.Context, d *schema.ResourceData, meta any)
 
 	file := edges[0].Node
 
-	d.Set(repoFileRevisionSHA, file.Commit.SHA)
+	setRepoFileCommitSHA(d, file.Commit.SHA)
 
 	mode := repoFileDefaultMode
 	if file.FileMode != nil {
@@ -191,7 +198,7 @@ func resourceRepoFileRead(ctx context.Context, d *schema.ResourceData, meta any)
 }
 
 func resourceRepoFileUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	// Each encryption uses a fresh nonce, so committing metadata alone would still mint a revision.
+	// Each encryption uses a fresh nonce, so committing metadata alone would still mint a commit.
 	if !d.HasChanges(repoFileContent, repoFileMode, repoFileEncrypt) {
 		return resourceRepoFileRead(ctx, d, meta)
 	}
@@ -201,7 +208,7 @@ func resourceRepoFileUpdate(ctx context.Context, d *schema.ResourceData, meta an
 		return diag.Errorf("could not update the repo file: %v", internal.FromSpaceliftError(err))
 	}
 
-	d.Set(repoFileRevisionSHA, commit.SHA)
+	setRepoFileCommitSHA(d, commit.SHA)
 
 	return resourceRepoFileRead(ctx, d, meta)
 }
@@ -270,4 +277,9 @@ func resourceRepoFileImport(ctx context.Context, d *schema.ResourceData, meta an
 
 func repoFileID(repoSlug, path string) string {
 	return repoSlug + "/" + path
+}
+
+func setRepoFileCommitSHA(d *schema.ResourceData, sha string) {
+	d.Set(repoFileCommitSHA, sha)
+	d.Set(repoFileRevisionSHA, sha)
 }

@@ -3,12 +3,12 @@
 page_title: "spacelift_repo_file Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_repo_file represents a single file in a Spacelift repo repo.md. Changing the contents, mode or encryption of the file commits a new revision, which triggers a tracked run on every stack the repo is attached to. Changing only the commit metadata does not.
+  spacelift_repo_file represents a single file in a Spacelift repo repo.md. Changing the contents, mode or encryption of the file creates a new commit, which triggers a tracked run on every stack the repo is attached to. Changing only the commit metadata does not.
 ---
 
 # spacelift_repo_file (Resource)
 
-`spacelift_repo_file` represents a single file in a [Spacelift repo](repo.md). Changing the contents, mode or encryption of the file commits a new revision, which triggers a tracked run on every stack the repo is attached to. Changing only the commit metadata does not.
+`spacelift_repo_file` represents a single file in a [Spacelift repo](repo.md). Changing the contents, mode or encryption of the file creates a new commit, which triggers a tracked run on every stack the repo is attached to. Changing only the commit metadata does not.
 
 ## Example Usage
 
@@ -51,8 +51,9 @@ resource "spacelift_repo_file" "secrets" {
 
 ### Read-Only
 
+- `commit_sha` (String) SHA of the commit that last changed the file
 - `id` (String) The ID of this resource.
-- `revision_sha` (String) SHA of the revision that last changed the file
+- `revision_sha` (String, Deprecated) SHA of the commit that last changed the file
 - `size_bytes` (Number) Size of the file in bytes
 
 ## Import
