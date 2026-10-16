@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -62,4 +63,54 @@ func TestSpacesData(t *testing.T) {
 			),
 		}})
 	})
+}
+
+func TestComputeSpacePaths(t *testing.T) {
+	rootParent := "root"
+	parentA := "space-a"
+	parentB := "space-b"
+
+	spaces := []structs.Space{
+		{
+			ID:          "root",
+			Name:        "root",
+			ParentSpace: nil,
+		},
+		{
+			ID:          "space-a",
+			Name:        "Engineering",
+			ParentSpace: &rootParent,
+		},
+		{
+			ID:          "space-b",
+			Name:        "Backend",
+			ParentSpace: &parentA,
+		},
+		{
+			ID:          "space-c",
+			Name:        "Payments",
+			ParentSpace: &parentB,
+		},
+		{
+			ID:          "space-orphan",
+			Name:        "Orphan",
+			ParentSpace: nil,
+		},
+	}
+
+	paths := computeSpacePaths(spaces)
+
+	expected := map[string]string{
+		"root":         "root",
+		"space-a":      "root/Engineering",
+		"space-b":      "root/Engineering/Backend",
+		"space-c":      "root/Engineering/Backend/Payments",
+		"space-orphan": "Orphan",
+	}
+
+	for id, want := range expected {
+		if got := paths[id]; got != want {
+			t.Errorf("expected path for space %s to be %q, got %q", id, want, got)
+		}
+	}
 }
