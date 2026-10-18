@@ -147,6 +147,7 @@ func resourceAIIntegration() *schema.Resource {
 					"follow the default model list for its provider, which is resolved server side and " +
 					"not recorded here. Terraform owns the pin either way, so one made outside it is " +
 					"reverted on the next apply, the same as `labels`. " +
+					"Required with a custom `base_url`, since a gateway names its own models. " +
 					"Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.",
 				Optional: true,
 				// The API rejects models outright for Bedrock integrations.
@@ -260,6 +261,7 @@ func aiProviderAPIKeyBlock(name, label, api string) *schema.Schema {
 					Type: schema.TypeString,
 					Description: fmt.Sprintf(
 						"Custom base URL for a self-hosted, %s-compatible gateway such as LiteLLM. "+
+							"Requires `models`, since a gateway names its own models. "+
 							"Leave unset to call the provider directly.",
 						api,
 					),
