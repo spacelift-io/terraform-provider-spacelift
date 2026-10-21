@@ -274,3 +274,17 @@ func TestValidateAzureDevopsDefaultSpace(t *testing.T) {
 		}
 	})
 }
+
+func TestAzureDevopsIntegrationSchema(t *testing.T) {
+	t.Run("personal_access_token_wo_version is TypeString", func(t *testing.T) {
+		schemaMap := resourceAzureDevopsIntegration().Schema
+		attr, ok := schemaMap[azureDevopsPersonalAccessTokenWoVer]
+		if !ok {
+			t.Fatalf("expected %q in schema", azureDevopsPersonalAccessTokenWoVer)
+		}
+		if attr.Type != schema.TypeString {
+			t.Fatalf("expected %q to be TypeString, got %v", azureDevopsPersonalAccessTokenWoVer, attr.Type)
+		}
+	})
+}
+
