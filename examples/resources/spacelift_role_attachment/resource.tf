@@ -14,6 +14,13 @@ resource "spacelift_role_attachment" "api_key_attachment" {
   space_id   = spacelift_space.devops.id
 }
 
+# Attach a Flows project to a role in a specific space
+resource "spacelift_role_attachment" "flows_project_attachment" {
+  flows_project_id = "0f8fad5b-d9cb-469f-a165-70867728950e"
+  role_id          = spacelift_role.devops.id
+  space_id         = spacelift_space.devops.id
+}
+
 # Attach an IDP group mapping to a role in a specific space
 resource "spacelift_idp_group_mapping" "devops" {
   name = "devops-group"

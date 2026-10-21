@@ -17,10 +17,11 @@ func TestRoleAttachmentResource(t *testing.T) {
 
 	const resourceName = "spacelift_role_attachment.test"
 
-	t.Run("exactly one of API key, IDP group mapping, stack, or user must be set", func(t *testing.T) {
+	t.Run("exactly one of API key, Flows project, IDP group mapping, stack, or user must be set", func(t *testing.T) {
 		config := `
 			resource "spacelift_role_attachment" "test" {
 				api_key_id           = "AAAA"
+				flows_project_id     = "GGGG"
 				idp_group_mapping_id = "BBBB"
 				stack_id             = "CCCC"
 				user_id              = "DDDD"
@@ -32,7 +33,7 @@ func TestRoleAttachmentResource(t *testing.T) {
 		testSteps(t, []resource.TestStep{
 			{
 				Config:      config,
-				ExpectError: regexp.MustCompile("(?s)only one of `api_key_id,idp_group_mapping_id,stack_id,user_id`.*can be specified"),
+				ExpectError: regexp.MustCompile("(?s)only one of\\s+`api_key_id,flows_project_id,idp_group_mapping_id,stack_id,user_id`.*can be\\s+specified"),
 			},
 		})
 	})
@@ -105,6 +106,90 @@ func TestRoleAttachmentResource(t *testing.T) {
 					Attribute("role_id", IsNotEmpty()),
 					Attribute("space_id", StartsWith("test-api-space-another-")),
 					AttributeNotPresent("idp_group_mapping_id"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		})
+	})
+
+	t.Run("with a Flows project", func(t *testing.T) {
+		flowsProjectID := os.Getenv("SPACELIFT_FLOWS_PROJECT_ID")
+		if flowsProjectID == "" {
+			t.Skip("SPACELIFT_FLOWS_PROJECT_ID environment variable is not set, skipping Flows project role attachment tests")
+			return
+		}
+
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		configInitial := fmt.Sprintf(`
+			resource "spacelift_role" "test" {
+				name        = "Test role attachment - initial role %s"
+				description = "Test role for attachment"
+				actions     = ["SPACE_READ"]
+			}
+
+			resource "spacelift_space" "test" {
+				name = "Test Flows Space %s"
+				parent_space_id = "root"
+			}
+
+			resource "spacelift_role_attachment" "test" {
+				flows_project_id = "%s"
+				role_id          = spacelift_role.test.id
+				space_id         = spacelift_space.test.id
+			}
+		`, randomID, randomID, flowsProjectID)
+
+		configUpdated := fmt.Sprintf(`
+			resource "spacelift_role" "another_role" {
+				name        = "Test role attachment - another role %s"
+				description = "Another role for attachment"
+				actions     = ["SPACE_READ", "SPACE_WRITE"]
+			}
+
+			resource "spacelift_space" "another_space" {
+				name = "Test Flows Space Another %s"
+				parent_space_id = "root"
+			}
+
+			resource "spacelift_role_attachment" "test" {
+				flows_project_id = "%s"
+				role_id          = spacelift_role.another_role.id
+				space_id         = spacelift_space.another_space.id
+			}
+		`, randomID, randomID, flowsProjectID)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: configInitial,
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("FLOWS/")),
+					Attribute("flows_project_id", Equals(flowsProjectID)),
+					Attribute("role_id", IsNotEmpty()),
+					Attribute("space_id", StartsWith("test-flows-space-")),
+					AttributeNotPresent("api_key_id"),
+					AttributeNotPresent("idp_group_mapping_id"),
+					AttributeNotPresent("stack_id"),
+					AttributeNotPresent("user_id"),
+				),
+			},
+			{
+				Config: configUpdated,
+				Check: Resource(
+					resourceName,
+					Attribute("id", StartsWith("FLOWS/")),
+					Attribute("flows_project_id", Equals(flowsProjectID)),
+					Attribute("role_id", IsNotEmpty()),
+					Attribute("space_id", StartsWith("test-flows-space-another-")),
+					AttributeNotPresent("api_key_id"),
+					AttributeNotPresent("idp_group_mapping_id"),
+					AttributeNotPresent("stack_id"),
+					AttributeNotPresent("user_id"),
 				),
 			},
 			{
