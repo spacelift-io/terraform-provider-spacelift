@@ -117,11 +117,9 @@ func TestRoleAttachmentResource(t *testing.T) {
 	})
 
 	t.Run("with a Flows project", func(t *testing.T) {
-		flowsProjectID := os.Getenv("SPACELIFT_FLOWS_PROJECT_ID")
-		if flowsProjectID == "" {
-			t.Skip("SPACELIFT_FLOWS_PROJECT_ID environment variable is not set, skipping Flows project role attachment tests")
-			return
-		}
+		// The backend stores the Flows project ID as an opaque string and does
+		// not validate it against Flows, so no real project is needed.
+		flowsProjectID := "0f8fad5b-d9cb-469f-a165-70867728950e"
 
 		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
 
