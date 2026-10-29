@@ -165,7 +165,7 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					organization_url                = "` + organization + `"
 					user_facing_host                = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.UserFacingHost + `"
 					personal_access_token_wo        = "` + token + `"
-					personal_access_token_wo_version = 1
+					personal_access_token_wo_version = "1"
 					description                     = "` + descr + `"
 					labels                          = ` + labels + `
 					vcs_checks                      = ` + vcsChecks + `
@@ -271,6 +271,19 @@ func TestValidateAzureDevopsDefaultSpace(t *testing.T) {
 		expected := `the default integration must be in the space "root" not in "non-root-space"`
 		if err.Error() != expected {
 			t.Fatalf("expected %q, got %q", expected, err.Error())
+		}
+	})
+}
+
+func TestAzureDevopsIntegrationSchema(t *testing.T) {
+	t.Run("personal_access_token_wo_version is TypeString", func(t *testing.T) {
+		schemaMap := resourceAzureDevopsIntegration().Schema
+		attr, ok := schemaMap[azureDevopsPersonalAccessTokenWoVer]
+		if !ok {
+			t.Fatalf("expected %q in schema", azureDevopsPersonalAccessTokenWoVer)
+		}
+		if attr.Type != schema.TypeString {
+			t.Fatalf("expected %q to be TypeString, got %v", azureDevopsPersonalAccessTokenWoVer, attr.Type)
 		}
 	})
 }
