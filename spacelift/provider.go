@@ -125,6 +125,7 @@ func Provider(commit, version string) plugin.ProviderFunc {
 				"spacelift_aws_role":                         resourceAWSRole(),
 				"spacelift_azure_devops_integration":         resourceAzureDevopsIntegration(),
 				"spacelift_azure_integration_attachment":     resourceAzureIntegrationAttachment(),
+				"spacelift_azure_integration_consent":        resourceAzureIntegrationConsent(),
 				"spacelift_azure_integration":                resourceAzureIntegration(),
 				"spacelift_bitbucket_datacenter_integration": resourceBitbucketDatacenterIntegration(),
 				"spacelift_blueprint":                        resourceBlueprint(),

@@ -3,12 +3,12 @@
 page_title: "spacelift_azure_integration Resource - terraform-provider-spacelift"
 subcategory: ""
 description: |-
-  spacelift_azure_integration represents an integration with an Azure AD tenant. This integration is account-level and needs to be explicitly attached to individual stacks in order to take effect. Note that you will need to provide admin consent manually for the integration to work
+  spacelift_azure_integration represents an integration with an Azure AD tenant. This integration is account-level and needs to be explicitly attached to individual stacks in order to take effect. Admin consent must be granted in Azure before the integration can be used. For consent granted outside the browser consent flow, use spacelift_azure_integration_consent to record it in Spacelift.
 ---
 
 # spacelift_azure_integration (Resource)
 
-`spacelift_azure_integration` represents an integration with an Azure AD tenant. This integration is account-level and needs to be explicitly attached to individual stacks in order to take effect. Note that you will need to provide admin consent manually for the integration to work
+`spacelift_azure_integration` represents an integration with an Azure AD tenant. This integration is account-level and needs to be explicitly attached to individual stacks in order to take effect. Admin consent must be granted in Azure before the integration can be used. For consent granted outside the browser consent flow, use `spacelift_azure_integration_consent` to record it in Spacelift.
 
 ## Example Usage
 

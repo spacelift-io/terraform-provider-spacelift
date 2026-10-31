@@ -1,0 +1,1 @@
+terraform import spacelift_azure_integration_consent.example $INTEGRATION_ID
