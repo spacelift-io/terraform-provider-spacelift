@@ -47,10 +47,13 @@ resource "spacelift_ai_integration" "claude" {
 }
 
 # base_url points at a self-hosted, provider-compatible gateway such as
-# LiteLLM instead of calling the provider directly. Spacelift validates that
-# it is reachable when the integration is created.
+# LiteLLM instead of calling the provider directly. A gateway names its own
+# models, so models is required with base_url. Spacelift validates that the
+# gateway is reachable and serves each model when the integration is saved.
 resource "spacelift_ai_integration" "openai_via_gateway" {
   name = "openai-via-gateway"
+
+  models = ["openai/gpt-5.2"]
 
   openai {
     api_key_wo         = var.gateway_api_key
@@ -109,7 +112,7 @@ resource "spacelift_ai_integration" "shared_anthropic" {
 - `enabled` (Boolean) Whether the integration can be used for LLM calls. Defaults to `true`.
 - `google` (Block List, Max: 1) Google-specific configuration. Presence means this integration uses the Gemini API. (see [below for nested schema](#nestedblock--google))
 - `labels` (Set of String) Labels to set on the integration
-- `models` (List of String) Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. Leave it out, or set it to an empty list, to pin nothing and let the integration follow the default model list for its provider, which is resolved server side and not recorded here. Terraform owns the pin either way, so one made outside it is reverted on the next apply, the same as `labels`. Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.
+- `models` (List of String) Model identifiers this integration is pinned to, for example `gemini-2.5-pro`. Leave it out, or set it to an empty list, to pin nothing and let the integration follow the default model list for its provider, which is resolved server side and not recorded here. Terraform owns the pin either way, so one made outside it is reverted on the next apply, the same as `labels`. Required with a custom `base_url`, since a gateway names its own models. Not supported for Bedrock, which takes its models from `bedrock.profiles` instead.
 - `name` (String) Friendly name of the integration. Required, except on a Spacelift-provided integration, whose name belongs to Spacelift and is read back from the API.
 - `openai` (Block List, Max: 1) OpenAI-specific configuration. Presence means this integration uses the OpenAI API. (see [below for nested schema](#nestedblock--openai))
 - `space_id` (String) ID of the space the integration belongs to
@@ -131,7 +134,7 @@ Optional:
 - `api_key` (String, Sensitive, Deprecated) Anthropic API key. Note that once it's created, it will be just an empty string in the state due to security reasons.
 - `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Anthropic API key. The key is not stored in the state. Modify api_key_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
 - `api_key_wo_version` (String) Used together with api_key_wo to trigger an update to the API key. Increment this value when an update to api_key_wo is required. This field requires Terraform/OpenTofu 1.11+.
-- `base_url` (String) Custom base URL for a self-hosted, Anthropic-compatible gateway such as LiteLLM. Leave unset to call the provider directly.
+- `base_url` (String) Custom base URL for a self-hosted, Anthropic-compatible gateway such as LiteLLM. Requires `models`, since a gateway names its own models. Leave unset to call the provider directly.
 
 
 <a id="nestedblock--bedrock"></a>
@@ -158,7 +161,7 @@ Optional:
 - `api_key` (String, Sensitive, Deprecated) Gemini API key. Note that once it's created, it will be just an empty string in the state due to security reasons.
 - `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Gemini API key. The key is not stored in the state. Modify api_key_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
 - `api_key_wo_version` (String) Used together with api_key_wo to trigger an update to the API key. Increment this value when an update to api_key_wo is required. This field requires Terraform/OpenTofu 1.11+.
-- `base_url` (String) Custom base URL for a self-hosted, Gemini-compatible gateway such as LiteLLM. Leave unset to call the provider directly.
+- `base_url` (String) Custom base URL for a self-hosted, Gemini-compatible gateway such as LiteLLM. Requires `models`, since a gateway names its own models. Leave unset to call the provider directly.
 
 
 <a id="nestedblock--openai"></a>
@@ -171,7 +174,7 @@ Optional:
 - `api_key` (String, Sensitive, Deprecated) OpenAI API key. Note that once it's created, it will be just an empty string in the state due to security reasons.
 - `api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) OpenAI API key. The key is not stored in the state. Modify api_key_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.
 - `api_key_wo_version` (String) Used together with api_key_wo to trigger an update to the API key. Increment this value when an update to api_key_wo is required. This field requires Terraform/OpenTofu 1.11+.
-- `base_url` (String) Custom base URL for a self-hosted, OpenAI-compatible gateway such as LiteLLM. Leave unset to call the provider directly.
+- `base_url` (String) Custom base URL for a self-hosted, OpenAI-compatible gateway such as LiteLLM. Requires `models`, since a gateway names its own models. Leave unset to call the provider directly.
 
 
 <a id="nestedblock--spacelift"></a>
