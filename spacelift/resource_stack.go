@@ -75,6 +75,21 @@ func resourceStack() *schema.Resource {
 			isMigration := oldTGCount.(int) != newTGCount.(int)
 
 			if isMigration {
+				// The API refuses to migrate a stack with a Terraform workspace to
+				// Terragrunt: native Terragrunt has no workspace, so the stack would
+				// read the default workspace's state. The terragrunt block conflicts
+				// with terraform_workspace, so the workspace is the one in state.
+				// Without this check the plan passes and the apply fails.
+				if oldTGCount.(int) == 0 {
+					if oldWorkspace, _ := diff.GetChange("terraform_workspace"); oldWorkspace.(string) != "" {
+						return fmt.Errorf(
+							"cannot migrate a stack with a Terraform workspace (%q) to Terragrunt; "+
+								"Terragrunt stacks have no workspace",
+							oldWorkspace,
+						)
+					}
+				}
+
 				// During vendor migration (adding/removing the terragrunt block),
 				// the API does not support changing state management.
 				// Block the plan if the effective value would change.
@@ -792,7 +807,7 @@ func resourceStack() *schema.Resource {
 			"terragrunt": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "opentofu", "pulumi", "terraform_smart_sanitization", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
-				Description:   "Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack.",
+				Description:   "Terragrunt-specific configuration. Presence means this Stack is a Terragrunt Stack. Adding this block to an existing Terraform Stack migrates it to Terragrunt in place, so it keeps its run history. A Stack with a Terraform workspace or the `CUSTOM` workflow tool cannot migrate. Removing the block migrates a migrated Stack back to Terraform with the `terragrunt` label: add `terragrunt` to `labels` in the same change, or the update that follows removes the label again. A Stack created as a Terragrunt Stack cannot migrate back.",
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{

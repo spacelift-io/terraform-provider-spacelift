@@ -889,7 +889,6 @@ func TestStackResource(t *testing.T) {
 							project_root = "root"
 							repository   = "demo"
 							manage_state = %t
-							labels       = ["terragrunt"]
 						}
 					`, randomID, stateManaged),
 						Check: Resource(
@@ -926,6 +925,7 @@ func TestStackResource(t *testing.T) {
 							project_root = "root"
 							repository   = "demo"
 							manage_state = %t
+							labels       = ["terragrunt"]
 						}
 					`, randomID, stateManaged),
 						Check: Resource(
@@ -936,6 +936,39 @@ func TestStackResource(t *testing.T) {
 				})
 			})
 		}
+	})
+
+	t.Run("vendor migration rejects a stack with a Terraform workspace", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch              = "master"
+						name                = "Provider test stack tg migr ws %s"
+						project_root        = "root"
+						repository          = "demo"
+						terraform_workspace = "production"
+					}
+				`, randomID),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr ws %s"
+						project_root = "root"
+						repository   = "demo"
+						terragrunt {
+							terragrunt_version = "0.67.16"
+							tool               = "TERRAFORM_FOSS"
+						}
+					}
+				`, randomID),
+				ExpectError: regexp.MustCompile(`cannot migrate a stack with a Terraform workspace \("production"\) to Terragrunt`),
+			},
+		})
 	})
 
 	t.Run("vendor migration rejects state management change", func(t *testing.T) {
@@ -951,7 +984,6 @@ func TestStackResource(t *testing.T) {
 						project_root = "root"
 						repository   = "demo"
 						manage_state = true
-						labels       = ["terragrunt"]
 					}
 				`, randomID),
 				},
@@ -988,7 +1020,6 @@ func TestStackResource(t *testing.T) {
 						project_root = "root"
 						repository   = "demo"
 						manage_state = false
-						labels       = ["terragrunt"]
 					}
 				`, randomID),
 				},
@@ -2418,16 +2449,15 @@ func TestStackResourceSpace(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				// Step 1: Create as Terraform stack with "terragrunt" label
+				// Step 1: Create as a plain Terraform stack, without the "terragrunt" label
 				Config: config(`
-					labels            = ["terragrunt"]
 					terraform_version = "1.5.7"
 				`),
 				Check: resource.ComposeTestCheckFunc(
 					Resource(
 						resourceName,
 						Attribute("terraform_version", Equals("1.5.7")),
-						SetContains("labels", "terragrunt"),
+						AttributeNotPresent("labels.#"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
 					func(s *terraform.State) error {
@@ -2512,16 +2542,14 @@ func TestStackResourceSpace(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				// Step 1: Create as Terraform stack with "terragrunt" label and a run that stays queued
+				// Step 1: Create as a plain Terraform stack with a run that stays queued
 				Config: config(`
-					labels            = ["terragrunt"]
 					terraform_version = "1.5.7"
 				`),
 				Check: resource.ComposeTestCheckFunc(
 					Resource(
 						resourceName,
 						Attribute("terraform_version", Equals("1.5.7")),
-						SetContains("labels", "terragrunt"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
 				),
@@ -2549,7 +2577,6 @@ func TestStackResourceSpace(t *testing.T) {
 			{
 				// Step 4: Go back to the Terraform config — must give an empty plan
 				Config: config(`
-					labels            = ["terragrunt"]
 					terraform_version = "1.5.7"
 				`),
 				PlanOnly: true,
