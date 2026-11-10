@@ -75,8 +75,12 @@ func resourceNamedWebhookSecretHeader() *schema.Resource {
 	}
 }
 
+func namedWebhookSecretHeaderValue(d *schema.ResourceData) (string, diag.Diagnostics) {
+	return internal.ExtractWriteOnlyField("value", "value_wo", "value_wo_version", d)
+}
+
 func resourceNamedWebhookSecretHeaderCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	value, diags := internal.ExtractWriteOnlyField("value", "value_wo", "value:value_wo_version", d)
+	value, diags := namedWebhookSecretHeaderValue(d)
 	if diags != nil {
 		return diags
 	}
