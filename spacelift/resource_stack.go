@@ -807,7 +807,7 @@ func resourceStack() *schema.Resource {
 			"terragrunt": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "opentofu", "pulumi", "terraform_smart_sanitization", "terraform_version", "terraform_workflow_tool", "terraform_workspace"},
-				Description:   "Terragrunt-specific configuration. Presence means this Stack is a Terragrunt Stack. Adding this block to an existing Terraform Stack migrates it to Terragrunt in place, so it keeps its run history. A Stack with a Terraform workspace or the `CUSTOM` workflow tool cannot migrate. Removing the block migrates a migrated Stack back to Terraform with the `terragrunt` label: add `terragrunt` to `labels` in the same change, or the update that follows removes the label again. A Stack created as a Terragrunt Stack cannot migrate back.",
+				Description:   "Terragrunt-specific configuration. Presence means this Stack is a Terragrunt Stack. Adding this block to an existing Terraform Stack migrates it to Terragrunt in place, so it keeps its run history. A Stack with a Terraform workspace or the `CUSTOM` workflow tool cannot migrate. A migration in either direction cannot change state management: `use_state_management` must equal `manage_state`. `manage_state` defaults to `true` and `use_state_management` defaults to `false`, so set `use_state_management = true` unless the Stack has `manage_state = false`. Removing the block migrates a migrated Stack back to Terraform with the `terragrunt` label: add `terragrunt` to `labels` in the same change, or the update that follows removes the label again. A Stack created as a Terragrunt Stack cannot migrate back.",
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{
