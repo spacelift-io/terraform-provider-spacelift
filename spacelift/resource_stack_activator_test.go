@@ -58,6 +58,9 @@ func TestStackActivatorResource(t *testing.T) {
 					Attribute("enabled", Equals("true")),
 				),
 			},
+			importByStackIDStep(resourceName, "spacelift_stack.test2", map[string]string{
+				"enabled": "true",
+			}),
 		})
 	})
 }
