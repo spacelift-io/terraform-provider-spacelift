@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -61,8 +62,46 @@ func TestStackDestructorResource(t *testing.T) {
 					Attribute("discard_runs", Equals("true")),
 				),
 			},
+			importByStackIDStep(resourceName, "spacelift_stack.test2", map[string]string{
+				"discard_runs": "false",
+			}),
 		})
 	})
+}
+
+// importByStackIDStep imports a resource whose import ID is the ID of the
+// stack it points at, and checks that stack_id ends up in the imported state.
+// ImportStateVerify can't be used: these resources get a new ID on every read.
+func importByStackIDStep(resourceName, stackResourceName string, want map[string]string) resource.TestStep {
+	var stackID string
+
+	return resource.TestStep{
+		ResourceName: resourceName,
+		ImportState:  true,
+		ImportStateIdFunc: func(s *terraform.State) (string, error) {
+			stack, ok := s.RootModule().Resources[stackResourceName]
+			if !ok {
+				return "", fmt.Errorf("%s not found in state", stackResourceName)
+			}
+			stackID = stack.Primary.ID
+			return stackID, nil
+		},
+		ImportStateCheck: func(states []*terraform.InstanceState) error {
+			if len(states) != 1 {
+				return fmt.Errorf("expected 1 imported resource, got %d", len(states))
+			}
+			attributes := states[0].Attributes
+			if got := attributes["stack_id"]; got != stackID {
+				return fmt.Errorf("stack_id: got %q, want %q", got, stackID)
+			}
+			for key, value := range want {
+				if got := attributes[key]; got != value {
+					return fmt.Errorf("%s: got %q, want %q", key, got, value)
+				}
+			}
+			return nil
+		},
+	}
 }
 
 func TestDestroyStackDestructor(t *testing.T) {
