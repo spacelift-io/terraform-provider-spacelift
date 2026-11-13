@@ -971,6 +971,39 @@ func TestStackResource(t *testing.T) {
 		})
 	})
 
+	t.Run("vendor migration rejects a stack with the CUSTOM workflow tool", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch                  = "master"
+						name                    = "Provider test stack tg migr wt %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "CUSTOM"
+					}
+				`, randomID),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr wt %s"
+						project_root = "root"
+						repository   = "demo"
+						terragrunt {
+							terragrunt_version = "0.67.16"
+							tool               = "TERRAFORM_FOSS"
+						}
+					}
+				`, randomID),
+				ExpectError: regexp.MustCompile(`cannot migrate a stack with the "CUSTOM" workflow tool to Terragrunt`),
+			},
+		})
+	})
+
 	t.Run("vendor migration rejects state management change", func(t *testing.T) {
 		t.Run("forward manage_state=true to use_state_management=false", func(t *testing.T) {
 			randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)

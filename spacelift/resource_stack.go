@@ -88,6 +88,19 @@ func resourceStack() *schema.Resource {
 							oldWorkspace,
 						)
 					}
+
+					// The API refuses to migrate a stack with the CUSTOM workflow
+					// tool to Terragrunt: Terragrunt has no CUSTOM tool. The
+					// terragrunt block conflicts with terraform_workflow_tool, so
+					// the tool is the one in state. Without this check the plan
+					// passes and the apply fails.
+					if oldTool, _ := diff.GetChange("terraform_workflow_tool"); oldTool.(string) == "CUSTOM" {
+						return fmt.Errorf(
+							"cannot migrate a stack with the %q workflow tool to Terragrunt; "+
+								"Terragrunt stacks have no custom workflow tool",
+							oldTool,
+						)
+					}
 				}
 
 				// During vendor migration (adding/removing the terragrunt block),
