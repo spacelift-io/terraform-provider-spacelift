@@ -43,4 +43,5 @@ Read-Only:
 - `labels` (Set of String)
 - `name` (String)
 - `parent_space_id` (String)
+- `path` (String)
 - `space_id` (String)
