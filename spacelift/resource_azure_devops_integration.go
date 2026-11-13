@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,6 +23,15 @@ func resourceAzureDevopsIntegration() *schema.Resource {
 		UpdateContext: resourceAzureDevopsIntegrationUpdate,
 		DeleteContext: resourceAzureDevopsIntegrationDelete,
 
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceAzureDevopsIntegrationV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceAzureDevopsIntegrationStateUpgradeV0,
+			},
+		},
+
 		CustomizeDiff: func(ctx context.Context, diff *schema.ResourceDiff, meta any) error {
 			return validateAzureDevopsDefaultSpace(diff.Get(azureDevopsIsDefault).(bool), diff.Get(azureDevopsSpaceID).(string))
 		},
@@ -30,121 +40,152 @@ func resourceAzureDevopsIntegration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 
-		Schema: map[string]*schema.Schema{
-			azureDevopsID: {
-				Type:        schema.TypeString,
-				Description: "Azure DevOps integration id.",
-				Computed:    true,
-			},
-			azureDevopsName: {
+		Schema: azureDevopsIntegrationSchema(1),
+	}
+}
+
+func resourceAzureDevopsIntegrationV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: azureDevopsIntegrationSchema(0),
+	}
+}
+
+func resourceAzureDevopsIntegrationStateUpgradeV0(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+	if v, ok := rawState[azureDevopsPersonalAccessTokenWoVer]; ok && v != nil {
+		switch val := v.(type) {
+		case int:
+			rawState[azureDevopsPersonalAccessTokenWoVer] = strconv.Itoa(val)
+		case int64:
+			rawState[azureDevopsPersonalAccessTokenWoVer] = strconv.FormatInt(val, 10)
+		case float64:
+			rawState[azureDevopsPersonalAccessTokenWoVer] = strconv.FormatInt(int64(val), 10)
+		case string:
+			rawState[azureDevopsPersonalAccessTokenWoVer] = val
+		}
+	}
+	return rawState, nil
+}
+
+func azureDevopsIntegrationSchema(version int) map[string]*schema.Schema {
+	tokenVerType := schema.TypeString
+	if version == 0 {
+		tokenVerType = schema.TypeInt
+	}
+
+	return map[string]*schema.Schema{
+		azureDevopsID: {
+			Type:        schema.TypeString,
+			Description: "Azure DevOps integration id.",
+			Computed:    true,
+		},
+		azureDevopsName: {
+			Type:             schema.TypeString,
+			Description:      "The friendly name of the integration",
+			Required:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: validations.DisallowEmptyString,
+		},
+		azureDevopsDescription: {
+			Type:             schema.TypeString,
+			Description:      "Description of the integration",
+			Optional:         true,
+			ValidateDiagFunc: validations.DisallowEmptyString,
+		},
+		azureDevopsOrganizationURL: {
+			Type:             schema.TypeString,
+			Description:      "Organization URL where API requests will be sent",
+			Required:         true,
+			ValidateDiagFunc: validations.DisallowEmptyString,
+		},
+		azureDevopsUserFacingHost: {
+			Type:             schema.TypeString,
+			Description:      "User facing host URL. Defaults to the organization URL if not set. Set this when using VCS agents.",
+			Optional:         true,
+			Computed:         true,
+			ForceNew:         true,
+			ValidateDiagFunc: validations.DisallowEmptyString,
+		},
+		azureDevopsPersonalAccessToken: {
+			Type:             schema.TypeString,
+			Description:      "The Azure DevOps personal access token",
+			Optional:         true,
+			Sensitive:        true,
+			Deprecated:       "`personal_access_token` is deprecated. Please use personal_access_token_wo in combination with personal_access_token_wo_version",
+			ValidateDiagFunc: validations.DisallowEmptyString,
+			ConflictsWith:    []string{azureDevopsPersonalAccessTokenWo, azureDevopsPersonalAccessTokenWoVer},
+			AtLeastOneOf:     []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWo},
+		},
+		azureDevopsPersonalAccessTokenWo: {
+			Type:          schema.TypeString,
+			Description:   "`personal_access_token_wo` the Azure DevOps personal access token. The personal_access_token_wo is not stored in the state. Modify personal_access_token_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
+			Optional:      true,
+			Sensitive:     true,
+			WriteOnly:     true,
+			ConflictsWith: []string{azureDevopsPersonalAccessToken},
+			RequiredWith:  []string{azureDevopsPersonalAccessTokenWoVer},
+			AtLeastOneOf:  []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWo},
+		},
+		azureDevopsPersonalAccessTokenWoVer: {
+			Type:          tokenVerType,
+			Description:   "Used together with personal_access_token_wo to trigger an update to the personal access token. Increment this value when an update to personal_access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
+			Optional:      true,
+			ConflictsWith: []string{azureDevopsPersonalAccessToken},
+			RequiredWith:  []string{azureDevopsPersonalAccessTokenWo},
+		},
+		azureDevopsLabels: {
+			Type:        schema.TypeSet,
+			Description: "Labels to set on the integration",
+			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				Description:      "The friendly name of the integration",
-				Required:         true,
-				ForceNew:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
-			azureDevopsDescription: {
+			Optional: true,
+		},
+		azureDevopsSpaceID: {
+			Type:             schema.TypeString,
+			Description:      "ID (slug) of the space the integration is in; Default: `root`",
+			Optional:         true,
+			Default:          "root",
+			ValidateDiagFunc: validations.DisallowEmptyString,
+		},
+		azureDevopsIsDefault: {
+			Type:        schema.TypeBool,
+			Description: "Is the Azure DevOps integration the default for all spaces? If set to `true` the space must be set to `root` in `space_id` or left empty which uses the default",
+			Optional:    true,
+			Default:     false,
+			ForceNew:    true,
+		},
+		azureDevopsWebhookPassword: {
+			Type:        schema.TypeString,
+			Description: "Password for webhooks originating from Azure DevOps repositories",
+			Computed:    true,
+			Sensitive:   true,
+		},
+		azureDevopsWebhookURL: {
+			Type:        schema.TypeString,
+			Description: "URL for webhooks originating from Azure DevOps repositories",
+			Computed:    true,
+		},
+		azureDevopsVCSChecks: {
+			Type:        schema.TypeString,
+			Description: "VCS checks configured for Azure DevOps repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
+			Optional:    true,
+			Default:     vcs.CheckTypeDefault,
+		},
+		azureDevopsUseGitCheckout: {
+			Type:        schema.TypeBool,
+			Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
+			Optional:    true,
+			Computed:    true,
+		},
+		azureDevopsAccessibleProjects: {
+			Type:        schema.TypeSet,
+			Description: "Restrict the integration to specific Azure DevOps projects. Leave empty to allow all projects in the organization.",
+			Elem: &schema.Schema{
 				Type:             schema.TypeString,
-				Description:      "Description of the integration",
-				Optional:         true,
 				ValidateDiagFunc: validations.DisallowEmptyString,
 			},
-			azureDevopsOrganizationURL: {
-				Type:             schema.TypeString,
-				Description:      "Organization URL where API requests will be sent",
-				Required:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			azureDevopsUserFacingHost: {
-				Type:             schema.TypeString,
-				Description:      "User facing host URL. Defaults to the organization URL if not set. Set this when using VCS agents.",
-				Optional:         true,
-				Computed:         true,
-				ForceNew:         true,
-				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			azureDevopsPersonalAccessToken: {
-				Type:             schema.TypeString,
-				Description:      "The Azure DevOps personal access token",
-				Optional:         true,
-				Sensitive:        true,
-				Deprecated:       "`personal_access_token` is deprecated. Please use personal_access_token_wo in combination with personal_access_token_wo_version",
-				ValidateDiagFunc: validations.DisallowEmptyString,
-				ConflictsWith:    []string{azureDevopsPersonalAccessTokenWo, azureDevopsPersonalAccessTokenWoVer},
-				AtLeastOneOf:     []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWo},
-			},
-			azureDevopsPersonalAccessTokenWo: {
-				Type:          schema.TypeString,
-				Description:   "`personal_access_token_wo` the Azure DevOps personal access token. The personal_access_token_wo is not stored in the state. Modify personal_access_token_wo_version to trigger an update. This field requires Terraform/OpenTofu 1.11+.",
-				Optional:      true,
-				Sensitive:     true,
-				WriteOnly:     true,
-				ConflictsWith: []string{azureDevopsPersonalAccessToken},
-				RequiredWith:  []string{azureDevopsPersonalAccessTokenWoVer},
-				AtLeastOneOf:  []string{azureDevopsPersonalAccessToken, azureDevopsPersonalAccessTokenWo},
-			},
-			azureDevopsPersonalAccessTokenWoVer: {
-				Type:          schema.TypeInt,
-				Description:   "Used together with personal_access_token_wo to trigger an update to the personal access token. Increment this value when an update to personal_access_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
-				Optional:      true,
-				ConflictsWith: []string{azureDevopsPersonalAccessToken},
-				RequiredWith:  []string{azureDevopsPersonalAccessTokenWo},
-			},
-			azureDevopsLabels: {
-				Type:        schema.TypeSet,
-				Description: "Labels to set on the integration",
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: validations.DisallowEmptyString,
-				},
-				Optional: true,
-			},
-			azureDevopsSpaceID: {
-				Type:             schema.TypeString,
-				Description:      "ID (slug) of the space the integration is in; Default: `root`",
-				Optional:         true,
-				Default:          "root",
-				ValidateDiagFunc: validations.DisallowEmptyString,
-			},
-			azureDevopsIsDefault: {
-				Type:        schema.TypeBool,
-				Description: "Is the Azure DevOps integration the default for all spaces? If set to `true` the space must be set to `root` in `space_id` or left empty which uses the default",
-				Optional:    true,
-				Default:     false,
-				ForceNew:    true,
-			},
-			azureDevopsWebhookPassword: {
-				Type:        schema.TypeString,
-				Description: "Password for webhooks originating from Azure DevOps repositories",
-				Computed:    true,
-				Sensitive:   true,
-			},
-			azureDevopsWebhookURL: {
-				Type:        schema.TypeString,
-				Description: "URL for webhooks originating from Azure DevOps repositories",
-				Computed:    true,
-			},
-			azureDevopsVCSChecks: {
-				Type:        schema.TypeString,
-				Description: "VCS checks configured for Azure DevOps repositories. Possible values: INDIVIDUAL, AGGREGATED, ALL. Defaults to INDIVIDUAL.",
-				Optional:    true,
-				Default:     vcs.CheckTypeDefault,
-			},
-			azureDevopsUseGitCheckout: {
-				Type:        schema.TypeBool,
-				Description: "Indicates whether the integration should use git checkout. If false source code will be downloaded using the VCS API. Defaults to true.",
-				Optional:    true,
-				Computed:    true,
-			},
-			azureDevopsAccessibleProjects: {
-				Type:        schema.TypeSet,
-				Description: "Restrict the integration to specific Azure DevOps projects. Leave empty to allow all projects in the organization.",
-				Elem: &schema.Schema{
-					Type:             schema.TypeString,
-					ValidateDiagFunc: validations.DisallowEmptyString,
-				},
-				Optional: true,
-			},
+			Optional: true,
 		},
 	}
 }
