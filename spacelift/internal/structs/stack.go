@@ -360,6 +360,13 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("slug", stack.ID)
 	d.Set("lock", stack.LockBlock())
 
+	// prevent_changes_when_locked is provider-only (the API never returns it).
+	// Stacks created before it existed have it as null in state, which SDKv2
+	// collapses back to null during an apply-time re-plan (e.g. unknown
+	// space_id), causing "inconsistent final plan". Re-set the current value,
+	// which defaults to false, so state is never null.
+	d.Set("prevent_changes_when_locked", d.Get("prevent_changes_when_locked"))
+
 	if err := stack.ExportVCSSettings(d); err != nil {
 		return diag.FromErr(err)
 	}
