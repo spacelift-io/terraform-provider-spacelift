@@ -2893,3 +2893,50 @@ func TestStackReadClearsStaleVendorBlocks(t *testing.T) {
 		})
 	}
 }
+
+// prevent_changes_when_locked is provider-only (the API never returns it), so
+// stacks created before it existed have it as null in state. Read must persist
+// the value so state is never null, otherwise an apply-time re-plan (for
+// example with an unknown space_id) fails with "inconsistent final plan".
+func TestStackReadPersistsPreventChangesWhenLocked(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name     string
+		setPrior bool
+		prior    bool
+		want     string
+	}{
+		{name: "null in state defaults to false", want: "false"},
+		{name: "false is kept", setPrior: true, prior: false, want: "false"},
+		{name: "true is kept", setPrior: true, prior: true, want: "true"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = fmt.Fprint(w, `{"data":{"stack":{"id":"stack-id","integrations":{},"vendorConfig":{"__typename":"StackConfigVendorTerraform"}}}}`)
+			}))
+			t.Cleanup(server.Close)
+
+			d := resourceStack().Data(nil)
+			d.SetId("stack-id")
+			if tc.setPrior {
+				if err := d.Set("prevent_changes_when_locked", tc.prior); err != nil {
+					t.Fatalf("could not set prevent_changes_when_locked: %v", err)
+				}
+			}
+
+			if diags := resourceStackRead(t.Context(), d, internal.NewClient(server.URL, "token", nil, nil)); diags.HasError() {
+				t.Fatalf("could not read the stack: %v", diags)
+			}
+
+			if got := d.State().Attributes["prevent_changes_when_locked"]; got != tc.want {
+				t.Fatalf("got prevent_changes_when_locked=%q in state, want %q", got, tc.want)
+			}
+		})
+	}
+}
