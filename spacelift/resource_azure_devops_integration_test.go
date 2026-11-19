@@ -1,6 +1,7 @@
 package spacelift
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -165,7 +166,7 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					organization_url                = "` + organization + `"
 					user_facing_host                = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.UserFacingHost + `"
 					personal_access_token_wo        = "` + token + `"
-					personal_access_token_wo_version = 1
+					personal_access_token_wo_version = "1"
 					description                     = "` + descr + `"
 					labels                          = ` + labels + `
 					vcs_checks                      = ` + vcsChecks + `
@@ -181,6 +182,7 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					resourceName,
 					Attribute(azureDevopsName, Equals(name)),
 					Attribute(azureDevopsOrganizationURL, Equals(organization)),
+					Attribute(azureDevopsUserFacingHost, Equals(testConfig.SourceCode.AzureDevOps.SpaceLevel.UserFacingHost)),
 					Attribute(azureDevopsWebhookURL, IsNotEmpty()),
 					Attribute(azureDevopsWebhookPassword, IsNotEmpty()),
 					Attribute(azureDevopsDescription, Equals(descr)),
@@ -273,4 +275,104 @@ func TestValidateAzureDevopsDefaultSpace(t *testing.T) {
 			t.Fatalf("expected %q, got %q", expected, err.Error())
 		}
 	})
+}
+
+func TestAzureDevopsIntegrationSchema(t *testing.T) {
+	t.Run("personal_access_token_wo_version is TypeString in v1", func(t *testing.T) {
+		schemaMap := resourceAzureDevopsIntegration().Schema
+		attr, ok := schemaMap[azureDevopsPersonalAccessTokenWoVer]
+		if !ok {
+			t.Fatalf("expected %q in schema", azureDevopsPersonalAccessTokenWoVer)
+		}
+		if attr.Type != schema.TypeString {
+			t.Fatalf("expected %q to be TypeString, got %v", azureDevopsPersonalAccessTokenWoVer, attr.Type)
+		}
+	})
+
+	t.Run("personal_access_token_wo_version was TypeInt in v0", func(t *testing.T) {
+		schemaMap := resourceAzureDevopsIntegrationV0().Schema
+		attr, ok := schemaMap[azureDevopsPersonalAccessTokenWoVer]
+		if !ok {
+			t.Fatalf("expected %q in v0 schema", azureDevopsPersonalAccessTokenWoVer)
+		}
+		if attr.Type != schema.TypeInt {
+			t.Fatalf("expected %q to be TypeInt in v0, got %v", azureDevopsPersonalAccessTokenWoVer, attr.Type)
+		}
+	})
+}
+
+func TestAzureDevopsIntegrationStateUpgradeV0(t *testing.T) {
+	cases := []struct {
+		name     string
+		input    map[string]any
+		expected map[string]any
+	}{
+		{
+			name: "converts integer version to string",
+			input: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: 1,
+			},
+			expected: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: "1",
+			},
+		},
+		{
+			name: "converts int64 version to string",
+			input: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: int64(42),
+			},
+			expected: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: "42",
+			},
+		},
+		{
+			name: "converts float64 version to string",
+			input: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: float64(5.0),
+			},
+			expected: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: "5",
+			},
+		},
+		{
+			name: "preserves string version",
+			input: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: "version-guid-1234",
+			},
+			expected: map[string]any{
+				azureDevopsName:                     "test",
+				azureDevopsPersonalAccessTokenWoVer: "version-guid-1234",
+			},
+		},
+		{
+			name: "handles missing version gracefully",
+			input: map[string]any{
+				azureDevopsName: "test",
+			},
+			expected: map[string]any{
+				azureDevopsName: "test",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			upgraded, err := resourceAzureDevopsIntegrationStateUpgradeV0(context.Background(), tc.input, nil)
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			for k, want := range tc.expected {
+				if got := upgraded[k]; got != want {
+					t.Fatalf("expected key %q to be %v, got %v", k, want, got)
+				}
+			}
+		})
+	}
 }
