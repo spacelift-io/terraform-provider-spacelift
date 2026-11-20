@@ -34,7 +34,7 @@ func resourceStackDestructor() *schema.Resource {
 		DeleteContext: resourceStackDestructorDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: resourceStackDestructorImport,
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -66,6 +66,27 @@ func resourceStackDestructor() *schema.Resource {
 func resourceStackDestructorCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	d.SetId(fmt.Sprintf("destructor-%d", time.Now().Unix()))
 	return resourceStackDestructorRead(ctx, d, meta)
+}
+
+// importStackID handles resources that have no ID of their own on the
+// Spacelift side: the import ID is the ID of the stack they point at.
+func importStackID(prefix string) schema.StateContextFunc {
+	return func(_ context.Context, d *schema.ResourceData, _ any) ([]*schema.ResourceData, error) {
+		if err := d.Set("stack_id", d.Id()); err != nil {
+			return nil, err
+		}
+		d.SetId(fmt.Sprintf("%s-%d", prefix, time.Now().Unix()))
+
+		return []*schema.ResourceData{d}, nil
+	}
+}
+
+func resourceStackDestructorImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
+	if err := d.Set("discard_runs", false); err != nil {
+		return nil, err
+	}
+
+	return importStackID("destructor")(ctx, d, meta)
 }
 
 func resourceStackDestructorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
