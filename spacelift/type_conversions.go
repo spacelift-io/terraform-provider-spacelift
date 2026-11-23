@@ -124,6 +124,30 @@ func getOptionalBool(d *schema.ResourceData, key string) *graphql.Boolean {
 	return toOptionalBool(d.Get(key))
 }
 
+// For a Computed attribute, d.Get returns the value from state when the config
+// omits the key. Sending that value back would stop the backend from applying its
+// version-based default on create. The nil makes the backend use that default on
+// create and keep the stored value on update. getOptionalBool reads only
+// top-level keys, so a key inside a single-item block needs this variant.
+func getOptionalBlockBool(d *schema.ResourceData, block, key string) *graphql.Boolean {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() {
+		return nil
+	}
+
+	rawBlock := rawConfig.GetAttr(block)
+	if rawBlock.IsNull() || !rawBlock.IsKnown() || rawBlock.LengthInt() == 0 {
+		return nil
+	}
+
+	configValue := rawBlock.AsValueSlice()[0].GetAttr(key)
+	if configValue.IsNull() {
+		return nil
+	}
+
+	return toOptionalBool(d.Get(block + ".0." + key))
+}
+
 // convertToString converts various types to their string representation
 // This is used for plugin parameters where the API expects strings but users provide typed values
 func convertToString(input any) string {

@@ -180,6 +180,7 @@ Read-Only:
 
 Read-Only:
 
+- `enable_cpu_profiling` (Boolean)
 - `external_state_access` (Boolean)
 - `logging` (List of Object) (see [below for nested schema](#nestedobjatt--opentofu--logging))
 - `use_smart_sanitization` (Boolean)

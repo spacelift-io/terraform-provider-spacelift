@@ -1315,6 +1315,7 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("true")),
 					Attribute("opentofu.0.logging.0.concise", Equals("true")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("true")),
 					Attribute("opentofu.0.external_state_access", Equals("false")),
@@ -1327,6 +1328,29 @@ func TestStackResource(t *testing.T) {
 					Attribute("terragrunt.#", Equals("0")),
 				),
 			},
+			{
+				Config: getConfig(`opentofu {
+						enable_cpu_profiling = false
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("false")),
+				),
+			},
+			{
+				// The attribute is Computed: omitting it must keep the stored
+				// value instead of resetting it to the API default. The
+				// workspace change forces an update, so the backend receives
+				// a null enableCPUProfiling.
+				Config: getConfig(`opentofu {
+						workspace = "cpu-profiling-keep"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("opentofu.0.workspace", Equals("cpu-profiling-keep")),
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("false")),
+				),
+			},
 		})
 	})
 
@@ -1336,6 +1360,7 @@ func TestStackResource(t *testing.T) {
 				Config: getConfig(`opentofu {
 						version                = "1.8.0"
 						workspace              = "test-workspace"
+						enable_cpu_profiling   = true
 						logging {
 							concise = false
 						}
@@ -1348,6 +1373,7 @@ func TestStackResource(t *testing.T) {
 
 					Attribute("opentofu.0.version", Equals("1.8.0")),
 					Attribute("opentofu.0.workspace", Equals("test-workspace")),
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("true")),
 					Attribute("opentofu.0.logging.0.concise", Equals("false")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
 					Attribute("opentofu.0.external_state_access", Equals("true")),
@@ -1370,6 +1396,7 @@ func TestStackResource(t *testing.T) {
 				// `CUSTOM` workflow tool, as the API rejects that combination.
 				Config: getConfig(`opentofu {
 						workspace              = "test-workspace"
+						enable_cpu_profiling   = false
 						logging {
 							concise = false
 						}
@@ -1382,6 +1409,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 
 					Attribute("opentofu.0.workspace", Equals("test-workspace")),
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("false")),
 					Attribute("opentofu.0.logging.0.concise", Equals("false")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
 					Attribute("opentofu.0.external_state_access", Equals("true")),
