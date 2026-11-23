@@ -347,6 +347,11 @@ func dataStack() *schema.Resource {
 				Computed:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"enable_cpu_profiling": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether Spacelift captures CPU profiles from the OpenTofu init, plan, apply, destroy and show commands.",
+							Computed:    true,
+						},
 						"logging": {
 							Type:        schema.TypeList,
 							Description: "Logging configuration for OpenTofu commands.",

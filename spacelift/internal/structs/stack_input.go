@@ -93,6 +93,7 @@ type TerragruntInput struct {
 // OpenTofuInput represents native OpenTofu-specific configuration.
 type OpenTofuInput struct {
 	Concise                    *graphql.Boolean `json:"concise"`
+	EnableCPUProfiling         *graphql.Boolean `json:"enableCPUProfiling"`
 	ExternalStateAccessEnabled *graphql.Boolean `json:"externalStateAccessEnabled"`
 	UseSmartSanitization       *graphql.Boolean `json:"useSmartSanitization"`
 	Version                    *graphql.String  `json:"version"`

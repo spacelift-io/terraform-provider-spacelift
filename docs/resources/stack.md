@@ -409,6 +409,7 @@ Optional:
 
 Optional:
 
+- `enable_cpu_profiling` (Boolean) Indicates whether Spacelift captures CPU profiles from the OpenTofu init, plan, apply, destroy and show commands. Requires OpenTofu 1.11+; older versions run without profiling. When unset on create, defaults to `true` on OpenTofu 1.11+ and to `false` on older versions. When unset on update, keeps the current value.
 - `external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.
 - `logging` (Block List, Max: 1) Logging configuration for OpenTofu commands. (see [below for nested schema](#nestedblock--opentofu--logging))
 - `use_smart_sanitization` (Boolean) Indicates whether runs on this will use OpenTofu's sensitive value system to sanitize the outputs of state and plans in Spacelift instead of sanitizing all fields. Defaults to `true`.

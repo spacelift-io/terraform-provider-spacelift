@@ -109,6 +109,7 @@ type Stack struct {
 		} `graphql:"... on StackConfigVendorKubernetes"`
 		OpenTofu struct {
 			Concise                    bool    `graphql:"concise"`
+			EnableCPUProfiling         bool    `graphql:"enableCPUProfiling"`
 			ExternalStateAccessEnabled bool    `graphql:"externalStateAccessEnabled"`
 			UseSmartSanitization       bool    `graphql:"useSmartSanitization"`
 			Version                    *string `graphql:"version"`
@@ -231,6 +232,7 @@ func (s *Stack) IaCSettings() (string, map[string]any) {
 		}
 	case StackConfigVendorOpenTofu:
 		return "opentofu", map[string]any{
+			"enable_cpu_profiling": s.VendorConfig.OpenTofu.EnableCPUProfiling,
 			"logging": []any{map[string]any{
 				"concise": s.VendorConfig.OpenTofu.Concise,
 			}},
@@ -438,6 +440,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 
 		if userHasOpenTofuBlock {
 			m := map[string]any{
+				"enable_cpu_profiling": stack.VendorConfig.OpenTofu.EnableCPUProfiling,
 				"logging": []any{map[string]any{
 					"concise": stack.VendorConfig.OpenTofu.Concise,
 				}},

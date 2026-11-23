@@ -591,6 +591,12 @@ func resourceStack() *schema.Resource {
 				MaxItems:      1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
+						"enable_cpu_profiling": {
+							Type:        schema.TypeBool,
+							Description: "Indicates whether Spacelift captures CPU profiles from the OpenTofu init, plan, apply, destroy and show commands. Requires OpenTofu 1.11+; older versions run without profiling. When unset on create, defaults to `true` on OpenTofu 1.11+ and to `false` on older versions. When unset on update, keeps the current value.",
+							Optional:    true,
+							Computed:    true,
+						},
 						"logging": {
 							Type:        schema.TypeList,
 							Description: "Logging configuration for OpenTofu commands.",
@@ -1350,6 +1356,8 @@ func getVendorConfig(d *schema.ResourceData) *structs.VendorConfigInput {
 	if opentofu, ok := d.Get("opentofu").([]any); ok && len(opentofu) > 0 {
 		opentofuConfig := structs.OpenTofuInput{}
 		settings := opentofu[0].(map[string]any)
+
+		opentofuConfig.EnableCPUProfiling = getOptionalBlockBool(d, "opentofu", "enable_cpu_profiling")
 
 		if logging, ok := settings["logging"].([]any); ok && len(logging) > 0 {
 			loggingSettings := logging[0].(map[string]any)
