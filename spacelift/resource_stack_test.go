@@ -9,8 +9,9 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	tftest "github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -2521,7 +2522,7 @@ func TestStackResourceSpace(t *testing.T) {
 						AttributeNotPresent("labels.#"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
-					func(s *terraform.State) error {
+					func(s *tftest.State) error {
 						stackID = s.RootModule().Resources[resourceName].Primary.ID
 						return nil
 					},
@@ -2542,7 +2543,7 @@ func TestStackResourceSpace(t *testing.T) {
 						Attribute("terragrunt.0.terragrunt_version", Equals("0.67.16")),
 						Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
 					),
-					func(s *terraform.State) error {
+					func(s *tftest.State) error {
 						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
 							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
 						}
@@ -2563,7 +2564,7 @@ func TestStackResourceSpace(t *testing.T) {
 						SetContains("labels", "terragrunt"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
-					func(s *terraform.State) error {
+					func(s *tftest.State) error {
 						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
 							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
 						}
