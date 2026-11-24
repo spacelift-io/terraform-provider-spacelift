@@ -67,6 +67,7 @@ func TestStackResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack-")),
+					Attribute("ulid", IsNotEmpty()),
 					Attribute("after_apply.#", Equals("2")),
 					Attribute("after_apply.0", Equals("ls -la")),
 					Attribute("after_apply.1", Equals("rm -rf /")),

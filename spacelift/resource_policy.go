@@ -42,7 +42,7 @@ var typeNameReplacements = map[string]string{
 }
 
 func resourcePolicy() *schema.Resource {
-	return &schema.Resource{
+	return internal.WithULID("policy", &schema.Resource{
 		Description: "" +
 			"`spacelift_policy` represents a Spacelift **policy** - a collection of " +
 			"customer-defined rules that are applied by Spacelift at one of the " +
@@ -120,7 +120,7 @@ func resourcePolicy() *schema.Resource {
 				),
 			},
 		},
-	}
+	})
 }
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -180,18 +180,9 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 		return removeFromState(d, "policy")
 	}
 
-	d.Set("name", policy.Name)
-	d.Set("body", policy.Body)
-	d.Set("type", policy.Type)
-	d.Set("space_id", policy.Space)
-	d.Set("description", policy.Description)
-	d.Set("engine_type", policy.EngineType)
-
-	labels := schema.NewSet(schema.HashString, []any{})
-	for _, label := range policy.Labels {
-		labels.Add(label)
+	if diags := populatePolicy(d, policy); diags.HasError() {
+		return diags
 	}
-	d.Set("labels", labels)
 
 	if policy.Type == "TASK" || policy.Type == "INITIALIZATION" {
 		return diag.Diagnostics{{
@@ -206,6 +197,27 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 			Summary:  "Access policies are deprecated and should no longer be used",
 		}}
 	}
+
+	return nil
+}
+
+func populatePolicy(d *schema.ResourceData, policy *structs.Policy) diag.Diagnostics {
+	if err := internal.SetULID(d, policy.ULID); err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.Set("name", policy.Name)
+	d.Set("body", policy.Body)
+	d.Set("type", policy.Type)
+	d.Set("space_id", policy.Space)
+	d.Set("description", policy.Description)
+	d.Set("engine_type", policy.EngineType)
+
+	labels := schema.NewSet(schema.HashString, []any{})
+	for _, label := range policy.Labels {
+		labels.Add(label)
+	}
+	d.Set("labels", labels)
 
 	return nil
 }

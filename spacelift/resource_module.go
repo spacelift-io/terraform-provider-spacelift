@@ -16,7 +16,7 @@ import (
 )
 
 func resourceModule() *schema.Resource {
-	return &schema.Resource{
+	return internal.WithULID("module", &schema.Resource{
 		Description: "" +
 			"`spacelift_module` is a special type of a stack used to test and " +
 			"version Terraform modules.",
@@ -352,7 +352,7 @@ func resourceModule() *schema.Resource {
 				Computed:    true,
 			},
 		},
-	}
+	})
 }
 
 func resourceModuleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -403,6 +403,14 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	module := query.Module
 	if module == nil {
 		return removeFromState(d, "module")
+	}
+
+	return populateModule(d, module)
+}
+
+func populateModule(d *schema.ResourceData, module *structs.Module) diag.Diagnostics {
+	if err := internal.SetULID(d, module.ULID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.Set("aws_assume_role_policy_statement", module.Integrations.AWS.AssumeRolePolicyStatement)

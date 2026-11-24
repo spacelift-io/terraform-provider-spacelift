@@ -45,6 +45,7 @@ func TestContextResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("provider-test-context-foo")),
+					Attribute("ulid", IsNotEmpty()),
 					Attribute("name", StartsWith("Provider test context foo")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),

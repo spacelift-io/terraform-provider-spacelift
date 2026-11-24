@@ -41,6 +41,7 @@ func TestModuleResource(t *testing.T) {
 				Check: Resource(
 					"spacelift_module.test",
 					Attribute("id", Equals(fmt.Sprintf("terraform-default-github-module-%s", randomID))),
+					Attribute("ulid", IsNotEmpty()),
 					Attribute("branch", Equals("master")),
 					Attribute("description", Equals("old description")),
 					SetEquals("labels", "one", "two"),

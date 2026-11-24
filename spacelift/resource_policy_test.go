@@ -40,6 +40,7 @@ func TestPolicyResource(t *testing.T) {
 				Check: Resource(
 					resourceName,
 					Attribute("id", StartsWith("my-first-policy")),
+					Attribute("ulid", IsNotEmpty()),
 					Attribute("body", Contains("boom")),
 					Attribute("type", Equals("PLAN")),
 					SetEquals("labels", "one", "two"),

@@ -294,6 +294,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
 - `id` (String) The ID of this resource.
 - `lock` (List of Object) Lock status of the stack. (see [below for nested schema](#nestedatt--lock))
+- `ulid` (String) Globally unique identifier (ULID) of the stack
 
 <a id="nestedblock--ansible"></a>
 ### Nested Schema for `ansible`

@@ -79,6 +79,7 @@ resource "spacelift_module" "example-module" {
 
 - `aws_assume_role_policy_statement` (String) AWS IAM assume role policy statement setting up trust relationship
 - `id` (String) The ID of this resource.
+- `ulid` (String) Globally unique identifier (ULID) of the module
 
 <a id="nestedblock--azure_devops"></a>
 ### Nested Schema for `azure_devops`
