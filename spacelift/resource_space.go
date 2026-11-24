@@ -27,7 +27,16 @@ func resourceSpace() *schema.Resource {
 		DeleteContext: resourceSpaceDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {Type: schema.TypeString, RequiredForImport: true},
+				}
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -125,7 +134,15 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) di
 		return removeFromState(d, "space")
 	}
 
+	return populateSpace(d, space)
+}
+
+func populateSpace(d *schema.ResourceData, space *structs.Space) diag.Diagnostics {
 	d.SetId(space.ID)
+	if err := internal.SetIdentity(d, "id", space.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.Set("name", space.Name)
 	d.Set("description", space.Description)
 	d.Set("inherit_entities", space.InheritEntities)

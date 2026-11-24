@@ -6,6 +6,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
@@ -26,6 +28,9 @@ func TestAWSIntegrationResource(t *testing.T) {
 		autoattach_enabled             = true
 			}
 		`, randomID),
+			ConfigStateChecks: []statecheck.StateCheck{
+				statecheck.ExpectIdentityValueMatchesState(resourceName, tfjsonpath.New("id")),
+			},
 			Check: Resource(
 				resourceName,
 				Attribute("id", IsNotEmpty()),

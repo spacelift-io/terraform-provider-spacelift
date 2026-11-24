@@ -27,7 +27,16 @@ func resourceAzureIntegration() *schema.Resource {
 		DeleteContext: resourceAzureIntegrationDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {Type: schema.TypeString, RequiredForImport: true},
+				}
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -170,13 +179,18 @@ func resourceAzureIntegrationRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("could not query for the Azure integration: %v", err)
 	}
 
-	if integration := query.AzureIntegration; integration == nil {
+	integration := query.AzureIntegration
+	if integration == nil {
 		return removeFromState(d, "Azure integration")
-	} else {
-		integration.PopulateResourceData(d)
 	}
 
-	return nil
+	return populateAzureIntegration(d, integration)
+}
+
+func populateAzureIntegration(d *schema.ResourceData, integration *structs.AzureIntegration) diag.Diagnostics {
+	d.SetId(integration.ID)
+	integration.PopulateResourceData(d)
+	return diag.FromErr(internal.SetIdentity(d, "id", integration.ID))
 }
 
 func resourceAzureIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
