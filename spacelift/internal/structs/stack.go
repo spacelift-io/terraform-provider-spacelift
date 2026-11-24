@@ -362,6 +362,7 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("repository", stack.Repository)
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("space_id", stack.Space)
+	d.SetId(stack.ID)
 	d.Set("slug", stack.ID)
 	if err := internal.SetULID(d, stack.ULID); err != nil {
 		return diag.FromErr(err)

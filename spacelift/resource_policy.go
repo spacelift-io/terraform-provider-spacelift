@@ -202,6 +202,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 }
 
 func populatePolicy(d *schema.ResourceData, policy *structs.Policy) diag.Diagnostics {
+	d.SetId(policy.ID)
 	if err := internal.SetULID(d, policy.ULID); err != nil {
 		return diag.FromErr(err)
 	}

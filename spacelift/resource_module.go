@@ -409,6 +409,7 @@ func resourceModuleRead(ctx context.Context, d *schema.ResourceData, meta any) d
 }
 
 func populateModule(d *schema.ResourceData, module *structs.Module) diag.Diagnostics {
+	d.SetId(module.ID)
 	if err := internal.SetULID(d, module.ULID); err != nil {
 		return diag.FromErr(err)
 	}

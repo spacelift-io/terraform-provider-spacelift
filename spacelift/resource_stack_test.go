@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	tftest "github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
@@ -126,6 +128,16 @@ func TestStackResource(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"import_state", "prevent_changes_when_locked"},
+			},
+			{
+				ResourceName:    resourceName,
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithResourceIdentity,
+				ImportPlanChecks: resource.ImportPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringRegexp(regexp.MustCompile("^provider-test-stack-"))),
+				}},
+				// import_state is write-only, so the import plans an update.
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: config("new description", false, true, true),

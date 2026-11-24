@@ -8,7 +8,9 @@ import (
 	"github.com/pkg/errors"
 )
 
-// WithULID adds a computed ulid attribute and a {ulid} identity.
+// WithULID adds a computed ulid attribute, a {ulid} identity and import by
+// identity. Importing by identity uses the ULID as the ID, so populate
+// functions must SetId the slug to keep state the same either way.
 func WithULID(objectName string, r *schema.Resource) *schema.Resource {
 	r.Schema["ulid"] = &schema.Schema{
 		Type:        schema.TypeString,
@@ -26,10 +28,11 @@ func WithULID(objectName string, r *schema.Resource) *schema.Resource {
 	}
 
 	if r.Importer != nil {
+		fromIdentity := schema.ImportStatePassthroughWithIdentity("ulid")
 		importByID := r.Importer.StateContext
 		r.Importer.StateContext = func(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
-			if d.Id() == "" {
-				return nil, errors.Errorf("importing a %s by identity is not supported, import it by ID instead", objectName)
+			if _, err := fromIdentity(ctx, d, meta); err != nil {
+				return nil, err
 			}
 			return importByID(ctx, d, meta)
 		}

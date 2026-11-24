@@ -67,6 +67,11 @@ func TestModuleResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
+				ResourceName:    resourceName,
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithResourceIdentity,
+			},
+			{
 				Config: config("new description", false, true),
 				Check: Resource(
 					"spacelift_module.test",
