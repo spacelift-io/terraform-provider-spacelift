@@ -91,7 +91,6 @@ func resourceGitLabIntegration() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "Used together with private_token_wo to trigger an update to the private_token. Increment this value when an update to private_token_wo is required. This field requires Terraform/OpenTofu 1.11+.",
 				Optional:      true,
-				ForceNew:      true,
 				ConflictsWith: []string{gitLabToken},
 				RequiredWith:  []string{gitLabTokenWo},
 			},

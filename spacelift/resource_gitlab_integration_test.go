@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/vcs"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
@@ -179,14 +180,14 @@ func TestGitLabIntegrationResource(t *testing.T) {
 			descr = "description " + random()
 		)
 
-		configGitLab := func(host, token, descr, labels, vcsChecks string, useGitCheckout bool) string {
+		configGitLab := func(host, token, tokenVersion, descr, labels, vcsChecks string, useGitCheckout bool) string {
 			return `
 				resource "spacelift_gitlab_integration" "test" {
 					name                     = "` + name + `"
 					api_host                 = "` + host + `"
 					user_facing_host         = "` + host + `"
 					private_token_wo         = "` + token + `"
-					private_token_wo_version = "1"
+					private_token_wo_version = "` + tokenVersion + `"
 					description              = "` + descr + `"
 					labels                   = ` + labels + `
 					vcs_checks               = ` + vcsChecks + `
@@ -197,7 +198,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				Config: configGitLab(host, token, descr, "null", "null", !useGitCheckout),
+				Config: configGitLab(host, token, "1", descr, "null", "null", !useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabName, Equals(name)),
@@ -219,7 +220,7 @@ func TestGitLabIntegrationResource(t *testing.T) {
 				ImportStateVerifyIgnore: []string{gitLabToken, gitLabTokenWoVersion}, // specified only in the config
 			},
 			{
-				Config: configGitLab(host, token, "new descr", `["new label1"]`, "null", !useGitCheckout),
+				Config: configGitLab(host, token, "1", "new descr", `["new label1"]`, "null", !useGitCheckout),
 				Check: Resource(
 					resourceName,
 					Attribute(gitLabAPIHost, Equals(host)),
@@ -231,6 +232,16 @@ func TestGitLabIntegrationResource(t *testing.T) {
 					Attribute(gitLabVCSChecks, Equals(vcs.CheckTypeDefault)),
 					Attribute(gitLabUseGitCheckout, Equals("false")),
 				),
+			},
+			{
+				// Rotating the token only bumps private_token_wo_version. That must update the
+				// integration in place: a replacement would cut over every stack that uses it.
+				Config: configGitLab(host, "rotated-"+token, "2", "new descr", `["new label1"]`, "null", !useGitCheckout),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+					},
+				},
 			},
 		})
 	})
