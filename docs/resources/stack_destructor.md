@@ -53,3 +53,13 @@ resource "spacelift_stack_destructor" "k8s-core" {
 Optional:
 
 - `delete` (String)
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+terraform import spacelift_stack_destructor.k8s-core $STACK_ID
+```

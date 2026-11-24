@@ -24,7 +24,7 @@ func resourceStackActivator() *schema.Resource {
 		DeleteContext: schema.NoopContext,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: importStackID("activator"),
 		},
 
 		Schema: map[string]*schema.Schema{
