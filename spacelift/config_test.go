@@ -7,8 +7,9 @@ import (
 )
 
 var testConfig struct {
-	IPs []string
-	AI  struct {
+	IPs       []string
+	IPv6CIDRs []string
+	AI        struct {
 		// Creating an AI integration needs the space-admin role, so allow
 		// pointing the tests at a space other than root.
 		Space string `default:"root"`

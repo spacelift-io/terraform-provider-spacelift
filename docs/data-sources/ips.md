@@ -34,3 +34,4 @@ resource "aws_security_group_rule" "allow_spacelift" {
 - `cidrs` (List of String) list of Spacelift IP addresses in CIDR notation (/32) for easy use in security group rules
 - `id` (String) The ID of this resource.
 - `ips` (Set of String) the list of spacelift.io outgoing IP addresses
+- `ipv6_cidrs` (List of String) list of IPv6 ranges in CIDR notation Spacelift's outgoing traffic originates from, empty if not supported by the Spacelift instance

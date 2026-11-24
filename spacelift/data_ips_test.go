@@ -14,6 +14,7 @@ func TestIPsData(t *testing.T) {
 		Check: Resource(
 			"data.spacelift_ips.test",
 			SetEquals("ips", testConfig.IPs...),
+			SetEquals("ipv6_cidrs", testConfig.IPv6CIDRs...),
 		),
 	}})
 }
