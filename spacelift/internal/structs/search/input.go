@@ -17,4 +17,18 @@ type SearchQueryFieldConstraint struct {
 	BooleanEquals *[]graphql.Boolean `json:"booleanEquals"`
 	EnumEquals    *[]graphql.String  `json:"enumEquals"`
 	StringMatches *[]graphql.String  `json:"stringMatches"`
+	// Omitted when unset, so queries that don't use them keep working on
+	// backends that predate them.
+	StringEquals  *[]graphql.String  `json:"stringEquals,omitempty"`
+	HierarchyNode *HierarchyNodeList `json:"hierarchyNode,omitempty"`
+}
+
+type HierarchyNodeList struct {
+	Nodes []HierarchyNode `json:"nodes"`
+}
+
+// HierarchyNode matches a space by its path of slugs, e.g. root/team/app.
+type HierarchyNode struct {
+	Equals             graphql.String  `json:"equals"`
+	IncludeDescendants graphql.Boolean `json:"includeDescendants"`
 }
