@@ -161,7 +161,7 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.Errorf("could not create webhook: %v", internal.FromSpaceliftError(err))
 	}
 
-	if !mutation.WebhooksIntegration.Enabled {
+	if d.Get("enabled").(bool) && !mutation.WebhooksIntegration.Enabled {
 		return diag.Errorf("webhook not activated")
 	}
 

@@ -9,8 +9,9 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/resource"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	tftest "github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
@@ -889,7 +890,6 @@ func TestStackResource(t *testing.T) {
 							project_root = "root"
 							repository   = "demo"
 							manage_state = %t
-							labels       = ["terragrunt"]
 						}
 					`, randomID, stateManaged),
 						Check: Resource(
@@ -926,6 +926,7 @@ func TestStackResource(t *testing.T) {
 							project_root = "root"
 							repository   = "demo"
 							manage_state = %t
+							labels       = ["terragrunt"]
 						}
 					`, randomID, stateManaged),
 						Check: Resource(
@@ -936,6 +937,72 @@ func TestStackResource(t *testing.T) {
 				})
 			})
 		}
+	})
+
+	t.Run("vendor migration rejects a stack with a Terraform workspace", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch              = "master"
+						name                = "Provider test stack tg migr ws %s"
+						project_root        = "root"
+						repository          = "demo"
+						terraform_workspace = "production"
+					}
+				`, randomID),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr ws %s"
+						project_root = "root"
+						repository   = "demo"
+						terragrunt {
+							terragrunt_version = "0.67.16"
+							tool               = "TERRAFORM_FOSS"
+						}
+					}
+				`, randomID),
+				ExpectError: regexp.MustCompile(`cannot migrate a stack with a Terraform workspace \("production"\) to Terragrunt`),
+			},
+		})
+	})
+
+	t.Run("vendor migration rejects a stack with the CUSTOM workflow tool", func(t *testing.T) {
+		randomID := acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch                  = "master"
+						name                    = "Provider test stack tg migr wt %s"
+						project_root            = "root"
+						repository              = "demo"
+						terraform_workflow_tool = "CUSTOM"
+					}
+				`, randomID),
+			},
+			{
+				Config: fmt.Sprintf(`
+					resource "spacelift_stack" "test" {
+						branch       = "master"
+						name         = "Provider test stack tg migr wt %s"
+						project_root = "root"
+						repository   = "demo"
+						terragrunt {
+							terragrunt_version = "0.67.16"
+							tool               = "TERRAFORM_FOSS"
+						}
+					}
+				`, randomID),
+				ExpectError: regexp.MustCompile(`cannot migrate a stack with the "CUSTOM" workflow tool to Terragrunt`),
+			},
+		})
 	})
 
 	t.Run("vendor migration rejects state management change", func(t *testing.T) {
@@ -951,7 +1018,6 @@ func TestStackResource(t *testing.T) {
 						project_root = "root"
 						repository   = "demo"
 						manage_state = true
-						labels       = ["terragrunt"]
 					}
 				`, randomID),
 				},
@@ -988,7 +1054,6 @@ func TestStackResource(t *testing.T) {
 						project_root = "root"
 						repository   = "demo"
 						manage_state = false
-						labels       = ["terragrunt"]
 					}
 				`, randomID),
 				},
@@ -1251,6 +1316,7 @@ func TestStackResource(t *testing.T) {
 					resourceName,
 					Attribute("id", StartsWith("provider-test-stack")),
 
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("true")),
 					Attribute("opentofu.0.logging.0.concise", Equals("true")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("true")),
 					Attribute("opentofu.0.external_state_access", Equals("false")),
@@ -1263,6 +1329,29 @@ func TestStackResource(t *testing.T) {
 					Attribute("terragrunt.#", Equals("0")),
 				),
 			},
+			{
+				Config: getConfig(`opentofu {
+						enable_cpu_profiling = false
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("false")),
+				),
+			},
+			{
+				// The attribute is Computed: omitting it must keep the stored
+				// value instead of resetting it to the API default. The
+				// workspace change forces an update, so the backend receives
+				// a null enableCPUProfiling.
+				Config: getConfig(`opentofu {
+						workspace = "cpu-profiling-keep"
+					}`),
+				Check: Resource(
+					resourceName,
+					Attribute("opentofu.0.workspace", Equals("cpu-profiling-keep")),
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("false")),
+				),
+			},
 		})
 	})
 
@@ -1272,6 +1361,7 @@ func TestStackResource(t *testing.T) {
 				Config: getConfig(`opentofu {
 						version                = "1.8.0"
 						workspace              = "test-workspace"
+						enable_cpu_profiling   = true
 						logging {
 							concise = false
 						}
@@ -1284,6 +1374,7 @@ func TestStackResource(t *testing.T) {
 
 					Attribute("opentofu.0.version", Equals("1.8.0")),
 					Attribute("opentofu.0.workspace", Equals("test-workspace")),
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("true")),
 					Attribute("opentofu.0.logging.0.concise", Equals("false")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
 					Attribute("opentofu.0.external_state_access", Equals("true")),
@@ -1306,6 +1397,7 @@ func TestStackResource(t *testing.T) {
 				// `CUSTOM` workflow tool, as the API rejects that combination.
 				Config: getConfig(`opentofu {
 						workspace              = "test-workspace"
+						enable_cpu_profiling   = false
 						logging {
 							concise = false
 						}
@@ -1318,6 +1410,7 @@ func TestStackResource(t *testing.T) {
 					Attribute("id", StartsWith("provider-test-stack")),
 
 					Attribute("opentofu.0.workspace", Equals("test-workspace")),
+					Attribute("opentofu.0.enable_cpu_profiling", Equals("false")),
 					Attribute("opentofu.0.logging.0.concise", Equals("false")),
 					Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
 					Attribute("opentofu.0.external_state_access", Equals("true")),
@@ -2418,19 +2511,18 @@ func TestStackResourceSpace(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				// Step 1: Create as Terraform stack with "terragrunt" label
+				// Step 1: Create as a plain Terraform stack, without the "terragrunt" label
 				Config: config(`
-					labels            = ["terragrunt"]
 					terraform_version = "1.5.7"
 				`),
 				Check: resource.ComposeTestCheckFunc(
 					Resource(
 						resourceName,
 						Attribute("terraform_version", Equals("1.5.7")),
-						SetContains("labels", "terragrunt"),
+						AttributeNotPresent("labels.#"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
-					func(s *terraform.State) error {
+					func(s *tftest.State) error {
 						stackID = s.RootModule().Resources[resourceName].Primary.ID
 						return nil
 					},
@@ -2451,7 +2543,7 @@ func TestStackResourceSpace(t *testing.T) {
 						Attribute("terragrunt.0.terragrunt_version", Equals("0.67.16")),
 						Attribute("terragrunt.0.tool", Equals("TERRAFORM_FOSS")),
 					),
-					func(s *terraform.State) error {
+					func(s *tftest.State) error {
 						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
 							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
 						}
@@ -2472,7 +2564,7 @@ func TestStackResourceSpace(t *testing.T) {
 						SetContains("labels", "terragrunt"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
-					func(s *terraform.State) error {
+					func(s *tftest.State) error {
 						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
 							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
 						}
@@ -2512,16 +2604,14 @@ func TestStackResourceSpace(t *testing.T) {
 
 		testSteps(t, []resource.TestStep{
 			{
-				// Step 1: Create as Terraform stack with "terragrunt" label and a run that stays queued
+				// Step 1: Create as a plain Terraform stack with a run that stays queued
 				Config: config(`
-					labels            = ["terragrunt"]
 					terraform_version = "1.5.7"
 				`),
 				Check: resource.ComposeTestCheckFunc(
 					Resource(
 						resourceName,
 						Attribute("terraform_version", Equals("1.5.7")),
-						SetContains("labels", "terragrunt"),
 						Attribute("terragrunt.#", Equals("0")),
 					),
 				),
@@ -2549,7 +2639,6 @@ func TestStackResourceSpace(t *testing.T) {
 			{
 				// Step 4: Go back to the Terraform config — must give an empty plan
 				Config: config(`
-					labels            = ["terragrunt"]
 					terraform_version = "1.5.7"
 				`),
 				PlanOnly: true,
@@ -2829,6 +2918,53 @@ func TestStackReadClearsStaleVendorBlocks(t *testing.T) {
 				if got := len(d.Get(block).([]any)); got != want {
 					t.Fatalf("got %d %s block(s), want %d", got, block, want)
 				}
+			}
+		})
+	}
+}
+
+// prevent_changes_when_locked is provider-only (the API never returns it), so
+// stacks created before it existed have it as null in state. Read must persist
+// the value so state is never null, otherwise an apply-time re-plan (for
+// example with an unknown space_id) fails with "inconsistent final plan".
+func TestStackReadPersistsPreventChangesWhenLocked(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name     string
+		setPrior bool
+		prior    bool
+		want     string
+	}{
+		{name: "null in state defaults to false", want: "false"},
+		{name: "false is kept", setPrior: true, prior: false, want: "false"},
+		{name: "true is kept", setPrior: true, prior: true, want: "true"},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+				w.Header().Set("Content-Type", "application/json")
+				_, _ = fmt.Fprint(w, `{"data":{"stack":{"id":"stack-id","integrations":{},"vendorConfig":{"__typename":"StackConfigVendorTerraform"}}}}`)
+			}))
+			t.Cleanup(server.Close)
+
+			d := resourceStack().Data(nil)
+			d.SetId("stack-id")
+			if tc.setPrior {
+				if err := d.Set("prevent_changes_when_locked", tc.prior); err != nil {
+					t.Fatalf("could not set prevent_changes_when_locked: %v", err)
+				}
+			}
+
+			if diags := resourceStackRead(t.Context(), d, internal.NewClient(server.URL, "token", nil, nil)); diags.HasError() {
+				t.Fatalf("could not read the stack: %v", diags)
+			}
+
+			if got := d.State().Attributes["prevent_changes_when_locked"]; got != tc.want {
+				t.Fatalf("got prevent_changes_when_locked=%q in state, want %q", got, tc.want)
 			}
 		})
 	}

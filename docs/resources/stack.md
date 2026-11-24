@@ -286,7 +286,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `terraform_version` (String) Terraform version to use
 - `terraform_workflow_tool` (String) Defines the tool that will be used to execute the workflow. This can be one of `OPEN_TOFU`, `TERRAFORM_FOSS` or `CUSTOM`. Defaults to `TERRAFORM_FOSS`.
 - `terraform_workspace` (String) Terraform workspace to select
-- `terragrunt` (Block List, Max: 1) Terragrunt-specific configuration. Presence means this Stack is an Terragrunt Stack. (see [below for nested schema](#nestedblock--terragrunt))
+- `terragrunt` (Block List, Max: 1) Terragrunt-specific configuration. Presence means this Stack is a Terragrunt Stack. Adding this block to an existing Terraform Stack migrates it to Terragrunt in place, so it keeps its run history. A Stack with a Terraform workspace or the `CUSTOM` workflow tool cannot migrate. A migration in either direction cannot change state management: `use_state_management` must equal `manage_state`. `manage_state` defaults to `true` and `use_state_management` defaults to `false`, so set `use_state_management = true` unless the Stack has `manage_state = false`. Removing the block migrates a migrated Stack back to Terraform with the `terragrunt` label: add `terragrunt` to `labels` in the same change, or the update that follows removes the label again. A Stack created as a Terragrunt Stack cannot migrate back. (see [below for nested schema](#nestedblock--terragrunt))
 - `worker_pool_id` (String) ID of the worker pool to use. NOTE: worker_pool_id is required when using a self-hosted instance of Spacelift.
 
 ### Read-Only
@@ -409,6 +409,7 @@ Optional:
 
 Optional:
 
+- `enable_cpu_profiling` (Boolean) Indicates whether Spacelift captures CPU profiles from the OpenTofu init, plan, apply, destroy and show commands. Requires OpenTofu 1.11+; older versions run without profiling. When unset on create, defaults to `true` on OpenTofu 1.11+ and to `false` on older versions. When unset on update, keeps the current value.
 - `external_state_access` (Boolean) Indicates whether you can access the Stack state file from other stacks or outside of Spacelift. Defaults to `false`.
 - `logging` (Block List, Max: 1) Logging configuration for OpenTofu commands. (see [below for nested schema](#nestedblock--opentofu--logging))
 - `use_smart_sanitization` (Boolean) Indicates whether runs on this will use OpenTofu's sensitive value system to sanitize the outputs of state and plans in Spacelift instead of sanitizing all fields. Defaults to `true`.
