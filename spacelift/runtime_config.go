@@ -1,7 +1,9 @@
 package spacelift
 
 import (
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/shurcooL/graphql"
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
 )
@@ -77,19 +79,36 @@ func parseRuntimeConfigInput(d *schema.ResourceData, key string) *structs.Runtim
 	}
 
 	mapped := raw[0].(map[string]any)
+	rawBlock, hasRawBlock := runtimeConfigRawBlock(d, key)
+
+	optionalList := func(field string) *[]graphql.String {
+		if hasRawBlock {
+			if rawBlock.Type().HasAttribute(field) && rawBlock.GetAttr(field).IsNull() {
+				return nil
+			}
+			return listToOptionalStringList(mapped[field])
+		}
+		// Without raw config (e.g. TestResourceDataRaw), SDK v2 materializes
+		// omitted TypeList fields as empty slices, so only non-empty lists can
+		// be distinguished from omitted ones.
+		if list, ok := mapped[field].([]any); !ok || len(list) == 0 {
+			return nil
+		}
+		return listToOptionalStringList(mapped[field])
+	}
 
 	cfg := &structs.RuntimeConfigInput{
-		AfterApply:    listToOptionalStringList(mapped["after_apply"]),
-		AfterDestroy:  listToOptionalStringList(mapped["after_destroy"]),
-		AfterInit:     listToOptionalStringList(mapped["after_init"]),
-		AfterPerform:  listToOptionalStringList(mapped["after_perform"]),
-		AfterPlan:     listToOptionalStringList(mapped["after_plan"]),
-		AfterRun:      listToOptionalStringList(mapped["after_run"]),
-		BeforeApply:   listToOptionalStringList(mapped["before_apply"]),
-		BeforeDestroy: listToOptionalStringList(mapped["before_destroy"]),
-		BeforeInit:    listToOptionalStringList(mapped["before_init"]),
-		BeforePerform: listToOptionalStringList(mapped["before_perform"]),
-		BeforePlan:    listToOptionalStringList(mapped["before_plan"]),
+		AfterApply:    optionalList("after_apply"),
+		AfterDestroy:  optionalList("after_destroy"),
+		AfterInit:     optionalList("after_init"),
+		AfterPerform:  optionalList("after_perform"),
+		AfterPlan:     optionalList("after_plan"),
+		AfterRun:      optionalList("after_run"),
+		BeforeApply:   optionalList("before_apply"),
+		BeforeDestroy: optionalList("before_destroy"),
+		BeforeInit:    optionalList("before_init"),
+		BeforePerform: optionalList("before_perform"),
+		BeforePlan:    optionalList("before_plan"),
 	}
 
 	if envSet, ok := mapped["environment"].(*schema.Set); ok && envSet.Len() > 0 {
@@ -113,4 +132,23 @@ func parseRuntimeConfigInput(d *schema.ResourceData, key string) *structs.Runtim
 	}
 
 	return cfg
+}
+
+func runtimeConfigRawBlock(d *schema.ResourceData, key string) (cty.Value, bool) {
+	rawConfig := d.GetRawConfig()
+	if rawConfig.IsNull() || !rawConfig.IsKnown() || !rawConfig.Type().IsObjectType() || !rawConfig.Type().HasAttribute(key) {
+		return cty.NilVal, false
+	}
+
+	blockList := rawConfig.GetAttr(key)
+	if blockList.IsNull() || !blockList.IsKnown() || blockList.LengthInt() == 0 {
+		return cty.NilVal, false
+	}
+
+	blockVal := blockList.Index(cty.NumberIntVal(0))
+	if blockVal.IsNull() || !blockVal.IsKnown() || !blockVal.Type().IsObjectType() {
+		return cty.NilVal, false
+	}
+
+	return blockVal, true
 }
