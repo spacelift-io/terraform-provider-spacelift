@@ -138,8 +138,8 @@ func computeSpacePaths(spaces []structs.Space) map[string]string {
 		parentPath := getPath(*s.ParentSpace)
 		visiting[id] = false
 		if parentPath == "" {
-			memo[id] = s.Name
-			return s.Name
+			memo[id] = ""
+			return ""
 		}
 		res := parentPath + "/" + s.Name
 		memo[id] = res

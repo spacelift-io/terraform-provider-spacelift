@@ -69,6 +69,8 @@ func TestComputeSpacePaths(t *testing.T) {
 	rootParent := "root"
 	parentA := "space-a"
 	parentB := "space-b"
+	missingParent := "space-missing"
+	inaccessibleChild := "space-inaccessible-child"
 
 	spaces := []structs.Space{
 		{
@@ -92,20 +94,26 @@ func TestComputeSpacePaths(t *testing.T) {
 			ParentSpace: &parentB,
 		},
 		{
-			ID:          "space-orphan",
-			Name:        "Orphan",
-			ParentSpace: nil,
+			ID:          "space-inaccessible-child",
+			Name:        "Restricted",
+			ParentSpace: &missingParent,
+		},
+		{
+			ID:          "space-inaccessible-grandchild",
+			Name:        "SubRestricted",
+			ParentSpace: &inaccessibleChild,
 		},
 	}
 
 	paths := computeSpacePaths(spaces)
 
 	expected := map[string]string{
-		"root":         "root",
-		"space-a":      "root/Engineering",
-		"space-b":      "root/Engineering/Backend",
-		"space-c":      "root/Engineering/Backend/Payments",
-		"space-orphan": "Orphan",
+		"root":                          "root",
+		"space-a":                       "root/Engineering",
+		"space-b":                       "root/Engineering/Backend",
+		"space-c":                       "root/Engineering/Backend/Payments",
+		"space-inaccessible-child":      "",
+		"space-inaccessible-grandchild": "",
 	}
 
 	for id, want := range expected {
