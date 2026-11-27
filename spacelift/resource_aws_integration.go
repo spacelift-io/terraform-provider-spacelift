@@ -30,7 +30,16 @@ func resourceAWSIntegration() *schema.Resource {
 		DeleteContext: resourceAWSIntegrationDelete,
 
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {Type: schema.TypeString, RequiredForImport: true},
+				}
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -151,13 +160,18 @@ func resourceAWSIntegrationRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.Errorf("could not query for the AWS integration: %v", err)
 	}
 
-	if integration := query.AWSIntegration; integration == nil {
+	integration := query.AWSIntegration
+	if integration == nil {
 		return removeFromState(d, "AWS integration")
-	} else {
-		integration.PopulateResourceData(d)
 	}
 
-	return nil
+	return populateAWSIntegration(d, integration)
+}
+
+func populateAWSIntegration(d *schema.ResourceData, integration *structs.AWSIntegration) diag.Diagnostics {
+	d.SetId(integration.ID)
+	integration.PopulateResourceData(d)
+	return diag.FromErr(internal.SetIdentity(d, "id", integration.ID))
 }
 
 func resourceAWSIntegrationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

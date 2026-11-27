@@ -38,7 +38,16 @@ func resourceWorkerPool() *schema.Resource {
 			return nil
 		},
 		Importer: &schema.ResourceImporter{
-			StateContext: schema.ImportStatePassthroughContext,
+			StateContext: schema.ImportStatePassthroughWithIdentity("id"),
+		},
+
+		Identity: &schema.ResourceIdentity{
+			Version: 0,
+			SchemaFunc: func() map[string]*schema.Schema {
+				return map[string]*schema.Schema{
+					"id": {Type: schema.TypeString, RequiredForImport: true},
+				}
+			},
 		},
 
 		Schema: map[string]*schema.Schema{
@@ -175,6 +184,9 @@ func resourceWorkerPoolCreate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 
 	d.SetId(mutation.WorkerPool.ID)
+	if err := internal.SetIdentity(d, "id", mutation.WorkerPool.ID); err != nil {
+		return diag.FromErr(err)
+	}
 	d.Set("config", mutation.WorkerPool.Config)
 	d.Set("name", mutation.WorkerPool.Name)
 	d.Set("space_id", mutation.WorkerPool.Space)
@@ -201,6 +213,15 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta an
 		return removeFromState(d, "worker pool")
 	}
 
+	return populateWorkerPool(d, workerPool)
+}
+
+func populateWorkerPool(d *schema.ResourceData, workerPool *structs.WorkerPool) diag.Diagnostics {
+	d.SetId(workerPool.ID)
+	if err := internal.SetIdentity(d, "id", workerPool.ID); err != nil {
+		return diag.FromErr(err)
+	}
+
 	d.Set("config", workerPool.Config)
 	d.Set("name", workerPool.Name)
 
@@ -209,7 +230,7 @@ func resourceWorkerPoolRead(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	labels := schema.NewSet(schema.HashString, []any{})
-	for _, label := range query.WorkerPool.Labels {
+	for _, label := range workerPool.Labels {
 		labels.Add(label)
 	}
 	d.Set("labels", labels)

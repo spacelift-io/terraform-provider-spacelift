@@ -1593,9 +1593,6 @@ func ignoreOnceCreated(_, _, _ string, d *schema.ResourceData) bool {
 
 func resourceStackImport(ctx context.Context, d *schema.ResourceData, meta any) ([]*schema.ResourceData, error) {
 	stackID := d.Id()
-	if stackID == "" {
-		return nil, errors.New("stack ID is required to import a stack")
-	}
 
 	stack, err := getStackByID(ctx, meta.(*internal.Client), stackID)
 	if err != nil {
