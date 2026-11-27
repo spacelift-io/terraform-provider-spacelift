@@ -58,6 +58,11 @@ func TestPolicyResource(t *testing.T) {
 				ImportStateVerify: true,
 			},
 			{
+				ResourceName:    resourceName,
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithResourceIdentity,
+			},
+			{
 				Config: config("bang"),
 				Check: Resource(
 					resourceName,

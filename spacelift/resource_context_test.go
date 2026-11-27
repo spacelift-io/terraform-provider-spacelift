@@ -2,10 +2,13 @@ package spacelift
 
 import (
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
@@ -82,6 +85,14 @@ func TestContextResource(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				ResourceName:    resourceName,
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithResourceIdentity,
+				ImportPlanChecks: resource.ImportPlanChecks{PreApply: []plancheck.PlanCheck{
+					plancheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.StringRegexp(regexp.MustCompile("^provider-test-context-foo"))),
+				}},
 			},
 			{
 				Config: config("bar", "new description"),

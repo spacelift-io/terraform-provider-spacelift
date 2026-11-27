@@ -218,6 +218,7 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta any) 
 }
 
 func populateContext(d *schema.ResourceData, context *structs.Context) diag.Diagnostics {
+	d.SetId(context.ID)
 	if err := internal.SetULID(d, context.ULID); err != nil {
 		return diag.FromErr(err)
 	}
