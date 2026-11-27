@@ -10,6 +10,7 @@ type PolicyEngineType string
 // Policy represents Policy data relevant to the provider.
 type Policy struct {
 	ID          string   `graphql:"id"`
+	ULID        string   `graphql:"ulid"`
 	Labels      []string `graphql:"labels"`
 	Name        string   `graphql:"name"`
 	Body        string   `graphql:"body"`

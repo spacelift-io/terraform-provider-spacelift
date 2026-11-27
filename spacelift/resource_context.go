@@ -13,7 +13,7 @@ import (
 )
 
 func resourceContext() *schema.Resource {
-	return &schema.Resource{
+	return internal.WithULID("context", &schema.Resource{
 		Description: "" +
 			"`spacelift_context` represents a Spacelift **context** - " +
 			"a collection of configuration elements (either environment variables or " +
@@ -157,7 +157,7 @@ func resourceContext() *schema.Resource {
 				Computed:    true,
 			},
 		},
-	}
+	})
 }
 
 func resourceContextCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -212,6 +212,14 @@ func resourceContextRead(ctx context.Context, d *schema.ResourceData, meta any) 
 	context := query.Context
 	if context == nil {
 		return removeFromState(d, "context")
+	}
+
+	return populateContext(d, context)
+}
+
+func populateContext(d *schema.ResourceData, context *structs.Context) diag.Diagnostics {
+	if err := internal.SetULID(d, context.ULID); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.Set("name", context.Name)

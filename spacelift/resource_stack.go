@@ -29,7 +29,7 @@ func resourceStackResourceV0() *schema.Resource {
 }
 
 func resourceStack() *schema.Resource {
-	return &schema.Resource{
+	return internal.WithULID("stack", &schema.Resource{
 		Description: "" +
 			"`spacelift_stack` combines source code and configuration to create a " +
 			"runtime environment where resources are managed. In this way it's " +
@@ -897,7 +897,7 @@ func resourceStack() *schema.Resource {
 				Optional:    true,
 			},
 		},
-	}
+	})
 }
 
 func resourceStackCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

@@ -4,6 +4,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/pkg/errors"
+
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
 
 // StackConfigVendorAnsible is a graphql union typename.
@@ -56,6 +58,7 @@ type Hooks struct {
 // Stack represents the Stack data relevant to the provider.
 type Stack struct {
 	ID                           string        `graphql:"id"`
+	ULID                         string        `graphql:"ulid"`
 	Administrative               bool          `graphql:"administrative"`
 	Autodeploy                   bool          `graphql:"autodeploy"`
 	Autoretry                    bool          `graphql:"autoretry"`
@@ -360,6 +363,9 @@ func PopulateStack(d *schema.ResourceData, stack *Stack) diag.Diagnostics {
 	d.Set("runner_image", stack.RunnerImage)
 	d.Set("space_id", stack.Space)
 	d.Set("slug", stack.ID)
+	if err := internal.SetULID(d, stack.ULID); err != nil {
+		return diag.FromErr(err)
+	}
 	d.Set("lock", stack.LockBlock())
 
 	// prevent_changes_when_locked is provider-only (the API never returns it).

@@ -8,6 +8,7 @@ import (
 // Module represents the Module data relevant to the provider.
 type Module struct {
 	ID                     string        `graphql:"id"`
+	ULID                   string        `graphql:"ulid"`
 	Administrative         bool          `graphql:"administrative"`
 	Branch                 string        `graphql:"branch"`
 	Description            *string       `graphql:"description"`

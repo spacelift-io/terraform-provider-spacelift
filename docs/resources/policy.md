@@ -50,6 +50,7 @@ resource "spacelift_policy_attachment" "no-weekend-deploys" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `ulid` (String) Globally unique identifier (ULID) of the policy
 
 ## Import
 
