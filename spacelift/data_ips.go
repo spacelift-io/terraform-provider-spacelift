@@ -3,6 +3,7 @@ package spacelift
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -30,6 +31,12 @@ func dataIPs() *schema.Resource {
 			"cidrs": {
 				Type:        schema.TypeList,
 				Description: "list of Spacelift IP addresses in CIDR notation (/32) for easy use in security group rules",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				Computed:    true,
+			},
+			"ipv6_cidrs": {
+				Type:        schema.TypeList,
+				Description: "list of IPv6 ranges in CIDR notation Spacelift's outgoing traffic originates from, empty if not supported by the Spacelift instance",
 				Elem:        &schema.Schema{Type: schema.TypeString},
 				Computed:    true,
 			},
@@ -62,6 +69,19 @@ func ipsRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnos
 		cidrs[i] = fmt.Sprintf("%s/32", ip)
 	}
 	d.Set("cidrs", cidrs)
+
+	// Queried separately so that older self-hosted instances without the field still return the IPv4 addresses.
+	var ipv6Query struct {
+		CIDRs []string `graphql:"outgoingIPv6CIDRs"`
+	}
+
+	err := meta.(*internal.Client).Query(ctx, "ReadIPv6CIDRs", &ipv6Query, nil)
+	if err != nil && !strings.Contains(err.Error(), "Cannot query field") {
+		d.SetId("")
+		return diag.Errorf("could not query for outgoing IPv6 CIDRs: %v", err)
+	}
+
+	d.Set("ipv6_cidrs", ipv6Query.CIDRs)
 
 	return nil
 }
