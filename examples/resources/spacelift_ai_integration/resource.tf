@@ -26,10 +26,13 @@ resource "spacelift_ai_integration" "claude" {
 }
 
 # base_url points at a self-hosted, provider-compatible gateway such as
-# LiteLLM instead of calling the provider directly. Spacelift validates that
-# it is reachable when the integration is created.
+# LiteLLM instead of calling the provider directly. A gateway names its own
+# models, so models is required with base_url. Spacelift validates that the
+# gateway is reachable and serves each model when the integration is saved.
 resource "spacelift_ai_integration" "openai_via_gateway" {
   name = "openai-via-gateway"
+
+  models = ["openai/gpt-5.2"]
 
   openai {
     api_key_wo         = var.gateway_api_key
