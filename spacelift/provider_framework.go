@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/list"
 	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	fwschema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 )
+
+var _ fwprovider.ProviderWithListResources = &frameworkProvider{}
 
 type frameworkProvider struct {
 	commit  string
@@ -121,11 +124,25 @@ func (p *frameworkProvider) Configure(ctx context.Context, req fwprovider.Config
 
 	resp.DataSourceData = client
 	resp.ResourceData = client
+	resp.ListResourceData = client
 }
 
 func (p *frameworkProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewStackDependencyResource,
+	}
+}
+
+func (p *frameworkProvider) ListResources(_ context.Context) []func() list.ListResource {
+	return []func() list.ListResource{
+		NewStackListResource,
+		NewModuleListResource,
+		NewContextListResource,
+		NewPolicyListResource,
+		NewSpaceListResource,
+		NewWorkerPoolListResource,
+		NewAWSIntegrationListResource,
+		NewAzureIntegrationListResource,
 	}
 }
 
