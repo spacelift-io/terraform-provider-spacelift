@@ -165,7 +165,7 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					organization_url                = "` + organization + `"
 					user_facing_host                = "` + testConfig.SourceCode.AzureDevOps.SpaceLevel.UserFacingHost + `"
 					personal_access_token_wo        = "` + token + `"
-					personal_access_token_wo_version = 1
+					personal_access_token_wo_version = "1"
 					description                     = "` + descr + `"
 					labels                          = ` + labels + `
 					vcs_checks                      = ` + vcsChecks + `
@@ -181,6 +181,7 @@ func TestAzureDevOpsIntegrationResource(t *testing.T) {
 					resourceName,
 					Attribute(azureDevopsName, Equals(name)),
 					Attribute(azureDevopsOrganizationURL, Equals(organization)),
+					Attribute(azureDevopsUserFacingHost, Equals(testConfig.SourceCode.AzureDevOps.SpaceLevel.UserFacingHost)),
 					Attribute(azureDevopsWebhookURL, IsNotEmpty()),
 					Attribute(azureDevopsWebhookPassword, IsNotEmpty()),
 					Attribute(azureDevopsDescription, Equals(descr)),
