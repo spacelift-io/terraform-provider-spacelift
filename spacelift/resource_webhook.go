@@ -129,13 +129,10 @@ func resourceWebhookCreate(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	input := structs.WebhooksIntegrationInput{
-		Enabled:  graphql.Boolean(d.Get("enabled").(bool)),
-		Endpoint: graphql.String(d.Get("endpoint").(string)),
-		Secret:   graphql.String(secret),
-	}
-
-	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		input.RetryOnFailure = toOptionalBool(retryOnFailure)
+		Enabled:        graphql.Boolean(d.Get("enabled").(bool)),
+		Endpoint:       graphql.String(d.Get("endpoint").(string)),
+		Secret:         graphql.String(secret),
+		RetryOnFailure: toOptionalBool(d.Get("retry_on_failure")),
 	}
 
 	variables := map[string]any{
@@ -271,12 +268,9 @@ func resourceWebhookUpdate(ctx context.Context, d *schema.ResourceData, meta any
 	}
 
 	input := structs.WebhooksIntegrationInput{
-		Enabled:  graphql.Boolean(enabled),
-		Endpoint: graphql.String(endpoint),
-	}
-
-	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		input.RetryOnFailure = toOptionalBool(retryOnFailure)
+		Enabled:        graphql.Boolean(enabled),
+		Endpoint:       graphql.String(endpoint),
+		RetryOnFailure: toOptionalBool(d.Get("retry_on_failure")),
 	}
 
 	variables := map[string]any{

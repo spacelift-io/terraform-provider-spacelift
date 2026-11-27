@@ -108,16 +108,13 @@ func resourceNamedWebhookCreate(ctx context.Context, d *schema.ResourceData, met
 		} `graphql:"namedWebhooksIntegrationCreate(input: $input)"`
 	}
 	input := structs.NamedWebhooksIntegrationInput{
-		Enabled:  graphql.Boolean(d.Get("enabled").(bool)),
-		Endpoint: graphql.String(d.Get("endpoint").(string)),
-		Space:    graphql.ID(d.Get("space_id").(string)),
-		Name:     graphql.String(d.Get("name").(string)),
-		Secret:   toOptionalString(secret),
-		Labels:   []graphql.String{},
-	}
-
-	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		input.RetryOnFailure = toOptionalBool(retryOnFailure)
+		Enabled:        graphql.Boolean(d.Get("enabled").(bool)),
+		Endpoint:       graphql.String(d.Get("endpoint").(string)),
+		Space:          graphql.ID(d.Get("space_id").(string)),
+		Name:           graphql.String(d.Get("name").(string)),
+		Secret:         toOptionalString(secret),
+		Labels:         []graphql.String{},
+		RetryOnFailure: toOptionalBool(d.Get("retry_on_failure")),
 	}
 
 	if labelSet, ok := d.Get("labels").(*schema.Set); ok {
@@ -193,21 +190,18 @@ func resourceNamedWebhookUpdate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	input := structs.NamedWebhooksIntegrationInput{
-		Enabled:  graphql.Boolean(enabled),
-		Endpoint: graphql.String(endpoint),
-		Name:     graphql.String(name),
-		Space:    graphql.String(spaceID),
-		Labels:   labels,
+		Enabled:        graphql.Boolean(enabled),
+		Endpoint:       graphql.String(endpoint),
+		Name:           graphql.String(name),
+		Space:          graphql.String(spaceID),
+		Labels:         labels,
+		RetryOnFailure: toOptionalBool(d.Get("retry_on_failure")),
 	}
 
 	// since both secret and secret_wo field is optional this guard clause prevents accidental override
 	// of secrets if there were any changes unrelated to secret fields
 	if secret != "" {
 		input.Secret = toOptionalString(secret)
-	}
-
-	if retryOnFailure, ok := d.GetOk("retry_on_failure"); ok {
-		input.RetryOnFailure = toOptionalBool(retryOnFailure)
 	}
 
 	variables := map[string]any{

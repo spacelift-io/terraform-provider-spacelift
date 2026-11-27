@@ -1,12 +1,19 @@
 package spacelift
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	. "github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/testhelpers"
 )
 
@@ -128,4 +135,68 @@ func TestNamedWebhookResource(t *testing.T) {
 			},
 		})
 	})
+}
+
+func TestNamedWebhookSendsRetryOnFailureFalse(t *testing.T) {
+	t.Parallel()
+
+	var createRetryOnFailure, updateRetryOnFailure *bool
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		var req struct {
+			Query     string `json:"query"`
+			Variables struct {
+				Input struct {
+					RetryOnFailure *bool `json:"retryOnFailure"`
+				} `json:"input"`
+			} `json:"variables"`
+		}
+		_ = json.Unmarshal(body, &req)
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case strings.Contains(req.Query, "namedWebhooksIntegrationCreate"):
+			createRetryOnFailure = req.Variables.Input.RetryOnFailure
+			_, _ = w.Write([]byte(`{"data":{"namedWebhooksIntegrationCreate":{"id":"nwh-1","enabled":true}}}`))
+		case strings.Contains(req.Query, "namedWebhooksIntegrationUpdate"):
+			updateRetryOnFailure = req.Variables.Input.RetryOnFailure
+			_, _ = w.Write([]byte(`{"data":{"namedWebhooksIntegrationUpdate":{"id":"nwh-1"}}}`))
+		default:
+			_, _ = w.Write([]byte(`{"data":{"namedWebhooksIntegration":{"id":"nwh-1","name":"wh","endpoint":"https://example.com/hook","enabled":true,"space":{"id":"root"},"labels":[],"retryOnFailure":false}}}`))
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	client := internal.NewClient(server.URL, "token", nil, nil)
+
+	d := resourceNamedWebhook().Data(nil)
+	if err := d.Set("enabled", true); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("endpoint", "https://example.com/hook"); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("space_id", "root"); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("name", "wh"); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("retry_on_failure", false); err != nil {
+		t.Fatal(err)
+	}
+
+	if diags := resourceNamedWebhookCreate(context.Background(), d, client); diags.HasError() {
+		t.Fatalf("create failed: %v", diags)
+	}
+	if createRetryOnFailure == nil || *createRetryOnFailure {
+		t.Fatalf("create retryOnFailure = %v, want false", createRetryOnFailure)
+	}
+
+	if diags := resourceNamedWebhookUpdate(context.Background(), d, client); diags.HasError() {
+		t.Fatalf("update failed: %v", diags)
+	}
+	if updateRetryOnFailure == nil || *updateRetryOnFailure {
+		t.Fatalf("update retryOnFailure = %v, want false", updateRetryOnFailure)
+	}
 }

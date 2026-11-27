@@ -2,6 +2,7 @@ package spacelift
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -90,6 +91,67 @@ func TestWebhookCreateHonorsEnabled(t *testing.T) {
 				t.Fatalf("enabled = %s, want %s", got, tc.wantEnabled)
 			}
 		})
+	}
+}
+
+func TestWebhookSendsRetryOnFailureFalse(t *testing.T) {
+	t.Parallel()
+
+	var createRetryOnFailure, updateRetryOnFailure *bool
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		var req struct {
+			Query     string `json:"query"`
+			Variables struct {
+				Input struct {
+					RetryOnFailure *bool `json:"retryOnFailure"`
+				} `json:"input"`
+			} `json:"variables"`
+		}
+		_ = json.Unmarshal(body, &req)
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case strings.Contains(req.Query, "webhooksIntegrationCreate"):
+			createRetryOnFailure = req.Variables.Input.RetryOnFailure
+			_, _ = w.Write([]byte(`{"data":{"webhooksIntegrationCreate":{"id":"wh-1","enabled":true}}}`))
+		case strings.Contains(req.Query, "webhooksIntegrationUpdate"):
+			updateRetryOnFailure = req.Variables.Input.RetryOnFailure
+			_, _ = w.Write([]byte(`{"data":{"webhooksIntegrationUpdate":{"id":"wh-1","enabled":true}}}`))
+		default:
+			_, _ = w.Write([]byte(`{"data":{"stack":{"id":"stack-1","integrations":{"webhooks":[{"id":"wh-1","enabled":true,"endpoint":"https://example.com/hook","retryOnFailure":false}]}}}}`))
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	client := internal.NewClient(server.URL, "token", nil, nil)
+
+	d := resourceWebhook().Data(nil)
+	if err := d.Set("enabled", true); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("endpoint", "https://example.com/hook"); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("stack_id", "stack-1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := d.Set("retry_on_failure", false); err != nil {
+		t.Fatal(err)
+	}
+
+	if diags := resourceWebhookCreate(context.Background(), d, client); diags.HasError() {
+		t.Fatalf("create failed: %v", diags)
+	}
+	if createRetryOnFailure == nil || *createRetryOnFailure {
+		t.Fatalf("create retryOnFailure = %v, want false", createRetryOnFailure)
+	}
+
+	if diags := resourceWebhookUpdate(context.Background(), d, client); diags.HasError() {
+		t.Fatalf("update failed: %v", diags)
+	}
+	if updateRetryOnFailure == nil || *updateRetryOnFailure {
+		t.Fatalf("update retryOnFailure = %v, want false", updateRetryOnFailure)
 	}
 }
 
