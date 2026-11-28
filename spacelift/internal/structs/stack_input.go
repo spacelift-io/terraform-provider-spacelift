@@ -114,6 +114,7 @@ type TerraformInput struct {
 type StackVendor string
 
 const (
+	StackVendorOpenTofu   StackVendor = "OpenTofu"
 	StackVendorTerragrunt StackVendor = "Terragrunt"
 	StackVendorTerraform  StackVendor = "Terraform"
 )

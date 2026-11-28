@@ -1,11 +1,16 @@
 package spacelift
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -2645,6 +2650,7 @@ func TestStackResourceSpace(t *testing.T) {
 			},
 		})
 	})
+
 }
 
 // getConfig returns a stack config with injected vendor config
@@ -2850,6 +2856,109 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestMigrateStackToOpenTofu(t *testing.T) {
+	// Not parallel: the poll interval is a package variable.
+	openTofuMigrationPollInterval = time.Millisecond
+	t.Cleanup(func() { openTofuMigrationPollInterval = 2 * time.Second })
+
+	queueEntry := func(state, issues string) string {
+		return `{"data":{"openTofuMigrationQueueSearch":{"edges":[{"node":{"state":"` + state + `","issues":[` + issues + `]}}]}}}`
+	}
+
+	// server answers openTofuMigrate with queued, and the queue queries with the
+	// entries in order, repeating the last one. It records the mutation variables.
+	server := func(t *testing.T, queued string, entries ...string) (*internal.Client, *[]map[string]any) {
+		var mu sync.Mutex
+		var mutations []map[string]any
+
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mu.Lock()
+			defer mu.Unlock()
+
+			w.Header().Set("Content-Type", "application/json")
+			if r.Header.Get("Spacelift-GraphQL-Mutation") == "OpenTofuMigrate" {
+				var body struct {
+					Variables map[string]any `json:"variables"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					t.Errorf("could not decode the request: %v", err)
+				}
+				mutations = append(mutations, body.Variables)
+				_, _ = w.Write([]byte(`{"data":{"openTofuMigrate":{"queued":` + queued + `}}}`))
+				return
+			}
+
+			_, _ = w.Write([]byte(entries[0]))
+			if len(entries) > 1 {
+				entries = entries[1:]
+			}
+		}))
+		t.Cleanup(srv.Close)
+
+		return internal.NewClient(srv.URL, "token", nil, nil), &mutations
+	}
+
+	t.Run("queues exactly one stack and waits until it is migrated", func(t *testing.T) {
+		client, mutations := server(t, "1",
+			queueEntry("TO_MIGRATE", ""),
+			queueEntry("MIGRATED", ""),
+		)
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err != nil {
+			t.Fatal(err)
+		}
+
+		if len(*mutations) != 1 {
+			t.Fatalf("got %d openTofuMigrate calls, want 1", len(*mutations))
+		}
+		variables := (*mutations)[0]
+		if variables["target"] != "OpenTofu" || variables["triggerRun"] != false {
+			t.Fatalf("got target %v and triggerRun %v", variables["target"], variables["triggerRun"])
+		}
+
+		// Any other filter could migrate other stacks in the account.
+		predicates, _ := variables["input"].(map[string]any)["predicates"].([]any)
+		if got := fmt.Sprint(predicates); len(predicates) != 1 || !strings.Contains(got, "field:slug") || !strings.Contains(got, "stringEquals:[my-stack]") {
+			t.Fatalf("got filter %s, want one exact match on the slug", got)
+		}
+	})
+
+	t.Run("reports a stack that Spacelift did not queue", func(t *testing.T) {
+		client, _ := server(t, "0", queueEntry("MIGRATED", ""))
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err == nil || !strings.Contains(err.Error(), "did not queue") {
+			t.Fatalf("got %v", err)
+		}
+	})
+
+	t.Run("reports a failed migration with its note", func(t *testing.T) {
+		client, _ := server(t, "1", queueEntry("FAILED", `{"note":"something went wrong"}`))
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err == nil || !strings.Contains(err.Error(), "something went wrong") {
+			t.Fatalf("got %v", err)
+		}
+	})
+
+	t.Run("stops at once when the stack has active runs", func(t *testing.T) {
+		client, _ := server(t, "1", queueEntry("TO_MIGRATE", `{"totalCount":2}`))
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err == nil || !strings.Contains(err.Error(), "2 active run(s)") {
+			t.Fatalf("got %v", err)
+		}
+	})
+
+	t.Run("stops waiting with the last state", func(t *testing.T) {
+		client, _ := server(t, "1", queueEntry("TO_MIGRATE", ""))
+
+		ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
+		defer cancel()
+
+		if err := migrateStackToOpenTofu(ctx, client, "my-stack"); err == nil || !strings.Contains(err.Error(), "last state: TO_MIGRATE") {
+			t.Fatalf("got %v", err)
+		}
+	})
 }
 
 // emptyStackConfig returns a stack config with every attribute set to null.

@@ -16,5 +16,6 @@ type SearchQueryPredicate struct {
 type SearchQueryFieldConstraint struct {
 	BooleanEquals *[]graphql.Boolean `json:"booleanEquals"`
 	EnumEquals    *[]graphql.String  `json:"enumEquals"`
+	StringEquals  *[]graphql.String  `json:"stringEquals"`
 	StringMatches *[]graphql.String  `json:"stringMatches"`
 }
