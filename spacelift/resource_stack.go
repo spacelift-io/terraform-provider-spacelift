@@ -71,6 +71,10 @@ func resourceStack() *schema.Resource {
 				}
 			}
 
+			if err := validateOpenTofuMigration(diff); err != nil {
+				return err
+			}
+
 			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
 			oldTGCount, newTGCount := diff.GetChange("terragrunt.#")
 			isMigration := oldTGCount.(int) != newTGCount.(int)
@@ -1570,6 +1574,32 @@ const openTofuMigrationTimeout = 10 * time.Minute
 
 // openTofuMigrationPollInterval is a variable so that tests can shorten it.
 var openTofuMigrationPollInterval = 2 * time.Second
+
+// validateOpenTofuMigration fails the plan when it adds the opentofu block to a
+// Terraform stack that Spacelift cannot migrate. Without this check the plan
+// passes and the apply fails.
+func validateOpenTofuMigration(diff *schema.ResourceDiff) error {
+	if oldCount, newCount := diff.GetChange("opentofu.#"); oldCount.(int) != 0 || newCount.(int) == 0 {
+		return nil
+	}
+
+	// A change from another vendor is not a migration: Spacelift rejects it on apply.
+	for _, vendor := range []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terragrunt"} {
+		if oldCount, _ := diff.GetChange(vendor + ".#"); oldCount.(int) > 0 {
+			return nil
+		}
+	}
+
+	if oldTool, _ := diff.GetChange("terraform_workflow_tool"); oldTool.(string) != "OPEN_TOFU" {
+		return fmt.Errorf(
+			"cannot migrate a stack with the %q workflow tool to OpenTofu; "+
+				"only stacks with the OPEN_TOFU workflow tool can migrate",
+			oldTool,
+		)
+	}
+
+	return nil
+}
 
 // migrateStackToOpenTofu migrates a Terraform stack with the OPEN_TOFU workflow
 // tool to the native OpenTofu vendor, and waits until the migration ends.
