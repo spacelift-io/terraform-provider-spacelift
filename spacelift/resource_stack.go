@@ -15,6 +15,7 @@ import (
 
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs"
+	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/structs/search"
 	"github.com/spacelift-io/terraform-provider-spacelift/spacelift/internal/validations"
 )
 
@@ -68,6 +69,10 @@ func resourceStack() *schema.Resource {
 						return fmt.Errorf("stack is locked\n\n%s", stackLockMessage(diff))
 					}
 				}
+			}
+
+			if err := validateOpenTofuMigration(diff); err != nil {
+				return err
 			}
 
 			oldUSM, newUSM := diff.GetChange("terragrunt.0.use_state_management")
@@ -586,7 +591,7 @@ func resourceStack() *schema.Resource {
 			"opentofu": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terraform_smart_sanitization", "terraform_external_state_access", "terragrunt"},
-				Description:   "OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack.",
+				Description:   "OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. Adding this block to a Stack that uses the Terraform vendor with `terraform_workflow_tool = \"OPEN_TOFU\"` migrates the Stack to the native OpenTofu vendor. The Stack must have no active runs: otherwise the apply fails, and Spacelift migrates the Stack when the runs finish.",
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{
@@ -1069,6 +1074,24 @@ func resourceStackUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 		}
 	}
 
+	// Adding the opentofu block migrates a Terraform stack to the OpenTofu vendor.
+	// The live vendor decides, not the state: a stack migrated in the dashboard
+	// still has the terraform_* attributes in the state.
+	if oldCount, newCount := d.GetChange("opentofu.#"); oldCount.(int) == 0 && newCount.(int) > 0 {
+		client := meta.(*internal.Client)
+
+		stack, err := getStackByID(ctx, client, d.Id())
+		if err != nil {
+			return readAfterFailedMutation(ctx, d, meta, diag.Errorf("could not migrate stack vendor: %v", err))
+		}
+
+		if stack != nil && stack.VendorConfig.Typename == structs.StackConfigVendorTerraform {
+			if err := migrateStackToOpenTofu(ctx, client, d.Id()); err != nil {
+				return readAfterFailedMutation(ctx, d, meta, diag.Errorf("could not migrate stack vendor: %v", err))
+			}
+		}
+	}
+
 	var mutation struct {
 		UpdateStack structs.Stack `graphql:"stackUpdate(id: $id, input: $input)"`
 	}
@@ -1545,6 +1568,149 @@ func buildMigrationConfig(d *schema.ResourceData, targetVendor structs.StackVend
 	}
 
 	return config
+}
+
+const openTofuMigrationTimeout = 10 * time.Minute
+
+// openTofuMigrationPollInterval is a variable so that tests can shorten it.
+var openTofuMigrationPollInterval = 2 * time.Second
+
+// validateOpenTofuMigration fails the plan when it adds the opentofu block to a
+// Terraform stack that Spacelift cannot migrate. Without this check the plan
+// passes and the apply fails.
+func validateOpenTofuMigration(diff *schema.ResourceDiff) error {
+	if oldCount, newCount := diff.GetChange("opentofu.#"); oldCount.(int) != 0 || newCount.(int) == 0 {
+		return nil
+	}
+
+	// A change from another vendor is not a migration: Spacelift rejects it on apply.
+	for _, vendor := range []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terragrunt"} {
+		if oldCount, _ := diff.GetChange(vendor + ".#"); oldCount.(int) > 0 {
+			return nil
+		}
+	}
+
+	if oldTool, _ := diff.GetChange("terraform_workflow_tool"); oldTool.(string) != "OPEN_TOFU" {
+		return fmt.Errorf(
+			"cannot migrate a stack with the %q workflow tool to OpenTofu; "+
+				"only stacks with the OPEN_TOFU workflow tool can migrate",
+			oldTool,
+		)
+	}
+
+	return nil
+}
+
+// migrateStackToOpenTofu migrates a Terraform stack with the OPEN_TOFU workflow
+// tool to the native OpenTofu vendor, and waits until the migration ends.
+// stackUpdate cannot change the vendor, and stackMigrateVendor has no OpenTofu
+// target, so this uses the migration queue that the dashboard also uses.
+func migrateStackToOpenTofu(ctx context.Context, client *internal.Client, stackID string) error {
+	ctx, cancel := context.WithTimeout(ctx, openTofuMigrationTimeout)
+	defer cancel()
+
+	var mutation struct {
+		Migrate struct {
+			Queued graphql.Int `graphql:"queued"`
+		} `graphql:"openTofuMigrate(input: $input, target: $target, triggerRun: $triggerRun)"`
+	}
+
+	variables := map[string]any{
+		// The slug is the stack ID, and the filter matches it exactly.
+		"input":      openTofuMigrationFilter("slug", stackID),
+		"target":     structs.StackVendorOpenTofu,
+		"triggerRun": graphql.Boolean(false),
+	}
+
+	if err := client.Mutate(ctx, "OpenTofuMigrate", &mutation, variables); err != nil {
+		return internal.FromSpaceliftError(err)
+	}
+
+	// Spacelift skips a stack that is already in the queue. This includes a
+	// retry of a call whose response was lost: that stack still migrates, and
+	// the next apply finds the native vendor.
+	if mutation.Migrate.Queued == 0 {
+		return errors.New("Spacelift did not queue the stack for migration; it skips stacks that are not eligible or are already in the queue")
+	}
+
+	return waitForOpenTofuMigration(ctx, client, stackID)
+}
+
+// waitForOpenTofuMigration polls the queue entry of the stack. The queue has
+// one entry per stack, and openTofuMigrate replaces it, so an entry from an
+// earlier attempt cannot end the wait.
+func waitForOpenTofuMigration(ctx context.Context, client *internal.Client, stackID string) error {
+	variables := map[string]any{"input": openTofuMigrationFilter("stackSlug", stackID)}
+
+	lastState := "unknown"
+	for {
+		var query struct {
+			Queue struct {
+				Edges []struct {
+					Node struct {
+						State  string `graphql:"state"`
+						Issues []struct {
+							Failed struct {
+								Note string `graphql:"note"`
+							} `graphql:"... on OpenTofuMigrationFailedIssue"`
+							WaitingForRuns struct {
+								TotalCount int `graphql:"totalCount"`
+							} `graphql:"... on OpenTofuMigrationWaitingForRunsIssue"`
+						} `graphql:"issues"`
+					} `graphql:"node"`
+				} `graphql:"edges"`
+			} `graphql:"openTofuMigrationQueueSearch(input: $input)"`
+		}
+
+		if err := client.Query(ctx, "OpenTofuMigrationQueue", &query, variables); err != nil {
+			if ctx.Err() == nil {
+				return errors.Wrap(err, "could not read the OpenTofu migration queue")
+			}
+		} else if len(query.Queue.Edges) > 0 {
+			node := query.Queue.Edges[0].Node
+			lastState = node.State
+
+			switch node.State {
+			case "MIGRATED":
+				return nil
+			case "FAILED":
+				var notes []string
+				for _, issue := range node.Issues {
+					if issue.Failed.Note != "" {
+						notes = append(notes, issue.Failed.Note)
+					}
+				}
+				return fmt.Errorf("the OpenTofu migration failed: %s", strings.Join(notes, "; "))
+			}
+
+			// The run that applies this change can be one of the active runs, so
+			// waiting for them can block until the timeout. The stack stays in
+			// the queue, and Spacelift migrates it after the runs.
+			for _, issue := range node.Issues {
+				if issue.WaitingForRuns.TotalCount > 0 {
+					return fmt.Errorf(
+						"the stack has %d active run(s); Spacelift migrates it after they finish, and the next apply continues",
+						issue.WaitingForRuns.TotalCount,
+					)
+				}
+			}
+		}
+
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("stopped waiting for the OpenTofu migration (last state: %s): %w", lastState, ctx.Err())
+		case <-time.After(openTofuMigrationPollInterval):
+		}
+	}
+}
+
+func openTofuMigrationFilter(field, stackID string) search.SearchInput {
+	return search.SearchInput{
+		Predicates: &[]search.SearchQueryPredicate{{
+			Field:      graphql.String(field),
+			Constraint: search.SearchQueryFieldConstraint{StringEquals: &[]graphql.String{graphql.String(stackID)}},
+		}},
+	}
 }
 
 func getStrings(d *schema.ResourceData, fieldName string) []graphql.String {

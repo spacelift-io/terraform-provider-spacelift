@@ -1,11 +1,16 @@
 package spacelift
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/acctest"
@@ -2645,6 +2650,244 @@ func TestStackResourceSpace(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("vendor migration Terraform to OpenTofu keeps the stack and its settings", func(t *testing.T) {
+		name := "vendor-migration-opentofu-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(description, vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					description  = "%s"
+					name         = "%s"
+					project_root = "root"
+					repository   = "demo"
+					manage_state = true
+					%s
+				}
+			`, description, name, vendorConfig)
+		}
+
+		migrated := config("after", `
+			opentofu {
+				version                = "~> 1.13.0"
+				workspace              = "my-workspace"
+				use_smart_sanitization = false
+				external_state_access  = true
+			}
+		`)
+
+		var stackID string
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config("before", `
+					terraform_workflow_tool         = "OPEN_TOFU"
+					terraform_version               = "~> 1.13.0"
+					terraform_workspace             = "my-workspace"
+					terraform_smart_sanitization    = false
+					terraform_external_state_access = true
+				`),
+				Check: resource.ComposeTestCheckFunc(
+					Resource(resourceName, Attribute("opentofu.#", Equals("0"))),
+					func(s *tftest.State) error {
+						stackID = s.RootModule().Resources[resourceName].Primary.ID
+						return nil
+					},
+				),
+			},
+			{
+				// The migration and the other changes go through in one apply.
+				Config: migrated,
+				Check: resource.ComposeTestCheckFunc(
+					Resource(
+						resourceName,
+						Attribute("description", Equals("after")),
+						Attribute("opentofu.0.version", Equals("~> 1.13.0")),
+						Attribute("opentofu.0.workspace", Equals("my-workspace")),
+						Attribute("opentofu.0.use_smart_sanitization", Equals("false")),
+						Attribute("opentofu.0.external_state_access", Equals("true")),
+					),
+					func(s *tftest.State) error {
+						if id := s.RootModule().Resources[resourceName].Primary.ID; id != stackID {
+							return fmt.Errorf("stack was recreated (ID changed from %s to %s), expected in-place update", stackID, id)
+						}
+						return nil
+					},
+				),
+			},
+			{Config: migrated, PlanOnly: true},
+		})
+	})
+
+	t.Run("vendor migration Terraform to OpenTofu applies the opentofu block defaults", func(t *testing.T) {
+		name := "vendor-migration-opentofu-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "%s"
+					project_root = "root"
+					repository   = "demo"
+					%s
+				}
+			`, name, vendorConfig)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: config(`
+					terraform_workflow_tool      = "OPEN_TOFU"
+					terraform_smart_sanitization = false
+				`),
+			},
+			{
+				// The migration keeps use_smart_sanitization = false, and the
+				// update after it sends the block default, true.
+				Config: config(`opentofu {}`),
+				Check:  Resource(resourceName, Attribute("opentofu.0.use_smart_sanitization", Equals("true"))),
+			},
+			{Config: config(`opentofu {}`), PlanOnly: true},
+		})
+	})
+
+	t.Run("vendor migration Terraform to OpenTofu skips a stack migrated outside Terraform", func(t *testing.T) {
+		name := "vendor-migration-opentofu-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "%s"
+					project_root = "root"
+					repository   = "demo"
+					%s
+				}
+			`, name, vendorConfig)
+		}
+
+		legacy := config(`
+			terraform_workflow_tool = "OPEN_TOFU"
+			terraform_version       = "~> 1.13.0"
+		`)
+
+		var stackID string
+
+		testSteps(t, []resource.TestStep{
+			{
+				Config: legacy,
+				Check: func(s *tftest.State) error {
+					stackID = s.RootModule().Resources[resourceName].Primary.ID
+					return nil
+				},
+			},
+			{
+				// Migrate the way the dashboard does. The legacy config still
+				// plans clean.
+				PreConfig: func() {
+					if err := migrateStackToOpenTofu(t.Context(), testClient(t), stackID); err != nil {
+						t.Fatal(err)
+					}
+				},
+				Config:   legacy,
+				PlanOnly: true,
+			},
+			{
+				// The stack is already native, so the update does not migrate it.
+				Config: config(`opentofu { version = "~> 1.13.0" }`),
+				Check:  Resource(resourceName, Attribute("opentofu.0.version", Equals("~> 1.13.0"))),
+			},
+		})
+	})
+
+	t.Run("vendor migration Terraform to OpenTofu rejects a stack without the OPEN_TOFU workflow tool", func(t *testing.T) {
+		name := "vendor-migration-opentofu-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "%s"
+					project_root = "root"
+					repository   = "demo"
+					%s
+				}
+			`, name, vendorConfig)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{Config: config(`terraform_workflow_tool = "CUSTOM"`)},
+			{
+				Config:      config(`opentofu {}`),
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile(`only stacks with the OPEN_TOFU workflow tool can migrate`),
+			},
+		})
+	})
+
+	t.Run("vendor migration Terraform to OpenTofu stops when the stack has an active run", func(t *testing.T) {
+		name := "vendor-migration-opentofu-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_worker_pool" "test" {
+					name = "Let's create a dummy worker pool to avoid running the job %s"
+				}
+
+				resource "spacelift_stack" "test" {
+					branch         = "master"
+					name           = "%s"
+					project_root   = "root"
+					repository     = "demo"
+					worker_pool_id = spacelift_worker_pool.test.id
+					%s
+				}
+
+				resource "spacelift_run" "test" {
+					stack_id = spacelift_stack.test.id
+
+					keepers = { "bacon" = "tasty" }
+				}
+			`, name, name, vendorConfig)
+		}
+
+		legacy := config(`
+			terraform_workflow_tool = "OPEN_TOFU"
+			terraform_version       = "~> 1.13.0"
+		`)
+
+		testSteps(t, []resource.TestStep{
+			{Config: legacy},
+			{
+				Config:      config(`opentofu { version = "~> 1.13.0" }`),
+				ExpectError: regexp.MustCompile(`could not migrate stack vendor: the stack has 1 active run`),
+			},
+			{
+				// The stack is still a Terraform stack.
+				Config:   legacy,
+				PlanOnly: true,
+			},
+		})
+	})
+
+	t.Run("vendor change from Ansible to OpenTofu is left to the API", func(t *testing.T) {
+		name := "vendor-change-opentofu-" + acctest.RandStringFromCharSet(5, acctest.CharSetAlphaNum)
+		config := func(vendorConfig string) string {
+			return fmt.Sprintf(`
+				resource "spacelift_stack" "test" {
+					branch       = "master"
+					name         = "%s"
+					project_root = "root"
+					repository   = "demo"
+					%s
+				}
+			`, name, vendorConfig)
+		}
+
+		testSteps(t, []resource.TestStep{
+			{Config: config(`ansible { playbook = "main.yml" }`)},
+			{
+				Config:      config(`opentofu {}`),
+				ExpectError: regexp.MustCompile(`stack vendor cannot be changed`),
+			},
+		})
+	})
 }
 
 // getConfig returns a stack config with injected vendor config
@@ -2850,6 +3093,122 @@ func TestStackUpdateReadsStackAfterFailedMutation(t *testing.T) {
 			}
 		})
 	}
+}
+
+// testClient builds an API client from the provider settings in the
+// environment, to change resources outside Terraform.
+func testClient(t *testing.T) *internal.Client {
+	t.Helper()
+
+	provider := Provider("commit", "version")()
+	if diags := provider.Configure(t.Context(), terraform.NewResourceConfigRaw(nil)); diags.HasError() {
+		t.Fatalf("could not configure the provider: %v", diags)
+	}
+
+	return provider.Meta().(*internal.Client)
+}
+
+func TestMigrateStackToOpenTofu(t *testing.T) {
+	// Not parallel: the poll interval is a package variable.
+	openTofuMigrationPollInterval = time.Millisecond
+	t.Cleanup(func() { openTofuMigrationPollInterval = 2 * time.Second })
+
+	queueEntry := func(state, issues string) string {
+		return `{"data":{"openTofuMigrationQueueSearch":{"edges":[{"node":{"state":"` + state + `","issues":[` + issues + `]}}]}}}`
+	}
+
+	// server answers openTofuMigrate with queued, and the queue queries with the
+	// entries in order, repeating the last one. It records the mutation variables.
+	server := func(t *testing.T, queued string, entries ...string) (*internal.Client, *[]map[string]any) {
+		var mu sync.Mutex
+		var mutations []map[string]any
+
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			mu.Lock()
+			defer mu.Unlock()
+
+			w.Header().Set("Content-Type", "application/json")
+			if r.Header.Get("Spacelift-GraphQL-Mutation") == "OpenTofuMigrate" {
+				var body struct {
+					Variables map[string]any `json:"variables"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					t.Errorf("could not decode the request: %v", err)
+				}
+				mutations = append(mutations, body.Variables)
+				_, _ = w.Write([]byte(`{"data":{"openTofuMigrate":{"queued":` + queued + `}}}`))
+				return
+			}
+
+			_, _ = w.Write([]byte(entries[0]))
+			if len(entries) > 1 {
+				entries = entries[1:]
+			}
+		}))
+		t.Cleanup(srv.Close)
+
+		return internal.NewClient(srv.URL, "token", nil, nil), &mutations
+	}
+
+	t.Run("queues exactly one stack and waits until it is migrated", func(t *testing.T) {
+		client, mutations := server(t, "1",
+			queueEntry("TO_MIGRATE", ""),
+			queueEntry("MIGRATED", ""),
+		)
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err != nil {
+			t.Fatal(err)
+		}
+
+		if len(*mutations) != 1 {
+			t.Fatalf("got %d openTofuMigrate calls, want 1", len(*mutations))
+		}
+		variables := (*mutations)[0]
+		if variables["target"] != "OpenTofu" || variables["triggerRun"] != false {
+			t.Fatalf("got target %v and triggerRun %v", variables["target"], variables["triggerRun"])
+		}
+
+		// Any other filter could migrate other stacks in the account.
+		predicates, _ := variables["input"].(map[string]any)["predicates"].([]any)
+		if got := fmt.Sprint(predicates); len(predicates) != 1 || !strings.Contains(got, "field:slug") || !strings.Contains(got, "stringEquals:[my-stack]") {
+			t.Fatalf("got filter %s, want one exact match on the slug", got)
+		}
+	})
+
+	t.Run("reports a stack that Spacelift did not queue", func(t *testing.T) {
+		client, _ := server(t, "0", queueEntry("MIGRATED", ""))
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err == nil || !strings.Contains(err.Error(), "did not queue") {
+			t.Fatalf("got %v", err)
+		}
+	})
+
+	t.Run("reports a failed migration with its note", func(t *testing.T) {
+		client, _ := server(t, "1", queueEntry("FAILED", `{"note":"something went wrong"}`))
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err == nil || !strings.Contains(err.Error(), "something went wrong") {
+			t.Fatalf("got %v", err)
+		}
+	})
+
+	t.Run("stops at once when the stack has active runs", func(t *testing.T) {
+		client, _ := server(t, "1", queueEntry("TO_MIGRATE", `{"totalCount":2}`))
+
+		if err := migrateStackToOpenTofu(t.Context(), client, "my-stack"); err == nil || !strings.Contains(err.Error(), "2 active run(s)") {
+			t.Fatalf("got %v", err)
+		}
+	})
+
+	t.Run("stops waiting with the last state", func(t *testing.T) {
+		client, _ := server(t, "1", queueEntry("TO_MIGRATE", ""))
+
+		ctx, cancel := context.WithTimeout(t.Context(), 50*time.Millisecond)
+		defer cancel()
+
+		if err := migrateStackToOpenTofu(ctx, client, "my-stack"); err == nil || !strings.Contains(err.Error(), "last state: TO_MIGRATE") {
+			t.Fatalf("got %v", err)
+		}
+	})
 }
 
 // emptyStackConfig returns a stack config with every attribute set to null.

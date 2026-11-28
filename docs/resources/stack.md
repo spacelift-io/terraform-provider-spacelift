@@ -200,6 +200,28 @@ resource "spacelift_stack" "terragrunt-stack" {
   project_root = "path/to/terragrunt_hcl"
 }
 
+# Migrating a Terraform stack with terraform_workflow_tool = "OPEN_TOFU" to a native OpenTofu stack:
+# replace the terraform_* settings with an opentofu block. The stack migrates in place. Set every
+# setting that you want to keep, because the block defaults apply to the settings that you leave out.
+resource "spacelift_stack" "migrated-stack" {
+  # terraform_workflow_tool         = "OPEN_TOFU"
+  # terraform_version               = "~> 1.13.0"
+  # terraform_smart_sanitization    = false
+  # terraform_external_state_access = true
+
+  opentofu {
+    version                = "~> 1.13.0"
+    use_smart_sanitization = false
+    external_state_access  = true
+  }
+
+  autodeploy   = true
+  branch       = "main"
+  name         = "Migrated stack example"
+  project_root = "infra"
+  repository   = "core-infra"
+}
+
 # Administrative stack that manages Spacelift itself, with a role binding
 # granting a role access to the stack
 resource "spacelift_stack" "spacelift-admin" {
@@ -269,7 +291,7 @@ resource "spacelift_role_attachment" "spacelift-admin-operator" {
 - `kubernetes` (Block List, Max: 1) Kubernetes-specific configuration. Presence means this Stack is a Kubernetes Stack. (see [below for nested schema](#nestedblock--kubernetes))
 - `labels` (Set of String)
 - `manage_state` (Boolean) Determines if Spacelift should manage state for this stack. Defaults to `true`.
-- `opentofu` (Block List, Max: 1) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. (see [below for nested schema](#nestedblock--opentofu))
+- `opentofu` (Block List, Max: 1) OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. Adding this block to a Stack that uses the Terraform vendor with `terraform_workflow_tool = "OPEN_TOFU"` migrates the Stack to the native OpenTofu vendor. The Stack must have no active runs: otherwise the apply fails, and Spacelift migrates the Stack when the runs finish. (see [below for nested schema](#nestedblock--opentofu))
 - `origin` (Block List, Max: 1) Use the installed account-level Origin integration. The repository and branch are configured by the corresponding top-level attributes. (see [below for nested schema](#nestedblock--origin))
 - `prevent_changes_when_locked` (Boolean) If true, Terraform will fail when the stack is locked and the plan would modify or destroy this resource. Defaults to `false`. Note: destroy errors are (currently) raised during the apply, not planning.
 - `project_root` (String) Project root is the optional directory relative to the workspace root containing the entrypoint to the Stack.

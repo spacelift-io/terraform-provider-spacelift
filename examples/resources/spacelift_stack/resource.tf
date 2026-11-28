@@ -185,6 +185,28 @@ resource "spacelift_stack" "terragrunt-stack" {
   project_root = "path/to/terragrunt_hcl"
 }
 
+# Migrating a Terraform stack with terraform_workflow_tool = "OPEN_TOFU" to a native OpenTofu stack:
+# replace the terraform_* settings with an opentofu block. The stack migrates in place. Set every
+# setting that you want to keep, because the block defaults apply to the settings that you leave out.
+resource "spacelift_stack" "migrated-stack" {
+  # terraform_workflow_tool         = "OPEN_TOFU"
+  # terraform_version               = "~> 1.13.0"
+  # terraform_smart_sanitization    = false
+  # terraform_external_state_access = true
+
+  opentofu {
+    version                = "~> 1.13.0"
+    use_smart_sanitization = false
+    external_state_access  = true
+  }
+
+  autodeploy   = true
+  branch       = "main"
+  name         = "Migrated stack example"
+  project_root = "infra"
+  repository   = "core-infra"
+}
+
 # Administrative stack that manages Spacelift itself, with a role binding
 # granting a role access to the stack
 resource "spacelift_stack" "spacelift-admin" {
