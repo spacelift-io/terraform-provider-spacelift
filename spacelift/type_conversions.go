@@ -58,11 +58,11 @@ func listToStringList(input any) []graphql.String {
 	}
 
 	v := input.([]any)
-	var arr []graphql.String
-	if len(v) > 0 {
-		for _, expr := range v {
-			arr = append(arr, toString(expr))
-		}
+	// Keep an explicitly empty list non-nil: a nil pointer omits the field from
+	// the GraphQL input, which leaves a previously configured value in place.
+	arr := make([]graphql.String, 0, len(v))
+	for _, expr := range v {
+		arr = append(arr, toString(expr))
 	}
 	return arr
 }
