@@ -591,7 +591,7 @@ func resourceStack() *schema.Resource {
 			"opentofu": {
 				Type:          schema.TypeList,
 				ConflictsWith: []string{"ansible", "cloudformation", "kubernetes", "pulumi", "terraform_version", "terraform_workflow_tool", "terraform_workspace", "terraform_smart_sanitization", "terraform_external_state_access", "terragrunt"},
-				Description:   "OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack.",
+				Description:   "OpenTofu-specific configuration. Presence means this Stack is a native OpenTofu Stack. Adding this block to a Stack that uses the Terraform vendor with `terraform_workflow_tool = \"OPEN_TOFU\"` migrates the Stack to the native OpenTofu vendor. The Stack must have no active runs: otherwise the apply fails, and Spacelift migrates the Stack when the runs finish.",
 				Optional:      true,
 				MaxItems:      1,
 				Elem: &schema.Resource{
