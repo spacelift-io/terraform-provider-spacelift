@@ -122,4 +122,32 @@ func TestParseRuntimeConfigInput(t *testing.T) {
 			t.Fatalf("expected omitted hooks to stay nil, got %+v", got)
 		}
 	})
+
+	t.Run("runtime_config with only empty hook lists is preserved", func(t *testing.T) {
+		d := testRunResourceDataWithRawConfig(t, map[string]cty.Value{
+			"before_init": cty.ListValEmpty(cty.String),
+			"after_init":  cty.ListValEmpty(cty.String),
+		})
+
+		got := parseRuntimeConfigInput(d, "runtime_config")
+		if got == nil {
+			t.Fatal("expected non-nil RuntimeConfigInput when only empty hook lists are set")
+		}
+		if got.BeforeInit == nil || len(*got.BeforeInit) != 0 {
+			t.Fatalf("expected BeforeInit to be empty slice, got %+v", got.BeforeInit)
+		}
+		if got.AfterInit == nil || len(*got.AfterInit) != 0 {
+			t.Fatalf("expected AfterInit to be empty slice, got %+v", got.AfterInit)
+		}
+		if got.AfterPlan != nil || got.BeforePlan != nil || got.AfterApply != nil || got.BeforeApply != nil {
+			t.Fatalf("expected omitted hooks to stay nil, got %+v", got)
+		}
+	})
+
+	t.Run("empty runtime_config block with no attributes returns nil", func(t *testing.T) {
+		d := testRunResourceDataWithRawConfig(t, map[string]cty.Value{})
+		if got := parseRuntimeConfigInput(d, "runtime_config"); got != nil {
+			t.Fatalf("expected nil, got %+v", got)
+		}
+	})
 }

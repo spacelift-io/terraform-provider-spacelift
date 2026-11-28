@@ -73,20 +73,28 @@ func runtimeConfigInputSchema(forceNew bool) map[string]*schema.Schema {
 // given ResourceData and returns the corresponding GraphQL input, or nil if
 // the block is not set.
 func parseRuntimeConfigInput(d *schema.ResourceData, key string) *structs.RuntimeConfigInput {
-	raw, ok := d.Get(key).([]any)
-	if !ok || len(raw) == 0 || raw[0] == nil {
+	var mapped map[string]any
+	if raw, ok := d.Get(key).([]any); ok && len(raw) > 0 && raw[0] != nil {
+		mapped = raw[0].(map[string]any)
+	}
+
+	rawBlock, hasRawBlock := runtimeConfigRawBlock(d, key)
+	if mapped == nil && !hasRawBlock {
 		return nil
 	}
 
-	mapped := raw[0].(map[string]any)
-	rawBlock, hasRawBlock := runtimeConfigRawBlock(d, key)
-
 	optionalList := func(field string) *[]graphql.String {
 		if hasRawBlock {
-			if rawBlock.Type().HasAttribute(field) && rawBlock.GetAttr(field).IsNull() {
+			if !rawBlock.Type().HasAttribute(field) || rawBlock.GetAttr(field).IsNull() {
 				return nil
 			}
-			return listToOptionalStringList(mapped[field])
+			if mapped != nil && mapped[field] != nil {
+				return listToOptionalStringList(mapped[field])
+			}
+			// When every attribute in runtime_config is empty (e.g. only []
+			// hook lists), SDK v2's d.Get(key) collapses the block to [].
+			// The raw attribute is non-null, so return an empty slice.
+			return listToOptionalStringList([]any{})
 		}
 		// Without raw config (e.g. TestResourceDataRaw), SDK v2 materializes
 		// omitted TypeList fields as empty slices, so only non-empty lists can
@@ -111,24 +119,34 @@ func parseRuntimeConfigInput(d *schema.ResourceData, key string) *structs.Runtim
 		BeforePlan:    optionalList("before_plan"),
 	}
 
-	if envSet, ok := mapped["environment"].(*schema.Set); ok && envSet.Len() > 0 {
-		environment := make([]structs.EnvVarInput, 0, envSet.Len())
-		for _, e := range envSet.List() {
-			envMap := e.(map[string]any)
-			environment = append(environment, structs.EnvVarInput{
-				Key:   toString(envMap["key"]),
-				Value: toString(envMap["value"]),
-			})
+	if mapped != nil {
+		if envSet, ok := mapped["environment"].(*schema.Set); ok && envSet.Len() > 0 {
+			environment := make([]structs.EnvVarInput, 0, envSet.Len())
+			for _, e := range envSet.List() {
+				envMap := e.(map[string]any)
+				environment = append(environment, structs.EnvVarInput{
+					Key:   toString(envMap["key"]),
+					Value: toString(envMap["value"]),
+				})
+			}
+			cfg.Environment = &environment
 		}
-		cfg.Environment = &environment
+
+		if projectRoot, ok := mapped["project_root"].(string); ok && projectRoot != "" {
+			cfg.ProjectRoot = toOptionalString(projectRoot)
+		}
+
+		if runnerImage, ok := mapped["runner_image"].(string); ok && runnerImage != "" {
+			cfg.RunnerImage = toOptionalString(runnerImage)
+		}
 	}
 
-	if projectRoot, ok := mapped["project_root"].(string); ok && projectRoot != "" {
-		cfg.ProjectRoot = toOptionalString(projectRoot)
-	}
-
-	if runnerImage, ok := mapped["runner_image"].(string); ok && runnerImage != "" {
-		cfg.RunnerImage = toOptionalString(runnerImage)
+	if cfg.Environment == nil && cfg.ProjectRoot == nil && cfg.RunnerImage == nil &&
+		cfg.AfterApply == nil && cfg.AfterDestroy == nil && cfg.AfterInit == nil &&
+		cfg.AfterPerform == nil && cfg.AfterPlan == nil && cfg.AfterRun == nil &&
+		cfg.BeforeApply == nil && cfg.BeforeDestroy == nil && cfg.BeforeInit == nil &&
+		cfg.BeforePerform == nil && cfg.BeforePlan == nil {
+		return nil
 	}
 
 	return cfg
